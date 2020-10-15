@@ -15,6 +15,13 @@ lines.each do |line|
   max_edge = line.split(':').first.to_f if (line =~ /max edge/ )
 end
 
+if (min_edge.nil? || max_edge.nil?)
+  lines.each do |line|
+    min_edge = line.gsub(/\*/,' ').split[3].to_f if (line =~ /^mr / )
+    max_edge = line.gsub(/\*/,' ').split[4].to_f if (line =~ /^mr / )
+  end
+end
+
 throw("min edge missing") if (min_edge.nil?)
 throw("max edge missing") if (max_edge.nil?)
 

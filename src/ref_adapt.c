@@ -67,7 +67,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->last_min_ratio = 0.5e-3;
   ref_adapt->last_max_ratio = 6.0;
 
-  ref_adapt->instrument = REF_TRUE;
+  ref_adapt->timing_level = 0;
   ref_adapt->watch_param = REF_TRUE;
   ref_adapt->watch_topo = REF_FALSE;
 
@@ -102,7 +102,7 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt->last_min_ratio = original->last_min_ratio;
   ref_adapt->last_max_ratio = original->last_max_ratio;
 
-  ref_adapt->instrument = original->instrument;
+  ref_adapt->timing_level = original->timing_level;
   ref_adapt->watch_param = original->watch_param;
   ref_adapt->watch_topo = original->watch_topo;
 
@@ -358,7 +358,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
+static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid, const char *mode) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -367,7 +367,7 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   REF_DBL quality, min_quality;
   REF_DBL normdev, min_normdev;
   REF_INT node, nnode;
-  REF_DBL ratio, min_ratio, max_ratio;
+  REF_DBL ratio, min_ratio, max_ratio, delta;
   REF_INT edge, part;
   REF_EDGE ref_edge;
   char is_ok = ' ';
@@ -441,6 +441,8 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   RSS(ref_mpi_max(ref_mpi, &ratio, &max_ratio, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
 
+  RSS(ref_mpi_stopwatch_delta(ref_mpi, &delta), "time delta");
+
   if (ref_grid_once(ref_grid)) {
     quality_met = is_ok;
     short_met = is_ok;
@@ -455,9 +457,10 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
       normdev_met = not_ok;
 
     printf(
-        "quality %c %6.4f ratio %c %6.4f %6.2f %c normdev %6.4f %c nnode %d\n",
+        "mr %c %6.4f ratio %c %6.4f %6.2f %c norm %6.4f %c %4.1f sec "
+        "%5s n %d\n",
         quality_met, min_quality, short_met, min_ratio, max_ratio, long_met,
-        min_normdev, normdev_met, nnode);
+        min_normdev, normdev_met, delta, mode, nnode);
   }
 
   return REF_SUCCESS;
@@ -617,37 +620,37 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "adapt preflight check");
 
   ref_gather_blocking_frame(ref_grid, "threed pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt start");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "start"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
   RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "swap"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
   RSS(ref_collapse_pass(ref_grid), "col pass");
   ref_gather_blocking_frame(ref_grid, "collapse");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "col"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
   RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "swap"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
@@ -655,10 +658,10 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   RSS(ref_collapse_pass(ref_grid), "col pass");
   ref_gather_blocking_frame(ref_grid, "collapse");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "col"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
@@ -668,29 +671,29 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   for (i = 0; i < swap_smooth_passes; i++) {
     RSS(ref_adapt_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "swap");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    if (ref_grid_adapt(ref_grid, instrument))
+    if (ref_grid_adapt(ref_grid, timing_level) > 1)
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid, "swap"), "tattle");
     if (ref_grid_adapt(ref_grid, watch_topo))
       RSS(ref_adapt_topo(ref_grid), "topo");
 
     RSS(ref_smooth_pass(ref_grid), "smooth pass");
     ref_gather_blocking_frame(ref_grid, "smooth");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    if (ref_grid_adapt(ref_grid, instrument))
+    if (ref_grid_adapt(ref_grid, timing_level > 1))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid, "move"), "tattle");
     if (ref_grid_adapt(ref_grid, watch_topo))
       RSS(ref_adapt_topo(ref_grid), "topo");
   }
 
   RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "swap"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
@@ -698,38 +701,38 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   RSS(ref_split_pass(ref_grid), "split surfpass");
   ref_gather_blocking_frame(ref_grid, "split");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "split"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
   RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "swap"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
   for (i = 0; i < swap_smooth_passes; i++) {
     RSS(ref_smooth_pass(ref_grid), "smooth pass");
     ref_gather_blocking_frame(ref_grid, "smooth");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    if (ref_grid_adapt(ref_grid, instrument))
+    if (ref_grid_adapt(ref_grid, timing_level) > 1)
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid, "move"), "tattle");
     if (ref_grid_adapt(ref_grid, watch_topo))
       RSS(ref_adapt_topo(ref_grid), "topo");
 
     RSS(ref_adapt_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "swap");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    if (ref_grid_adapt(ref_grid, instrument))
+    if (ref_grid_adapt(ref_grid, timing_level) > 1)
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid, "swap"), "tattle");
     if (ref_grid_adapt(ref_grid, watch_topo))
       RSS(ref_adapt_topo(ref_grid), "topo");
   }
@@ -738,8 +741,10 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   RSS(ref_collapse_pass(ref_grid), "col pass");
   ref_gather_blocking_frame(ref_grid, "collapse");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "col"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
@@ -748,29 +753,29 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 1)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid, "swap"), "tattle");
   if (ref_grid_adapt(ref_grid, watch_topo))
     RSS(ref_adapt_topo(ref_grid), "topo");
 
   for (i = 0; i < swap_smooth_passes; i++) {
     RSS(ref_smooth_pass(ref_grid), "smooth pass");
     ref_gather_blocking_frame(ref_grid, "smooth");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    if (ref_grid_adapt(ref_grid, instrument))
+    if (ref_grid_adapt(ref_grid, timing_level) > 1)
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid, "move"), "tattle");
     if (ref_grid_adapt(ref_grid, watch_topo))
       RSS(ref_adapt_topo(ref_grid), "topo");
 
     RSS(ref_adapt_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "swap");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    if (ref_grid_adapt(ref_grid, instrument))
+    if (ref_grid_adapt(ref_grid, timing_level) > 1)
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid, "swap"), "tattle");
     if (ref_grid_adapt(ref_grid, watch_topo))
       RSS(ref_adapt_topo(ref_grid), "topo");
   }
@@ -798,7 +803,6 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
       printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
              ref_mpi_n(ref_grid_mpi(ref_grid)));
     RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
 
     RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
     RSS(ref_grid_pack(ref_grid), "pack");
@@ -807,8 +811,6 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
 
-    RSS(ref_histogram_quality(ref_grid), "gram");
-    RSS(ref_histogram_ratio(ref_grid), "gram");
     RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
   }

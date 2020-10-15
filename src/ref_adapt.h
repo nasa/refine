@@ -52,7 +52,7 @@ struct REF_ADAPT_STRUCT {
   REF_DBL last_min_ratio;
   REF_DBL last_max_ratio;
 
-  REF_BOOL instrument;
+  REF_BOOL timing_level;
   REF_BOOL watch_param;
   REF_BOOL watch_topo;
 };

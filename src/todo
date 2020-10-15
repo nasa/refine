@@ -1,4 +1,6 @@
 
+understand interp max error reports
+
 ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 
 sync surf/tri/face zone titles
@@ -158,8 +160,6 @@ integrate complexity more accurately (Josh)
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
-get rid of aux and interp instead
-
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 input means for all these parameters for optimizer setting
@@ -263,6 +263,8 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ get rid of aux and interp instead (awhile ago)
 
 + 1.9.3
 

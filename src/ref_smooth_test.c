@@ -323,8 +323,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "stats");
 
     RSS(ref_smooth_pass(ref_grid), "smooth pass");
-    if (ref_grid_adapt(ref_grid, instrument))
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
 
     RSS(ref_validation_cell_volume(ref_grid), "vol");
     RSS(ref_histogram_quality(ref_grid), "gram");

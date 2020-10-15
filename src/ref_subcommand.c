@@ -30,7 +30,6 @@
 #include "ref_gather.h"
 #include "ref_geom.h"
 #include "ref_grid.h"
-#include "ref_histogram.h"
 #include "ref_import.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -481,9 +480,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   RSS(ref_validation_cell_volume(ref_grid), "vol");
-  RSS(ref_histogram_quality(ref_grid), "gram");
-  RSS(ref_histogram_ratio(ref_grid), "gram");
-  ref_mpi_stopwatch_stop(ref_mpi, "histogram");
 
   RSS(ref_migrate_to_balance(ref_grid), "balance");
   RSS(ref_grid_pack(ref_grid), "pack");
@@ -496,7 +492,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
-    ref_mpi_stopwatch_stop(ref_mpi, "pass");
     if (curvature_metric) {
       if (spalding_yplus > 0.0) {
         RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
@@ -516,9 +511,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
     }
     RSS(ref_validation_cell_volume(ref_grid), "vol");
-    RSS(ref_histogram_quality(ref_grid), "gram");
-    RSS(ref_histogram_ratio(ref_grid), "gram");
-    ref_mpi_stopwatch_stop(ref_mpi, "histogram");
     RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
@@ -793,12 +785,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "export volume");
 
   RSS(ref_validation_cell_volume(ref_grid), "vol");
-
-  RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
-  RSS(ref_histogram_quality(ref_grid), "gram");
-  RSS(ref_histogram_ratio(ref_grid), "gram");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "histogram");
 
   RSS(ref_grid_free(ref_grid), "free grid");
 
@@ -1376,15 +1362,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     mesh_extension = argv[pos + 1];
   }
 
-  if (ref_mpi_once(ref_mpi)) {
-    printf("complexity %f\n", complexity);
-    printf("Lp=%d\n", p);
-    printf("gradation %f\n", gradation);
-    printf("reconstruction %d\n", (int)reconstruction);
-    printf("buffer %d (zero is inactive)\n", buffer);
-    printf("interpolant %s\n", interpolant);
-  }
-
   RXS(ref_args_find(argc, argv, "-s", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     passes = atoi(argv[pos + 1]);
@@ -1494,6 +1471,13 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
   }
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("complexity %f\n", complexity);
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("reconstruction %d\n", (int)reconstruction);
+  }
+
   ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   0.0);
 
@@ -1502,6 +1486,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     multiscale_metric = REF_FALSE;
+    if (ref_mpi_once(ref_mpi)) printf("--opt-goal metric construction\n");
     RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
         "maks");
     RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, initial_field,
@@ -1523,6 +1508,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos) {
     REF_DBL *g;
     multiscale_metric = REF_FALSE;
+    if (ref_mpi_once(ref_mpi)) printf("--cons-euler metric construction\n");
     RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
         "maks");
     ref_malloc_init(g, 5 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
@@ -1553,6 +1539,11 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     mach = atof(argv[pos + 1]);
     re = atof(argv[pos + 2]);
     temperature = atof(argv[pos + 3]);
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "--cons-visc %.3f Mach %.2e Re %.2f temperature metric "
+          "construction\n",
+          mach, re, temperature);
     RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
         "maks");
     ref_malloc_init(g, 5 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
@@ -1579,7 +1570,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
       "arg search");
-  printf("pos %d argc %d\n", pos, argc);
   if (REF_EMPTY != pos && pos + 4 < argc) {
     REF_INT first_timestep, last_timestep, timestep_increment;
     const char *solb_middle;
@@ -1601,6 +1591,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   if (multiscale_metric) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    if (ref_mpi_once(ref_mpi))
+      printf("computing interpolant %s for multiscale metric\n", interpolant);
     RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
                              scalar),
         "field metric");
@@ -1649,10 +1641,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(initial_field);
   ref_mpi_stopwatch_stop(ref_mpi, "cache background metric and field");
 
-  RSS(ref_histogram_quality(ref_grid), "gram");
-  RSS(ref_histogram_ratio(ref_grid), "gram");
-  ref_mpi_stopwatch_stop(ref_mpi, "histogram");
-
   RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
@@ -1673,13 +1661,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
-    ref_mpi_stopwatch_stop(ref_mpi, "pass");
     RSS(ref_metric_synchronize(ref_grid), "sync with background");
     ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
     RSS(ref_validation_cell_volume(ref_grid), "vol");
-    RSS(ref_histogram_quality(ref_grid), "gram");
-    RSS(ref_histogram_ratio(ref_grid), "gram");
-    ref_mpi_stopwatch_stop(ref_mpi, "histogram");
     RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
