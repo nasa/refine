@@ -642,6 +642,7 @@ REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
   REF_MPI ref_mpi;
   REF_INT node;
   REF_DBL max_error, tol = 1.0e-8;
+  REF_BOOL report_interp_error = REF_FALSE;
 
   if (NULL == ref_interp) return REF_SUCCESS;
 
@@ -661,9 +662,11 @@ REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
     }
   }
 
-  RSS(ref_interp_max_error(ref_interp, &max_error), "err");
-  if (max_error > tol && ref_mpi_once(ref_mpi)) {
-    printf("warning: %e max_error greater than %e tol\n", max_error, tol);
+  if (report_interp_error) {
+    RSS(ref_interp_max_error(ref_interp, &max_error), "err");
+    if (max_error > tol && ref_mpi_once(ref_mpi)) {
+      printf("warning: %e max_error greater than %e tol\n", max_error, tol);
+    }
   }
 
   return REF_SUCCESS;
