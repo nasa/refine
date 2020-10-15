@@ -1,5 +1,5 @@
 #!MC 1410
-$!VarSet |LFDSFN1| = '"cycle06.tec"'
+$!VarSet |LFDSFN1| = '"cycle06_volume.tec"'
 $!VarSet |LFDSVL1| = '"x" "y" "z" "V1" "V2" "V3" "V4" "V5" "V6" "V7" "V8" "V9" "V10"'
 $!SetStyleBase Factory
 $!GlobalPaper 
@@ -221,6 +221,7 @@ $!FieldMap  [1]
   Mesh
     {
     Color = Black
+    LineThickness = 0.05
     }
   Contour
     {
@@ -252,7 +253,7 @@ $!FieldMap  [1]
     }
   Surfaces
     {
-    SurfacesToPlot = None
+    SurfacesToPlot = KPlanes
     IRange
       {
       Max = 1
@@ -286,6 +287,7 @@ $!TwoDAxis
 $!TwoDAxis 
   XDetail
     {
+    ShowAxis = No
     RangeMin = 0
     RangeMax = 1.0958887987012988496
     GRSpacing = 0.2
@@ -293,6 +295,7 @@ $!TwoDAxis
 $!TwoDAxis 
   YDetail
     {
+    ShowAxis = No
     RangeMin = 0
     RangeMax = 1.000100000000000211
     GRSpacing = 0.2
