@@ -2994,8 +2994,9 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT *find_ret, *find_donation, *find_cell;
   REF_GLOB *find_nodes;
   REF_INT *lookedup_donation, *lookedup_cell;
-  REF_DBL max_error;
+  REF_DBL max_error = -1.0;
   REF_BOOL report_migration_volume = REF_FALSE;
+  REF_BOOL report_interp_error = REF_FALSE;
 
   if (ref_grid_twod(from_grid)) {
     from_cell = ref_interp_from_tri(ref_interp);
@@ -3003,9 +3004,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     from_cell = ref_interp_from_tet(ref_interp);
   }
 
-  RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
-  if (ref_mpi_once(ref_grid_mpi(to_grid))) {
-    printf("starting %e max error\n", max_error);
+  if (report_interp_error) {
+    RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
+    if (ref_mpi_once(ref_grid_mpi(to_grid))) {
+      printf("starting %e max error\n", max_error);
+    }
   }
 
   if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
@@ -3068,11 +3071,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     }
   }
   RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
-  if(report_migration_volume)
-  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
+  if (report_migration_volume)
+    RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
   RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
-  if(report_migration_volume)
-  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
+  if (report_migration_volume)
+    RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
 
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
@@ -3210,9 +3213,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
 
   ref_free(from_part);
 
-  RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
-  if (ref_mpi_once(ref_grid_mpi(to_grid))) {
-    printf("final %e max error\n", max_error);
+  if (report_interp_error) {
+    RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
+    if (ref_mpi_once(ref_grid_mpi(to_grid))) {
+      printf("final %e max error\n", max_error);
+    }
   }
 
   return REF_SUCCESS;
