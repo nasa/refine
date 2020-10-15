@@ -288,16 +288,16 @@ $!TwoDAxis
   XDetail
     {
     ShowAxis = No
-    RangeMin = 0
-    RangeMax = 1.0958887987012988496
-    GRSpacing = 0.2
+    RangeMin = -0.97540000000000004476
+    RangeMax = 1.4502425399999998579
+    GRSpacing = 0.5
     }
 $!TwoDAxis 
   YDetail
     {
     ShowAxis = No
     RangeMin = 0
-    RangeMax = 1.000100000000000211
+    RangeMax = 2.2136234142814816828
     GRSpacing = 0.2
     }
 $!IsoSurfaceAttributes  1
