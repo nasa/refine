@@ -245,10 +245,10 @@ static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
   l = 1.0 / b + 1.0 / 3.0 / pow(b, 3) + 1.0 / 5.0 / pow(b, 5) -
       0.5 * log((1.0 + b) / (1.0 - b));
   psi = sqrt(0.5 / v / v - rho * (x - 0.5 * l));
-  if(psi * v < (1.0-1.e14)){
+  if (psi * v < (1.0 - 1.e14)) {
     t = asin(psi * v);
-  }else{
-    t = 0.5* ref_math_pi;
+  } else {
+    t = 0.5 * ref_math_pi;
   }
   RAS(isfinite(t), "theta is not finite");
   primitive[0] = rho;
@@ -257,6 +257,23 @@ static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
   primitive[3] = 0;
   primitive[4] = p;
 
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_acceptance_primal_trig(REF_DBL x, REF_DBL y,
+                                             REF_DBL *primitive) {
+  REF_DBL gamma = 1.4;
+  REF_DBL x0, y0;
+  REF_DBL r;
+
+  x0 = 0.0;
+  y0 = 0.4;
+  r = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
+  primitive[0] = 0.1 * tanh(50.0 * (r - 0.5)) + 1.0;
+  primitive[1] = 0.1 * sin(2.0 * ref_math_pi * x) + 0.2;
+  primitive[2] = 0.2 * sin(2.0 * ref_math_pi * y) + 0.3;
+  primitive[3] = 0.0;
+  primitive[4] = 0.1 * tanh(50.0 * (x - y)) + 1.0 / gamma;
   return REF_SUCCESS;
 }
 
@@ -293,28 +310,13 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
       (*scalar)[3 + 5 * node] = w;
       (*scalar)[4 + 5 * node] = pressure;
     } else if (strcmp(function_name, "trig") == 0) {
-      REF_DBL a, c1, x0, y0, r1, c2, r2;
-      REF_DBL rho, pressure, u, v, w;
-      x = ref_node_xyz(ref_node, 0, node);
-      y = ref_node_xyz(ref_node, 1, node);
-      c1 = 100.0;
-      x0 = 0.0;
-      y0 = 0.4;
-      r1 = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
-
-      c2 = 100.0;
-      r2 = x - y + 0.3;
-      a = 0.1;
-      rho = 1.00 * (a * tanh(c1 * (r1 - 0.5)) + 1.0);
-      pressure = 1.00 * (a * tanh(c2 * (r2 - 0.3)) + 1.0 / 1.4);
-      u = 0.5 * sin(x * 2 * ref_math_pi);
-      v = 0.1 * cos(y * 2 * ref_math_pi);
-      w = 0.0;
-      (*scalar)[0 + 5 * node] = rho;
-      (*scalar)[1 + 5 * node] = u;
-      (*scalar)[2 + 5 * node] = v;
-      (*scalar)[3 + 5 * node] = w;
-      (*scalar)[4 + 5 * node] = pressure;
+      REF_INT i;
+      REF_DBL primitive[5];
+      RSS(ref_acceptance_primal_trig(ref_node_xyz(ref_node, 0, node),
+                                     ref_node_xyz(ref_node, 1, node),
+                                     primitive),
+          "coax");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
     } else if (strcmp(function_name, "vortex") == 0) {
       REF_DBL gamma = 1.4;
       REF_DBL rho, pressure, u, v, w, mach;
@@ -378,29 +380,11 @@ static REF_STATUS ref_acceptance_pd(REF_NODE ref_node,
     x = ref_node_xyz(ref_node, 0, node);
     y = ref_node_xyz(ref_node, 1, node);
     if (strcmp(function_name, "trig") == 0) {
-      REF_DBL a, c1, x0, y0, r1, c2, r2;
-      REF_DBL rho, pressure, u, v, w;
       REF_DBL primitive[5], dual[5];
-      x = ref_node_xyz(ref_node, 0, node);
-      y = ref_node_xyz(ref_node, 1, node);
-      c1 = 100.0;
-      x0 = 0.0;
-      y0 = 0.4;
-      r1 = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
-
-      c2 = 100.0;
-      r2 = x - y + 0.3;
-      a = 0.1;
-      rho = 1.00 * (a * tanh(c1 * (r1 - 0.5)) + 1.0);
-      pressure = 1.00 * (a * tanh(c2 * (r2 - 0.3)) + 1.0 / 1.4);
-      u = 0.5 * sin(x * 2 * ref_math_pi);
-      v = 0.1 * cos(y * 2 * ref_math_pi);
-      w = 0.0;
-      primitive[0] = rho;
-      primitive[1] = u;
-      primitive[2] = v;
-      primitive[3] = w;
-      primitive[4] = pressure;
+      RSS(ref_acceptance_primal_trig(ref_node_xyz(ref_node, 0, node),
+                                     ref_node_xyz(ref_node, 1, node),
+                                     primitive),
+          "coax");
       RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
       for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
       for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
