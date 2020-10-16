@@ -1,5 +1,5 @@
 #!MC 1410
-$!VarSet |LFDSFN1| = '"cycle06-primdual.tec"'
+$!VarSet |LFDSFN1| = '"cycle06_volume.tec"'
 $!VarSet |LFDSVL1| = '"x" "y" "z" "V1" "V2" "V3" "V4" "V5" "V6" "V7" "V8" "V9" "V10"'
 $!SetStyleBase Factory
 $!GlobalPaper 
@@ -73,12 +73,19 @@ $!GlobalRGB
   RangeMax = 1
 $!GlobalContour  1
   Var = 4
+  DefNumLevels = 21
   Legend
     {
     Show = Yes
     XYPos
       {
-      X = 95
+      X = 85
+      Y = 50
+      }
+    AnchorAlignment = MiddleLeft
+    Box
+      {
+      BoxType = None
       }
     }
   ColorCutoff
@@ -97,28 +104,31 @@ $!GlobalContour  1
 $!ContourLevels New
   ContourGroup = 1
   RawData
-19
-3.2
-3.4
-3.6
-3.8
-4
-4.2
-4.4
-4.6
-4.8
-5
-5.2
-5.4
-5.6
-5.8
-6
-6.2
-6.4
-6.6
-6.8
+21
+0.9
+0.91
+0.92
+0.93
+0.94
+0.95
+0.96
+0.97
+0.98
+0.99
+1
+1.01
+1.02
+1.03
+1.04
+1.05
+1.06
+1.07
+1.08
+1.09
+1.1
 $!GlobalContour  2
   Var = 5
+  DefNumLevels = 11
   Legend
     {
     Show = Yes
@@ -152,6 +162,7 @@ $!ContourLevels New
 1
 $!GlobalContour  3
   Var = 6
+  DefNumLevels = 19
   Legend
     {
     Show = Yes
@@ -193,6 +204,7 @@ $!ContourLevels New
 0.068
 $!GlobalContour  4
   Var = 7
+  DefNumLevels = 1
   Legend
     {
     Show = Yes
@@ -216,6 +228,7 @@ $!ContourLevels New
 0
 $!GlobalContour  5
   Var = 8
+  DefNumLevels = 19
   Legend
     {
     Show = Yes
@@ -257,6 +270,7 @@ $!ContourLevels New
 6.8
 $!GlobalContour  6
   Var = 9
+  DefNumLevels = 19
   Legend
     {
     Show = Yes
@@ -298,6 +312,7 @@ $!ContourLevels New
 4.88
 $!GlobalContour  7
   Var = 10
+  DefNumLevels = 11
   Legend
     {
     Show = Yes
@@ -331,6 +346,7 @@ $!ContourLevels New
 1
 $!GlobalContour  8
   Var = 11
+  DefNumLevels = 19
   Legend
     {
     Show = Yes
@@ -390,8 +406,9 @@ $!FieldMap  [1]
     }
   Contour
     {
-    ContourType = Flood
+    ContourType = BothLinesAndFlood
     Color = Black
+    LineThickness = 0.02
     UseLightingEffect = Yes
     }
   Vector
@@ -418,7 +435,7 @@ $!FieldMap  [1]
     }
   Surfaces
     {
-    SurfacesToPlot = None
+    SurfacesToPlot = KPlanes
     IRange
       {
       Max = 1
