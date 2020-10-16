@@ -1249,7 +1249,7 @@ static REF_STATUS remove_initial_field_adjoint(REF_NODE ref_node, REF_INT *ldim,
     if (0 != node) {
       for (i = 0; i < (*ldim); i++) {
         (*initial_field)[i + (*ldim) * node] =
-            (*initial_field)[i + (*ldim) + 2 * (*ldim) * node];
+            (*initial_field)[i + 2 * (*ldim) * node];
       }
     }
   }
