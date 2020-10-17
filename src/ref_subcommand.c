@@ -1281,7 +1281,7 @@ static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
   if (ldim > 6 && 0 == ldim % 6) nequ = 6;
 
   each_ref_node_valid_node(ref_node, node) {
-    if (ldim <= 5) {
+    if (ldim >= 5) {
       temp = field[2 + ldim * node];
       field[2 + ldim * node] = field[3 + ldim * node];
       field[3 + ldim * node] = temp;
