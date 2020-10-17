@@ -52,7 +52,7 @@ static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
   if (ldim > 6 && 0 == ldim % 6) nequ = 6;
 
   each_ref_node_valid_node(ref_node, node) {
-    if (ldim <= 5) {
+    if (ldim >= 5) {
       temp = field[2 + ldim * node];
       field[2 + ldim * node] = field[3 + ldim * node];
       field[3 + ldim * node] = temp;
@@ -590,7 +590,6 @@ int main(int argc, char *argv[]) {
         "fill u");
     if (ref_grid_twod(ref_grid)) {
       if (ref_mpi_once(ref_mpi)) printf("flip field v-w for twod\n");
-
       RSS(flip_twod_yz(ref_node, ldim, scalar), "flip");
     }
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[4]),
@@ -619,7 +618,6 @@ int main(int argc, char *argv[]) {
         "fill u");
     if (ref_grid_twod(ref_grid)) {
       if (ref_mpi_once(ref_mpi)) printf("flip field v-w for twod\n");
-
       RSS(flip_twod_yz(ref_node, ldim, scalar), "flip");
     }
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[4]),
