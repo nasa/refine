@@ -32,6 +32,12 @@ function adapt_cycle {
 	  ${outproj}_volume.solb
     ${src}/ref_gather_test ${outproj}.meshb \
 	  ${outproj}_volume.solb ${outproj}_volume.tec
+
+    ${src}/ref_acceptance -q trig ${outproj}.meshb \
+	  ${outproj}-target.solb
+    ${src}/ref visualize ${outproj}.meshb \
+	  ${outproj}-restart.solb ${outproj}-diff.tec \
+	  --subtract ${outproj}-target.solb
 }
 
 serveCSM -batch square.csm > square-servecsm.txt
