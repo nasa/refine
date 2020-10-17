@@ -1270,6 +1270,32 @@ static REF_STATUS mask_strong_bc_adjoint(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
+                               REF_DBL *field) {
+  REF_INT node;
+  REF_DBL temp;
+  REF_INT nequ;
+
+  nequ = 0;
+  if (ldim > 5 && 0 == ldim % 5) nequ = 5;
+  if (ldim > 6 && 0 == ldim % 6) nequ = 6;
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ldim <= 5) {
+      temp = field[2 + ldim * node];
+      field[2 + ldim * node] = field[3 + ldim * node];
+      field[3 + ldim * node] = temp;
+    }
+    if (nequ > 0) {
+      temp = field[nequ + 2 + ldim * node];
+      field[nequ + 2 + ldim * node] = field[nequ + 3 + ldim * node];
+      field[nequ + 3 + ldim * node] = temp;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -1469,6 +1495,10 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_interp_plt(ref_grid, filename, &ldim, &initial_field),
         "part scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
+  }
+  if (ref_grid_twod(ref_grid)) {
+    if (ref_mpi_once(ref_mpi)) printf("flip initial_field v-w for twod\n");
+    RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, initial_field), "flip");
   }
 
   if (ref_mpi_once(ref_mpi)) {
@@ -1731,6 +1761,11 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_interp_free(ref_grid_interp(ref_grid)), "interp free");
   ref_grid_interp(ref_grid) = NULL;
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
+
+  if (ref_grid_twod(ref_grid)) {
+    if (ref_mpi_once(ref_mpi)) printf("flip ref_field v-w for twod\n");
+    RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, ref_field), "flip");
+  }
 
   if (ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);

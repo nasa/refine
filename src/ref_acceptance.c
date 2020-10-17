@@ -41,6 +41,32 @@
 #include "ref_phys.h"
 #include "ref_sort.h"
 
+static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
+                               REF_DBL *field) {
+  REF_INT node;
+  REF_DBL temp;
+  REF_INT nequ;
+
+  nequ = 0;
+  if (ldim > 5 && 0 == ldim % 5) nequ = 5;
+  if (ldim > 6 && 0 == ldim % 6) nequ = 6;
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ldim <= 5) {
+      temp = field[2 + ldim * node];
+      field[2 + ldim * node] = field[3 + ldim * node];
+      field[3 + ldim * node] = temp;
+    }
+    if (nequ > 0) {
+      temp = field[nequ + 2 + ldim * node];
+      field[nequ + 2 + ldim * node] = field[nequ + 3 + ldim * node];
+      field[nequ + 3 + ldim * node] = temp;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_acceptance_primal_trig(REF_DBL x, REF_DBL y,
                                              REF_DBL *primitive) {
   REF_DBL gamma = 1.4;
@@ -562,6 +588,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_acceptance_q(ref_grid_node(ref_grid), argv[name_pos], &ldim,
                          &scalar),
         "fill u");
+    if (ref_grid_twod(ref_grid)) {
+      if (ref_mpi_once(ref_mpi)) printf("flip field v-w for twod\n");
+
+      RSS(flip_twod_yz(ref_node, ldim, scalar), "flip");
+    }
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[4]),
         "in");
 
@@ -586,6 +617,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_acceptance_pd(ref_grid_node(ref_grid), argv[name_pos], &ldim,
                           &scalar),
         "fill u");
+    if (ref_grid_twod(ref_grid)) {
+      if (ref_mpi_once(ref_mpi)) printf("flip field v-w for twod\n");
+
+      RSS(flip_twod_yz(ref_node, ldim, scalar), "flip");
+    }
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[4]),
         "in");
 
