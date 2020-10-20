@@ -1528,6 +1528,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--deforming", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) printf("extract xyz displacement\n");
     RSS(extract_displaced_xyz(ref_grid_node(ref_grid), &ldim, &initial_field,
                               &displaced),
         "extract displacments");
