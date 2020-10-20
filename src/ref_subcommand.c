@@ -180,6 +180,7 @@ static void loop_help(const char *name) {
   printf("        Use --fun3d-mapbc or --viscous-tags with strong BCs.\n");
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
+  printf("  --deforming mesh flow solve, include xyz in *_volume.solb.\n");
 
   printf("\n");
 }
@@ -1296,6 +1297,28 @@ static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS extract_displaced_xyz(REF_NODE ref_node, REF_INT *ldim,
+                                        REF_DBL **initial_field,
+                                        REF_DBL **displaced) {
+  REF_INT i, node;
+
+  ref_malloc(*displaced, 3 * ref_node_max(ref_node), REF_DBL);
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 3; i++) {
+      (*displaced)[i + 3 * node] = (*initial_field)[i + (*ldim) * node];
+    }
+  }
+  (*ldim) -= 3;
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < (*ldim); i++) {
+      (*initial_field)[i + (*ldim) * node] =
+          (*initial_field)[i + ((*ldim) + 3) * node];
+    }
+  }
+  ref_realloc(*initial_field, (*ldim) * ref_node_max(ref_node), REF_DBL);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -1308,6 +1331,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT pass, passes = 30;
   REF_INT ldim;
   REF_DBL *initial_field, *ref_field, *extruded_field = NULL, *scalar, *metric;
+  REF_DBL *displaced = NULL;
   REF_INT p = 2;
   REF_DBL gradation = -1.0, complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
@@ -1496,9 +1520,17 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
         "part scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
   }
+
   if (ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("flip initial_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, initial_field), "flip");
+  }
+  RXS(ref_args_find(argc, argv, "--deforming", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    RSS(extract_displaced_xyz(ref_grid_node(ref_grid), &ldim, &initial_field,
+                              &displaced),
+        "extract displacments");
   }
 
   if (ref_mpi_once(ref_mpi)) {
@@ -1627,11 +1659,24 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
                              scalar),
         "field metric");
 
-    if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
-    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                      gradation, complexity),
-        "lp norm");
-    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    RXS(ref_args_find(argc, argv, "--deforming", &pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY != pos) {
+      if (ref_mpi_once(ref_mpi))
+        printf("reconstruct Hessian, compute metric\n");
+      RSS(ref_metric_moving_multiscale(metric, ref_grid, displaced, scalar,
+                                       reconstruction, p, gradation,
+                                       complexity),
+          "lp norm");
+      ref_mpi_stopwatch_stop(ref_mpi, "deforming metric");
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("reconstruct Hessian, compute metric\n");
+      RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                        gradation, complexity),
+          "lp norm");
+      ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric");
+    }
     ref_free(scalar);
   }
 
