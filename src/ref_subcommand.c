@@ -1312,7 +1312,7 @@ static REF_STATUS extract_displaced_xyz(REF_NODE ref_node, REF_INT *ldim,
   each_ref_node_valid_node(ref_node, node) {
     for (i = 0; i < (*ldim); i++) {
       (*initial_field)[i + (*ldim) * node] =
-          (*initial_field)[i + ((*ldim) + 3) * node];
+          (*initial_field)[i + 3 + ((*ldim) + 3) * node];
     }
   }
   ref_realloc(*initial_field, (*ldim) * ref_node_max(ref_node), REF_DBL);
