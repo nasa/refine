@@ -2379,7 +2379,7 @@ int main(int argc, char *argv[]) {
     }
   } else if (strncmp(argv[1], "v", 1) == 0) {
     if (REF_EMPTY == help_pos) {
-      RSS(visualize(ref_mpi, argc, argv), "translate");
+      RSS(visualize(ref_mpi, argc, argv), "visualize");
     } else {
       if (ref_mpi_once(ref_mpi)) visualize_help(argv[0]);
       goto shutdown;
