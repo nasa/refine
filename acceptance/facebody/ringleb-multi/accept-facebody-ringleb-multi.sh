@@ -31,6 +31,10 @@ function adapt_cycle {
 	  ${outproj}_volume.solb
     ${src}/ref_gather_test ${outproj}.meshb \
 	  ${outproj}_volume.solb ${outproj}_volume.tec
+
+    ${src}/ref_phys_test --inviscid-entropy-flux ${outproj}.meshb \
+	  ${outproj}_volume.solb | tee ${outproj}-func.txt
+
 }
 
 serveCSM -batch ringleb.csm > ringleb-servecsm.txt

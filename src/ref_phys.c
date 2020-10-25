@@ -82,22 +82,21 @@ REF_STATUS ref_phys_entropy_adjoint(REF_DBL *primitive, REF_DBL *dual) {
 }
 
 REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux) {
-  REF_DBL rho, u, v, w, p, s, U, e;
+  REF_DBL rho, u, v, w, p, s, U;
   REF_DBL gamma = 1.4;
+
   rho = primitive[0];
   u = primitive[1];
   v = primitive[2];
   w = primitive[3];
   p = primitive[4];
-  /* entropy adjoint, Equ. (11), AIAA 2009-3790 */
+
   s = log(p / pow(rho, gamma));
   U = -rho * s / (gamma - 1.0);
-  e = p / (gamma - 1.0) + 0.5 * rho * (u * u + v * v + w * w);
-  flux[0] = U * rho;
-  flux[1] = U * rho * u;
-  flux[2] = U * rho * v;
-  flux[3] = U * rho * w;
-  flux[4] = U * e;
+
+  flux[0] = U * u;
+  flux[1] = U * v;
+  flux[2] = U * w;
 
   return REF_SUCCESS;
 }
