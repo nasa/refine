@@ -2140,6 +2140,12 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_grid_free(twod_grid), "free");
   }
 
+  RXS(ref_args_find(argc, argv, "--drop-z", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) printf("--drop-z into twod\n");
+    ref_grid_twod(ref_grid) = REF_TRUE;
+  }
+
   RXS(ref_args_find(argc, argv, "--zero-y-face", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
