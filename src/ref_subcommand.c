@@ -178,6 +178,12 @@ static void loop_help(const char *name) {
   printf("   --opt-goal metric of Loseille et al. AIAA 2007--4186.\n");
   printf("        Include flow and adjoint information in volume.solb.\n");
   printf("        Use --fun3d-mapbc or --viscous-tags with strong BCs.\n");
+  printf("   --cons-visc <mach> <re> <temperature> see AIAA 2019--2947.\n");
+  printf("        <mach> is reference Mach nubmer.\n");
+  printf("        <re> is reference Reylonds number in grid units.\n");
+  printf("        <temperature> is reference temperature in K.\n");
+  printf("        Include flow and adjoint information in volume.solb.\n");
+  printf("        Use --fun3d-mapbc or --viscous-tags with strong BCs.\n");
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --deforming mesh flow solve, include xyz in *_volume.solb.\n");
@@ -2373,7 +2379,7 @@ int main(int argc, char *argv[]) {
     }
   } else if (strncmp(argv[1], "v", 1) == 0) {
     if (REF_EMPTY == help_pos) {
-      RSS(visualize(ref_mpi, argc, argv), "translate");
+      RSS(visualize(ref_mpi, argc, argv), "visualize");
     } else {
       if (ref_mpi_once(ref_mpi)) visualize_help(argv[0]);
       goto shutdown;
