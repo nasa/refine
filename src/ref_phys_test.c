@@ -41,6 +41,7 @@ int main(int argc, char *argv[]) {
   REF_INT mask_pos = REF_EMPTY;
   REF_INT cont_res_pos = REF_EMPTY;
   REF_INT uplus_pos = REF_EMPTY;
+  REF_INT inviscid_entropy_flux_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -58,52 +59,9 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--uplus", &uplus_pos), REF_NOT_FOUND,
       "arg search");
-
-  if (uplus_pos != REF_EMPTY) {
-    REF_GRID ref_grid;
-    REF_DBL *scalar, yplus, uplus;
-    REF_INT ldim, node;
-    ref_mpi_stopwatch_start(ref_mpi);
-    REIS(1, uplus_pos,
-         "required args: --uplus grid.meshb dist.solb [yplus=1] uplus.solb");
-    if (6 > argc) {
-      printf(
-          "required args: --uplus grid.meshb dist.solb [yplus=1] uplus.solb");
-      return REF_FAILURE;
-    }
-    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
-    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
-        "unable to load target grid in position 2");
-    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
-
-    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
-        "unable to load distance in position 3");
-    REIS(1, ldim, "expected one distance");
-    ref_mpi_stopwatch_stop(ref_mpi, "read distance");
-
-    yplus = atof(argv[4]);
-    if (ref_mpi_once(ref_mpi)) printf("yplus=1 of %f\n", yplus);
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RAS(ref_math_divisible(scalar[node], yplus),
-          "distance not divisible by yplus=1")
-      RSS(ref_phys_spalding_uplus(scalar[node] / yplus, &uplus), "uplus");
-      scalar[node] = uplus;
-    }
-    ref_mpi_stopwatch_stop(ref_mpi, "compute uplus");
-
-    if (ref_mpi_once(ref_mpi)) printf("writing uplus %s\n", argv[5]);
-    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[5]),
-        "export uplus");
-    ref_mpi_stopwatch_stop(ref_mpi, "write uplus");
-
-    ref_free(scalar);
-
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
+  RXS(ref_args_find(argc, argv, "--inviscid-entropy-flux",
+                    &inviscid_entropy_flux_pos),
+      REF_NOT_FOUND, "arg search");
 
   if (laminar_flux_pos != REF_EMPTY) {
     REF_GRID ref_grid;
@@ -564,6 +522,123 @@ int main(int argc, char *argv[]) {
     ref_free(res);
     ref_free(system);
     ref_free(dual_flux);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (uplus_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar, yplus, uplus;
+    REF_INT ldim, node;
+    ref_mpi_stopwatch_start(ref_mpi);
+    REIS(1, uplus_pos,
+         "required args: --uplus grid.meshb dist.solb [yplus=1] uplus.solb");
+    if (6 > argc) {
+      printf(
+          "required args: --uplus grid.meshb dist.solb [yplus=1] uplus.solb");
+      return REF_FAILURE;
+    }
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+        "unable to load distance in position 3");
+    REIS(1, ldim, "expected one distance");
+    ref_mpi_stopwatch_stop(ref_mpi, "read distance");
+
+    yplus = atof(argv[4]);
+    if (ref_mpi_once(ref_mpi)) printf("yplus=1 of %f\n", yplus);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RAS(ref_math_divisible(scalar[node], yplus),
+          "distance not divisible by yplus=1")
+      RSS(ref_phys_spalding_uplus(scalar[node] / yplus, &uplus), "uplus");
+      scalar[node] = uplus;
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute uplus");
+
+    if (ref_mpi_once(ref_mpi)) printf("writing uplus %s\n", argv[5]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[5]),
+        "export uplus");
+    ref_mpi_stopwatch_stop(ref_mpi, "write uplus");
+
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (inviscid_entropy_flux_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *volume;
+    REF_INT ldim;
+    REF_DBL primitive[5], tempu;
+    REF_DBL flux0[3], flux1[3], flux[3];
+    ;
+    REF_CELL ref_cell;
+    REF_NODE ref_node;
+    REF_INT i, cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_DBL total;
+    REF_DBL area, dx[3], normal[3];
+    REF_INT part;
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    REIS(1, inviscid_entropy_flux_pos,
+         "required args: --inviscid-entropy-flux grid.meshb volume.solb");
+    if (4 > argc) {
+      printf("required args: --inviscid-entropy-flux grid.meshb volume.solb");
+      return REF_FAILURE;
+    }
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading volume %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &volume, argv[3]),
+        "unable to load volume in position 3");
+    RAS(ldim >= 5, "expected a ldim of at least 5");
+    ref_mpi_stopwatch_stop(ref_mpi, "read volume");
+
+    total = 0.0;
+    ref_node = ref_grid_node(ref_grid);
+    ref_cell = ref_grid_edg(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) != part) continue;
+      for (i = 0; i < 5; i++) primitive[i] = volume[i + ldim * nodes[0]];
+      tempu = primitive[3];
+      primitive[3] = primitive[2];
+      primitive[2] = tempu;
+      RSS(ref_phys_entropy_flux(primitive, flux0), "flux0");
+      for (i = 0; i < 5; i++) primitive[1] = volume[i + ldim * nodes[1]];
+      tempu = primitive[3];
+      primitive[3] = primitive[2];
+      primitive[2] = tempu;
+      RSS(ref_phys_entropy_flux(primitive, flux1), "flux1");
+      for (i = 0; i < 3; i++) flux[i] = 0.5 * (flux0[i] + flux1[i]);
+      for (i = 0; i < 3; i++)
+        dx[i] = ref_node_xyz(ref_node, i, nodes[1]) -
+                ref_node_xyz(ref_node, i, nodes[0]);
+      normal[0] = -dx[1];
+      normal[1] = dx[0];
+      normal[2] = 0.0;
+      area = sqrt(ref_math_dot(dx, dx));
+      total += area * ref_math_dot(normal, flux);
+      /*printf("normal %f %f %f f %e %e %e\n",normal[0],
+        normal[1],normal[2],flux[0],flux[1],flux[2]);*/
+    }
+    RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_DBL_TYPE), "mpi sum");
+    if (ref_mpi_once(ref_mpi)) printf("total = %e\n", total);
+
+    ref_free(volume);
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");

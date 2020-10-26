@@ -81,6 +81,26 @@ REF_STATUS ref_phys_entropy_adjoint(REF_DBL *primitive, REF_DBL *dual) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux) {
+  REF_DBL rho, u, v, w, p, s, U;
+  REF_DBL gamma = 1.4;
+
+  rho = primitive[0];
+  u = primitive[1];
+  v = primitive[2];
+  w = primitive[3];
+  p = primitive[4];
+
+  s = log(p / pow(rho, gamma));
+  U = -rho * s / (gamma - 1.0);
+
+  flux[0] = U * u;
+  flux[1] = U * v;
+  flux[2] = U * w;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
   REF_DBL gamma = 1.4;
