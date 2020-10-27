@@ -1703,6 +1703,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
   ref_free(metric);
 
+  RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    sprintf(filename, "%s-metric.solb", in_project);
+    if (ref_mpi_once(ref_mpi)) printf("export metric to %s\n", filename);
+    RSS(ref_gather_metric(ref_grid, filename), "export metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "export metric");
+  }
+
   ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
     RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
