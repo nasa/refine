@@ -25,6 +25,7 @@ function adapt_cycle {
 	  ${inproj}_volume.solb ${inproj}_volume.tec
 
     ${src}/ref loop ${inproj} ${outproj} ${complexity} \
+	  --export-metric \
 	  ${egads} -s 5 > ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \

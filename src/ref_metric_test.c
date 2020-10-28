@@ -84,6 +84,7 @@ int main(int argc, char *argv[]) {
   REF_INT gradation_pos = REF_EMPTY;
   REF_INT cloud_pos = REF_EMPTY;
   REF_INT wake_pos = REF_EMPTY;
+  REF_INT decompose_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -132,6 +133,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--cloud", &cloud_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--wake", &wake_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--decompose", &decompose_pos), REF_NOT_FOUND,
       "arg search");
 
   if (curve_limit_pos != REF_EMPTY) {
@@ -1633,6 +1636,56 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_metric(ref_grid, argv[5]), "export scaled metric");
     ref_mpi_stopwatch_stop(ref_mpi, "dump metric");
 
+    RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "done.");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (decompose_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *decomp;
+    REF_INT ldim, node;
+
+    REIS(1, decompose_pos,
+         "required args: --decompose grid.ext metric.solb decomp.solb");
+    REIS(5, argc,
+         "required args: --decompose grid.ext metric.solb decomp.solb");
+    if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to part grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+    if (ref_mpi_once(ref_mpi)) printf("reading metric %s\n", argv[3]);
+    RSS(ref_part_metric(ref_node, argv[3]),
+        "unable to load metric in position 3");
+    ref_mpi_stopwatch_stop(ref_mpi, "read metric");
+
+    ldim = 3;
+    ref_malloc(decomp, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL m[6], d[12];
+      RSS(ref_node_metric_get(ref_node, node, m), "get");
+      RSS(ref_matrix_diag_m(m, d), "decomp");
+      RSS(ref_matrix_ascending_eig(d), "ascend");
+      decomp[0 + ldim * node] = 1.0 / sqrt(ref_matrix_eig(d, 0));
+      decomp[1 + ldim * node] = (1.0 / sqrt(ref_matrix_eig(d, 1))) /
+                                (1.0 / sqrt(ref_matrix_eig(d, 0)));
+      decomp[2 + ldim * node] =
+          atan2(ref_matrix_vec(d, 1, 0), ref_matrix_vec(d, 0, 0));
+      if (decomp[2 + ldim * node] < 0.0) decomp[2 + ldim * node] += ref_math_pi;
+    }
+
+    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+      printf("writing decomp %s\n", argv[4]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, decomp, NULL, argv[4]),
+        "export decomp");
+    ref_mpi_stopwatch_stop(ref_mpi, "dump decomp");
+
+    ref_free(decomp);
     RSS(ref_grid_free(ref_grid), "free");
     ref_mpi_stopwatch_stop(ref_mpi, "done.");
     RSS(ref_mpi_free(ref_mpi), "free");

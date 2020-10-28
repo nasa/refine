@@ -444,6 +444,75 @@ static REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_export_tec_twod_zone(REF_GRID ref_grid, FILE *file) {
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *g2l, *l2g;
+  REF_INT nface;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnode;
+  REF_DICT ref_dict;
+  REF_INT boundary_tag, boundary_index;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_dict_create(&ref_dict), "create dict");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) RSS(
+      ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+      "mark tri");
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) RSS(
+      ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+      "mark qua");
+
+  each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
+    RSS(ref_grid_tri_qua_id_nodes(ref_grid, boundary_tag, &nnode, &nface, &g2l,
+                                  &l2g),
+        "extract this boundary");
+
+    fprintf(file,
+            "zone t=\"surf%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            boundary_tag, nnode, nface, "point", "fequadrilateral");
+
+    for (node = 0; node < nnode; node++)
+      fprintf(file, " %.16e %.16e\n", ref_node_xyz(ref_node, 0, l2g[node]),
+              ref_node_xyz(ref_node, 1, l2g[node]));
+
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        nodes[3] = nodes[2];
+        for (node = 0; node < 4; node++) {
+          fprintf(file, " %d", g2l[nodes[node]] + 1);
+        }
+        fprintf(file, "\n");
+      }
+    }
+
+    ref_cell = ref_grid_qua(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        for (node = 0; node < 4; node++)
+          fprintf(file, " %d", g2l[nodes[node]] + 1);
+        fprintf(file, "\n");
+      }
+    }
+
+    ref_free(l2g);
+    ref_free(g2l);
+  }
+
+  RSS(ref_dict_free(ref_dict), "free dict");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -576,13 +645,13 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
   REF_INT *o2n, *n2o;
   REF_INT ncell, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL m[6], d[12];
-  REF_DBL x, y, z;
+  REF_DBL x, y;
   REF_DBL ex, ey;
   FILE *file;
   char viz_file[256];
-  REF_INT i, n = 36;
+  REF_INT i, n = 12;
   REF_INT e0, e1, eb;
-  REF_DBL best_y;
+  REF_DBL best_z;
   REF_DBL dt = ref_math_in_radians(360.0 / (REF_DBL)n);
   REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
 
@@ -595,7 +664,7 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
   RNS(file, "unable to open file");
 
   fprintf(file, "title=\"tecplot refine metric axes\"\n");
-  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+  fprintf(file, "variables = \"x\" \"y\"\n");
 
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   nnode = 0;
@@ -627,11 +696,11 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
     RSS(ref_matrix_diag_m(m, d), "diag");
     RSS(ref_matrix_ascending_eig(d), "sort eig");
     eb = REF_EMPTY;
-    best_y = -1.0;
+    best_z = -1.0;
     for (e0 = 0; e0 < 3; e0++) {
-      if (ABS(d[4 + 3 * e0]) > best_y) {
+      if (ABS(ref_matrix_vec(d, 2, e0)) > best_z) {
         eb = e0;
-        best_y = ABS(d[4 + 3 * e0]);
+        best_z = ABS(ref_matrix_vec(d, 2, e0));
       }
     }
     RUS(REF_EMPTY, eb, "couldn't find best y");
@@ -644,11 +713,8 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
       ey = scale * sin(i * dt) / sqrt(d[e1]);
       x = d[3 + 3 * e0] * ex + d[3 + 3 * e1] * ey;
       y = d[4 + 3 * e0] * ex + d[4 + 3 * e1] * ey;
-      z = d[5 + 3 * e0] * ex + d[5 + 3 * e1] * ey;
-      fprintf(file, " %.16e %.16e %.16e\n",
-              ref_node_xyz(ref_node, 0, n2o[node]) + x,
-              ref_node_xyz(ref_node, 1, n2o[node]) + y,
-              ref_node_xyz(ref_node, 2, n2o[node]) + z);
+      fprintf(file, " %.16e %.16e\n", ref_node_xyz(ref_node, 0, n2o[node]) + x,
+              ref_node_xyz(ref_node, 1, n2o[node]) + y);
     }
   }
 
@@ -662,7 +728,7 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
   ref_free(n2o);
   ref_free(o2n);
 
-  RSS(ref_export_tec_surf_zone(ref_grid, file), "ellipse surf");
+  RSS(ref_export_tec_twod_zone(ref_grid, file), "ellipse surf");
 
   fclose(file);
 
@@ -686,7 +752,7 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
   REF_DBL dt = ref_math_in_radians(360.0 / (REF_DBL)n);
   REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
 
-  if (REF_FALSE && ref_grid_twod(ref_grid)) {
+  if (ref_grid_twod(ref_grid)) {
     RSS(ref_export_tec_metric_ellipse_twod(ref_grid, root_filename), "2d met");
     return REF_SUCCESS;
   }
