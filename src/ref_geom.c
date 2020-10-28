@@ -1999,7 +1999,12 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
   uv0[0] = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
   uv0[1] = ref_geom_param(ref_geom, 1, geom);
 
-  RSS(ref_egads_face_curvature(ref_geom, geom, &kr0, r0, &ks0, s0), "curve");
+  if (REF_SUCCESS !=
+      ref_egads_face_curvature(ref_geom, geom, &kr0, r0, &ks0, s0)) {
+    *usable = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
   if (ABS(kr0) < curvature_is_ok && ABS(ks0) < curvature_is_ok) {
     *usable = REF_TRUE;
     return REF_SUCCESS;
