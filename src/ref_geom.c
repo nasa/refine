@@ -1999,7 +1999,12 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
   uv0[0] = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
   uv0[1] = ref_geom_param(ref_geom, 1, geom);
 
-  RSS(ref_egads_face_curvature(ref_geom, geom, &kr0, r0, &ks0, s0), "curve");
+  if (REF_SUCCESS !=
+      ref_egads_face_curvature(ref_geom, geom, &kr0, r0, &ks0, s0)) {
+    *usable = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
   if (ABS(kr0) < curvature_is_ok && ABS(ks0) < curvature_is_ok) {
     *usable = REF_TRUE;
     return REF_SUCCESS;
@@ -2518,7 +2523,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     xyz[1] = ref_node_xyz(ref_node, 1, node);
     xyz[2] = ref_node_xyz(ref_node, 2, node);
     if (ref_geom_model_loaded(ref_geom)) {
-      RSS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      RXS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), REF_FAILURE,
+          "curve");
       RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id, &(uv[2 * item]), xyz,
                             NULL),
           "eval at");
@@ -2538,7 +2544,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     xyz[1] = ref_node_xyz(ref_node, 1, node);
     xyz[2] = ref_node_xyz(ref_node, 2, node);
     if (ref_geom_model_loaded(ref_geom)) {
-      RSS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      RXS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), REF_FAILURE,
+          "curve");
       RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id,
                             &(uv[2 * (nnode_sens0 + item)]), xyz, NULL),
           "eval at");
@@ -2559,8 +2566,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       each_ref_geom_having_node(ref_geom, node, item2, geom) {
         if (ref_geom_type(ref_geom, geom) == REF_GEOM_FACE &&
             ref_geom_id(ref_geom, geom) == id) {
-          RSS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s),
-              "curve");
+          RXS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s),
+              REF_FAILURE, "curve");
         }
       }
       RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id,

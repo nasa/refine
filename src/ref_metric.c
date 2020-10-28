@@ -1096,7 +1096,8 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       RSS(ref_geom_radian_request(ref_geom, geom, &delta_radian), "drad");
       rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
       if (ref_geom_model_loaded(ref_geom)) {
-        RSS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+        RXS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s),
+            REF_FAILURE, "curve");
       } else if (ref_geom_meshlinked(ref_geom)) {
         RSS(ref_meshlink_face_curvature(ref_grid, geom, &kr, r, &ks, s),
             "curve");
