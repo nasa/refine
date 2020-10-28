@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     REF_INT i, passes;
     REF_BOOL all_done = REF_FALSE;
 
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "set up grid");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "set up grid");
 
     RSS(ref_migrate_to_balance(ref_grid), "balance");
 

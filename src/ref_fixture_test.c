@@ -81,6 +81,29 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--square", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_INT dim;
+    REIS(4, argc,
+         "required args: --square grid.ext "
+         "dim");
+    REIS(1, pos,
+         "required args: --square grid.ext "
+         "dim");
+    dim = atoi(argv[3]);
+
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, dim),
+        "args");
+    RSS(ref_export_by_extension(ref_grid, argv[2]), "tec");
+
+    RSS(ref_grid_free(ref_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   {
     REF_GRID ref_grid;
 
