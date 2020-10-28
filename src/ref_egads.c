@@ -1897,10 +1897,9 @@ REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
 
   uv[0] = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
   uv[1] = ref_geom_param(ref_geom, 1, geom);
-  RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
-                                  ref_geom_degen(ref_geom, geom), uv, kr, r, ks,
-                                  s),
-      "face curve at");
+  RAISE(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
+                                    ref_geom_degen(ref_geom, geom), uv, kr, r,
+                                    ks, s));
   return REF_SUCCESS;
 #else
   printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
@@ -1970,6 +1969,8 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
     s[2] = curvature[7];
     return REF_SUCCESS;
   } else {
+    printf("EG_curvature %d (-24 is DEGEN) faceid %d\n", egads_status, faceid);
+    *kr = 0.0;
     r[0] = 1.0;
     r[1] = 0.0;
     r[2] = 0.0;
