@@ -2232,6 +2232,7 @@ REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
   REF_INT nequ;
   REF_DBL state[5], dflux_dcons[25], direction[3];
   REF_DBL *lam, *grad_lam;
+  REF_BOOL debug_export = REF_FALSE;
 
   nequ = ldim / 2;
 
@@ -2260,9 +2261,20 @@ REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
         }
       }
     }
+
+    if (debug_export) {
+      char filename[20];
+      sprintf(filename, "gradlam%d.tec", var);
+      ref_gather_scalar_by_extension(ref_grid, 3, grad_lam, NULL, filename);
+    }
   }
   ref_free(grad_lam);
   ref_free(lam);
+
+  if (debug_export) {
+    RSS(ref_gather_scalar_by_extension(ref_grid, 5, g, NULL, "g.tec"),
+        "dump g");
+  }
 
   return REF_SUCCESS;
 }
