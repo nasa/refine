@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
   REF_INT cloud_pos = REF_EMPTY;
   REF_INT wake_pos = REF_EMPTY;
   REF_INT decompose_pos = REF_EMPTY;
+  REF_INT imply_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -135,6 +136,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--wake", &wake_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--decompose", &decompose_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--imply", &imply_pos), REF_NOT_FOUND,
       "arg search");
 
   if (curve_limit_pos != REF_EMPTY) {
@@ -1686,6 +1689,45 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "dump decomp");
 
     ref_free(decomp);
+    RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "done.");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+  
+  if (imply_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *metric;
+
+    REIS(1, imply_pos,
+         "required args: --imply grid.ext implied-metric.solb");
+    REIS(4, argc,
+         "required args: --imply grid.ext implied-metric.solb");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[2]);
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
+      ref_mpi_stopwatch_stop(ref_mpi, "part mesh");
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import mesh");
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("imply metric from mesh\n");
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_imply_from(metric, ref_grid), "imply");
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+    ref_mpi_stopwatch_stop(ref_mpi, "metric implied");
+
+    if (ref_mpi_once(ref_mpi)) printf("writing implied metric %s\n", argv[3]);
+    RSS(ref_gather_metric(ref_grid, argv[3]), "export metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "write metric");
+
     RSS(ref_grid_free(ref_grid), "free");
     ref_mpi_stopwatch_stop(ref_mpi, "done.");
     RSS(ref_mpi_free(ref_mpi), "free");
