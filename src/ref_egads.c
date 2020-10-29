@@ -1303,9 +1303,6 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
         ref_geom_degen(ref_geom, face_geom) = degen;
       }
 
-      if (ref_grid_once(ref_grid)) {
-        printf("edge id %d is degen for face id %d\n", edge + 1, face + 1);
-      }
     }
   }
 
