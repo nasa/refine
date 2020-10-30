@@ -368,11 +368,11 @@ int main(int argc, char *argv[]) {
       REF_DBL x = ref_node_xyz(ref_node, 0, node);
       REF_DBL y = ref_node_xyz(ref_node, 1, node);
       REF_DBL z = ref_node_xyz(ref_node, 2, node);
-      recon[0 + 6 * node] = 100.0 + x;
-      recon[1 + 6 * node] = 7.0;
-      recon[2 + 6 * node] = 22.0;
+      recon[0 + 6 * node] = 100.0 + x * x;
+      recon[1 + 6 * node] = 7.0 + x * y;
+      recon[2 + 6 * node] = 22.0 + x * z;
       recon[3 + 6 * node] = 200.0 + y;
-      recon[4 + 6 * node] = 15.0;
+      recon[4 + 6 * node] = 15.0 + y * z;
       recon[5 + 6 * node] = 300.0 + z;
       for (i = 0; i < 6; i++) replace[i + 6 * node] = REF_FALSE;
     }
@@ -392,11 +392,11 @@ int main(int argc, char *argv[]) {
       REF_DBL x = ref_node_xyz(ref_node, 0, node);
       REF_DBL y = ref_node_xyz(ref_node, 1, node);
       REF_DBL z = ref_node_xyz(ref_node, 2, node);
-      RWDS(100.0 + x, recon[0 + 6 * node], tol, "m11");
-      RWDS(7.0, recon[1 + 6 * node], tol, "m12");
-      RWDS(22.0, recon[2 + 6 * node], tol, "m13");
+      RWDS(100.0 + x * x, recon[0 + 6 * node], tol, "m11");
+      RWDS(7.0 + x * y, recon[1 + 6 * node], tol, "m12");
+      RWDS(22.0 + x * z, recon[2 + 6 * node], tol, "m13");
       RWDS(200.0 + y, recon[3 + 6 * node], tol, "m22");
-      RWDS(15.0, recon[4 + 6 * node], tol, "m23");
+      RWDS(15.0 + y * z, recon[4 + 6 * node], tol, "m23");
       RWDS(300.0 + z, recon[5 + 6 * node], tol, "m33");
     }
 
