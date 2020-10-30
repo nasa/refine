@@ -636,7 +636,7 @@ int main(int argc, char *argv[]) {
         RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
         break;
       case 2:
-        RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
+        RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "brick");
         break;
       default:
         THROW("case not recognized");

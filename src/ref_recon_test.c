@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *grad;
     REF_INT node;
 
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4 ), "brick");
 
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -241,7 +241,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *hessian;
     REF_INT node;
 
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4), "brick");
 
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -504,7 +504,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *hessian;
     REF_DBL tol = -1.0;
 
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4), "brick");
     ref_node = ref_grid_node(ref_grid);
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -711,7 +711,7 @@ int main(int argc, char *argv[]) {
     REF_DBL rn[3], sn[3], nn[3];
     REF_DBL dxyz[3];
     center = 6; /* two tri */
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "fixture");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4), "fixture");
     ref_node = ref_grid_node(ref_grid);
     ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);

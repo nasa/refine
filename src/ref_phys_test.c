@@ -919,6 +919,73 @@ int main(int argc, char *argv[]) {
     RWDS(jac[4], dflux_dcons[4 + i * 5], tol, "energy flux");
   }
 
+  { /* dEuler/dE */
+    REF_DBL dflux_dcons[25];
+    REF_DBL state[5], jac[5], direction[3];
+    REF_DBL tol = -1;
+
+    state[0] = 0.9000090795737405;
+    state[1] = 0.1;
+    state[2] = 0.15;
+    state[3] = 0.0;
+    state[4] = 0.5102040816326531;
+    direction[0] = 1.0;
+    direction[1] = 0.0;
+    direction[2] = 0.0;
+
+    RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "jac");
+    /*#include "ref_matrix.h"
+      ref_matrix_show_ab(5, 5, dflux_dcons);*/
+
+    jac[0] = 0;
+    jac[1] = -0.0035;
+    jac[2] = -0.015;
+    jac[3] = 0;
+    jac[4] = -0.199385696763196;
+
+    RWDS(jac[0], dflux_dcons[0 + 0 * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + 0 * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + 0 * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + 0 * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + 0 * 5], tol, "energy flux");
+
+    jac[0] = 1;
+    jac[1] = 0.16;
+    jac[2] = 0.15;
+    jac[3] = 0;
+    jac[4] = 1.99635696763196;
+
+    RWDS(jac[0], dflux_dcons[0 + 1 * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + 1 * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + 1 * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + 1 * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + 1 * 5], tol, "energy flux");
+
+    jac[0] = 0;
+    jac[1] = -0.06;
+    jac[2] = 0.1;
+    jac[3] = 0;
+    jac[4] = -0.006;
+
+    RWDS(jac[0], dflux_dcons[0 + 2 * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + 2 * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + 2 * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + 2 * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + 2 * 5], tol, "energy flux");
+
+    jac[0] = 0;
+    jac[1] = 0.4;
+    jac[2] = 0.0;
+    jac[3] = 0;
+    jac[4] = 0.14;
+
+    RWDS(jac[0], dflux_dcons[0 + 4 * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + 4 * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + 4 * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + 4 * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + 4 * 5], tol, "energy flux");
+  }
+
   { /* Couette laminar flux */
     REF_DBL state[5], gradient[15], direction[3];
     REF_DBL flux[5];

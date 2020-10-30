@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (!ref_mpi_para(ref_mpi)) {
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "twod brick");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4), "twod brick");
     RSS(ref_validation_twod_outward_normal(ref_grid),
         "twod tri outward normal");
     RSS(ref_grid_free(ref_grid), "free");
