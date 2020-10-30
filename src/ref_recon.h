@@ -48,6 +48,8 @@ REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
 
 REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
                                         REF_BOOL *replace, REF_INT ldim);
+REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid, REF_DBL *recon,
+                                        REF_BOOL *replace, REF_INT ldim);
 
 /* for testing */
 REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid, REF_DBL *hessian);
