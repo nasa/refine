@@ -1270,8 +1270,8 @@ static REF_STATUS mask_strong_bc_adjoint(REF_GRID ref_grid,
   REF_BOOL *replace;
   ref_malloc(replace, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
   RSS(ref_phys_mask_strong_bcs(ref_grid, ref_dict_bcs, replace, ldim), "mask");
-  RSS(ref_recon_extrapolate_zeroth(ref_grid, prim_dual, replace, ldim),
-      "extrapolate zeroth order");
+  RSS(ref_recon_extrapolate_kexact(ref_grid, prim_dual, replace, ldim),
+      "extrapolate kexact");
   ref_free(replace);
 
   return REF_SUCCESS;
