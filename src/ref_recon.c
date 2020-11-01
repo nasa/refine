@@ -329,6 +329,78 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_recon_kexact_center(REF_DBL *xyz, REF_CLOUD ref_cloud,
+                                          REF_DBL *center) {
+  REF_DBL geom[10], ab[110];
+  REF_DBL dx, dy, dz;
+  REF_DBL *a, *q, *r;
+  REF_INT m, n;
+  REF_INT item, i, j;
+  REF_BOOL verbose = REF_FALSE;
+
+  /* solve A with QR factorization size m x n */
+  m = ref_cloud_n(ref_cloud);
+  n = 10;
+  if (verbose) printf("m %d at %f %f %f\n", m, xyz[0], xyz[1], xyz[2]);
+  if (m < n) {           /* underdetermined, will end badly */
+    return REF_DIV_ZERO; /* signal cloud growth required */
+  }
+  ref_malloc(a, m * n, REF_DBL);
+  ref_malloc(q, m * n, REF_DBL);
+  ref_malloc(r, n * n, REF_DBL);
+  i = 0;
+  each_ref_cloud_item(ref_cloud, item) {
+    dx = ref_cloud_aux(ref_cloud, 0, item) - xyz[0];
+    dy = ref_cloud_aux(ref_cloud, 1, item) - xyz[1];
+    dz = ref_cloud_aux(ref_cloud, 2, item) - xyz[2];
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    geom[9] = 1.0;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
+    }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
+    i++;
+  }
+  REIS(m, i, "A row miscount");
+  RSS(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr");
+  if (verbose) RSS(ref_matrix_show_aqr(m, n, a, q, r), "show qr");
+  for (i = 0; i < n * (n + 1); i++) ab[i] = 0.0;
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < n; j++) {
+      ab[i + n * j] += r[i + n * j];
+    }
+  }
+  i = 0;
+  each_ref_cloud_item(ref_cloud, item) {
+    for (j = 0; j < n; j++) {
+      ab[j + n * n] += q[i + m * j] * ref_cloud_aux(ref_cloud, 3, item);
+    }
+    i++;
+  }
+  REIS(m, i, "b row miscount");
+  if (verbose) RSS(ref_matrix_show_ab(n, n + 1, ab), "show");
+  RAISE(ref_matrix_solve_ab(n, n + 1, ab));
+  if (verbose) RSS(ref_matrix_show_ab(n, n + 1, ab), "show");
+  j = n;
+  i = n - 1;
+  *center = ab[i + n * j];
+
+  ref_free(r);
+  ref_free(q);
+  ref_free(a);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_recon_local_immediate_cloud(REF_CLOUD *one_layer,
                                                   REF_NODE ref_node,
                                                   REF_CELL ref_cell,
@@ -544,6 +616,7 @@ static REF_STATUS ref_recon_grow_cloud_one_layer(REF_CLOUD ref_cloud,
   each_ref_cloud_global(copy, pivot_index, global_pivot) {
     ref_status = ref_node_local(ref_node, global_pivot, &local_pivot);
     if (REF_NOT_FOUND == ref_status) {
+      printf("global %ld not found\n", global_pivot);
       continue;
     } else {
       RSS(ref_status, "local search");
@@ -737,6 +810,89 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
     printf(" %d remain\n", remain);
     REF_WHERE("untouched boundary nodes remain");
   }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_recon_local_immediate_replace_cloud(
+    REF_CLOUD *one_layer, REF_NODE ref_node, REF_CELL ref_cell, REF_DBL *recon,
+    REF_BOOL *replace, REF_INT ldim, REF_INT i) {
+  REF_INT node, item, cell, cell_node, target;
+  REF_GLOB global;
+  REF_DBL xyzs[4];
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      each_ref_cell_having_node(ref_cell, node, item, cell) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          target = ref_cell_c2n(ref_cell, cell_node, cell);
+          if (!replace[i + ldim * target]) {
+            global = ref_node_global(ref_node, target);
+            xyzs[0] = ref_node_xyz(ref_node, 0, target);
+            xyzs[1] = ref_node_xyz(ref_node, 1, target);
+            xyzs[2] = ref_node_xyz(ref_node, 2, target);
+            xyzs[3] = recon[i + ldim * target];
+            RSS(ref_cloud_store(one_layer[node], global, xyzs),
+                "store cloud stencil");
+          }
+        }
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid, REF_DBL *recon,
+                                        REF_BOOL *replace, REF_INT ldim) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT i, node;
+  REF_CLOUD *one_layer, ref_cloud;
+  REF_DBL center;
+  REF_STATUS status;
+  REF_INT layer;
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+
+  RSS(ref_node_ghost_int(ref_node, replace, ldim), "update ghosts");
+  RSS(ref_node_ghost_dbl(ref_node, recon, ldim), "update ghosts");
+
+  for (i = 0; i < ldim; i++) {
+    ref_malloc_init(one_layer, ref_node_max(ref_node), REF_CLOUD, NULL);
+    each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_cloud_create(&(one_layer[node]), 4), "cloud storage");
+    }
+    RSS(ref_recon_local_immediate_replace_cloud(one_layer, ref_node, ref_cell,
+                                                recon, replace, ldim, i),
+        "fill");
+    RSS(ref_recon_ghost_cloud(one_layer, ref_node), "fill ghosts");
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_owned(ref_node, node) && replace[i + ldim * node]) {
+        RSS(ref_cloud_deep_copy(&ref_cloud, one_layer[node]),
+            "create ref_cloud");
+        status = REF_INVALID;
+        for (layer = 2; status != REF_SUCCESS && layer <= 8; layer++) {
+          status = ref_recon_kexact_center(ref_node_xyz_ptr(ref_node, node),
+                                           ref_cloud, &center);
+          if (REF_SUCCESS == status) {
+            recon[i + ldim * node] = center;
+            replace[i + ldim * node] = REF_FALSE;
+          } else {
+            RSS(ref_recon_grow_cloud_one_layer(ref_cloud, one_layer, ref_node),
+                "grow");
+          }
+        }
+        RSS(ref_cloud_free(ref_cloud), "free ref_cloud");
+      }
+    }
+
+    each_ref_node_valid_node(ref_node, node) {
+      ref_cloud_free(one_layer[node]); /* no-op for null */
+    }
+    ref_free(one_layer);
+  }
+
+  RSS(ref_node_ghost_int(ref_node, replace, ldim), "update ghosts");
+  RSS(ref_node_ghost_dbl(ref_node, recon, ldim), "update ghosts");
+
+  RSS(ref_recon_extrapolate_zeroth(ref_grid, recon, replace, ldim), "zero");
 
   return REF_SUCCESS;
 }

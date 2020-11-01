@@ -173,7 +173,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *grad;
     REF_INT node;
 
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4 ), "brick");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "brick");
 
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -241,7 +241,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *hessian;
     REF_INT node;
 
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4), "brick");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "brick");
 
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -341,6 +341,63 @@ int main(int argc, char *argv[]) {
       RWDS(200.0, recon[3 + 6 * node], tol, "m22");
       RWDS(15.0, recon[4 + 6 * node], tol, "m23");
       RWDS(300.0, recon[5 + 6 * node], tol, "m33");
+    }
+
+    ref_free(replace);
+    ref_free(recon);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* kexact extrapolate boundary averaging constant recon */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *recon;
+    REF_BOOL *replace;
+    REF_INT node;
+    REF_INT i;
+
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_node = ref_grid_node(ref_grid);
+
+    ref_malloc(recon, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(replace, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_INT);
+
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL x = ref_node_xyz(ref_node, 0, node);
+      REF_DBL y = ref_node_xyz(ref_node, 1, node);
+      REF_DBL z = ref_node_xyz(ref_node, 2, node);
+      recon[0 + 6 * node] = 100.0 + x * x;
+      recon[1 + 6 * node] = 7.0 + x * y;
+      recon[2 + 6 * node] = 22.0 + x * z;
+      recon[3 + 6 * node] = 200.0 + y;
+      recon[4 + 6 * node] = 15.0 + y * z;
+      recon[5 + 6 * node] = 300.0 + z;
+      for (i = 0; i < 6; i++) replace[i + 6 * node] = REF_FALSE;
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_xyz(ref_node, 0, node) < 0.01) {
+        for (i = 0; i < 6; i++) {
+          recon[i + 6 * node] = 0.0;
+          replace[i + 6 * node] = REF_TRUE;
+        }
+      }
+    }
+
+    RSS(ref_recon_extrapolate_kexact(ref_grid, recon, replace, 6),
+        "bound extrap");
+
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL x = ref_node_xyz(ref_node, 0, node);
+      REF_DBL y = ref_node_xyz(ref_node, 1, node);
+      REF_DBL z = ref_node_xyz(ref_node, 2, node);
+      RWDS(100.0 + x * x, recon[0 + 6 * node], tol, "m11");
+      RWDS(7.0 + x * y, recon[1 + 6 * node], tol, "m12");
+      RWDS(22.0 + x * z, recon[2 + 6 * node], tol, "m13");
+      RWDS(200.0 + y, recon[3 + 6 * node], tol, "m22");
+      RWDS(15.0 + y * z, recon[4 + 6 * node], tol, "m23");
+      RWDS(300.0 + z, recon[5 + 6 * node], tol, "m33");
     }
 
     ref_free(replace);
@@ -504,7 +561,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *hessian;
     REF_DBL tol = -1.0;
 
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4), "brick");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "brick");
     ref_node = ref_grid_node(ref_grid);
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -711,7 +768,7 @@ int main(int argc, char *argv[]) {
     REF_DBL rn[3], sn[3], nn[3];
     REF_DBL dxyz[3];
     center = 6; /* two tri */
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4), "fixture");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "fixture");
     ref_node = ref_grid_node(ref_grid);
     ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
