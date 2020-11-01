@@ -1302,7 +1302,6 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
         }
         ref_geom_degen(ref_geom, face_geom) = degen;
       }
-
     }
   }
 
@@ -1929,6 +1928,7 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
 
   egads_status = EG_curvature(object, uv, curvature);
+  /* classic marked degen where u or v collapses to a point, move tangent */
   if (0 != degen || EGADS_DEGEN == egads_status) {
     REF_DBL du, dv;
     ego ref, *pchldrn;
@@ -1946,7 +1946,36 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
          EG_getTopology(object, &ref, &oclass, &mtype, uv_range, &nchild,
                         &pchldrn, &psens),
          "EG topo face");
+    /* move toward the center along the uv with largest dervative norm */
     if (du > dv) {
+      params[0] =
+          (1.0 - shift) * params[0] + shift * 0.5 * (uv_range[0] + uv_range[1]);
+    } else {
+      params[1] =
+          (1.0 - shift) * params[1] + shift * 0.5 * (uv_range[2] + uv_range[3]);
+    }
+    egads_status = EG_curvature(object, params, curvature);
+  }
+  /* line or internal degen, move normal */
+  if (EGADS_DEGEN == egads_status) {
+    REF_DBL du, dv;
+    ego ref, *pchldrn;
+    int oclass, mtype, nchild, *psens;
+    double uv_range[4];
+    double params[2];
+    double eval[18];
+    REF_DBL shift = 1.0e-2;
+    params[0] = uv[0];
+    params[1] = uv[1];
+    REIS(EGADS_SUCCESS, EG_evaluate(object, params, eval), "eval derivs");
+    du = sqrt(ref_math_dot(&(eval[3]), &(eval[3])));
+    dv = sqrt(ref_math_dot(&(eval[6]), &(eval[6])));
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, uv_range, &nchild,
+                        &pchldrn, &psens),
+         "EG topo face");
+    /* move toward the center along the uv with largest dervative norm */
+    if (du <= dv) {
       params[0] =
           (1.0 - shift) * params[0] + shift * 0.5 * (uv_range[0] + uv_range[1]);
     } else {
@@ -1966,7 +1995,8 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
     s[2] = curvature[7];
     return REF_SUCCESS;
   } else {
-    printf("EG_curvature %d (-24 is DEGEN) faceid %d\n", egads_status, faceid);
+    printf("EG_curvature %d (-24 is DEGEN) faceid %d u %f v %f\n", egads_status,
+           faceid, uv[0], uv[1]);
     *kr = 0.0;
     r[0] = 1.0;
     r[1] = 0.0;
