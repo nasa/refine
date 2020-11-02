@@ -2020,6 +2020,12 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "buffer");
   }
 
+  RXS(ref_args_find(argc, argv, "--uniform", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    RSS(ref_metric_parse(metric, ref_grid, argc, argv), "parse uniform");
+  }
+
   RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
   if (ref_mpi_once(ref_mpi))
     printf("actual complexity %e\n", current_complexity);
