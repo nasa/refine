@@ -648,6 +648,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  /* src/pde/NS/OutputEuler2D.h src/pde/NS/OutputNavierStokes2D.h */
   if (entropy_output_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *volume;
@@ -670,6 +671,26 @@ int main(int argc, char *argv[]) {
         "unable to load volume in position 3");
     RAS(ldim >= 5, "expected a ldim of at least 5");
     ref_mpi_stopwatch_stop(ref_mpi, "read volume");
+
+    {
+      REF_NODE ref_node = ref_grid_node(ref_grid);
+      REF_CELL ref_cell = ref_grid_edg(ref_grid);
+      REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        REF_DBL dx[2], norm[2];
+        dx[0] = ref_node_xyz(ref_node, 0, nodes[1]) -
+                ref_node_xyz(ref_node, 0, nodes[0]);
+        dx[1] = ref_node_xyz(ref_node, 1, nodes[1]) -
+                ref_node_xyz(ref_node, 1, nodes[0]);
+        /* outward */
+        norm[0] = dx[1];
+        norm[1] = -dx[0];
+        printf("x %6.3f y %6.3f nx %6.3f ny %6.3f\n",
+               ref_node_xyz(ref_node, 0, nodes[0]),
+               ref_node_xyz(ref_node, 1, nodes[0]), norm[0], norm[1]);
+      }
+    }
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
