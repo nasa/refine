@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
   REF_INT cont_res_pos = REF_EMPTY;
   REF_INT uplus_pos = REF_EMPTY;
   REF_INT inviscid_entropy_flux_pos = REF_EMPTY;
+  REF_INT entropy_output_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -61,6 +62,8 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--inviscid-entropy-flux",
                     &inviscid_entropy_flux_pos),
+      REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--entropy-output", &entropy_output_pos),
       REF_NOT_FOUND, "arg search");
 
   if (laminar_flux_pos != REF_EMPTY) {
@@ -581,7 +584,6 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL primitive[5], tempu;
     REF_DBL flux0[3], flux1[3], flux[3];
-    ;
     REF_CELL ref_cell;
     REF_NODE ref_node;
     REF_INT i, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -639,6 +641,35 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("total = %e\n", total);
 
     ref_free(volume);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (entropy_output_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *volume;
+    REF_INT ldim;
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    REIS(1, entropy_output_pos,
+         "required args: --entropy-output grid.meshb volume.solb");
+    if (4 > argc) {
+      printf("required args: --entropy-output grid.meshb volume.solb");
+      return REF_FAILURE;
+    }
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading volume %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &volume, argv[3]),
+        "unable to load volume in position 3");
+    RAS(ldim >= 5, "expected a ldim of at least 5");
+    ref_mpi_stopwatch_stop(ref_mpi, "read volume");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
