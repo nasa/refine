@@ -41,7 +41,6 @@ int main(int argc, char *argv[]) {
   REF_INT mask_pos = REF_EMPTY;
   REF_INT cont_res_pos = REF_EMPTY;
   REF_INT uplus_pos = REF_EMPTY;
-  REF_INT inviscid_entropy_flux_pos = REF_EMPTY;
   REF_INT entropy_output_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
@@ -60,9 +59,6 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--uplus", &uplus_pos), REF_NOT_FOUND,
       "arg search");
-  RXS(ref_args_find(argc, argv, "--inviscid-entropy-flux",
-                    &inviscid_entropy_flux_pos),
-      REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--entropy-output", &entropy_output_pos),
       REF_NOT_FOUND, "arg search");
 
@@ -578,7 +574,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (inviscid_entropy_flux_pos != REF_EMPTY) {
+  /* src/pde/NS/OutputEuler2D.h src/pde/NS/OutputNavierStokes2D.h */
+  if (entropy_output_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *volume;
     REF_INT ldim;
@@ -592,10 +589,10 @@ int main(int argc, char *argv[]) {
     REF_INT part;
 
     ref_mpi_stopwatch_start(ref_mpi);
-    REIS(1, inviscid_entropy_flux_pos,
-         "required args: --inviscid-entropy-flux grid.meshb volume.solb");
+    REIS(1, entropy_output_pos,
+         "required args: --entropy-output grid.meshb volume.solb");
     if (4 > argc) {
-      printf("required args: --inviscid-entropy-flux grid.meshb volume.solb");
+      printf("required args: --entropy-output grid.meshb volume.solb");
       return REF_FAILURE;
     }
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
@@ -641,56 +638,6 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("total = %e\n", total);
 
     ref_free(volume);
-
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
-
-  /* src/pde/NS/OutputEuler2D.h src/pde/NS/OutputNavierStokes2D.h */
-  if (entropy_output_pos != REF_EMPTY) {
-    REF_GRID ref_grid;
-    REF_DBL *volume;
-    REF_INT ldim;
-
-    ref_mpi_stopwatch_start(ref_mpi);
-    REIS(1, entropy_output_pos,
-         "required args: --entropy-output grid.meshb volume.solb");
-    if (4 > argc) {
-      printf("required args: --entropy-output grid.meshb volume.solb");
-      return REF_FAILURE;
-    }
-    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
-    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
-        "unable to load target grid in position 2");
-    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
-
-    if (ref_mpi_once(ref_mpi)) printf("reading volume %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &volume, argv[3]),
-        "unable to load volume in position 3");
-    RAS(ldim >= 5, "expected a ldim of at least 5");
-    ref_mpi_stopwatch_stop(ref_mpi, "read volume");
-
-    {
-      REF_NODE ref_node = ref_grid_node(ref_grid);
-      REF_CELL ref_cell = ref_grid_edg(ref_grid);
-      REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-
-      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-        REF_DBL dx[2], norm[2];
-        dx[0] = ref_node_xyz(ref_node, 0, nodes[1]) -
-                ref_node_xyz(ref_node, 0, nodes[0]);
-        dx[1] = ref_node_xyz(ref_node, 1, nodes[1]) -
-                ref_node_xyz(ref_node, 1, nodes[0]);
-        /* outward */
-        norm[0] = dx[1];
-        norm[1] = -dx[0];
-        printf("x %6.3f y %6.3f nx %6.3f ny %6.3f\n",
-               ref_node_xyz(ref_node, 0, nodes[0]),
-               ref_node_xyz(ref_node, 1, nodes[0]), norm[0], norm[1]);
-      }
-    }
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
