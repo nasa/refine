@@ -666,17 +666,20 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *volume;
     REF_INT ldim;
-    REF_DBL primitive[5];
-    REF_DBL flux0[3], flux1[3], flux[3];
+    REF_DBL primitive[5], primitive0[5], primitive1[5];
+    REF_DBL dual[5], gradient[15];
+    REF_DBL flux0[3], flux1[3], flux[3], laminar_flux[5];
     REF_CELL ref_cell;
     REF_NODE ref_node;
     REF_INT i, cell, nodes[REF_CELL_MAX_SIZE_PER];
-    REF_DBL inviscid_total;
+    REF_DBL inviscid_total, viscous_boundary;
     REF_DBL area, dx[3], normal[3];
     REF_INT part;
     REF_DBL *grad, *prim, *onegrad;
     REF_INT dir, node;
     REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
+    REF_DBL mach = 0.5, re = 1000.0, temperature = 288.15, turb = -1.0;
+      
 
     ref_mpi_stopwatch_start(ref_mpi);
     REIS(1, entropy_output_pos,
@@ -706,7 +709,7 @@ int main(int argc, char *argv[]) {
       if (ref_mpi_rank(ref_mpi) != part) continue;
       RSS(xy_primitive(ldim, volume, nodes[0], primitive), "prim 0");
       RSS(ref_phys_entropy_flux(primitive, flux0), "flux0");
-      RSS(xy_primitive(ldim, volume, nodes[1], primitive), "prim 0");
+      RSS(xy_primitive(ldim, volume, nodes[1], primitive), "prim 1");
       RSS(ref_phys_entropy_flux(primitive, flux1), "flux1");
       for (i = 0; i < 3; i++) flux[i] = 0.5 * (flux0[i] + flux1[i]);
       for (i = 0; i < 3; i++)
@@ -743,6 +746,36 @@ int main(int argc, char *argv[]) {
     }
     ref_free(onegrad);
     ref_free(prim);
+
+    viscous_boundary = 0.0;
+    ref_node = ref_grid_node(ref_grid);
+    ref_cell = ref_grid_edg(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) != part) continue;
+      RSS(xy_primitive(ldim, volume, nodes[0], primitive0), "prim 0");
+      RSS(xy_primitive(ldim, volume, nodes[1], primitive1), "prim 1");
+      for (i = 0; i < 5; i++) primitive[i] = 0.5 * (primitive0[i] + primitive1[i]);
+      /* dual is same as v, symmetric */
+      RSS(ref_phys_entropy_adjoint(primitive, dual), "flux1");
+      
+      for (i = 0; i < 3; i++)
+        dx[i] = ref_node_xyz(ref_node, i, nodes[1]) -
+                ref_node_xyz(ref_node, i, nodes[0]);
+      normal[0] = dx[1];
+      normal[1] = -dx[0];
+      normal[2] = 0.0;
+      area = sqrt(ref_math_dot(dx, dx));
+      RSS(ref_math_normalize(normal), "norm");
+      for (i = 0; i < 15; i++) gradient[i] = grad[i + 15 * nodes[0]]+grad[i + 15 * nodes[1]];
+      RSS(ref_phys_viscous(primitive, gradient, turb, mach, re, temperature,
+			   normal, laminar_flux),
+            "laminar");
+      for (i = 0; i < 5; i++)
+	viscous_boundary += area * dual[i]*laminar_flux[i];
+    }
+    RSS(ref_mpi_allsum(ref_mpi, &viscous_boundary, 1, REF_DBL_TYPE), "mpi sum");
+    if (ref_mpi_once(ref_mpi)) printf("viscous boundary = %e\n", viscous_boundary);
 
     ref_free(volume);
 
