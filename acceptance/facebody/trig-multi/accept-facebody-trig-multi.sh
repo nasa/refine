@@ -33,8 +33,8 @@ function adapt_cycle {
     ${src}/ref_gather_test ${outproj}.meshb \
 	  ${outproj}_volume.solb ${outproj}_volume.tec
 
-    ${src}/ref_phys_test --entropy-output \
-	  ${outproj}.meshb ${outproj}_volume.solb
+#    ${src}/ref_phys_test --entropy-output \
+#	  ${outproj}.meshb ${outproj}_volume.solb
 }
 
 serveCSM -batch square.csm > square-servecsm.txt
