@@ -674,6 +674,9 @@ int main(int argc, char *argv[]) {
     REF_DBL inviscid_total;
     REF_DBL area, dx[3], normal[3];
     REF_INT part;
+    REF_DBL *grad, *prim, *onegrad;
+    REF_INT dir, node;
+    REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
 
     ref_mpi_stopwatch_start(ref_mpi);
     REIS(1, entropy_output_pos,
@@ -721,6 +724,25 @@ int main(int argc, char *argv[]) {
     }
     RSS(ref_mpi_allsum(ref_mpi, &inviscid_total, 1, REF_DBL_TYPE), "mpi sum");
     if (ref_mpi_once(ref_mpi)) printf("inviscid total = %e\n", inviscid_total);
+
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct gradient\n");
+    ref_malloc(grad, 15 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(prim, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(onegrad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    for (i = 0; i < 5; i++) {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        RSS(xy_primitive(ldim, volume, node, primitive), "prim 0");
+        prim[node] = primitive[i];
+      }
+      RSS(ref_recon_gradient(ref_grid, prim, onegrad, recon), "grad_lam");
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        for (dir = 0; dir < 3; dir++) {
+          grad[dir + 3 * i + 15 * node] = onegrad[dir + 3 * node];
+        }
+      }
+    }
+    ref_free(onegrad);
+    ref_free(prim);
 
     ref_free(volume);
 
