@@ -118,6 +118,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_inspect(ref_grid), "inspection");
 
     if (ref_grid_twod(ref_grid)) {
+      RSS(ref_validation_twod_orientation(ref_grid), "twod tri orientation");
     } else {
       printf("validate.\n");
       RSS(ref_validation_volume_status(ref_grid), "tet volume grid");
@@ -129,7 +130,7 @@ int main(int argc, char *argv[]) {
 
   if (!ref_mpi_para(ref_mpi)) {
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "twod brick");
-    RSS(ref_validation_twod_orientation(ref_grid), "twod tri outward normal");
+    RSS(ref_validation_twod_orientation(ref_grid), "twod tri orientation");
     RSS(ref_grid_free(ref_grid), "free");
   }
 
