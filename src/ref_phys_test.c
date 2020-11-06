@@ -62,6 +62,31 @@ static REF_STATUS norm_check_square(REF_DBL x, REF_DBL y, REF_DBL *n) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_phys_flipper(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL wrong_orientation;
+  REF_INT right, wrong;
+
+  right = 0;
+  wrong = 0;
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &wrong_orientation),
+        "valid");
+    if (wrong_orientation) {
+      ref_cell_c2n(ref_cell, 0, cell) = nodes[1];
+      ref_cell_c2n(ref_cell, 1, cell) = nodes[0];
+      wrong++;
+    } else {
+      right++;
+    }
+  }
+  printf("tri %d right %d wrong (per EGADS)\n", right, wrong);
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
@@ -628,6 +653,8 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
+    RSS(ref_phys_flipper(ref_grid), "flip it");
+
     if (ref_mpi_once(ref_mpi)) printf("reading volume %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &volume, argv[3]),
         "unable to load volume in position 3");
@@ -663,8 +690,6 @@ int main(int argc, char *argv[]) {
                             ref_node_xyz(ref_node, 1, nodes[0]), normal),
           "square norm");
       total += area * ref_math_dot(normal, flux);
-      /*printf("normal %f %f %f f %e %e %e\n",normal[0],
-        normal[1],normal[2],flux[0],flux[1],flux[2]);*/
     }
     RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_DBL_TYPE), "mpi sum");
     if (ref_mpi_once(ref_mpi)) printf("total = %e\n", total);
