@@ -762,6 +762,7 @@ int main(int argc, char *argv[]) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) != part) continue;
+      if (1 == nodes[2] || 4 == nodes[2]) continue;
       RSS(xy_primitive(ldim, volume, nodes[0], primitive), "prim 0");
       RSS(ref_phys_entropy_flux(primitive, flux0), "flux0");
       RSS(xy_primitive(ldim, volume, nodes[1], primitive), "prim 1");
@@ -809,6 +810,7 @@ int main(int argc, char *argv[]) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) != part) continue;
+      if (1 == nodes[2] || 4 == nodes[2]) continue;
       RSS(xy_primitive(ldim, volume, nodes[0], primitive0), "prim 0");
       RSS(xy_primitive(ldim, volume, nodes[1], primitive1), "prim 1");
       for (i = 0; i < 5; i++)
