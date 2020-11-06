@@ -67,22 +67,21 @@ static REF_STATUS ref_phys_flipper(REF_GRID ref_grid) {
   REF_CELL tri_cell = ref_grid_tri(ref_grid);
   REF_CELL edg_cell = ref_grid_edg(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_BOOL wrong_orientation;
   REF_INT right, wrong;
   REF_INT node0, node1, ncell, cell_list[1];
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL normal[3];
 
   right = 0;
   wrong = 0;
   each_ref_cell_valid_cell_with_nodes(tri_cell, cell, nodes) {
-    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &wrong_orientation),
-        "valid");
-    if (wrong_orientation) {
+    RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm inside of area");
+    if (normal[2] < 0.0) {
+      right++;
+    } else {
       ref_cell_c2n(tri_cell, 0, cell) = nodes[1];
       ref_cell_c2n(tri_cell, 1, cell) = nodes[0];
       wrong++;
-    } else {
-      right++;
     }
   }
   printf("tri %d right %d wrong (per EGADS)\n", right, wrong);
