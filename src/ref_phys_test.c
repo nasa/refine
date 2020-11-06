@@ -34,6 +34,62 @@
 #include "ref_part.h"
 #include "ref_recon.h"
 
+static REF_STATUS ref_phys_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
+                                          REF_DBL *scalar, REF_DBL *gradient) {
+  REF_DBL area2, dot, side_length;
+  REF_DBL grad1[3], grad2[3], edge02[3], edge01[3], norm02[3], norm01[3];
+  REF_INT i;
+  gradient[0] = 0.0;
+  gradient[1] = 0.0;
+  gradient[2] = 0.0;
+
+  RSS(ref_node_tri_area(ref_node, nodes, &area2), "area");
+  area2 *= 2;
+
+  for (i = 0; i < 3; i++)
+    edge01[i] = ref_node_xyz(ref_node, i, nodes[1]) -
+                ref_node_xyz(ref_node, i, nodes[0]);
+  for (i = 0; i < 3; i++)
+    edge02[i] = ref_node_xyz(ref_node, i, nodes[2]) -
+                ref_node_xyz(ref_node, i, nodes[0]);
+
+  for (i = 0; i < 3; i++) norm01[i] = edge01[i];
+  for (i = 0; i < 3; i++) norm02[i] = edge02[i];
+  RSS(ref_math_normalize(norm01), "normalize zero length n0 -> n1");
+  RSS(ref_math_normalize(norm02), "normalize zero length n0 -> n2");
+
+  dot = ref_math_dot(edge01, norm02);
+  side_length = sqrt(ref_math_dot(edge02, edge02));
+  for (i = 0; i < 3; i++) grad1[i] = edge01[i] - dot * norm02[i];
+  RSS(ref_math_normalize(grad1), "normalize zero length grad1");
+  for (i = 0; i < 3; i++) grad1[i] *= side_length;
+
+  dot = ref_math_dot(edge02, norm01);
+  side_length = sqrt(ref_math_dot(edge01, edge01));
+  for (i = 0; i < 3; i++) grad2[i] = edge02[i] - dot * norm01[i];
+  RSS(ref_math_normalize(grad2), "normalize zero length grad2");
+  for (i = 0; i < 3; i++) grad2[i] *= side_length;
+
+  for (i = 0; i < 3; i++)
+    gradient[i] =
+        (scalar[1] - scalar[0]) * grad1[i] + (scalar[2] - scalar[0]) * grad2[i];
+
+  if (ref_math_divisible(gradient[0], area2) &&
+      ref_math_divisible(gradient[1], area2) &&
+      ref_math_divisible(gradient[2], area2)) {
+    gradient[0] /= area2;
+    gradient[1] /= area2;
+    gradient[2] /= area2;
+  } else {
+    gradient[0] = 0.0;
+    gradient[1] = 0.0;
+    gradient[2] = 0.0;
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS xy_primitive(REF_INT ldim, REF_DBL *volume, REF_INT node,
                                REF_DBL *primitive) {
   REF_DBL tempu;
@@ -666,20 +722,19 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *volume;
     REF_INT ldim;
-    REF_DBL primitive[5], primitive0[5], primitive1[5];
-    REF_DBL dual[5], gradient[15];
+    REF_DBL primitive[5], primitive0[5], primitive1[5], primitive2[5];
+    REF_DBL dual[5], gradient[15], tri_grad[3], scalar[3];
     REF_DBL flux0[3], flux1[3], flux[3], laminar_flux[5];
     REF_CELL ref_cell;
     REF_NODE ref_node;
     REF_INT i, cell, nodes[REF_CELL_MAX_SIZE_PER];
-    REF_DBL inviscid_total, viscous_boundary;
+    REF_DBL inviscid_total, viscous_boundary, viscous_interior;
     REF_DBL area, dx[3], normal[3];
     REF_INT part;
     REF_DBL *grad, *prim, *onegrad;
     REF_INT dir, node;
     REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
     REF_DBL mach = 0.5, re = 1000.0, temperature = 288.15, turb = -1.0;
-      
 
     ref_mpi_stopwatch_start(ref_mpi);
     REIS(1, entropy_output_pos,
@@ -755,10 +810,11 @@ int main(int argc, char *argv[]) {
       if (ref_mpi_rank(ref_mpi) != part) continue;
       RSS(xy_primitive(ldim, volume, nodes[0], primitive0), "prim 0");
       RSS(xy_primitive(ldim, volume, nodes[1], primitive1), "prim 1");
-      for (i = 0; i < 5; i++) primitive[i] = 0.5 * (primitive0[i] + primitive1[i]);
+      for (i = 0; i < 5; i++)
+        primitive[i] = 0.5 * (primitive0[i] + primitive1[i]);
       /* dual is same as v, symmetric */
       RSS(ref_phys_entropy_adjoint(primitive, dual), "flux1");
-      
+
       for (i = 0; i < 3; i++)
         dx[i] = ref_node_xyz(ref_node, i, nodes[1]) -
                 ref_node_xyz(ref_node, i, nodes[0]);
@@ -767,15 +823,49 @@ int main(int argc, char *argv[]) {
       normal[2] = 0.0;
       area = sqrt(ref_math_dot(dx, dx));
       RSS(ref_math_normalize(normal), "norm");
-      for (i = 0; i < 15; i++) gradient[i] = grad[i + 15 * nodes[0]]+grad[i + 15 * nodes[1]];
+      for (i = 0; i < 15; i++)
+        gradient[i] = 0.5 * (grad[i + 15 * nodes[0]] + grad[i + 15 * nodes[1]]);
       RSS(ref_phys_viscous(primitive, gradient, turb, mach, re, temperature,
-			   normal, laminar_flux),
-            "laminar");
+                           normal, laminar_flux),
+          "laminar");
       for (i = 0; i < 5; i++)
-	viscous_boundary -= area * dual[i]*laminar_flux[i];
+        viscous_boundary -= area * dual[i] * laminar_flux[i];
     }
     RSS(ref_mpi_allsum(ref_mpi, &viscous_boundary, 1, REF_DBL_TYPE), "mpi sum");
-    if (ref_mpi_once(ref_mpi)) printf("viscous boundary = %e\n", viscous_boundary);
+    if (ref_mpi_once(ref_mpi))
+      printf("viscous boundary = %e\n", viscous_boundary);
+
+    ref_free(grad);
+
+    viscous_interior = 0.0;
+    ref_node = ref_grid_node(ref_grid);
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) != part) continue;
+      RSS(xy_primitive(ldim, volume, nodes[0], primitive0), "prim 0");
+      RSS(xy_primitive(ldim, volume, nodes[1], primitive1), "prim 1");
+      RSS(xy_primitive(ldim, volume, nodes[2], primitive2), "prim 1");
+      for (i = 0; i < 5; i++)
+        primitive[i] =
+            (1.0 / 3.0) * (primitive0[i] + primitive1[i] + primitive2[i]);
+
+      for (i = 0; i < 5; i++) {
+        scalar[0] = primitive0[i];
+        scalar[1] = primitive1[i];
+        scalar[2] = primitive2[i];
+        RSS(ref_phys_tri_grad_nodes(ref_node, nodes, scalar, tri_grad), "tg");
+        gradient[0 + 5 * i] = tri_grad[0];
+        gradient[1 + 5 * i] = tri_grad[1];
+        gradient[2 + 5 * i] = tri_grad[2];
+      }
+      RSS(ref_phys_viscous(primitive, gradient, turb, mach, re, temperature,
+                           normal, laminar_flux),
+          "laminar");
+    }
+    RSS(ref_mpi_allsum(ref_mpi, &viscous_interior, 1, REF_DBL_TYPE), "mpi sum");
+    if (ref_mpi_once(ref_mpi))
+      printf("viscous interior = %e\n", viscous_interior);
 
     ref_free(volume);
 
