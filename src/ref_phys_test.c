@@ -671,7 +671,7 @@ int main(int argc, char *argv[]) {
     REF_CELL ref_cell;
     REF_NODE ref_node;
     REF_INT i, cell, nodes[REF_CELL_MAX_SIZE_PER];
-    REF_DBL total;
+    REF_DBL inviscid_total;
     REF_DBL area, dx[3], normal[3];
     REF_INT part;
 
@@ -695,7 +695,7 @@ int main(int argc, char *argv[]) {
     RAS(ldim >= 5, "expected a ldim of at least 5");
     ref_mpi_stopwatch_stop(ref_mpi, "read volume");
 
-    total = 0.0;
+    inviscid_total = 0.0;
     ref_node = ref_grid_node(ref_grid);
     ref_cell = ref_grid_edg(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -717,10 +717,10 @@ int main(int argc, char *argv[]) {
       RSS(norm_check_square(ref_node_xyz(ref_node, 0, nodes[0]),
                             ref_node_xyz(ref_node, 1, nodes[0]), normal),
           "square norm");
-      total += area * ref_math_dot(normal, flux);
+      inviscid_total += area * ref_math_dot(normal, flux);
     }
-    RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_DBL_TYPE), "mpi sum");
-    if (ref_mpi_once(ref_mpi)) printf("total = %e\n", total);
+    RSS(ref_mpi_allsum(ref_mpi, &inviscid_total, 1, REF_DBL_TYPE), "mpi sum");
+    if (ref_mpi_once(ref_mpi)) printf("inviscid total = %e\n", inviscid_total);
 
     ref_free(volume);
 
