@@ -772,7 +772,7 @@ int main(int argc, char *argv[]) {
 			   normal, laminar_flux),
             "laminar");
       for (i = 0; i < 5; i++)
-	viscous_boundary += area * dual[i]*laminar_flux[i];
+	viscous_boundary -= area * dual[i]*laminar_flux[i];
     }
     RSS(ref_mpi_allsum(ref_mpi, &viscous_boundary, 1, REF_DBL_TYPE), "mpi sum");
     if (ref_mpi_once(ref_mpi)) printf("viscous boundary = %e\n", viscous_boundary);
