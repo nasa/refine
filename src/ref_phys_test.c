@@ -37,7 +37,7 @@
 static REF_STATUS norm_check_square(REF_DBL x, REF_DBL y, REF_DBL *n) {
   REF_DBL tol = -1.0;
 
-  printf("x %f y %f n %f %f\n", x, y, n[0], n[1]);
+  /* printf("x %f y %f n %f %f\n", x, y, n[0], n[1]); */
 
   if (x > 0.999 && y < 0.9 && y > 0.1) {
     RWDS(1, n[0], tol, "x=1 nx");
