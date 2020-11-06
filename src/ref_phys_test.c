@@ -781,7 +781,8 @@ int main(int argc, char *argv[]) {
       inviscid_total += area * ref_math_dot(normal, flux);
     }
     RSS(ref_mpi_allsum(ref_mpi, &inviscid_total, 1, REF_DBL_TYPE), "mpi sum");
-    if (ref_mpi_once(ref_mpi)) printf("inviscid total   = %9.6f\n", inviscid_total);
+    if (ref_mpi_once(ref_mpi))
+      printf("inviscid total   = %9.6f\n", inviscid_total);
 
     if (ref_mpi_once(ref_mpi)) printf("reconstruct gradient\n");
     ref_malloc(grad, 15 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -892,6 +893,11 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi))
       printf("total            = %9.6f\n",
+             (inviscid_total + viscous_boundary + viscous_interior));
+    if (ref_mpi_once(ref_mpi))
+      printf("%d %e %e %e %e %e # conv\n", (REF_INT)ref_node_n_global(ref_node),
+             pow((REF_DBL)ref_node_n_global(ref_node), (-1.0 / 2.0)),
+             inviscid_total, viscous_boundary, viscous_interior,
              (inviscid_total + viscous_boundary + viscous_interior));
 
     ref_free(volume);
