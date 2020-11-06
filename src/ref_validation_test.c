@@ -117,22 +117,18 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_grid_inspect(ref_grid), "inspection");
 
-    printf("validate.\n");
-    RSS(ref_validation_volume_status(ref_grid), "tet volume grid");
-    RSS(ref_validation_all(ref_grid), "invalid grid");
-
-    printf("vtk.\n");
-    RSS(ref_export_by_extension(ref_grid, "validate.vtk"), "vtk");
-
-    printf("tec.\n");
-    RSS(ref_export_by_extension(ref_grid, "validate.tec"), "tec");
-
+    if (ref_grid_twod(ref_grid)) {
+    } else {
+      printf("validate.\n");
+      RSS(ref_validation_volume_status(ref_grid), "tet volume grid");
+      RSS(ref_validation_all(ref_grid), "invalid grid");
+    }
     RSS(ref_grid_free(ref_grid), "free");
     printf("done.\n");
   }
 
   if (!ref_mpi_para(ref_mpi)) {
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi,4), "twod brick");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "twod brick");
     RSS(ref_validation_twod_outward_normal(ref_grid),
         "twod tri outward normal");
     RSS(ref_grid_free(ref_grid), "free");
