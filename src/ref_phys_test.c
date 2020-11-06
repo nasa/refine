@@ -34,6 +34,16 @@
 #include "ref_part.h"
 #include "ref_recon.h"
 
+static REF_STATUS xy_primitive(REF_INT ldim, REF_DBL *volume, REF_INT node, REF_DBL *primitive) {
+    REF_DBL tempu;
+  REF_INT i;
+      for (i = 0; i < 5; i++) primitive[i] = volume[i + ldim * node];
+      tempu = primitive[3];
+      primitive[3] = primitive[2];
+      primitive[2] = tempu;
+  return REF_SUCCESS;
+}
+
 static REF_STATUS norm_check_square(REF_DBL x, REF_DBL y, REF_DBL *n) {
   REF_DBL tol = -1.0;
 
@@ -655,7 +665,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *volume;
     REF_INT ldim;
-    REF_DBL primitive[5], tempu;
+    REF_DBL primitive[5];
     REF_DBL flux0[3], flux1[3], flux[3];
     REF_CELL ref_cell;
     REF_NODE ref_node;
@@ -690,15 +700,9 @@ int main(int argc, char *argv[]) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) != part) continue;
-      for (i = 0; i < 5; i++) primitive[i] = volume[i + ldim * nodes[0]];
-      tempu = primitive[3];
-      primitive[3] = primitive[2];
-      primitive[2] = tempu;
+      RSS(xy_primitive(ldim, volume, nodes[0],primitive),"prim 0");
       RSS(ref_phys_entropy_flux(primitive, flux0), "flux0");
-      for (i = 0; i < 5; i++) primitive[1] = volume[i + ldim * nodes[1]];
-      tempu = primitive[3];
-      primitive[3] = primitive[2];
-      primitive[2] = tempu;
+      RSS(xy_primitive(ldim, volume, nodes[1],primitive),"prim 0");
       RSS(ref_phys_entropy_flux(primitive, flux1), "flux1");
       for (i = 0; i < 3; i++) flux[i] = 0.5 * (flux0[i] + flux1[i]);
       for (i = 0; i < 3; i++)
