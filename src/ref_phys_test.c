@@ -64,26 +64,50 @@ static REF_STATUS norm_check_square(REF_DBL x, REF_DBL y, REF_DBL *n) {
 
 static REF_STATUS ref_phys_flipper(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
+  REF_CELL tri_cell = ref_grid_tri(ref_grid);
+  REF_CELL edg_cell = ref_grid_edg(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL wrong_orientation;
   REF_INT right, wrong;
+  REF_INT node0, node1, ncell, cell_list[1];
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
 
   right = 0;
   wrong = 0;
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+  each_ref_cell_valid_cell_with_nodes(tri_cell, cell, nodes) {
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &wrong_orientation),
         "valid");
     if (wrong_orientation) {
-      ref_cell_c2n(ref_cell, 0, cell) = nodes[1];
-      ref_cell_c2n(ref_cell, 1, cell) = nodes[0];
+      ref_cell_c2n(tri_cell, 0, cell) = nodes[1];
+      ref_cell_c2n(tri_cell, 1, cell) = nodes[0];
       wrong++;
     } else {
       right++;
     }
   }
   printf("tri %d right %d wrong (per EGADS)\n", right, wrong);
+
+  right = 0;
+  wrong = 0;
+  each_ref_cell_valid_cell_with_nodes(edg_cell, cell, nodes) {
+    node0 = nodes[0];
+    node1 = nodes[1];
+    RSS(ref_cell_list_with2(tri_cell, node0, node1, 1, &ncell, cell_list),
+        "found more than one tri with two nodes");
+    REIS(ncell, 1, "boundry one tri with two nodes");
+    RSS(ref_cell_nodes(tri_cell, cell_list[0], tri_nodes), "tri nodes");
+    if ((node1 == tri_nodes[0] && node0 == tri_nodes[1]) ||
+        (node1 == tri_nodes[1] && node0 == tri_nodes[2]) ||
+        (node1 == tri_nodes[2] && node0 == tri_nodes[0])) {
+      right++;
+    } else {
+      ref_cell_c2n(edg_cell, 0, cell) = node1;
+      ref_cell_c2n(edg_cell, 1, cell) = node0;
+      wrong++;
+    }
+  }
+  printf("edg %d right %d wrong (per EGADS)\n", right, wrong);
+
   return REF_SUCCESS;
 }
 
