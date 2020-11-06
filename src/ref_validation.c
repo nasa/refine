@@ -481,7 +481,7 @@ REF_STATUS ref_validation_volume_status(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_twod_outward_normal(REF_GRID ref_grid) {
+REF_STATUS ref_validation_twod_orientation(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];

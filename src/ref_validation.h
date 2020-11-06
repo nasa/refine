@@ -42,7 +42,7 @@ REF_STATUS ref_validation_all(REF_GRID ref_grid);
 
 REF_STATUS ref_validation_volume_status(REF_GRID ref_grid);
 
-REF_STATUS ref_validation_twod_outward_normal(REF_GRID ref_grid);
+REF_STATUS ref_validation_twod_orientation(REF_GRID ref_grid);
 
 REF_STATUS ref_validation_finite(REF_GRID ref_grid, REF_INT ldim,
                                  REF_DBL *field);
