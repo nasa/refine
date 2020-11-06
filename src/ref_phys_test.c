@@ -34,6 +34,34 @@
 #include "ref_part.h"
 #include "ref_recon.h"
 
+static REF_STATUS norm_check_square(REF_DBL x, REF_DBL y, REF_DBL *n) {
+  REF_DBL tol = -1.0;
+
+  printf("x %f y %f n %f %f\n", x, y, n[0], n[1]);
+
+  if (x > 0.999 && y < 0.9 && y > 0.1) {
+    RWDS(1, n[0], tol, "x=1 nx");
+    RWDS(0, n[1], tol, "x=1 ny");
+  }
+
+  if (x < 0.001 && y < 0.9 && y > 0.1) {
+    RWDS(-1, n[0], tol, "x=0 nx");
+    RWDS(0, n[1], tol, "x=0 ny");
+  }
+
+  if (y > 0.999 && x < 0.9 && x > 0.1) {
+    RWDS(0, n[0], tol, "y=1 nx");
+    RWDS(1, n[1], tol, "y=1 ny");
+  }
+
+  if (y < 0.001 && x < 0.9 && x > 0.1) {
+    RWDS(0, n[0], tol, "y=0 nx");
+    RWDS(-1, n[1], tol, "y=0 ny");
+  }
+
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
@@ -626,10 +654,14 @@ int main(int argc, char *argv[]) {
       for (i = 0; i < 3; i++)
         dx[i] = ref_node_xyz(ref_node, i, nodes[1]) -
                 ref_node_xyz(ref_node, i, nodes[0]);
-      normal[0] = -dx[1];
-      normal[1] = dx[0];
+      normal[0] = dx[1];
+      normal[1] = -dx[0];
       normal[2] = 0.0;
       area = sqrt(ref_math_dot(dx, dx));
+      RSS(ref_math_normalize(normal), "norm");
+      RSS(norm_check_square(ref_node_xyz(ref_node, 0, nodes[0]),
+                            ref_node_xyz(ref_node, 1, nodes[0]), normal),
+          "square norm");
       total += area * ref_math_dot(normal, flux);
       /*printf("normal %f %f %f f %e %e %e\n",normal[0],
         normal[1],normal[2],flux[0],flux[1],flux[2]);*/
