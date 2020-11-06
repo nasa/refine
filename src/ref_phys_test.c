@@ -781,7 +781,7 @@ int main(int argc, char *argv[]) {
       inviscid_total += area * ref_math_dot(normal, flux);
     }
     RSS(ref_mpi_allsum(ref_mpi, &inviscid_total, 1, REF_DBL_TYPE), "mpi sum");
-    if (ref_mpi_once(ref_mpi)) printf("inviscid total = %e\n", inviscid_total);
+    if (ref_mpi_once(ref_mpi)) printf("inviscid total   = %9.6f\n", inviscid_total);
 
     if (ref_mpi_once(ref_mpi)) printf("reconstruct gradient\n");
     ref_malloc(grad, 15 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -833,7 +833,7 @@ int main(int argc, char *argv[]) {
     }
     RSS(ref_mpi_allsum(ref_mpi, &viscous_boundary, 1, REF_DBL_TYPE), "mpi sum");
     if (ref_mpi_once(ref_mpi))
-      printf("viscous boundary = %e\n", viscous_boundary);
+      printf("viscous boundary = %9.6f\n", viscous_boundary);
 
     ref_free(grad);
 
@@ -850,22 +850,49 @@ int main(int argc, char *argv[]) {
         primitive[i] =
             (1.0 / 3.0) * (primitive0[i] + primitive1[i] + primitive2[i]);
 
-      for (i = 0; i < 5; i++) {
-        scalar[0] = primitive0[i];
-        scalar[1] = primitive1[i];
-        scalar[2] = primitive2[i];
-        RSS(ref_phys_tri_grad_nodes(ref_node, nodes, scalar, tri_grad), "tg");
-        gradient[0 + 5 * i] = tri_grad[0];
-        gradient[1 + 5 * i] = tri_grad[1];
-        gradient[2 + 5 * i] = tri_grad[2];
+      RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+
+      for (dir = 0; dir < 3; dir++) {
+        normal[0] = 0;
+        normal[1] = 0;
+        normal[2] = 0;
+        normal[dir] = 1;
+
+        for (i = 0; i < 5; i++) {
+          scalar[0] = primitive0[i];
+          scalar[1] = primitive1[i];
+          scalar[2] = primitive2[i];
+          RSS(ref_phys_tri_grad_nodes(ref_node, nodes, scalar, tri_grad), "tg");
+          gradient[0 + 3 * i] = tri_grad[0];
+          gradient[1 + 3 * i] = tri_grad[1];
+          gradient[2 + 3 * i] = tri_grad[2];
+        }
+        RSS(ref_phys_viscous(primitive, gradient, turb, mach, re, temperature,
+                             normal, laminar_flux),
+            "laminar");
+        for (i = 0; i < 5; i++) {
+          RSS(ref_phys_entropy_adjoint(primitive0, dual), "flux1");
+          scalar[0] = dual[i];
+          RSS(ref_phys_entropy_adjoint(primitive1, dual), "flux1");
+          scalar[1] = dual[i];
+          RSS(ref_phys_entropy_adjoint(primitive2, dual), "flux1");
+          scalar[2] = dual[i];
+          RSS(ref_phys_tri_grad_nodes(ref_node, nodes, scalar, tri_grad), "tg");
+          gradient[0 + 3 * i] = tri_grad[0];
+          gradient[1 + 3 * i] = tri_grad[1];
+          gradient[2 + 3 * i] = tri_grad[2];
+        }
+        for (i = 0; i < 5; i++)
+          viscous_interior += area * gradient[dir + 3 * i] * laminar_flux[i];
       }
-      RSS(ref_phys_viscous(primitive, gradient, turb, mach, re, temperature,
-                           normal, laminar_flux),
-          "laminar");
     }
     RSS(ref_mpi_allsum(ref_mpi, &viscous_interior, 1, REF_DBL_TYPE), "mpi sum");
     if (ref_mpi_once(ref_mpi))
-      printf("viscous interior = %e\n", viscous_interior);
+      printf("viscous interior = %9.6f\n", viscous_interior);
+
+    if (ref_mpi_once(ref_mpi))
+      printf("total            = %9.6f\n",
+             (inviscid_total + viscous_boundary + viscous_interior));
 
     ref_free(volume);
 
