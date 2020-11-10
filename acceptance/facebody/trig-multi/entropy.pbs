@@ -1,0 +1,66 @@
+#!/bin/bash
+#PBS -q K4-route -l select=1:ncpus=40:mpiprocs=40 -l walltime=2:00:00
+#PBS -m n -N ms
+
+cd ${PBS_O_WORKDIR}
+
+field="-q trig"
+egads="--egads square.egads"
+
+function adapt_cycle {
+    inproj=$1
+    outproj=$2
+    complexity=$3
+    np=$4
+
+    ref_acceptance ${field} ${inproj}.meshb \
+	  ${inproj}_volume.solb
+
+    mpiexec -np ${np} ref loop ${inproj} ${outproj} ${complexity} \
+	  ${egads} > ${inproj}-loop.txt
+
+    ref_acceptance ${field} ${outproj}.meshb \
+	  ${outproj}_volume.solb
+    ref_phys_test --entropy-output \
+	  ${outproj}.meshb ${outproj}_volume.solb | grep '# conv' >> output.dat
+}
+
+serveCSM -batch square.csm > square-servecsm.txt
+${src}/ref bootstrap square.egads > square-bootstrap.txt
+mv square-vol.meshb cycle00.meshb
+
+adapt_cycle cycle00 cycle01 1000 1
+adapt_cycle cycle01 cycle01 1000 1
+adapt_cycle cycle01 cycle01 1000 1
+adapt_cycle cycle01 cycle01 1000 1
+
+adapt_cycle cycle01 cycle02 2000 2
+adapt_cycle cycle02 cycle02 2000 2
+adapt_cycle cycle02 cycle02 2000 2
+adapt_cycle cycle02 cycle02 2000 2
+
+adapt_cycle cycle02 cycle04 4000 4
+adapt_cycle cycle04 cycle04 4000 4
+adapt_cycle cycle04 cycle04 4000 4
+adapt_cycle cycle04 cycle04 4000 4
+
+adapt_cycle cycle04 cycle08 8000 8
+adapt_cycle cycle08 cycle08 8000 8
+adapt_cycle cycle08 cycle08 8000 8
+adapt_cycle cycle08 cycle08 8000 8
+
+adapt_cycle cycle08 cycle16 16000 16
+adapt_cycle cycle16 cycle16 16000 16
+adapt_cycle cycle16 cycle16 16000 16
+adapt_cycle cycle16 cycle16 16000 16
+
+adapt_cycle cycle16 cycle32 32000 32
+adapt_cycle cycle32 cycle32 32000 32
+adapt_cycle cycle32 cycle32 32000 32
+adapt_cycle cycle32 cycle32 32000 32
+
+adapt_cycle cycle32 cycle64 64000 40
+adapt_cycle cycle64 cycle64 64000 40
+adapt_cycle cycle64 cycle64 64000 40
+adapt_cycle cycle64 cycle64 64000 40
+
