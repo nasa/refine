@@ -1,6 +1,6 @@
 #!/bin/bash
 #PBS -q K4-route -l select=1:ncpus=40:mpiprocs=40 -l walltime=2:00:00
-#PBS -m n -N igo
+#PBS -m n -N vgo
 
 cd ${PBS_O_WORKDIR}
 
@@ -17,7 +17,7 @@ function adapt_cycle {
 	  ${inproj}_volume.solb
 
     mpiexec -np ${np} ref loop ${inproj} ${outproj} ${complexity} \
-	  --opt-goal \
+	  --cons-visc 0.5 1000.0 288.15 \
 	  ${egads} > ${inproj}-loop.txt
 
     ref_acceptance ${field} ${outproj}.meshb \
