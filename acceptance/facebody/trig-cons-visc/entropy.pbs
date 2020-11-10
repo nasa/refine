@@ -16,7 +16,7 @@ function adapt_cycle {
     ref_acceptance ${field} ${inproj}.meshb \
 	  ${inproj}_volume.solb
 
-    mpiexec -np ${np} ref loop ${inproj} ${outproj} ${complexity} \
+    mpiexec -np ${np} refmpi loop ${inproj} ${outproj} ${complexity} \
 	  --cons-visc 0.5 1000.0 288.15 \
 	  ${egads} > ${inproj}-loop.txt
 
