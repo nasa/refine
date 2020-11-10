@@ -1695,15 +1695,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_mpi_stop(), "stop");
     return 0;
   }
-  
+
   if (imply_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *metric;
 
-    REIS(1, imply_pos,
-         "required args: --imply grid.ext implied-metric.solb");
-    REIS(4, argc,
-         "required args: --imply grid.ext implied-metric.solb");
+    REIS(1, imply_pos, "required args: --imply grid.ext implied-metric.solb");
+    REIS(4, argc, "required args: --imply grid.ext implied-metric.solb");
 
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     if (ref_mpi_para(ref_mpi)) {

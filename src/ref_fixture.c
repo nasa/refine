@@ -1316,8 +1316,8 @@ REF_STATUS ref_fixture_tet_brick_args_grid(REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
-                                       REF_MPI ref_mpi, REF_INT dim) {
+REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                       REF_INT dim) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT global, node, cell;
@@ -1336,9 +1336,9 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
 
   REF_DBL dx, dy;
 
-  m=dim;
-  n=dim;
-  
+  m = dim;
+  n = dim;
+
   dx = (x1 - x0) / ((REF_DBL)(n - 1));
   dy = (y1 - y0) / ((REF_DBL)(m - 1));
 

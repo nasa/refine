@@ -93,8 +93,7 @@ int main(int argc, char *argv[]) {
          "dim");
     dim = atoi(argv[3]);
 
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, dim),
-        "args");
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, dim), "args");
     RSS(ref_export_by_extension(ref_grid, argv[2]), "tec");
 
     RSS(ref_grid_free(ref_grid), "free");
