@@ -1855,6 +1855,7 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
   ego object;
   int edgeid;
   double t;
+  int egads_status;
   if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
   REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "expected edge geom");
   RNS(ref_geom->edges, "edges not loaded");
@@ -1865,12 +1866,35 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
 
   t = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
 
-  REIS(EGADS_SUCCESS, EG_curvature(object, &t, curvature), "curve");
-  *k = curvature[0];
-  normal[0] = curvature[1];
-  normal[1] = curvature[2];
-  normal[2] = curvature[3];
-  return REF_SUCCESS;
+  egads_status = EG_curvature(object, &t, curvature);
+  if (EGADS_DEGEN == egads_status) {
+    ego ref, *pchldrn;
+    int oclass, mtype, nchild, *psens;
+    double t_range[2];
+    double t_offset;
+    REF_DBL shift = 1.0e-2;
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, t_range, &nchild,
+                        &pchldrn, &psens),
+         "EG topo face");
+    t_offset = (1.0 - shift) * t + shift * 0.5 * (t_range[0] + t_range[1]);
+    egads_status = EG_curvature(object, &t_offset, curvature);
+  }
+  if (EGADS_SUCCESS == egads_status) {
+    *k = curvature[0];
+    normal[0] = curvature[1];
+    normal[1] = curvature[2];
+    normal[2] = curvature[3];
+    return REF_SUCCESS;
+  } else {
+    printf("EG_curvature %d (-24 is DEGEN) edgeid %d t %e\n", egads_status,
+           edgeid, t);
+    *k = 0;
+    normal[0] = 1;
+    normal[1] = 0;
+    normal[2] = 0;
+    return REF_FAILURE;
+  }
 #else
   printf("curvature 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
