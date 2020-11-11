@@ -942,7 +942,11 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
       *allowed = REF_FALSE;
       return REF_SUCCESS;
     }
-    RSS(ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev), "new");
+    if (REF_SUCCESS !=
+        ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev)) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
     /* allow if improvement */
     if ((new_dev < ref_grid_adapt(ref_grid, post_min_normdev)) &&
         (new_dev < orig_dev)) {
