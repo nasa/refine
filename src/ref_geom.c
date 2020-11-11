@@ -1340,11 +1340,11 @@ REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
   len = sqrt(ref_math_dot(r, r));
   drsduv[0] /= len;
   drsduv[1] /= len;
-  RSS(ref_math_normalize(r), "norm r (u)");
+  RAISE(ref_math_normalize(r));
   len = sqrt(ref_math_dot(s, s));
   drsduv[2] /= len;
   drsduv[3] /= len;
-  RSS(ref_math_normalize(s), "norm s (v)");
+  RAISE(ref_math_normalize(s));
 
   dot = ref_math_dot(r, s);
   for (i = 0; i < 3; i++) s[i] -= dot * r[i];
@@ -1354,7 +1354,7 @@ REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
   len = sqrt(ref_math_dot(s, s));
   drsduv[2] /= len;
   drsduv[3] /= len;
-  RSS(ref_math_normalize(s), "norm s (v)");
+  RAISE(ref_math_normalize(s));
 
   ref_math_cross_product(r, s, n);
 
@@ -1368,7 +1368,7 @@ REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
   REF_DBL drsduv[4];
   RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, uv, xyz, dxyz_dtuv),
       "eval");
-  RSS(ref_geom_uv_rsn(dxyz_dtuv, r, s, n, drsduv), "deriv to rsn");
+  RAISE(ref_geom_uv_rsn(dxyz_dtuv, r, s, n, drsduv));
   return REF_SUCCESS;
 }
 
@@ -1417,7 +1417,7 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   RSS(status, "normalize");
 
   RSS(ref_geom_tri_centroid(ref_grid, nodes, uv), "tri cent");
-  RSS(ref_geom_face_rsn(ref_grid_geom(ref_grid), id, uv, r, s, n), "rsn");
+  RAISE(ref_geom_face_rsn(ref_grid_geom(ref_grid), id, uv, r, s, n));
   RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
 
   *dot_product = area_sign * ref_math_dot(n, tri_normal);

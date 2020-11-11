@@ -266,6 +266,7 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ accept degen face and edge params not marked with a onenode edge
 + get rid of aux and interp instead (awhile ago)
 
 + 1.9.3
