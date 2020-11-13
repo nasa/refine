@@ -31,6 +31,7 @@
 #include "ref_geom.h"
 #include "ref_grid.h"
 #include "ref_import.h"
+#include "ref_iso.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_meshlink.h"
@@ -234,6 +235,9 @@ static void visualize_help(const char *name) {
   printf(
       "   --subtract <baseline_solution.extension> "
       "computes (input-baseline).\n");
+  printf(
+      "   --iso <0-based variable index> <threshold> "
+      "extracts an isosurface.\n");
   printf("\n");
 }
 
@@ -2269,11 +2273,33 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  if (ref_mpi_once(ref_mpi)) printf("write solution %s\n", out_sol);
-  RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, out_sol),
-      "gather");
-  ref_mpi_stopwatch_stop(ref_mpi, "write solution");
+  RXS(ref_args_find(argc, argv, "--iso", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 2) {
+    REF_DBL *scalar;
+    REF_DBL threshold;
+    REF_GRID iso_grid;
+    REF_INT var;
+    REF_INT node;
+    var = atoi(argv[pos + 1]);
+    threshold = atof(argv[pos + 1]);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = field[var + ldim * node] - threshold;
+    }
+    RSS(ref_iso_insert(&iso_grid, ref_grid, scalar), "iso");
+    if (ref_mpi_once(ref_mpi))
+      printf("write isosurface geometry %s\n", out_sol);
+    RSS(ref_gather_by_extension(iso_grid, out_sol), "gather");
+    ref_mpi_stopwatch_stop(ref_mpi, "write isosurface geometry");
 
+    ref_grid_free(iso_grid);
+    ref_free(scalar);
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("write solution %s\n", out_sol);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, out_sol),
+        "gather");
+    ref_mpi_stopwatch_stop(ref_mpi, "write solution");
+  }
   ref_free(field);
   RSS(ref_grid_free(ref_grid), "free grid");
 
