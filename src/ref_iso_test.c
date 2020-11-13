@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
-  {
+  { /* slice tri */
     REF_GRID ref_grid, iso_grid;
     REF_NODE ref_node;
     REF_DBL *field;
@@ -68,7 +68,101 @@ int main(int argc, char *argv[]) {
     RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
     if (!ref_mpi_para(ref_mpi)) {
       REIS(2, ref_node_n(ref_grid_node(iso_grid)), "two nodes");
+      REIS(0, ref_cell_n(ref_grid_tri(iso_grid)), "no tri");
       REIS(1, ref_cell_n(ref_grid_edg(iso_grid)), "one edg");
+    }
+    ref_grid_free(iso_grid);
+    ref_free(field);
+    ref_grid_free(ref_grid);
+  }
+
+  { /* slice tet, node 1 */
+    REF_GRID ref_grid, iso_grid;
+    REF_NODE ref_node;
+    REF_DBL *field;
+    REF_INT node;
+    REF_DBL offset = 0.2;
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tri");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      field[node] = ref_node_xyz(ref_node, 0, node) - offset;
+    }
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(3, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
+      REIS(1, ref_cell_n(ref_grid_tri(iso_grid)), "one tri");
+      REIS(0, ref_cell_n(ref_grid_edg(iso_grid)), "no edg");
+    }
+    ref_grid_free(iso_grid);
+    ref_free(field);
+    ref_grid_free(ref_grid);
+  }
+
+  { /* slice tet, node 0 1 */
+    REF_GRID ref_grid, iso_grid;
+    REF_NODE ref_node;
+    REF_DBL *field;
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tri");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+    field[0] = 1;
+    field[1] = 1;
+    field[2] = -1;
+    field[3] = -1;
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(4, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
+      REIS(2, ref_cell_n(ref_grid_tri(iso_grid)), "one tri");
+      REIS(0, ref_cell_n(ref_grid_edg(iso_grid)), "no edg");
+    }
+    ref_grid_free(iso_grid);
+    ref_free(field);
+    ref_grid_free(ref_grid);
+  }
+
+  { /* slice tet, node 0 2 */
+    REF_GRID ref_grid, iso_grid;
+    REF_NODE ref_node;
+    REF_DBL *field;
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tri");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+    field[0] = 1;
+    field[1] = -1;
+    field[2] = 1;
+    field[3] = -1;
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(4, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
+      REIS(2, ref_cell_n(ref_grid_tri(iso_grid)), "one tri");
+      REIS(0, ref_cell_n(ref_grid_edg(iso_grid)), "no edg");
+    }
+    ref_grid_free(iso_grid);
+    ref_free(field);
+    ref_grid_free(ref_grid);
+  }
+
+  { /* slice tet, node 0 3 */
+    REF_GRID ref_grid, iso_grid;
+    REF_NODE ref_node;
+    REF_DBL *field;
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tri");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+    field[0] = 1;
+    field[1] = -1;
+    field[2] = -1;
+    field[3] = 1;
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(4, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
+      REIS(2, ref_cell_n(ref_grid_tri(iso_grid)), "one tri");
+      REIS(0, ref_cell_n(ref_grid_edg(iso_grid)), "no edg");
     }
     ref_grid_free(iso_grid);
     ref_free(field);
