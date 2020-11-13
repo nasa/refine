@@ -94,9 +94,9 @@ REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux) {
   s = log(p / pow(rho, gamma));
   U = -rho * s / (gamma - 1.0);
 
-  flux[0] = U * rho * u;
-  flux[1] = U * rho * v;
-  flux[2] = U * rho * w;
+  flux[0] = U * u;
+  flux[1] = U * v;
+  flux[2] = U * w;
 
   return REF_SUCCESS;
 }
@@ -200,8 +200,11 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
   p = state[4];
   t = gamma * p / rho;
 
-  sutherland_temp = sutherland_constant / reference_temp;
-  mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+  mu = 1.0;
+  if (reference_temp > 0.0) {
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+  }
 
   RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
   thermal_conductivity =
