@@ -2281,7 +2281,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_INT var;
     REF_INT node;
     var = atoi(argv[pos + 1]);
-    threshold = atof(argv[pos + 1]);
+    threshold = atof(argv[pos + 2]);
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       scalar[node] = field[var + ldim * node] - threshold;
