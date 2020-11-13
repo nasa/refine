@@ -724,7 +724,7 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL primitive[5], primitive0[5], primitive1[5], primitive2[5];
     REF_DBL dual[5], gradient[15], tri_grad[3], scalar[3];
-    REF_DBL flux0[3], flux1[3], flux[3], laminar_flux[5];
+    REF_DBL flux[3], laminar_flux[5];
     REF_CELL ref_cell;
     REF_NODE ref_node;
     REF_INT i, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -763,11 +763,11 @@ int main(int argc, char *argv[]) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) != part) continue;
       if (1 == nodes[2] || 4 == nodes[2]) continue;
-      RSS(xy_primitive(ldim, volume, nodes[0], primitive), "prim 0");
-      RSS(ref_phys_entropy_flux(primitive, flux0), "flux0");
-      RSS(xy_primitive(ldim, volume, nodes[1], primitive), "prim 1");
-      RSS(ref_phys_entropy_flux(primitive, flux1), "flux1");
-      for (i = 0; i < 3; i++) flux[i] = 0.5 * (flux0[i] + flux1[i]);
+      RSS(xy_primitive(ldim, volume, nodes[0], primitive0), "prim 0");
+      RSS(xy_primitive(ldim, volume, nodes[1], primitive1), "prim 1");
+      for (i = 0; i < 5; i++)
+        primitive[i] = 0.5 * (primitive0[i] + primitive1[i]);
+      RSS(ref_phys_entropy_flux(primitive, flux), "flux1");
       for (i = 0; i < 3; i++)
         dx[i] = ref_node_xyz(ref_node, i, nodes[1]) -
                 ref_node_xyz(ref_node, i, nodes[0]);
