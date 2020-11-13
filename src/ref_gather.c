@@ -1763,7 +1763,7 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
     return REF_SUCCESS;
   }
   printf("%s: %d: %s %s\n", __FILE__, __LINE__,
-         "input file name extension unknown", filename);
+         "output file name extension unknown", filename);
   return REF_FAILURE;
 }
 
