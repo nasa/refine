@@ -170,6 +170,8 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
     REF_INT cell_edge;
     REF_INT edge_nodes[6];
     REF_INT nedge;
+    REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_BOOL found;
     ref_cell = ref_grid_tet(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       nedge = 0;
@@ -188,9 +190,63 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
           /* cell is not intersected by iso surface */
           break;
         case 3:
+          new_nodes[3] = id;
           RSS(ref_cell_add(ref_grid_tri(iso_grid), new_nodes, &new_cell),
               "add");
           break;
+        case 4:
+          found = REF_FALSE;
+          if (REF_EMPTY == edge_nodes[0] && REF_EMPTY == edge_nodes[5]) {
+            RAS(!found, "found twice");
+            found = REF_TRUE;
+            tri_nodes[0] = edge_nodes[1];
+            tri_nodes[1] = edge_nodes[2];
+            tri_nodes[2] = edge_nodes[4];
+            tri_nodes[3] = id;
+            RSS(ref_cell_add(ref_grid_tri(iso_grid), tri_nodes, &new_cell),
+                "add");
+            tri_nodes[0] = edge_nodes[1];
+            tri_nodes[1] = edge_nodes[4];
+            tri_nodes[2] = edge_nodes[3];
+            tri_nodes[3] = id;
+            RSS(ref_cell_add(ref_grid_tri(iso_grid), tri_nodes, &new_cell),
+                "add");
+          }
+          if (REF_EMPTY == edge_nodes[1] && REF_EMPTY == edge_nodes[4]) {
+            RAS(!found, "found twice");
+            found = REF_TRUE;
+            tri_nodes[0] = edge_nodes[0];
+            tri_nodes[1] = edge_nodes[3];
+            tri_nodes[2] = edge_nodes[2];
+            tri_nodes[3] = id;
+            RSS(ref_cell_add(ref_grid_tri(iso_grid), tri_nodes, &new_cell),
+                "add");
+            tri_nodes[0] = edge_nodes[2];
+            tri_nodes[1] = edge_nodes[3];
+            tri_nodes[2] = edge_nodes[5];
+            tri_nodes[3] = id;
+            RSS(ref_cell_add(ref_grid_tri(iso_grid), tri_nodes, &new_cell),
+                "add");
+          }
+          if (REF_EMPTY == edge_nodes[2] && REF_EMPTY == edge_nodes[3]) {
+            RAS(!found, "found twice");
+            found = REF_TRUE;
+            tri_nodes[0] = edge_nodes[0];
+            tri_nodes[1] = edge_nodes[4];
+            tri_nodes[2] = edge_nodes[1];
+            tri_nodes[3] = id;
+            RSS(ref_cell_add(ref_grid_tri(iso_grid), tri_nodes, &new_cell),
+                "add");
+            tri_nodes[0] = edge_nodes[1];
+            tri_nodes[1] = edge_nodes[4];
+            tri_nodes[2] = edge_nodes[5];
+            tri_nodes[3] = id;
+            RSS(ref_cell_add(ref_grid_tri(iso_grid), tri_nodes, &new_cell),
+                "add");
+          }
+          RAS(found, "not found");
+          break;
+
         default:
           printf("nedge %d\n", nedge);
           RSS(REF_IMPLEMENT, "implement iso surface tet intersection");
