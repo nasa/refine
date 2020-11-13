@@ -94,9 +94,9 @@ REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux) {
   s = log(p / pow(rho, gamma));
   U = -rho * s / (gamma - 1.0);
 
-  flux[0] = U * rho * u;
-  flux[1] = U * rho * v;
-  flux[2] = U * rho * w;
+  flux[0] = U * u;
+  flux[1] = U * v;
+  flux[2] = U * w;
 
   return REF_SUCCESS;
 }
