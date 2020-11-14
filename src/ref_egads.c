@@ -792,6 +792,83 @@ static REF_STATUS ref_egads_adjust_tparams_dup_edge(REF_GEOM ref_geom, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_adjust_tparams_single_edge(
+    REF_GEOM ref_geom, ego tess, REF_CLOUD edge_tp_augment,
+    REF_INT auto_tparams, REF_LIST face_locked) {
+  ego edgeobj;
+  int edge, plen;
+  const double *points, *t;
+  ego ref;
+  int oclass, mtype;
+  double trange[2];
+  int ncadnode;
+  ego *cadnodes;
+  int *senses;
+
+  REF_INT *e2f;
+
+  REF_INT i;
+  REF_DBL t_mid, xyz[3], dside[3], dmid[3];
+  const REF_DBL *xyz0, *xyz1;
+  REF_DBL length, offset, chord;
+
+  double params[3];
+  REF_DBL chord_limit = 0.49; /* semicircle has an chord of 0.5 */
+  REF_BOOL contains0, contains1;
+
+  RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
+
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    edgeobj = ((ego *)(ref_geom->edges))[edge];
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(edgeobj, &ref, &oclass, &mtype, trange, &ncadnode,
+                        &cadnodes, &senses),
+         "EG topo edge0");
+    if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
+    REIS(EGADS_SUCCESS, EG_getTessEdge(tess, edge + 1, &plen, &points, &t),
+         "tess edge nodes");
+    if (2 == plen) {
+      xyz0 = &(points[3 * 0]);
+      xyz1 = &(points[3 * 1]);
+      t_mid = 0.5 * (t[0] + t[1]);
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, edge + 1, &t_mid, xyz,
+                            NULL),
+          "eval mid uv");
+      for (i = 0; i < 3; i++) dside[i] = xyz1[i] - xyz0[i];
+      for (i = 0; i < 3; i++) dmid[i] = xyz[i] - 0.5 * (xyz1[i] + xyz0[i]);
+      length =
+          sqrt(dside[0] * dside[0] + dside[1] * dside[1] + dside[2] * dside[2]);
+      offset = sqrt(dmid[0] * dmid[0] + dmid[1] * dmid[1] + dmid[2] * dmid[2]);
+      chord = 0.0;
+      if (ref_math_divisible(offset, length)) {
+        chord = offset / length;
+      }
+      if (chord > chord_limit)
+        printf("edge id %d single segment with chord %.2e\n", edge + 1, chord);
+      if (chord > chord_limit &&
+          (auto_tparams & REF_EGADS_SINGLE_EDGE_TPARAM)) {
+        params[0] = 0.4 * length;
+        params[1] = 0.1 * length;
+        params[2] = 15.0;
+        RSS(ref_list_contains(face_locked, e2f[0 + 2 * edge], &contains0),
+            "lock face0");
+        RSS(ref_list_contains(face_locked, e2f[1 + 2 * edge], &contains1),
+            "lock face1");
+        if (!contains0 && !contains1) {
+          RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
+              "update tparams");
+        }
+      }
+    }
+  }
+
+  ref_free(e2f);
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
                                                  REF_CLOUD face_tp_augment,
                                                  REF_CLOUD edge_tp_augment,
@@ -1111,7 +1188,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
                                             edge_tp_augment, &rebuild),
-        "update tparams params");
+        "update tparams mandatory");
 
     RSS(ref_list_inspect(face_locked), "show");
 
@@ -1144,14 +1221,17 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
          "EG tess");
     REIS(1, tess_status, "tess not closed");
 
+    RSS(ref_egads_adjust_tparams_single_edge(ref_geom, *tess, edge_tp_augment,
+                                             auto_tparams, face_locked),
+        "adjust single edge params");
     RSS(ref_egads_adjust_tparams_chord(ref_geom, *tess, face_tp_augment,
                                        edge_tp_augment, auto_tparams,
                                        face_locked),
-        "adjust params");
+        "adjust chord params");
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
                                             edge_tp_augment, &rebuild),
-        "adjust params");
+        "update auto tparams");
 
     if (rebuild)
       printf(

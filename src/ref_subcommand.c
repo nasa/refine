@@ -95,7 +95,7 @@ static void bootstrap_help(const char *name) {
   printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("  --mesher-options \"<options>\" quoted mesher options.\n");
   printf("  --auto-tparams {or combination of options} adjust .tParams\n");
-  printf("        1:missing faces, 2:chord violation, 4:face width (-1:all)\n");
+  printf("        1:single edge, 2:chord violation, 4:face width (-1:all)\n");
   printf("\n");
 }
 static void distance_help(const char *name) {
@@ -577,7 +577,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT pos;
   REF_INT blend_pos = REF_EMPTY;
   REF_INT auto_tparams_pos = REF_EMPTY;
-  REF_INT auto_tparams = REF_EGADS_MISSING_TPARAM;
+  REF_INT auto_tparams = REF_EGADS_SINGLE_EDGE_TPARAM;
   const char *mesher = "tetgen";
   const char *mesher_options = NULL;
   REF_INT passes = 15;
