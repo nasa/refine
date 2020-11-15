@@ -780,6 +780,8 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
       RSS(ref_adapt_topo(ref_grid), "topo");
   }
 
+  RSS(ref_adapt_tattle(ref_grid, "adapt"), "tattle");
+
   if (ngeom > 0)
     RSS(ref_geom_verify_topo(ref_grid), "geom topo postflight check");
 
