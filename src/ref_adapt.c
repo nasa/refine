@@ -68,7 +68,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->last_max_ratio = 6.0;
 
   ref_adapt->timing_level = 0;
-  ref_adapt->watch_param = REF_TRUE;
+  ref_adapt->watch_param = REF_FALSE;
   ref_adapt->watch_topo = REF_FALSE;
 
   return REF_SUCCESS;
