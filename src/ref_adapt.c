@@ -68,7 +68,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->last_max_ratio = 6.0;
 
   ref_adapt->timing_level = 0;
-  ref_adapt->watch_param = REF_TRUE;
+  ref_adapt->watch_param = REF_FALSE;
   ref_adapt->watch_topo = REF_FALSE;
 
   return REF_SUCCESS;
@@ -779,6 +779,8 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     if (ref_grid_adapt(ref_grid, watch_topo))
       RSS(ref_adapt_topo(ref_grid), "topo");
   }
+
+  RSS(ref_adapt_tattle(ref_grid, "adapt"), "tattle");
 
   if (ngeom > 0)
     RSS(ref_geom_verify_topo(ref_grid), "geom topo postflight check");
