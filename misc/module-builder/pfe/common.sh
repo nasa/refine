@@ -27,5 +27,4 @@ MODFILE_BASE="${MODFILE_ROOT}/${PACKAGE}"
 MODFILE_DEST="${MODFILE_BASE}/${VERSION}"
 
 . /usr/share/modules/init/bash
-module --append use ${MODFILE_ROOT}
-
+module use ${MODFILE_ROOT}
