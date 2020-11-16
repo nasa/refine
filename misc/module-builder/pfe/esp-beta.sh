@@ -5,7 +5,7 @@ PACKAGE='ESP'
 rm -f ESPbeta.tgz
 wget -N https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
 raw=$(stat -c %Y ESPbeta.tgz)
-timestamp=$(date -d @${raw} +"%Y.%m.%d.%H%M")
+timestamp=$(TZ='America/New_York' date -d @${raw} +"%Y.%m.%d.%H%M")
 VERSION="119-beta.${timestamp}"
 
 if [ $# -gt 0 ] ; then
@@ -14,7 +14,7 @@ else
    . common.sh
 fi
 
-OCC_COPY_SOURCE="${MODULE_BASE}/117/OpenCASCADE-7.3.1"
+OCC_COPY_SOURCE="${MODULE_BASE}/118/OpenCASCADE-7.3.1"
 OCC_COPY_DEST=${MODULE_DEST}/OpenCASCADE-7.3.1
 
 echo Build ${PACKAGE} ${VERSION}

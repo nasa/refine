@@ -15,8 +15,6 @@ INTEL_MODULE="intel_${INTEL_VERSION}"
 MPT_MODULE="mpt-${MPT_VERSION}"
 ESP_MODULE="ESP/${ESP_VERSION}"
 
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 PREFIX="/u/shared/${USER}/${GROUP}"     # where everything is anchored
 
 MODULE_ROOT="${PREFIX}/modules"         # where the built artifacts reside

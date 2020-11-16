@@ -30,26 +30,27 @@ mkdir -p _build_$VERSION
 cd       _build_$VERSION
 
 ../${TOPDIR}/configure \
-   --prefix=${MODULE_DEST} \
-   --with-mpi=/nasa/hpe/mpt/2.17r13 \
-   --with-zoltan=${MODULE_ROOT}/${ZOLTAN} \
-   --with-metis=${MODULE_ROOT}/${PARMETIS} \
-   --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
-   --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
-   --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
-   CC=icc \
-   CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv'
+  --prefix=${MODULE_DEST} \
+  --with-mpi=/nasa/hpe/mpt/2.17r13 \
+  --with-zoltan=${MODULE_ROOT}/${ZOLTAN} \
+  --with-metis=${MODULE_ROOT}/${PARMETIS} \
+  --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
+  --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
+  --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
+  CC=icc \
+  CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv'
 
- make -j 12 
- make install
+make -j 12 
+make install
 
-#Copy build log
+echo Copy build log
 cp  config.log ${MODULE_DEST}/.
 
-#Copy and make exec test util
+echo Copy and make exec test util
 cp  src/*_test ${MODULE_DEST}/bin
 chmod g+x ${MODULE_DEST}/bin/*_test
 
+echo Make modulefile
 mkdir -p ${MODFILE_BASE}
 cat > ${MODFILE_DEST} << EOF
 #%Module#
@@ -83,17 +84,9 @@ setenv MPI_ADJUST_ALLREDUCE 1
 EOF
 
 echo Set group ownership and permssions
-chgrp ${GROUP}  ${MODULE_ROOT}
-chmod g+rX      ${MODULE_ROOT}
-chmod g-w,o-rwx ${MODULE_ROOT}
-
 chgrp -R ${GROUP}  ${MODULE_DEST}
 chmod -R g+rX      ${MODULE_DEST}
 chmod -R g-w,o-rwx ${MODULE_DEST}
-
-chgrp ${GROUP}  ${MODFILE_ROOT}
-chmod g+rX      ${MODFILE_ROOT}
-chmod g-w,o-rwx ${MODFILE_ROOT}
 
 chgrp -R ${GROUP}  ${MODFILE_DEST}
 chmod -R g+rX      ${MODFILE_DEST}
