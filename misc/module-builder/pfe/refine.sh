@@ -38,7 +38,10 @@ cd       _build_$VERSION
   --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
   --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
   CC=icc \
-  CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv'
+  CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
+  LDFLAGS=-Wl,--disable-new-dtags
+# --disable-new-dtags sets RPATH (recursive) instead of default RUNPATH for
+#                     EGADS OpenCASCADE deps
 
 make -j 12 
 make install
