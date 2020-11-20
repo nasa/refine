@@ -734,7 +734,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *grad, *prim, *onegrad;
     REF_INT dir, node;
     REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
-    REF_DBL mach = 0.5, re = 1000.0, temperature = 288.15, turb = -1.0;
+    REF_DBL mach = 0.5, re = 100.0, temperature = 288.15, turb = -1.0;
 
     ref_mpi_stopwatch_start(ref_mpi);
     REIS(1, entropy_output_pos,
