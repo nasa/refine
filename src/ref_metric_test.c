@@ -1545,80 +1545,63 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_imply_from(metric, ref_grid), "imply");
     ref_mpi_stopwatch_stop(ref_mpi, "imply");
 
-    if (ref_grid_twod(ref_grid)) {
-      REF_GRID iso_grid;
-      REF_DBL *threshold;
-      ref_malloc(threshold, ref_node_max(ref_node), REF_DBL);
-      each_ref_node_valid_node(ref_node, node) {
-        REF_DBL turb1 = field[5 + ldim * node];
-        threshold[node] = turb1 - 10.0;
-      }
-
-      ref_malloc(signed_distance, ref_node_max(ref_node), REF_DBL);
-
-      RSS(ref_iso_insert(&iso_grid, ref_grid, threshold), "iso");
-      RSS(ref_export_by_extension(iso_grid, "ref_metric_iso.tec"), "tec");
-      RSS(ref_grid_free(iso_grid), "iso free");
-      RSS(ref_iso_distance(ref_grid, threshold, signed_distance), "iso");
-      each_ref_node_valid_node(ref_node, node) {
-        if (0.0 > threshold[node])
-          signed_distance[node] = -signed_distance[node];
-      }
-      RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
-                                         "ref_metric_iso_dist.tec"),
-          "tec");
-      ref_free(threshold);
+    REF_GRID iso_grid;
+    REF_DBL *threshold;
+    REF_DBL turb1_isovalue = 10.0;
+    ref_malloc(threshold, ref_node_max(ref_node), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL turb1 = field[5 + ldim * node];
+      threshold[node] = turb1 - turb1_isovalue;
     }
 
-    if (ref_grid_twod(ref_grid)) {
-      ref_malloc(total, ref_node_max(ref_node), REF_DBL);
+    ref_malloc(signed_distance, ref_node_max(ref_node), REF_DBL);
 
-      each_ref_node_valid_node(ref_node, node) {
-        REF_DBL h;
-        REF_DBL slen = dist[node];
-        REF_DBL s;
-        REF_DBL ds = 0.01;
-        s = 0;
-        if (x0 > ref_node_xyz(ref_node, 0, node))
-          s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x0));
-        if (x1 < ref_node_xyz(ref_node, 0, node))
-          s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x1));
-        s = MAX(s, MIN(slen - ds, -signed_distance[node] - ds));
-        total[node] = s;
-        if (s < 4.0 * ds) {
-          h = h0 * pow(2, s / ds);
-          m[0] = 1.0 / (h * h);
-          m[1] = 0.0;
-          m[2] = 0.0;
-          m[3] = 1.0 / (h * h);
-          m[4] = 0.0;
-          m[5] = 1.0;
-          for (i = 0; i < 6; i++) m0[i] = metric[i + 6 * node];
-          RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
-        }
-      }
-      RSS(ref_gather_scalar_by_extension(ref_grid, 1, total, NULL,
-                                         "ref_metric_total.tec"),
-          "tec");
-      ref_free(total);
-    } else {
-      each_ref_node_valid_node(ref_node, node) {
-        REF_DBL h = h0;
-        REF_DBL slen = dist[node];
-        REF_DBL turb1 = field[5 + ldim * node];
-        if (x0 <= ref_node_xyz(ref_node, 0, node) &&
-            ref_node_xyz(ref_node, 0, node) <= x1 && (4 <= turb1 || h > slen)) {
-          m[0] = 1.0 / (h * h);
-          m[1] = 0.0;
-          m[2] = 0.0;
-          m[3] = 1.0 / (h * h);
-          m[4] = 0.0;
-          m[5] = 1.0 / (h * h);
-          for (i = 0; i < 6; i++) m0[i] = metric[i + 6 * node];
-          RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
-        }
+    /* for viz */
+    RSS(ref_iso_insert(&iso_grid, ref_grid, threshold), "iso");
+    RSS(ref_export_by_extension(iso_grid, "ref_metric_iso.tec"), "tec");
+    RSS(ref_grid_free(iso_grid), "iso free");
+
+    RSS(ref_iso_distance(ref_grid, threshold, signed_distance), "iso");
+    each_ref_node_valid_node(ref_node, node) {
+      if (0.0 > threshold[node]) signed_distance[node] = -signed_distance[node];
+    }
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
+                                       "ref_metric_iso_dist.tec"),
+        "tec");
+    ref_free(threshold);
+
+    ref_malloc(total, ref_node_max(ref_node), REF_DBL);
+
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL h;
+      REF_DBL slen = dist[node];
+      REF_DBL s;
+      REF_DBL ds = 0.01;
+      s = 0;
+      if (x0 > ref_node_xyz(ref_node, 0, node))
+        s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x0));
+      if (x1 < ref_node_xyz(ref_node, 0, node))
+        s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x1));
+      s = MAX(s, MIN(slen - ds, -signed_distance[node] - ds));
+      total[node] = s;
+      if (s < 4.0 * ds) {
+        h = h0 * pow(2, s / ds);
+        m[0] = 1.0 / (h * h);
+        m[1] = 0.0;
+        m[2] = 0.0;
+        m[3] = 1.0 / (h * h);
+        m[4] = 0.0;
+        m[5] = 1.0 / (h * h);
+        if (ref_grid_twod(ref_grid)) m[5] = 1.0;
+        for (i = 0; i < 6; i++) m0[i] = metric[i + 6 * node];
+        RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
       }
     }
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, total, NULL,
+                                       "ref_metric_total.tec"),
+        "tec");
+    ref_free(total);
+
     RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
     ref_mpi_stopwatch_stop(ref_mpi, "intersect");
 
