@@ -1706,7 +1706,7 @@ int main(int argc, char *argv[]) {
     RWDS(1000.0, nu_tilde, -1, "nu_tilde half BL");
     wall_distance = 1e6;
     RSS(ref_phys_sa_surrogate(wall_distance, &nu_tilde), "sa soln");
-    RWDS(0, nu_tilde, -1, "nu_tilde far");
+    RWDS(3.0, nu_tilde, -1, "nu_tilde far");
   }
 
   { /* mid tri signed dist */
