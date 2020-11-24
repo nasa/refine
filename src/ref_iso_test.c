@@ -181,11 +181,11 @@ int main(int argc, char *argv[]) {
     ref_malloc(field, ref_node_max(ref_node), REF_DBL);
     ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
     each_ref_node_valid_node(ref_node, node) {
-      field[node] = ref_node_xyz(ref_node, 0, node) - offset;
+      field[node] = 2.0 * (ref_node_xyz(ref_node, 0, node) - offset);
     }
-    RSS(ref_iso_distance(ref_grid, field, distance), "iso dist");
+    RSS(ref_iso_signed_distance(ref_grid, field, distance), "iso dist");
     each_ref_node_valid_node(ref_node, node) {
-      RWDS(ABS(field[node]), distance[node], -1, "dist");
+      RWDS(0.5 * field[node], distance[node], -1, "dist");
     }
 
     ref_free(distance);
@@ -205,11 +205,11 @@ int main(int argc, char *argv[]) {
     ref_malloc(field, ref_node_max(ref_node), REF_DBL);
     ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
     each_ref_node_valid_node(ref_node, node) {
-      field[node] = ref_node_xyz(ref_node, 0, node) - offset;
+      field[node] = 2.0 * (ref_node_xyz(ref_node, 0, node) - offset);
     }
-    RSS(ref_iso_distance(ref_grid, field, distance), "iso dist");
+    RSS(ref_iso_signed_distance(ref_grid, field, distance), "iso dist");
     each_ref_node_valid_node(ref_node, node) {
-      RWDS(ABS(field[node]), distance[node], -1, "dist");
+      RWDS(0.5 * field[node], distance[node], -1, "dist");
     }
 
     ref_free(distance);

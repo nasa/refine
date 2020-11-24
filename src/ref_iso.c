@@ -261,8 +261,8 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
-                            REF_DBL *distance) {
+REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
+                                   REF_DBL *distance) {
   REF_GRID iso_grid;
   REF_SEARCH ref_search;
   REF_CELL ref_cell;
@@ -318,6 +318,9 @@ REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
       }
       distance[node] = MIN(distance[node], dist);
     }
+
+    /* sign distanace */
+    if (0.0 > field[node]) distance[node] = -distance[node];
 
     RSS(ref_list_erase(ref_list), "reset list");
   }
