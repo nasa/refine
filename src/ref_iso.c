@@ -274,12 +274,22 @@ REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
 
   RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
 
-  ref_cell = ref_grid_edg(iso_grid);
+  if (ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_edg(iso_grid);
+  } else {
+    ref_cell = ref_grid_tri(iso_grid);
+  }
   RSS(ref_search_create(&ref_search, ref_cell_n(ref_cell)), "create search");
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_node_bounding_sphere(ref_grid_node(iso_grid), nodes, 2, center,
-                                 &radius),
-        "b");
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_node_bounding_sphere(ref_grid_node(iso_grid), nodes, 2, center,
+                                   &radius),
+          "b");
+    } else {
+      RSS(ref_node_bounding_sphere(ref_grid_node(iso_grid), nodes, 3, center,
+                                   &radius),
+          "b");
+    }
     RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
   }
   RSS(ref_list_create(&ref_list), "create list");
@@ -292,11 +302,20 @@ REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
     each_ref_list_item(ref_list, item) {
       candidate = ref_list_value(ref_list, item);
       RSS(ref_cell_nodes(ref_cell, candidate, cand), "cell");
-      RSS(ref_search_distance2(
-              ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[0]),
-              ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[1]),
-              ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &dist),
-          "dist2");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_search_distance2(
+                ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[0]),
+                ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[1]),
+                ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &dist),
+            "dist2");
+      } else {
+        RSS(ref_search_distance3(
+                ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[0]),
+                ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[1]),
+                ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[2]),
+                ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &dist),
+            "dist3");
+      }
       distance[node] = MIN(distance[node], dist);
     }
 
