@@ -184,6 +184,7 @@ int main(int argc, char *argv[]) {
   REF_INT mask_pos = REF_EMPTY;
   REF_INT cont_res_pos = REF_EMPTY;
   REF_INT uplus_pos = REF_EMPTY;
+  REF_INT turb1_pos = REF_EMPTY;
   REF_INT entropy_output_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
@@ -201,6 +202,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--cont-res", &cont_res_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--uplus", &uplus_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--turb1", &turb1_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--entropy-output", &entropy_output_pos),
       REF_NOT_FOUND, "arg search");
@@ -710,6 +713,55 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "write uplus");
 
     ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (turb1_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *distance, *field, turb1;
+    REF_INT ldim, node;
+    ref_mpi_stopwatch_start(ref_mpi);
+    REIS(1, turb1_pos,
+         "required args: --turb1 grid.meshb dist.solb volume.solb");
+    if (5 > argc) {
+      printf("required args: --turb1 grid.meshb dist.solb volume.solb");
+      return REF_FAILURE;
+    }
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &distance, argv[3]),
+        "unable to load distance in position 3");
+    REIS(1, ldim, "expected one distance");
+    ref_mpi_stopwatch_stop(ref_mpi, "read distance");
+
+    ldim = 6;
+    ref_malloc(field, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_phys_sa_surrogate(distance[node], &turb1), "sa soln");
+      field[0 + ldim * node] = 1.0;
+      field[1 + ldim * node] = 0.5;
+      field[2 + ldim * node] = 0.0;
+      field[3 + ldim * node] = 0.0;
+      field[4 + ldim * node] = 1.0 / 1.4;
+      field[5 + ldim * node] = turb1;
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute turb1 field");
+
+    if (ref_mpi_once(ref_mpi)) printf("writing field %s\n", argv[4]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, argv[4]),
+        "export turb1");
+    ref_mpi_stopwatch_stop(ref_mpi, "write field");
+
+    ref_free(field);
+    ref_free(distance);
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
