@@ -169,6 +169,30 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
+  if (!ref_mpi_para(ref_mpi)) { /* distance tri */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *field, *distance;
+    REF_INT node;
+    REF_DBL offset = 0.5;
+
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "tri");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+    ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      field[node] = ref_node_xyz(ref_node, 0, node) - offset;
+    }
+    RSS(ref_iso_distance(ref_grid, field, distance), "iso dist");
+    each_ref_node_valid_node(ref_node, node) {
+      RWDS(ABS(field[node]), distance[node], -1, "dist");
+    }
+
+    ref_free(distance);
+    ref_free(field);
+    ref_grid_free(ref_grid);
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
