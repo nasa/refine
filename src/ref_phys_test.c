@@ -1579,7 +1579,7 @@ int main(int argc, char *argv[]) {
     RWDS((yplus1 - yplus0) / (2.0 * duplus), dyplus_duplus, 0.01, "yplus");
   }
 
-  {
+  { /* eval spalding forward and back */
     REF_DBL yplus, uplus, y;
 
     yplus = -6.0e-6;
@@ -1639,6 +1639,22 @@ int main(int argc, char *argv[]) {
     RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
     RSS(ref_phys_spalding_yplus(uplus, &y), "y");
     RWDS(y, yplus, -1, "uplus");
+  }
+
+  { /* sa surrogate */
+    REF_DBL wall_distance, nu_tilde;
+    wall_distance = 0.0;
+    RSS(ref_phys_sa_surrogate(wall_distance, &nu_tilde), "sa soln");
+    RWDS(0, nu_tilde, -1, "nu_tilde 0");
+    wall_distance = -1.0;
+    RSS(ref_phys_sa_surrogate(wall_distance, &nu_tilde), "sa soln");
+    RWDS(0, nu_tilde, -1, "nu_tilde neg");
+    wall_distance = 1e6;
+    RSS(ref_phys_sa_surrogate(wall_distance, &nu_tilde), "sa soln");
+    RWDS(0, nu_tilde, -1, "nu_tilde far");
+    wall_distance = 0.05;
+    RSS(ref_phys_sa_surrogate(wall_distance, &nu_tilde), "sa soln");
+    RWDS(1000.0, nu_tilde, -1, "nu_tilde half BL");
   }
 
   { /* mid tri signed dist */
