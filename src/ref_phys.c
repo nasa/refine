@@ -592,6 +592,22 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance, REF_DBL *nu_tilde) {
+  REF_DBL max_nu_tilde = 1000;
+  REF_DBL freestream_nu_tilde = 3;
+  REF_DBL boundary_layer_height = 0.1;
+  REF_DBL x, height;
+
+  *nu_tilde = 0.0;
+  if (wall_distance > 0.0) {
+    height = wall_distance / boundary_layer_height;
+    x = 4.0 * (height - height * height);
+    *nu_tilde = max_nu_tilde * x;
+    if (height > 0.5) *nu_tilde = MAX(*nu_tilde, freestream_nu_tilde);
+  }
+  return REF_SUCCESS;
+}
+
 /* use? Fast sweeping methods for eikonal equations on triangular meshes */
 REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                                     REF_DBL *distance) {
