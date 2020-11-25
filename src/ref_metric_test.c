@@ -1588,13 +1588,13 @@ int main(int argc, char *argv[]) {
         s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x0));
       if (x1 < ref_node_xyz(ref_node, 0, node))
         s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x1));
-      if (y0 > ref_node_xyz(ref_node, 0, node))
+      if (y0 > ref_node_xyz(ref_node, 1, node))
         s = MAX(s, ABS(ref_node_xyz(ref_node, 1, node) - y0));
-      if (y1 < ref_node_xyz(ref_node, 0, node))
+      if (y1 < ref_node_xyz(ref_node, 1, node))
         s = MAX(s, ABS(ref_node_xyz(ref_node, 1, node) - y1));
-      if (z0 > ref_node_xyz(ref_node, 0, node))
+      if (z0 > ref_node_xyz(ref_node, 2, node))
         s = MAX(s, ABS(ref_node_xyz(ref_node, 2, node) - z0));
-      if (z1 < ref_node_xyz(ref_node, 0, node))
+      if (z1 < ref_node_xyz(ref_node, 2, node))
         s = MAX(s, ABS(ref_node_xyz(ref_node, 2, node) - z1));
       s = MAX(s, MIN(slen - ds, -signed_distance[node] - ds));
       total[node] = s;
