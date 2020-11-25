@@ -1579,24 +1579,30 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_node, node) {
       REF_DBL h;
       REF_DBL slen = dist[node];
+      REF_DBL s_bbox, s_disp_wall, s_disp_iso, s_focus;
       REF_DBL s;
-      s = 0;
+      s_bbox = 0;
       if (x0 > ref_node_xyz(ref_node, 0, node))
-        s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x0));
+        s_bbox = MAX(s_bbox, ABS(ref_node_xyz(ref_node, 0, node) - x0));
       if (x1 < ref_node_xyz(ref_node, 0, node))
-        s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x1));
+        s_bbox = MAX(s_bbox, ABS(ref_node_xyz(ref_node, 0, node) - x1));
       if (y0 > ref_node_xyz(ref_node, 1, node))
-        s = MAX(s, ABS(ref_node_xyz(ref_node, 1, node) - y0));
+        s_bbox = MAX(s_bbox, ABS(ref_node_xyz(ref_node, 1, node) - y0));
       if (y1 < ref_node_xyz(ref_node, 1, node))
-        s = MAX(s, ABS(ref_node_xyz(ref_node, 1, node) - y1));
+        s_bbox = MAX(s_bbox, ABS(ref_node_xyz(ref_node, 1, node) - y1));
       if (z0 > ref_node_xyz(ref_node, 2, node))
-        s = MAX(s, ABS(ref_node_xyz(ref_node, 2, node) - z0));
+        s_bbox = MAX(s_bbox, ABS(ref_node_xyz(ref_node, 2, node) - z0));
       if (z1 < ref_node_xyz(ref_node, 2, node))
-        s = MAX(s, ABS(ref_node_xyz(ref_node, 2, node) - z1));
-      s = MAX(s, MIN(slen - ds, -signed_distance[node] - ds));
-      total[node] = s / ds;
-      if (s < 4.0 * ds) {
-        h = h0 * pow(2, s / ds);
+        s_bbox = MAX(s_bbox, ABS(ref_node_xyz(ref_node, 2, node) - z1));
+      s_disp_wall = slen - ds;                  /* displaced wall */
+      s_disp_iso = -signed_distance[node] - ds; /* displaced turb1=10 */
+      s_focus = MIN(s_disp_wall, s_disp_iso);   /* closest wall or turb1=10 */
+      s_focus = MAX(0.0, s_focus); /* only positive dist to focus region */
+      s = MAX(s_bbox, s_focus);    /* largest dist to focus region or box */
+      s /= ds;                     /* distance to a exponent */
+      total[node] = s;
+      if (s < 4.0) {
+        h = h0 * pow(2, s);
         m[0] = 1.0 / (h * h);
         m[1] = 0.0;
         m[2] = 0.0;
