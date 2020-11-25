@@ -1569,9 +1569,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(iso_grid), "iso free");
 
     RSS(ref_iso_signed_distance(ref_grid, threshold, signed_distance), "iso");
-    each_ref_node_valid_node(ref_node, node) {
-      if (0.0 > threshold[node]) signed_distance[node] = -signed_distance[node];
-    }
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
                                        "ref_metric_iso_dist.tec"),
         "tec");
