@@ -1594,7 +1594,7 @@ int main(int argc, char *argv[]) {
       if (z1 < ref_node_xyz(ref_node, 2, node))
         s = MAX(s, ABS(ref_node_xyz(ref_node, 2, node) - z1));
       s = MAX(s, MIN(slen - ds, -signed_distance[node] - ds));
-      total[node] = s;
+      total[node] = s / ds;
       if (s < 4.0 * ds) {
         h = h0 * pow(2, s / ds);
         m[0] = 1.0 / (h * h);
