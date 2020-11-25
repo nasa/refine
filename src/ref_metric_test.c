@@ -1508,16 +1508,16 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_DBL *dist, *field, *metric, m[6], m0[6];
     REF_INT ldim, i, node, gradation;
-    REF_DBL x0, x1, h0;
+    REF_DBL x0, x1, y0, y1, z0, z1, h0, ds;
     REF_DBL *signed_distance = NULL;
     REF_DBL *total = NULL;
 
     REIS(1, wake_pos,
          "required args: --wake grid.ext distance.solb volume.solb "
-         "metric.solb x0 x1 h0");
-    REIS(9, argc,
+         "metric.solb x0 x1 y0 y1 z0 z1 h0 ds");
+    REIS(14, argc,
          "required args: --wake grid.ext distance.solb volume.solb "
-         "metric.solb x0 x1 h0");
+         "metric.solb x0 x1 y0 y1 z0 z1 h0 ds");
     if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to part grid in position 2");
@@ -1537,8 +1537,15 @@ int main(int argc, char *argv[]) {
     REIS(6, ldim, "expect [rho,u,v,w,p,turb1]");
     x0 = atof(argv[6]);
     x1 = atof(argv[7]);
-    h0 = atof(argv[8]);
-    if (ref_mpi_once(ref_mpi)) printf("x0 %f x1 %f h0 %f\n", x0, x1, h0);
+    y0 = atof(argv[8]);
+    y1 = atof(argv[9]);
+    z0 = atof(argv[10]);
+    z1 = atof(argv[11]);
+    h0 = atof(argv[12]);
+    ds = atof(argv[13]);
+    if (ref_mpi_once(ref_mpi))
+      printf("x0 %f x1 %f y0 %f y1 %f z0 %f z1 %f\n", x0, x1, y0, y1, z0, z1);
+    if (ref_mpi_once(ref_mpi)) printf("h0 %f double dist %f\n", h0, ds);
 
     if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -1576,12 +1583,19 @@ int main(int argc, char *argv[]) {
       REF_DBL h;
       REF_DBL slen = dist[node];
       REF_DBL s;
-      REF_DBL ds = 0.01;
       s = 0;
       if (x0 > ref_node_xyz(ref_node, 0, node))
         s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x0));
       if (x1 < ref_node_xyz(ref_node, 0, node))
         s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x1));
+      if (y0 > ref_node_xyz(ref_node, 0, node))
+        s = MAX(s, ABS(ref_node_xyz(ref_node, 1, node) - y0));
+      if (y1 < ref_node_xyz(ref_node, 0, node))
+        s = MAX(s, ABS(ref_node_xyz(ref_node, 1, node) - y1));
+      if (z0 > ref_node_xyz(ref_node, 0, node))
+        s = MAX(s, ABS(ref_node_xyz(ref_node, 2, node) - z0));
+      if (z1 < ref_node_xyz(ref_node, 0, node))
+        s = MAX(s, ABS(ref_node_xyz(ref_node, 2, node) - z1));
       s = MAX(s, MIN(slen - ds, -signed_distance[node] - ds));
       total[node] = s;
       if (s < 4.0 * ds) {
