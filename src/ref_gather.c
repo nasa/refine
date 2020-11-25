@@ -714,6 +714,78 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_tec(REF_GRID ref_grid, const char *filename) {
+  FILE *file;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_GLOB nnode, *l2c;
+  REF_LONG ncell;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+
+    fprintf(file, "title=\"geometry\"\n");
+    fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+  }
+
+  ref_cell = ref_grid_edg(ref_grid);
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
+  if (nnode > 0 && ncell > 0) {
+    if (ref_grid_once(ref_grid)) {
+      fprintf(file,
+              "zone t=\"edge\", nodes=" REF_GLOB_FMT
+              ", elements=%ld, datapacking=%s, "
+              "zonetype=%s\n",
+              nnode, ncell, "point", "felineseg");
+    }
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
+  }
+  ref_free(l2c);
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
+  if (nnode > 0 && ncell > 0) {
+    if (ref_grid_once(ref_grid)) {
+      fprintf(file,
+              "zone t=\"face\", nodes=" REF_GLOB_FMT
+              ", elements=%ld, datapacking=%s, "
+              "zonetype=%s\n",
+              nnode, ncell, "point", "fetriangle");
+    }
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
+  }
+  ref_free(l2c);
+
+  ref_cell = ref_grid_tet(ref_grid);
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
+  if (nnode > 0 && ncell > 0) {
+    if (ref_grid_once(ref_grid)) {
+      fprintf(file,
+              "zone t=\"tet\", nodes=" REF_GLOB_FMT
+              ", elements=%ld, datapacking=%s, "
+              "zonetype=%s\n",
+              nnode, ncell, "point", "fetetrahedron");
+    }
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
+  }
+  ref_free(l2c);
+
+  if (ref_grid_once(ref_grid)) fclose(file);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_meshb_size(FILE *file, REF_INT version,
                                         REF_SIZE value) {
   unsigned int int_value;
@@ -1721,6 +1793,12 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
 
   end_of_string = strlen(filename);
 
+  if (end_of_string > 4 && (strcmp(&filename[end_of_string - 4], ".tec") == 0 ||
+                            strcmp(&filename[end_of_string - 4], ".dat") == 0 ||
+                            strcmp(&filename[end_of_string - 2], ".t") == 0)) {
+    RSS(ref_gather_tec(ref_grid, filename), "scalar tec");
+    return REF_SUCCESS;
+  }
   if (end_of_string > 10 &&
       strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_FALSE),

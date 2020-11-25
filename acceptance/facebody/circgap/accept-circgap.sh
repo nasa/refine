@@ -53,3 +53,5 @@ adapt_cycle cycle09 cycle10
 # mpiexec refmpi viz cycle09.meshb cycle09.solb cycle09-iso.meshb --iso 0 20.0
 # ref tr cycle09-iso.meshb cycle09-iso.tec
 
+# mpiexec refmpi viz cycle09.meshb cycle09.solb cycle09-iso.tec --iso 0 20.0
+
