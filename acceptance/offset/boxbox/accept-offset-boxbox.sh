@@ -45,6 +45,8 @@ ${src}/ref adapt boxbox-adapt-surf.meshb \
       -x boxbox-surrogate.meshb \
       -f boxbox-surrogate-final.tec
 
+${src}/ref_facelift_test --viz boxbox-surrogate.meshb boxbox.egads
+
 ${src}/ref adapt boxbox-vol.meshb \
       -g boxbox.egads \
       --facelift boxbox-surrogate.meshb \
