@@ -21,8 +21,8 @@ function adapt_cycle {
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb ${inproj}.solb
     ${src}/ref adapt ${inproj}.meshb \
-	  -g cylcyl.egads \
-	  --blend cylcyl-surrogate.meshb \
+	  -g boxbox.egads \
+	  --facelift boxbox-surrogate.meshb \
 	  -m ${inproj}.solb \
 	  -x ${outproj}.meshb \
 	  -f ${outproj}-final.tec \
@@ -33,25 +33,25 @@ function adapt_cycle {
     ${src}/ref_metric_test ${outproj}.meshb ${outproj}.solb > ${outproj}.status
 }
 
-# serveCSM -batch cylcyl.csm
+serveCSM -batch boxbox.csm
 
-${src}/ref boostrap cylcyl.egads \
-      --blend cylcyl-blend.meshb
+${src}/ref boostrap boxbox.egads \
+      --facelift boxbox-facelift.meshb
 
-${src}/ref adapt cylcyl-adapt-surf.meshb \
-      -g cylcyl.egads \
-      --blend-metric 100 \
+${src}/ref adapt boxbox-adapt-surf.meshb \
+      -g boxbox.egads \
+      --facelift-metric 100 \
       -s 5 \
-      -x cylcyl-surrogate.meshb \
-      -f cylcyl-surrogate-final.tec
+      -x boxbox-surrogate.meshb \
+      -f boxbox-surrogate-final.tec
 
-${src}/ref adapt cylcyl-vol.meshb \
-      -g cylcyl.egads \
-      --blend cylcyl-surrogate.meshb \
-      -x cylcyl.meshb \
-      -f cylcyl-final.tec
+${src}/ref adapt boxbox-vol.meshb \
+      -g boxbox.egads \
+      --facelift boxbox-surrogate.meshb \
+      -x boxbox.meshb \
+      -f boxbox-final.tec
 
-adapt_cycle cylcyl cycle01 2
+adapt_cycle boxbox cycle01 2
 adapt_cycle cycle01 cycle02 15
 
 cat cycle02.status
