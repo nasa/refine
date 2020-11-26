@@ -11,24 +11,6 @@ facelift boundary representation model tolerance reduction
   ref_recon fallback for incomplete stencil
   chain rule derivatives?
   actual Laplacian for blend smoothing?
-  + provide displacement distance as multiscale field
-  + blend distance multiscale adapt
-    + ref_recon_local_immediate_cloud_disp
-    + ref_recon_kexact_surf_aux(r,s,n)
-    + ref_recon_kexact_surf_hessian
-    + diag 2x2
-    + multiscale on surface
-    + form 3x3 metric from ev1ev2n
-  + augment inverse eval
-  + find enclosing tri in uv
-  + clip displacement interpolation bary (convex)
-  + interpolate displacement in tri
-  + augment eval
-  + edge node displacements and solve
-  + more complete geom deep copy (except context,nodes,edges,faces?)
-  + set face boundary displacements
-  + solve face boundary displacements
-  + serialize to disk (seperate .meshb and use current position as displacement)
 
 surrogate surface
   support twod geom
@@ -46,9 +28,6 @@ ref_geom ref_egads
  add EGADS model builder fixture to ref_egads_tests
  high order geometry visualization with cubic patches
  try gmsh, mmgtools.org, netgen-mesher, CGALmesh
- + user adjustable volume tetgen and aflr mesher options
- + create native version of inverse evaluate with guess
-  + use newton with discrete grid to constrain
 
 boost curvature constraints for thin shells and gaps
   - near-tree for reducing geometry metric across thickness
@@ -141,7 +120,6 @@ robustness and metric conformity
   flow/migration solved by preventing over refinement
   requeue neighbors with large changes? particularly quality drops
   optimized 4th tet node placement
-  
 
 partitioning
  mature native RCB to default
@@ -211,25 +189,6 @@ meshlink
   - pcurve eval (only supports uv area?)
   - degeneracy mark and uv update (only supports uv area?)
   o discuss PW BC system
-  + ref adapt
-  + orientation for uv sign
-  + initial mesh via API, not xml parse
-  + persist project object and other speed test
-  + persist projection uv and gref
-  + find meshlink_platform and replace lib search in configure.ac
-  + extract triangle support
-  + normdev and same normal safe in mixed support
-  + collapse with partial geom support
-  + missing geom, linear interp
-  + adapt surface only and rebuild volume
-  + startup time shorter with MeshLink patch
-  + shift tri id to negative before extracting assoc tri and shift back uniq
-  + bootstrap drop volume with option to use pw volume
-  + gap discrete estimate to replace percent bbox
-  + add edges to geometry constraint metric
-  + automate mapbc generation
-  + check curvature metric on non-associated surfaces
-  + vote on quilt orientation, not range
 
 *****************
 
@@ -262,6 +221,48 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ initial meshlink
+  + ref adapt
+  + orientation for uv sign
+  + initial mesh via API, not xml parse
+  + persist project object and other speed test
+  + persist projection uv and gref
+  + find meshlink_platform and replace lib search in configure.ac
+  + extract triangle support
+  + normdev and same normal safe in mixed support
+  + collapse with partial geom support
+  + missing geom, linear interp
+  + adapt surface only and rebuild volume
+  + startup time shorter with MeshLink patch
+  + shift tri id to negative before extracting assoc tri and shift back uniq
+  + bootstrap drop volume with option to use pw volume
+  + gap discrete estimate to replace percent bbox
+  + add edges to geometry constraint metric
+  + automate mapbc generation
+  + check curvature metric on non-associated surfaces
+  + vote on quilt orientation, not range
+
+
++ initial blend implementation
+  + provide displacement distance as multiscale field
+  + blend distance multiscale adapt
+    + ref_recon_local_immediate_cloud_disp
+    + ref_recon_kexact_surf_aux(r,s,n)
+    + ref_recon_kexact_surf_hessian
+    + diag 2x2
+    + multiscale on surface
+    + form 3x3 metric from ev1ev2n
+  + augment inverse eval
+  + find enclosing tri in uv
+  + clip displacement interpolation bary (convex)
+  + interpolate displacement in tri
+  + augment eval
+  + edge node displacements and solve
+  + more complete geom deep copy (except context,nodes,edges,faces?)
+  + set face boundary displacements
+  + solve face boundary displacements
+  + serialize to disk (seperate .meshb and use current position as displacement)
+
 + auto tparams an single segment curve
 + accept degen face and edge params not marked with a onenode edge
 + get rid of aux and interp instead (awhile ago)
@@ -269,6 +270,9 @@ ooooooooooooooooo
 + 1.9.3
 
 + native split inverse eval with uv interp fallback
++ user adjustable volume tetgen and aflr mesher options
++ create native version of inverse evaluate with guess
+ + use newton with discrete grid to constrain
 + filter curvature constraint based on samples of neighborhood
 
 + ref adapt --spalding
