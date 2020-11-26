@@ -79,8 +79,6 @@ reject insertion based on near tree
 protect geom constraint metric from surface folds and high curvature
  discrete curvature estimate (triangle-center based?)
 
-robust add geom and xyz between in egads (fast, no inverse eval)
-
 partitioning
  mature native RCB to default
  diffusion
