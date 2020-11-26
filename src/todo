@@ -76,9 +76,6 @@ C2S
 
 reject insertion based on near tree
 
-protect geom constraint metric from surface folds and high curvature
- discrete curvature estimate (triangle-center based?)
-
 partitioning
  mature native RCB to default
  diffusion
