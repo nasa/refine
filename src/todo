@@ -81,11 +81,6 @@ protect geom constraint metric from surface folds and high curvature
 
 robust add geom and xyz between in egads (fast, no inverse eval)
 
-cavity operator in 2D/3D
-  replace classic surf swap with cavity
-  use lexigraph comparison
-  avro style boundary topology checks
-
 partitioning
  mature native RCB to default
  diffusion
@@ -141,6 +136,10 @@ check that post conditions are implemented completely for all ops
   standardize exceptions (edge priority over tri, tri priority over tet)
 
 robustness and metric conformity
+ cavity operator in 2D/3D
+  replace classic surf swap with cavity
+  use lexigraph comparison
+  avro style boundary topology checks
  viz crinkle cut
  report threshold means
  add end-game or blend to end-game metric conformity strategy
