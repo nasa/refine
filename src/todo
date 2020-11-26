@@ -102,13 +102,6 @@ reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
 
 minimize duration of lazy global delete
 
-check that post conditions are implemented completely for all ops
-  consistent naming for operation pre-condition function names and tasks
-  extract/combine post adaptation operator checks and status
-  tattle throw out out range
-  full post checks for edge-metric ratio: cavity swap, node smooth
-  standardize exceptions (edge priority over tri, tri priority over tet)
-
 improve CI test
  make check stack fuzz
  fun3d-intg test
@@ -136,10 +129,16 @@ ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
-input means for all these parameters for optimizer setting
 optimized 4th tet node placement
 
-- buffer / metric diffusion for LES and guide multiscale 
+buffer / metric diffusion for LES and guide multiscale
+
+check that post conditions are implemented completely for all ops
+  consistent naming for operation pre-condition function names and tasks
+  extract/combine post adaptation operator checks and status
+  tattle throw out out range
+  full post checks for edge-metric ratio: cavity swap, node smooth
+  standardize exceptions (edge priority over tri, tri priority over tet)
 
 robustness and metric conformity
  viz crinkle cut
@@ -151,6 +150,7 @@ robustness and metric conformity
   adjustable parameters
   tighten limits near convergence
   rigorous way to set these
+  expose adapt parameters to drive with optimizer
  split
   insert optimized node location (uv,xyz) with validity constraint
   protect nearby vertex
@@ -161,9 +161,12 @@ robustness and metric conformity
 
 memory
  quantify and reduce memory usage
+ ref_malloc bookkeeping
+ add bytes method to report and roll up alloc
 
 performance
  profile
+ cache friendly cavity schedule
  profile start up (grid part)
  fine grain stopwatch for ref_migrate, ref_interp, ref_subdiv, face mov
  replace ref_subdiv with extra load balance?
