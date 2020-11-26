@@ -7,34 +7,6 @@ ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 
 sync surf/tri/face zone titles
 
-meshlink
-  - robust add geom and xyz between
-  - metric conformity for non-associated surfaces (drivAer cavity coarsen)
-  - protect an underlying surface step inside a sheet
-  - feature size (need with virtual topo?)
-  - pcurve eval (only supports uv area?) 
-  - degeneracy mark and uv update (only supports uv area?)
-  o discuss PW BC system
-  + ref adapt
-  + orientation for uv sign
-  + initial mesh via API, not xml parse
-  + persist project object and other speed test
-  + persist projection uv and gref
-  + find meshlink_platform and replace lib search in configure.ac
-  + extract triangle support
-  + normdev and same normal safe in mixed support
-  + collapse with partial geom support
-  + missing geom, linear interp
-  + adapt surface only and rebuild volume
-  + startup time shorter with MeshLink patch
-  + shift tri id to negative before extracting assoc tri and shift back uniq
-  + bootstrap drop volume with option to use pw volume
-  + gap discrete estimate to replace percent bbox
-  + add edges to geometry constraint metric
-  + automate mapbc generation
-  + check curvature metric on non-associated surfaces
-  + vote on quilt orientation, not range
-
 smoothing
   use graph distance from boundary (and edge, node) to prioritize smoothing
   minmax non smooth optimization (nso) of face uv
@@ -234,6 +206,34 @@ egads recon
    why is is not working for edges (initialized to right node t?)
    why is is not working for faces near edges (start from faces interior)
    revert on failure (wrap?)
+
+meshlink
+  - robust add geom and xyz between
+  - metric conformity for non-associated surfaces (drivAer cavity coarsen)
+  - protect an underlying surface step inside a sheet
+  - feature size (need with virtual topo?)
+  - pcurve eval (only supports uv area?)
+  - degeneracy mark and uv update (only supports uv area?)
+  o discuss PW BC system
+  + ref adapt
+  + orientation for uv sign
+  + initial mesh via API, not xml parse
+  + persist project object and other speed test
+  + persist projection uv and gref
+  + find meshlink_platform and replace lib search in configure.ac
+  + extract triangle support
+  + normdev and same normal safe in mixed support
+  + collapse with partial geom support
+  + missing geom, linear interp
+  + adapt surface only and rebuild volume
+  + startup time shorter with MeshLink patch
+  + shift tri id to negative before extracting assoc tri and shift back uniq
+  + bootstrap drop volume with option to use pw volume
+  + gap discrete estimate to replace percent bbox
+  + add edges to geometry constraint metric
+  + automate mapbc generation
+  + check curvature metric on non-associated surfaces
+  + vote on quilt orientation, not range
 
 *****************
 
