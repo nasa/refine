@@ -74,12 +74,6 @@ C2S
  rename and cleanup ref bootstrap IO
  tutorials
 
-partitioning
- mature native RCB to default
- diffusion
- configure with metis only, when parmetis not provided
- INRIA and Cart3D space filling curve
-
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
 
@@ -87,8 +81,6 @@ ref_mpi allmin allmax
 ref_mpi strongly typed
 
 reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
-
-minimize duration of lazy global delete
 
 improve CI test
  make check stack fuzz
@@ -110,14 +102,11 @@ multiscale entropy and/or entropy adjoint (for heating)
 ref_interp_test nondimensionalization of entropy equation and entropy adjoint
 ref_phys_test extraction from ref_interp
 
-integrate complexity more accurately (Josh)
- extract ref_quadrature from ref_interp_integrate
+extract ref_quadrature from ref_interp_integrate
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
-
-optimized 4th tet node placement
 
 buffer / metric diffusion for LES and guide multiscale
 
@@ -133,7 +122,7 @@ robustness and metric conformity
   replace classic surf swap with cavity
   use lexigraph comparison
   avro style boundary topology checks
- viz crinkle cut
+ integrate complexity more accurately (Josh)
  report threshold means
  add end-game or blend to end-game metric conformity strategy
  measure gradation and see if there is a connection to histogram convergence
@@ -150,11 +139,21 @@ robustness and metric conformity
   examine triangle MR
   prevent slivers
   smooth after collapse?
+ smoothing
+  optimized 4th tet node placement
+
+partitioning
+ mature native RCB to default
+ diffusion
+ configure with metis only, when parmetis not provided
+ INRIA and Cart3D space filling curve
 
 memory
  quantify and reduce memory usage
  ref_malloc bookkeeping
  add bytes method to report and roll up alloc
+
+minimize duration of lazy global delete
 
 performance
  profile
@@ -171,15 +170,16 @@ performance
   zero partition cost
  
 viz/debug/status
+ viz crinkle cut
  ellipsoid metric or something cheaper
  register faceid list (plus neighbors?) in gather movie to reduce file size
  report locations of extremely long ratio edges?
 
 validation:
-validation_all: turn on
-validation_face: make parallel
-validation_face: all triangles have one tet and tet has one neighbor
-euler number
+ validation_all: turn on
+ validation_face: make parallel
+ validation_face: all triangles have one tet and tet has one neighbor
+ euler number
 
 interp metric on curved surface
  interpolate in u,v,s
