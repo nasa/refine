@@ -4,7 +4,6 @@ set(REF_TWO_HEADERS
         ref_agents.h
         ref_args.h
         ref_axi.h
-        ref_blend.h
         ref_cavity.h
         ref_cell.h
         ref_cloud.h
@@ -20,6 +19,7 @@ set(REF_TWO_HEADERS
         ref_endian.h
         ref_export.h
         ref_face.h
+        ref_facelift.h
         ref_fixture.h
         ref_fortran.h
         ref_gather.h
@@ -60,7 +60,6 @@ set(REF_CORE_SRC
         ref_adj.c
         ref_args.c
         ref_axi.c
-        ref_blend.c
         ref_cavity.c
         ref_cell.c
         ref_cloud.c
@@ -73,6 +72,7 @@ set(REF_CORE_SRC
         ref_elast.c
         ref_export.c
         ref_face.c
+        ref_facelift.c
         ref_fixture.c
         ref_fortran.c
         ref_gather.c
@@ -218,7 +218,6 @@ set(REF_TESTS
         ref_agents_test.c
         ref_args_test.c
         ref_axi_test.c
-        ref_blend_test.c
         ref_cavity_test.c
         ref_cell_test.c
         ref_cloud_test.c
@@ -232,6 +231,7 @@ set(REF_TESTS
         ref_elast_test.c
         ref_export_test.c
         ref_face_test.c
+        ref_facelift_test.c
         ref_fixture_test.c
         ref_fortran_test.c
         ref_gather_test.c

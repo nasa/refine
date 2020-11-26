@@ -99,14 +99,14 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->meshlink = NULL;
   ref_geom->meshlink_projection = NULL;
 
-  ref_geom->ref_blend = NULL;
+  ref_geom->ref_facelift = NULL;
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
   if (NULL == (void *)ref_geom) return REF_NULL;
-  ref_blend_free(ref_geom_blend(ref_geom));
+  ref_facelift_free(ref_geom_facelift(ref_geom));
   ref_free(ref_geom->cad_data);
   if (ref_geom->contex_owned)
     RSS(ref_egads_close(ref_geom), "close egads contex");
@@ -167,7 +167,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->meshlink = NULL;
   ref_geom->meshlink_projection = NULL;
 
-  ref_geom->ref_blend = NULL;
+  ref_geom->ref_facelift = NULL;
 
   return REF_SUCCESS;
 }

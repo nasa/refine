@@ -6,7 +6,7 @@ understand interp max error reports
 sync surf/tri/face zone titles
 
 facelift boundary representation model tolerance reduction
-  rename blend to facelift
+  + rename blend to facelift
   more parallel friendly
   ref_recon fallback for incomplete stencil
   chain rule derivatives?

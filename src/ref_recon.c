@@ -433,7 +433,7 @@ static REF_STATUS ref_recon_local_immediate_cloud_geom(REF_CLOUD *one_layer,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_BLEND ref_blend = ref_geom_blend(ref_geom);
+  REF_FACELIFT ref_facelift = ref_geom_facelift(ref_geom);
   REF_INT node, item, cell, cell_node, target, geom;
   REF_GLOB global;
   REF_DBL xyzs[4];
@@ -449,7 +449,7 @@ static REF_STATUS ref_recon_local_immediate_cloud_geom(REF_CLOUD *one_layer,
             xyzs[2] = ref_node_xyz(ref_node, 2, target);
             RSS(ref_geom_find(ref_geom, target, REF_GEOM_FACE, id, &geom),
                 "find geom");
-            xyzs[3] = ref_blend_distance(ref_blend, geom);
+            xyzs[3] = ref_facelift_distance(ref_facelift, geom);
             RSS(ref_cloud_store(one_layer[node], global, xyzs),
                 "store could stencil");
           }

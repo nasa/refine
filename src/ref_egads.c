@@ -2237,10 +2237,10 @@ REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   ego object;
   int status;
 
-  if (NULL != ref_geom_blend(ref_geom)) {
-    RSS(ref_blend_eval_at(ref_geom_blend(ref_geom), type, id, params, xyz,
+  if (NULL != ref_geom_facelift(ref_geom)) {
+    RSS(ref_facelift_eval_at(ref_geom_facelift(ref_geom), type, id, params, xyz,
                           dxyz_dtuv),
-        "blend eval wrapper");
+        "facelift eval wrapper");
     return REF_SUCCESS;
   }
 
@@ -2337,9 +2337,9 @@ REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
   REF_BOOL verbose = REF_FALSE;
 
-  if (NULL != ref_geom_blend(ref_geom)) {
-    RSS(ref_blend_inverse_eval(ref_geom_blend(ref_geom), type, id, xyz, param),
-        "blend inv eval wrapper");
+  if (NULL != ref_geom_facelift(ref_geom)) {
+    RSS(ref_facelift_inverse_eval(ref_geom_facelift(ref_geom), type, id, xyz, param),
+        "facelift inv eval wrapper");
     return REF_SUCCESS;
   }
 

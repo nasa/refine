@@ -2,12 +2,11 @@
 EXTRA_DIST = test.sh
 
 include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
-	ref_blend.h \
 	ref_cavity.h ref_cell.h ref_cloud.h \
 	ref_clump.h ref_collapse.h ref_comprow.h \
 	ref_dict.h ref_dist.h ref_defs.h \
 	ref_edge.h ref_egads.h ref_elast.h ref_export.h \
-	ref_face.h ref_fixture.h ref_fortran.h \
+	ref_face.h ref_facelift.h ref_fixture.h ref_fortran.h \
 	ref_gather.h ref_geom.h ref_grid.h \
 	ref_histogram.h ref_html.h \
 	ref_import.h ref_inflate.h ref_interp.h ref_iso.h \
@@ -30,7 +29,6 @@ librefine_core_a_SOURCES = \
 	ref_agents.c \
 	ref_args.c \
 	ref_axi.c \
-	ref_blend.c \
 	ref_cavity.c \
 	ref_cell.c \
 	ref_cloud.c \
@@ -44,6 +42,7 @@ librefine_core_a_SOURCES = \
 	ref_endian.h \
 	ref_export.c \
 	ref_face.c \
+	ref_facelift.c \
 	ref_fixture.c \
 	ref_fortran.c \
 	ref_gather.c \
@@ -204,11 +203,6 @@ noinst_PROGRAMS += ref_axi_test
 ref_axi_test_SOURCES = ref_axi_test.c
 ref_axi_test_LDADD = $(default_ldadd)
 
-TESTS += ref_blend_test
-noinst_PROGRAMS += ref_blend_test
-ref_blend_test_SOURCES = ref_blend_test.c
-ref_blend_test_LDADD = $(default_ldadd)
-
 TESTS += ref_cavity_test
 noinst_PROGRAMS += ref_cavity_test
 ref_cavity_test_SOURCES = ref_cavity_test.c
@@ -273,6 +267,11 @@ TESTS += ref_face_test
 noinst_PROGRAMS += ref_face_test
 ref_face_test_SOURCES = ref_face_test.c
 ref_face_test_LDADD = $(default_ldadd)
+
+TESTS += ref_facelift_test
+noinst_PROGRAMS += ref_facelift_test
+ref_facelift_test_SOURCES = ref_facelift_test.c
+ref_facelift_test_LDADD = $(default_ldadd)
 
 TESTS += ref_fixture_test
 noinst_PROGRAMS += ref_fixture_test
