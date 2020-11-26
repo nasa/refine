@@ -21,6 +21,8 @@ surrogate surface
   many-to-many association virtual topology
   allow inv eval to hop objects
 
+curved higher order meshing
+
 ref_geom ref_egads
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
  volume fill: merge import grid, remove specialized readers
@@ -36,6 +38,8 @@ boost curvature constraints for thin shells and gaps
 
 bootstrap
   - thin cylinder/sphere shell test for thickness geom constraint
+    - gap metric gradation via octree
+    - thin geometry boost of curvature constraint metric
   - thin wavy (along training edge) training edge bootstrap
   - edge off surface testcase or surface gap testcase?
   - cusp geom topology testcase
@@ -96,10 +100,13 @@ robustness and metric conformity
   use lexigraph comparison
   avro style boundary topology checks
   ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
+ limit metric change from implied metric and update until convergence
  integrate complexity more accurately (Josh)
  report threshold means
+ encourage first cell normal, minimize skin friction noise
  add end-game or blend to end-game metric conformity strategy
  measure gradation and see if there is a connection to histogram convergence
+ recover coarse curved edge/face from tessellation
  smarter adapt parameters
   increase required improvement to settle
   adjustable parameters
@@ -195,26 +202,8 @@ meshlink
 - explore entropy adjoint in 2D and 3D
 - understand multiscale gradation of boundary layer and nozzle when shocks
 - dual RANS/ILES metric or meshes for HRLES
-- C2S acceptance on fun3d-intg and sfe develop/master
-- recover coarse curved edge/face from tessellation
-- surrogate geometry
-- curved higher order meshing
-- meshlink support
-- smoothing order graph distance to boundary
-- migration to cavity from local operators
-- filter geometry surface curvature metric with discrete curvature
+- S2S acceptance on fun3d-intg and sfe develop/master
 - verify interpolation error to background mesh
-- available initial volume mesher
-- gap metric gradation via octree
-- thin geometry boost of curvature constraint metric
-- limit metric change from implied metric and update until convergence
-- virtual topology
-- split private/public header defs
-- standardize post operation conditions
-- second order boundary reconstruction of hessian and adjoint
-- encourage first cell normal, skin friction noise
-- mesh movement
-- bootstrap all of C2S
 
 ooooooooooooooooo
 
@@ -242,7 +231,6 @@ ooooooooooooooooo
   + check curvature metric on non-associated surfaces
   + vote on quilt orientation, not range
 
-
 + initial blend implementation
   + provide displacement distance as multiscale field
   + blend distance multiscale adapt
@@ -266,6 +254,7 @@ ooooooooooooooooo
 + auto tparams an single segment curve
 + accept degen face and edge params not marked with a onenode edge
 + get rid of aux and interp instead (awhile ago)
++ second order boundary reconstruction of hessian and adjoint
 
 + 1.9.3
 
