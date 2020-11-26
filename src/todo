@@ -87,10 +87,10 @@ cavity operator in 2D/3D
   avro style boundary topology checks
 
 partitioning
- INRIA and Cart3D space filling curve
+ mature native RCB to default
  diffusion
-
-configure with metis only, when parmetis not provided
+ configure with metis only, when parmetis not provided
+ INRIA and Cart3D space filling curve
 
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
