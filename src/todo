@@ -74,8 +74,6 @@ C2S
  rename and cleanup ref bootstrap IO
  tutorials
 
-reject insertion based on near tree
-
 partitioning
  mature native RCB to default
  diffusion
@@ -147,7 +145,7 @@ robustness and metric conformity
   expose adapt parameters to drive with optimizer
  split
   insert optimized node location (uv,xyz) with validity constraint
-  protect nearby vertex
+  reject insertion based on near tree to protect nearby vertex
  collapse
   examine triangle MR
   prevent slivers
