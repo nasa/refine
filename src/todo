@@ -5,18 +5,20 @@ understand interp max error reports
 
 sync surf/tri/face zone titles
 
-blend tolerance reduction
-  provide displacement distance as multiscale field
-  normal tagent hessian
-    ref_recon_local_immediate_cloud_disp
-    ref_recon_kexact_surf_aux(r,s,n)
-    ref_recon_kexact_surf_hessian
-    + diag 2x2
-    multiscale on surface
-    form 3x3 metric from ev1ev2n
-  blend distance multiscale adapt
+facelift boundary representation model tolerance reduction
+  rename blend to facelift
+  more parallel friendly
+  ref_recon fallback for incomplete stencil
   chain rule derivatives?
   actual Laplacian for blend smoothing?
+  + provide displacement distance as multiscale field
+  + blend distance multiscale adapt
+    + ref_recon_local_immediate_cloud_disp
+    + ref_recon_kexact_surf_aux(r,s,n)
+    + ref_recon_kexact_surf_hessian
+    + diag 2x2
+    + multiscale on surface
+    + form 3x3 metric from ev1ev2n
   + augment inverse eval
   + find enclosing tri in uv
   + clip displacement interpolation bary (convex)
@@ -31,21 +33,22 @@ blend tolerance reduction
 surrogate surface
   support twod geom
   share via meshb
+  higher order surface
   when EGADS not available
   support virtual topology
+  many-to-many association virtual topology
+  allow inv eval to hop objects
 
-ref_geom
+ref_geom ref_egads
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
  volume fill: merge import grid, remove specialized readers
- user adjustable volume tetgen and aflr mesher options
  unfreeze edges for AFLR volume
  add EGADS model builder fixture to ref_egads_tests
- create native version of inverse evaluate with guess
-  use newton with discrete grid to constrain
-  allow inv eval to hop objects
- many-to-many association virtual topology
  high order geometry visualization with cubic patches
  try gmsh, mmgtools.org, netgen-mesher, CGALmesh
+ + user adjustable volume tetgen and aflr mesher options
+ + create native version of inverse evaluate with guess
+  + use newton with discrete grid to constrain
 
 boost curvature constraints for thin shells and gaps
   - near-tree for reducing geometry metric across thickness
