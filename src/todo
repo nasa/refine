@@ -3,8 +3,6 @@ sync twod oriention with and without EGADS
 
 understand interp max error reports
 
-ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
-
 sync surf/tri/face zone titles
 
 blend tolerance reduction
@@ -60,7 +58,7 @@ bootstrap
   - edge off surface testcase or surface gap testcase?
   - cusp geom topology testcase
 
-C2S
+S2S
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
  README and FUN3D doc update and sync
@@ -115,6 +113,7 @@ robustness and metric conformity
   replace classic surf swap with cavity
   use lexigraph comparison
   avro style boundary topology checks
+  ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
  integrate complexity more accurately (Josh)
  report threshold means
  add end-game or blend to end-game metric conformity strategy
@@ -139,6 +138,7 @@ robustness and metric conformity
   flow/migration solved by preventing over refinement
   requeue neighbors with large changes? particularly quality drops
   optimized 4th tet node placement
+  
 
 partitioning
  mature native RCB to default
