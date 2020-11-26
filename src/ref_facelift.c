@@ -16,7 +16,7 @@
  * permissions and limitations under the License.
  */
 
-#include "ref_blend.h"
+#include "ref_facelift.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -34,31 +34,31 @@
 #include "ref_node.h"
 #include "ref_recon.h"
 
-#define ref_blend_geom(ref_blend) (ref_grid_geom(ref_blend_grid(ref_blend)))
-#define ref_blend_strong_bc(ref_blend, geom) ((ref_blend)->strong_bc[(geom)])
-#define ref_blend_edge_search(ref_blend, iedge) \
-  ((ref_blend)->edge_search[(iedge)])
-#define ref_blend_face_search(ref_blend, iface) \
-  ((ref_blend)->face_search[(iface)])
+#define ref_facelift_geom(ref_facelift) (ref_grid_geom(ref_facelift_grid(ref_facelift)))
+#define ref_facelift_strong_bc(ref_facelift, geom) ((ref_facelift)->strong_bc[(geom)])
+#define ref_facelift_edge_search(ref_facelift, iedge) \
+  ((ref_facelift)->edge_search[(iedge)])
+#define ref_facelift_face_search(ref_facelift, iface) \
+  ((ref_facelift)->face_search[(iface)])
 
-static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
+static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
   REF_INT nedge, iedge, nface, iface;
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL center[3], radius, scale = 2.0;
 
-  ref_blend->edge_search = NULL;
+  ref_facelift->edge_search = NULL;
 
   nedge = ref_geom->nedge;
 
   if (0 < nedge) {
     ref_cell = ref_grid_edg(ref_grid);
 
-    ref_malloc_init(ref_blend->edge_search, nedge, REF_SEARCH, NULL);
+    ref_malloc_init(ref_facelift->edge_search, nedge, REF_SEARCH, NULL);
     for (iedge = 0; iedge < nedge; iedge++) {
-      RSS(ref_search_create(&(ref_blend_edge_search(ref_blend, iedge)),
+      RSS(ref_search_create(&(ref_facelift_edge_search(ref_facelift, iedge)),
                             ref_cell_n(ref_cell)),
           "create edge search");
     }
@@ -70,22 +70,22 @@ static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
       center[1] = 0.0;
       center[2] = 0.0;
       iedge = nodes[2] - 1;
-      RSS(ref_search_insert(ref_blend_edge_search(ref_blend, iedge), cell,
+      RSS(ref_search_insert(ref_facelift_edge_search(ref_facelift, iedge), cell,
                             center, scale * radius),
           "ins");
     }
   }
 
-  ref_blend->face_search = NULL;
+  ref_facelift->face_search = NULL;
 
   nface = ref_geom->nface;
 
   if (0 < nface) {
     ref_cell = ref_grid_tri(ref_grid);
 
-    ref_malloc_init(ref_blend->face_search, nface, REF_SEARCH, NULL);
+    ref_malloc_init(ref_facelift->face_search, nface, REF_SEARCH, NULL);
     for (iface = 0; iface < nface; iface++) {
-      RSS(ref_search_create(&(ref_blend_face_search(ref_blend, iface)),
+      RSS(ref_search_create(&(ref_facelift_face_search(ref_facelift, iface)),
                             ref_cell_n(ref_cell)),
           "create face search");
     }
@@ -96,7 +96,7 @@ static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
           "bound with circle");
       center[2] = 0.0;
       iface = nodes[3] - 1;
-      RSS(ref_search_insert(ref_blend_face_search(ref_blend, iface), cell,
+      RSS(ref_search_insert(ref_facelift_face_search(ref_facelift, iface), cell,
                             center, scale * radius),
           "ins");
     }
@@ -105,51 +105,51 @@ static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr,
+REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift_ptr,
                             REF_GRID freeable_ref_grid) {
-  REF_BLEND ref_blend;
+  REF_FACELIFT ref_facelift;
   REF_INT n;
 
-  ref_malloc(*ref_blend_ptr, 1, REF_BLEND_STRUCT);
+  ref_malloc(*ref_facelift_ptr, 1, REF_FACELIFT_STRUCT);
 
-  ref_blend = *ref_blend_ptr;
+  ref_facelift = *ref_facelift_ptr;
 
-  ref_blend_grid(ref_blend) = freeable_ref_grid;
-  n = ref_geom_max(ref_blend_geom(ref_blend));
-  ref_malloc_init(ref_blend->displacement, 3 * n, REF_DBL, 0.0);
-  ref_malloc_init(ref_blend->strong_bc, n, REF_BOOL, REF_FALSE);
+  ref_facelift_grid(ref_facelift) = freeable_ref_grid;
+  n = ref_geom_max(ref_facelift_geom(ref_facelift));
+  ref_malloc_init(ref_facelift->displacement, 3 * n, REF_DBL, 0.0);
+  ref_malloc_init(ref_facelift->strong_bc, n, REF_BOOL, REF_FALSE);
 
-  RSS(ref_blend_cache_search(ref_blend), "cache tri uv");
+  RSS(ref_facelift_cache_search(ref_facelift), "cache tri uv");
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
+REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift) {
   REF_INT i;
-  if (NULL == (void *)ref_blend) return REF_NULL;
+  if (NULL == (void *)ref_facelift) return REF_NULL;
 
-  if (NULL != ref_blend->edge_search) {
-    for (i = 0; i < ref_blend_geom(ref_blend)->nedge; i++)
-      ref_search_free(ref_blend_edge_search(ref_blend, i));
-    ref_free(ref_blend->edge_search);
+  if (NULL != ref_facelift->edge_search) {
+    for (i = 0; i < ref_facelift_geom(ref_facelift)->nedge; i++)
+      ref_search_free(ref_facelift_edge_search(ref_facelift, i));
+    ref_free(ref_facelift->edge_search);
   }
-  if (NULL != ref_blend->face_search) {
-    for (i = 0; i < ref_blend_geom(ref_blend)->nface; i++)
-      ref_search_free(ref_blend_face_search(ref_blend, i));
-    ref_free(ref_blend->face_search);
+  if (NULL != ref_facelift->face_search) {
+    for (i = 0; i < ref_facelift_geom(ref_facelift)->nface; i++)
+      ref_search_free(ref_facelift_face_search(ref_facelift, i));
+    ref_free(ref_facelift->face_search);
   }
-  ref_free(ref_blend->strong_bc);
-  ref_free(ref_blend->displacement);
-  ref_grid_free(ref_blend_grid(ref_blend));
+  ref_free(ref_facelift->strong_bc);
+  ref_free(ref_facelift->displacement);
+  ref_grid_free(ref_facelift_grid(ref_facelift));
   /* geom is a pointer to the orig */
-  ref_free(ref_blend);
+  ref_free(ref_facelift);
 
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_solve_face(REF_BLEND ref_blend) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+static REF_STATUS ref_facelift_solve_face(REF_FACELIFT ref_facelift) {
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
+  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell_node, other_geom, center;
@@ -157,7 +157,7 @@ static REF_STATUS ref_blend_solve_face(REF_BLEND ref_blend) {
 
   /* psudo laplace */
   each_ref_geom_face(ref_geom, center_geom) {
-    if (!ref_blend_strong_bc(ref_blend, center_geom)) {
+    if (!ref_facelift_strong_bc(ref_facelift, center_geom)) {
       center = ref_geom_node(ref_geom, center_geom);
       hits = 0.0;
       disp[0] = 0.0;
@@ -171,15 +171,15 @@ static REF_STATUS ref_blend_solve_face(REF_BLEND ref_blend) {
                               ref_geom_id(ref_geom, center_geom), &other_geom),
                 "other geom");
             hits += 0.5;
-            disp[0] += 0.5 * ref_blend_displacement(ref_blend, 0, other_geom);
-            disp[1] += 0.5 * ref_blend_displacement(ref_blend, 1, other_geom);
-            disp[2] += 0.5 * ref_blend_displacement(ref_blend, 2, other_geom);
+            disp[0] += 0.5 * ref_facelift_displacement(ref_facelift, 0, other_geom);
+            disp[1] += 0.5 * ref_facelift_displacement(ref_facelift, 1, other_geom);
+            disp[2] += 0.5 * ref_facelift_displacement(ref_facelift, 2, other_geom);
           }
         }
         if (hits > 0.1) {
-          ref_blend_displacement(ref_blend, 0, center_geom) = disp[0] / hits;
-          ref_blend_displacement(ref_blend, 1, center_geom) = disp[1] / hits;
-          ref_blend_displacement(ref_blend, 2, center_geom) = disp[2] / hits;
+          ref_facelift_displacement(ref_facelift, 0, center_geom) = disp[0] / hits;
+          ref_facelift_displacement(ref_facelift, 1, center_geom) = disp[1] / hits;
+          ref_facelift_displacement(ref_facelift, 2, center_geom) = disp[2] / hits;
         }
       }
     }
@@ -188,7 +188,7 @@ static REF_STATUS ref_blend_solve_face(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend,
+static REF_STATUS ref_facelift_initialize_face(REF_FACELIFT ref_facelift,
                                             REF_GEOM ref_geom) {
   REF_DBL edge_xyz[3], face_xyz[3];
   REF_INT i, edge_geom, face_geom, node, item;
@@ -200,25 +200,25 @@ static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend,
     node = ref_geom_node(ref_geom, edge_geom);
     each_ref_geom_having_node(ref_geom, node, item, face_geom) {
       if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
-          !ref_blend_strong_bc(ref_blend, face_geom)) {
+          !ref_facelift_strong_bc(ref_facelift, face_geom)) {
         RSS(ref_egads_eval(ref_geom, face_geom, face_xyz, NULL), "eval face");
-        ref_blend_strong_bc(ref_blend, face_geom) = REF_TRUE;
+        ref_facelift_strong_bc(ref_facelift, face_geom) = REF_TRUE;
         for (i = 0; i < 3; i++) {
-          ref_blend_displacement(ref_blend, i, face_geom) =
+          ref_facelift_displacement(ref_facelift, i, face_geom) =
               edge_xyz[i] - face_xyz[i];
         }
       }
     }
   }
 
-  for (i = 0; i < 1000; i++) RSS(ref_blend_solve_face(ref_blend), "solve");
+  for (i = 0; i < 1000; i++) RSS(ref_facelift_solve_face(ref_facelift), "solve");
 
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_solve_edge(REF_BLEND ref_blend) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+static REF_STATUS ref_facelift_solve_edge(REF_FACELIFT ref_facelift) {
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
+  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell_node, other_geom, center;
@@ -226,7 +226,7 @@ static REF_STATUS ref_blend_solve_edge(REF_BLEND ref_blend) {
 
   /* psudo laplace */
   each_ref_geom_edge(ref_geom, center_geom) {
-    if (!ref_blend_strong_bc(ref_blend, center_geom)) {
+    if (!ref_facelift_strong_bc(ref_facelift, center_geom)) {
       center = ref_geom_node(ref_geom, center_geom);
       hits = 0.0;
       disp[0] = 0.0;
@@ -240,15 +240,15 @@ static REF_STATUS ref_blend_solve_edge(REF_BLEND ref_blend) {
                               ref_geom_id(ref_geom, center_geom), &other_geom),
                 "other geom");
             hits += 0.5;
-            disp[0] += 0.5 * ref_blend_displacement(ref_blend, 0, other_geom);
-            disp[1] += 0.5 * ref_blend_displacement(ref_blend, 1, other_geom);
-            disp[2] += 0.5 * ref_blend_displacement(ref_blend, 2, other_geom);
+            disp[0] += 0.5 * ref_facelift_displacement(ref_facelift, 0, other_geom);
+            disp[1] += 0.5 * ref_facelift_displacement(ref_facelift, 1, other_geom);
+            disp[2] += 0.5 * ref_facelift_displacement(ref_facelift, 2, other_geom);
           }
         }
         if (hits > 0.1) {
-          ref_blend_displacement(ref_blend, 0, center_geom) = disp[0] / hits;
-          ref_blend_displacement(ref_blend, 1, center_geom) = disp[1] / hits;
-          ref_blend_displacement(ref_blend, 2, center_geom) = disp[2] / hits;
+          ref_facelift_displacement(ref_facelift, 0, center_geom) = disp[0] / hits;
+          ref_facelift_displacement(ref_facelift, 1, center_geom) = disp[1] / hits;
+          ref_facelift_displacement(ref_facelift, 2, center_geom) = disp[2] / hits;
         }
       }
     }
@@ -257,8 +257,8 @@ static REF_STATUS ref_blend_solve_edge(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_initialize_edge(REF_BLEND ref_blend) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+static REF_STATUS ref_facelift_initialize_edge(REF_FACELIFT ref_facelift) {
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL node_xyz[3], edge_xyz[3];
   REF_INT i, node_geom, edge_geom, node, item;
 
@@ -269,34 +269,34 @@ static REF_STATUS ref_blend_initialize_edge(REF_BLEND ref_blend) {
     node = ref_geom_node(ref_geom, node_geom);
     each_ref_geom_having_node(ref_geom, node, item, edge_geom) {
       if (REF_GEOM_EDGE == ref_geom_type(ref_geom, edge_geom) &&
-          !ref_blend_strong_bc(ref_blend, edge_geom)) {
+          !ref_facelift_strong_bc(ref_facelift, edge_geom)) {
         RSS(ref_egads_eval(ref_geom, edge_geom, edge_xyz, NULL), "eval face");
-        ref_blend_strong_bc(ref_blend, edge_geom) = REF_TRUE;
+        ref_facelift_strong_bc(ref_facelift, edge_geom) = REF_TRUE;
         for (i = 0; i < 3; i++) {
-          ref_blend_displacement(ref_blend, i, edge_geom) =
+          ref_facelift_displacement(ref_facelift, i, edge_geom) =
               node_xyz[i] - edge_xyz[i];
         }
       }
     }
   }
 
-  for (i = 0; i < 100; i++) RSS(ref_blend_solve_edge(ref_blend), "solve");
+  for (i = 0; i < 100; i++) RSS(ref_facelift_solve_edge(ref_facelift), "solve");
 
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_apply(REF_BLEND ref_blend) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
-  REF_NODE ref_node = ref_grid_node(ref_blend_grid(ref_blend));
+static REF_STATUS ref_facelift_apply(REF_FACELIFT ref_facelift) {
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
+  REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
   REF_DBL xyz[3];
   REF_INT geom;
   each_ref_geom_face(ref_geom, geom) {
     RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, ref_geom_id(ref_geom, geom),
                           &(ref_geom_param(ref_geom, 0, geom)), xyz, NULL),
         "eval at");
-    xyz[0] += ref_blend_displacement(ref_blend, 0, geom);
-    xyz[1] += ref_blend_displacement(ref_blend, 1, geom);
-    xyz[2] += ref_blend_displacement(ref_blend, 2, geom);
+    xyz[0] += ref_facelift_displacement(ref_facelift, 0, geom);
+    xyz[1] += ref_facelift_displacement(ref_facelift, 1, geom);
+    xyz[2] += ref_facelift_displacement(ref_facelift, 2, geom);
     ref_node_xyz(ref_node, 0, ref_geom_node(ref_geom, geom)) = xyz[0];
     ref_node_xyz(ref_node, 1, ref_geom_node(ref_geom, geom)) = xyz[1];
     ref_node_xyz(ref_node, 2, ref_geom_node(ref_geom, geom)) = xyz[2];
@@ -304,22 +304,22 @@ static REF_STATUS ref_blend_apply(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
+REF_STATUS ref_facelift_attach(REF_GRID ref_grid) {
   REF_GRID freeable_ref_grid;
-  REF_BLEND ref_blend;
+  REF_FACELIFT ref_facelift;
   RSS(ref_grid_deep_copy(&freeable_ref_grid, ref_grid), "deep copy");
-  RSS(ref_blend_create(&ref_blend, freeable_ref_grid), "create");
-  ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
-  RSS(ref_blend_initialize_edge(ref_blend), "init disp");
-  RSS(ref_blend_initialize_face(ref_blend, ref_grid_geom(ref_grid)),
+  RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid), "create");
+  ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
+  RSS(ref_facelift_initialize_edge(ref_facelift), "init disp");
+  RSS(ref_facelift_initialize_face(ref_facelift, ref_grid_geom(ref_grid)),
       "init disp");
-  RSS(ref_blend_apply(ref_blend), "apply");
+  RSS(ref_facelift_apply(ref_facelift), "apply");
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_infer_displacement(REF_BLEND ref_blend) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
-  REF_NODE ref_node = ref_grid_node(ref_blend_grid(ref_blend));
+static REF_STATUS ref_facelift_infer_displacement(REF_FACELIFT ref_facelift) {
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
+  REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
   REF_DBL geom_xyz[3];
   REF_INT i, geom, node;
 
@@ -327,7 +327,7 @@ static REF_STATUS ref_blend_infer_displacement(REF_BLEND ref_blend) {
     RSS(ref_egads_eval(ref_geom, geom, geom_xyz, NULL), "eval geom");
     node = ref_geom_node(ref_geom, geom);
     for (i = 0; i < 3; i++) {
-      ref_blend_displacement(ref_blend, i, geom) =
+      ref_facelift_displacement(ref_facelift, i, geom) =
           ref_node_xyz(ref_node, i, node) - geom_xyz[i];
     }
   }
@@ -335,9 +335,9 @@ static REF_STATUS ref_blend_infer_displacement(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_import(REF_GRID ref_grid, const char *filename) {
+REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename) {
   REF_GRID freeable_ref_grid;
-  REF_BLEND ref_blend;
+  REF_FACELIFT ref_facelift;
   REF_GEOM ref_geom;
   RSS(ref_import_by_extension(&freeable_ref_grid, ref_grid_mpi(ref_grid),
                               filename),
@@ -350,16 +350,16 @@ REF_STATUS ref_blend_import(REF_GRID ref_grid, const char *filename) {
     RSS(ref_geom_verify_topo(ref_grid), "geom topo");
     RSS(ref_geom_verify_param(ref_grid), "geom param");
   }
-  RSS(ref_blend_create(&ref_blend, freeable_ref_grid), "create");
-  ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
-  RSS(ref_blend_infer_displacement(ref_blend), "infer displacement");
+  RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid), "create");
+  ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
+  RSS(ref_facelift_infer_displacement(ref_facelift), "infer displacement");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
+REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type, REF_INT id,
                                REF_DBL *param, REF_INT *cell, REF_DBL *bary) {
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_LIST ref_list;
   REF_SEARCH ref_search;
   REF_CELL ref_cell;
@@ -376,7 +376,7 @@ REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
 
   if (REF_GEOM_EDGE == type) {
     RSS(ref_list_create(&ref_list), "create list");
-    ref_search = ref_blend_edge_search(ref_blend, id - 1);
+    ref_search = ref_facelift_edge_search(ref_facelift, id - 1);
     ref_cell = ref_grid_edg(ref_grid);
     parampad[0] = param[0];
     parampad[1] = 0.0;
@@ -411,7 +411,7 @@ REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
 
   if (REF_GEOM_FACE == type) {
     RSS(ref_list_create(&ref_list), "create list");
-    ref_search = ref_blend_face_search(ref_blend, id - 1);
+    ref_search = ref_facelift_face_search(ref_facelift, id - 1);
     ref_cell = ref_grid_tri(ref_grid);
     parampad[0] = param[0];
     parampad[1] = param[1];
@@ -447,11 +447,11 @@ REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_displacement_at(REF_BLEND ref_blend, REF_INT type,
+static REF_STATUS ref_facelift_displacement_at(REF_FACELIFT ref_facelift, REF_INT type,
                                             REF_INT id, REF_DBL *params,
                                             REF_DBL *displacement) {
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL bary[3], clip[3];
   displacement[0] = 0.0;
@@ -459,66 +459,66 @@ static REF_STATUS ref_blend_displacement_at(REF_BLEND ref_blend, REF_INT type,
   displacement[2] = 0.0;
 
   if (REF_GEOM_EDGE == type) {
-    RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
+    RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
         "enclose");
     if (REF_EMPTY == cell) return REF_SUCCESS;
     RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
     RSS(ref_cell_nodes(ref_grid_edg(ref_grid), cell, nodes), "nodes");
 
     RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_EDGE, id, &geom), "find 0");
-    displacement[0] += clip[0] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += clip[0] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += clip[0] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[0] * ref_facelift_displacement(ref_facelift, 0, geom);
+    displacement[1] += clip[0] * ref_facelift_displacement(ref_facelift, 1, geom);
+    displacement[2] += clip[0] * ref_facelift_displacement(ref_facelift, 2, geom);
 
     RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_EDGE, id, &geom), "find 1");
-    displacement[0] += clip[1] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += clip[1] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += clip[1] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[1] * ref_facelift_displacement(ref_facelift, 0, geom);
+    displacement[1] += clip[1] * ref_facelift_displacement(ref_facelift, 1, geom);
+    displacement[2] += clip[1] * ref_facelift_displacement(ref_facelift, 2, geom);
   }
   if (REF_GEOM_FACE == type) {
-    RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
+    RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
         "enclose");
     if (REF_EMPTY == cell) return REF_SUCCESS;
     RSS(ref_node_clip_bary3(bary, clip), "clip face bary");
     RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "nodes");
 
     RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, id, &geom), "find 0");
-    displacement[0] += clip[0] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += clip[0] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += clip[0] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[0] * ref_facelift_displacement(ref_facelift, 0, geom);
+    displacement[1] += clip[0] * ref_facelift_displacement(ref_facelift, 1, geom);
+    displacement[2] += clip[0] * ref_facelift_displacement(ref_facelift, 2, geom);
 
     RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_FACE, id, &geom), "find 1");
-    displacement[0] += clip[1] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += clip[1] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += clip[1] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[1] * ref_facelift_displacement(ref_facelift, 0, geom);
+    displacement[1] += clip[1] * ref_facelift_displacement(ref_facelift, 1, geom);
+    displacement[2] += clip[1] * ref_facelift_displacement(ref_facelift, 2, geom);
 
     RSS(ref_geom_find(ref_geom, nodes[2], REF_GEOM_FACE, id, &geom), "find 2");
-    displacement[0] += clip[2] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += clip[2] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += clip[2] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[2] * ref_facelift_displacement(ref_facelift, 0, geom);
+    displacement[1] += clip[2] * ref_facelift_displacement(ref_facelift, 1, geom);
+    displacement[2] += clip[2] * ref_facelift_displacement(ref_facelift, 2, geom);
   }
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_eval_at(REF_BLEND ref_blend, REF_INT type, REF_INT id,
+REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type, REF_INT id,
                              REF_DBL *params, REF_DBL *xyz,
                              REF_DBL *dxyz_dtuv) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL displacement[3];
   RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv),
       "egads eval");
-  RSS(ref_blend_displacement_at(ref_blend, type, id, params, displacement),
-      "blend displacement");
+  RSS(ref_facelift_displacement_at(ref_facelift, type, id, params, displacement),
+      "facelift displacement");
   xyz[0] += displacement[0];
   xyz[1] += displacement[1];
   xyz[2] += displacement[2];
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_inverse_eval(REF_BLEND ref_blend, REF_INT type, REF_INT id,
+REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift, REF_INT type, REF_INT id,
                                   REF_DBL *xyz, REF_DBL *param) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL geom_xyz[3];
   REF_DBL displacement[3];
 
@@ -528,8 +528,8 @@ REF_STATUS ref_blend_inverse_eval(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   RSS(ref_egads_inverse_eval(ref_geom, type, id, geom_xyz, param),
       "inv eval before");
 
-  RSS(ref_blend_displacement_at(ref_blend, type, id, param, displacement),
-      "blend displacement");
+  RSS(ref_facelift_displacement_at(ref_facelift, type, id, param, displacement),
+      "facelift displacement");
 
   geom_xyz[0] -= displacement[0];
   geom_xyz[1] -= displacement[1];
@@ -540,9 +540,9 @@ REF_STATUS ref_blend_inverse_eval(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_edge_tec_zone(REF_BLEND ref_blend, REF_INT id,
+static REF_STATUS ref_facelift_edge_tec_zone(REF_FACELIFT ref_facelift, REF_INT id,
                                           FILE *file) {
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -621,10 +621,10 @@ static REF_STATUS ref_blend_edge_tec_zone(REF_BLEND ref_blend, REF_INT id,
           "eval at");
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
-            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, geom),
-            t[item], 0.0, ref_blend_displacement(ref_blend, 0, geom),
-            ref_blend_displacement(ref_blend, 1, geom),
-            ref_blend_displacement(ref_blend, 2, geom));
+            xyz[0], xyz[1], xyz[2], ref_facelift_distance(ref_facelift, geom),
+            t[item], 0.0, ref_facelift_displacement(ref_facelift, 0, geom),
+            ref_facelift_displacement(ref_facelift, 1, geom),
+            ref_facelift_displacement(ref_facelift, 2, geom));
   }
   if (REF_EMPTY != jump_geom) {
     node = ref_geom_node(ref_geom, jump_geom);
@@ -642,10 +642,10 @@ static REF_STATUS ref_blend_edge_tec_zone(REF_BLEND ref_blend, REF_INT id,
     }
     node = ref_geom_node(ref_geom, jump_geom);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
-            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, jump_geom),
-            t[nnode - 1], 0.0, ref_blend_displacement(ref_blend, 0, jump_geom),
-            ref_blend_displacement(ref_blend, 1, jump_geom),
-            ref_blend_displacement(ref_blend, 2, jump_geom));
+            xyz[0], xyz[1], xyz[2], ref_facelift_distance(ref_facelift, jump_geom),
+            t[nnode - 1], 0.0, ref_facelift_displacement(ref_facelift, 0, jump_geom),
+            ref_facelift_displacement(ref_facelift, 1, jump_geom),
+            ref_facelift_displacement(ref_facelift, 2, jump_geom));
   }
   ref_free(t);
 
@@ -672,12 +672,12 @@ static REF_STATUS ref_blend_edge_tec_zone(REF_BLEND ref_blend, REF_INT id,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
+static REF_STATUS ref_facelift_face_tec_zone(REF_FACELIFT ref_facelift, REF_INT id,
                                           FILE *file) {
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DICT ref_dict, ref_dict_jump, ref_dict_degen;
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local, node;
@@ -771,11 +771,11 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
           "eval at");
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
-            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, geom),
+            xyz[0], xyz[1], xyz[2], ref_facelift_distance(ref_facelift, geom),
             uv[0 + 2 * item], uv[1 + 2 * item],
-            ref_blend_displacement(ref_blend, 0, geom),
-            ref_blend_displacement(ref_blend, 1, geom),
-            ref_blend_displacement(ref_blend, 2, geom));
+            ref_facelift_displacement(ref_facelift, 0, geom),
+            ref_facelift_displacement(ref_facelift, 1, geom),
+            ref_facelift_displacement(ref_facelift, 2, geom));
   }
   each_ref_dict_key_value(ref_dict_jump, item, node, geom) {
     xyz[0] = ref_node_xyz(ref_node, 0, node);
@@ -787,11 +787,11 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
           "eval at");
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
-            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, geom),
+            xyz[0], xyz[1], xyz[2], ref_facelift_distance(ref_facelift, geom),
             uv[0 + 2 * (nnode_sens0 + item)], uv[1 + 2 * (nnode_sens0 + item)],
-            ref_blend_displacement(ref_blend, 0, geom),
-            ref_blend_displacement(ref_blend, 1, geom),
-            ref_blend_displacement(ref_blend, 2, geom));
+            ref_facelift_displacement(ref_facelift, 0, geom),
+            ref_facelift_displacement(ref_facelift, 1, geom),
+            ref_facelift_displacement(ref_facelift, 2, geom));
   }
   each_ref_dict_key_value(ref_dict_degen, item, cell, node) {
     RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, id, &geom), "find");
@@ -804,11 +804,11 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
           "eval at");
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
-            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, geom),
+            xyz[0], xyz[1], xyz[2], ref_facelift_distance(ref_facelift, geom),
             uv[0 + 2 * (nnode_degen + item)], uv[1 + 2 * (nnode_degen + item)],
-            ref_blend_displacement(ref_blend, 0, geom),
-            ref_blend_displacement(ref_blend, 1, geom),
-            ref_blend_displacement(ref_blend, 2, geom));
+            ref_facelift_displacement(ref_facelift, 0, geom),
+            ref_facelift_displacement(ref_facelift, 1, geom),
+            ref_facelift_displacement(ref_facelift, 2, geom));
   }
   ref_free(uv);
 
@@ -845,8 +845,8 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+REF_STATUS ref_facelift_tec(REF_FACELIFT ref_facelift, const char *filename) {
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   FILE *file;
   REF_INT geom, id, min_id, max_id;
 
@@ -867,7 +867,7 @@ REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename) {
   }
 
   for (id = min_id; id <= max_id; id++)
-    RSS(ref_blend_edge_tec_zone(ref_blend, id, file), "tec edge");
+    RSS(ref_facelift_edge_tec_zone(ref_facelift, id, file), "tec edge");
 
   min_id = REF_INT_MAX;
   max_id = REF_INT_MIN;
@@ -877,29 +877,29 @@ REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename) {
   }
 
   for (id = min_id; id <= max_id; id++)
-    RSS(ref_blend_face_tec_zone(ref_blend, id, file), "tec face");
+    RSS(ref_facelift_face_tec_zone(ref_facelift, id, file), "tec face");
 
   fclose(file);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+REF_STATUS ref_facelift_max_distance(REF_FACELIFT ref_facelift, REF_DBL *distance) {
+  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_INT geom, node;
 
   each_ref_node_valid_node(ref_node, node) { distance[node] = 0.0; }
 
   each_ref_geom(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
-    distance[node] = MAX(distance[node], ref_blend_distance(ref_blend, geom));
+    distance[node] = MAX(distance[node], ref_facelift_distance(ref_facelift, geom));
   }
 
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_complexity(REF_DBL *metric, REF_GRID ref_grid,
+static REF_STATUS ref_facelift_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                        REF_DBL *complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -928,7 +928,7 @@ static REF_STATUS ref_blend_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
+static REF_STATUS ref_facelift_gradation_at_complexity(REF_DBL *metric,
                                                     REF_GRID ref_grid,
                                                     REF_DBL gradation,
                                                     REF_DBL complexity) {
@@ -941,7 +941,7 @@ static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
   complexity_scale = 1.0; /* "2D" along surf */
 
   for (relaxations = 0; relaxations < 20; relaxations++) {
-    RSS(ref_blend_complexity(metric, ref_grid, &current_complexity), "cmp");
+    RSS(ref_facelift_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (!ref_math_divisible(complexity, current_complexity)) {
       return REF_DIV_ZERO;
     }
@@ -959,7 +959,7 @@ static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
           "gradation");
     }
   }
-  RSS(ref_blend_complexity(metric, ref_grid, &current_complexity), "cmp");
+  RSS(ref_facelift_complexity(metric, ref_grid, &current_complexity), "cmp");
   if (!ref_math_divisible(complexity, current_complexity)) {
     return REF_DIV_ZERO;
   }
@@ -973,8 +973,8 @@ static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
-  REF_BLEND ref_blend;
+REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
+  REF_FACELIFT ref_facelift;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_DBL *hess, *metric;
@@ -990,12 +990,12 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_BOOL steps = REF_FALSE;
   REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
 
-  /* reset blend to match grid */
-  ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
-  if (NULL != ref_blend) ref_blend_free(ref_blend);
-  ref_blend = NULL;
-  RSS(ref_blend_attach(ref_grid), "attach");
-  ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
+  /* reset facelift to match grid */
+  ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
+  if (NULL != ref_facelift) ref_facelift_free(ref_facelift);
+  ref_facelift = NULL;
+  RSS(ref_facelift_attach(ref_grid), "attach");
+  ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
 
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
 
@@ -1069,14 +1069,14 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   RSS(ref_recon_roundoff_limit(metric, ref_grid), "floor eigs above zero");
 
   if (steps) {
-    RSS(ref_metric_to_node(metric, ref_grid_node(ref_blend_grid(ref_blend))),
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_facelift_grid(ref_facelift))),
         "to");
-    RSS(ref_export_tec_metric_ellipse(ref_blend_grid(ref_blend),
-                                      "ref_blend_raw"),
+    RSS(ref_export_tec_metric_ellipse(ref_facelift_grid(ref_facelift),
+                                      "ref_facelift_raw"),
         "al");
   }
 
-  RSS(ref_blend_gradation_at_complexity(metric, ref_grid, gradation,
+  RSS(ref_facelift_gradation_at_complexity(metric, ref_grid, gradation,
                                         target_complexity),
       "gradation at complexity");
 
@@ -1094,10 +1094,10 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "to");
 
   if (steps) {
-    RSS(ref_metric_to_node(metric, ref_grid_node(ref_blend_grid(ref_blend))),
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_facelift_grid(ref_facelift))),
         "to");
-    RSS(ref_export_tec_metric_ellipse(ref_blend_grid(ref_blend),
-                                      "ref_blend_grad"),
+    RSS(ref_export_tec_metric_ellipse(ref_facelift_grid(ref_facelift),
+                                      "ref_facelift_grad"),
         "al");
   }
 

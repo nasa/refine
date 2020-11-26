@@ -349,11 +349,11 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
   }
 
-  RXS(ref_args_find(argc, argv, "--blend", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--facelift", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    if (ref_mpi_once(ref_mpi)) printf("--blend %s import\n", argv[pos + 1]);
-    RSS(ref_blend_import(ref_grid, argv[pos + 1]), "attach");
-    ref_mpi_stopwatch_stop(ref_mpi, "blend loaded");
+    if (ref_mpi_once(ref_mpi)) printf("--facelift %s import\n", argv[pos + 1]);
+    RSS(ref_facelift_import(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
   }
 
   RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
@@ -470,13 +470,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     } else {
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
       ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
-      RXS(ref_args_find(argc, argv, "--blend-metric", &pos), REF_NOT_FOUND,
+      RXS(ref_args_find(argc, argv, "--facelift-metric", &pos), REF_NOT_FOUND,
           "arg search");
       if (REF_EMPTY != pos && pos < argc - 1) {
         complexity = atof(argv[pos + 1]);
-        if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
-        RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
-        ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+        if (ref_mpi_once(ref_mpi)) printf("--facelift-metric %f\n", complexity);
+        RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
+        ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
       }
     }
   } else {
@@ -512,9 +512,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
         ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
         if (REF_EMPTY != pos && pos < argc - 1) {
           complexity = atof(argv[pos + 1]);
-          if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
-          RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
-          ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+          if (ref_mpi_once(ref_mpi)) printf("--facelift-metric %f\n", complexity);
+          RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
+          ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
         }
       }
     } else {
@@ -575,7 +575,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
   REF_INT pos;
-  REF_INT blend_pos = REF_EMPTY;
+  REF_INT facelift_pos = REF_EMPTY;
   REF_INT auto_tparams_pos = REF_EMPTY;
   REF_INT auto_tparams = REF_EGADS_SINGLE_EDGE_TPARAM;
   const char *mesher = "tetgen";
@@ -721,26 +721,26 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_feedback(ref_grid), "feedback");
   ref_mpi_stopwatch_stop(ref_mpi, "geom feedback");
 
-  RXS(ref_args_find(argc, argv, "--blend", &blend_pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--facelift", &facelift_pos), REF_NOT_FOUND,
       "arg search");
-  if (REF_EMPTY != blend_pos && blend_pos < argc - 1) {
+  if (REF_EMPTY != facelift_pos && facelift_pos < argc - 1) {
     if (ref_mpi_once(ref_mpi)) {
-      printf("--blend %s requested\n", argv[blend_pos + 1]);
-      RSS(ref_blend_attach(ref_grid), "attach");
+      printf("--facelift %s requested\n", argv[facelift_pos + 1]);
+      RSS(ref_facelift_attach(ref_grid), "attach");
     }
-    ref_mpi_stopwatch_stop(ref_mpi, "blend attached");
+    ref_mpi_stopwatch_stop(ref_mpi, "facelift attached");
     if (ref_mpi_once(ref_mpi)) {
-      REF_BLEND ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
-      RSS(ref_export_by_extension(ref_blend_grid(ref_blend),
-                                  argv[blend_pos + 1]),
-          "blend export");
-      sprintf(filename, "%s-blend-geom.tec", project);
-      RSS(ref_blend_tec(ref_blend, filename), "blend viz");
+      REF_FACELIFT ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
+      RSS(ref_export_by_extension(ref_facelift_grid(ref_facelift),
+                                  argv[facelift_pos + 1]),
+          "facelift export");
+      sprintf(filename, "%s-facelift-geom.tec", project);
+      RSS(ref_facelift_tec(ref_facelift, filename), "facelift viz");
     }
-    ref_mpi_stopwatch_stop(ref_mpi, "blend dumped");
+    ref_mpi_stopwatch_stop(ref_mpi, "facelift dumped");
     RSS(ref_geom_constrain_all(ref_grid), "constrain");
     ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
-    RSS(ref_geom_verify_param(ref_grid), "blend params");
+    RSS(ref_geom_verify_param(ref_grid), "facelift params");
     ref_mpi_stopwatch_stop(ref_mpi, "verify param");
     RSS(ref_adapt_surf_to_geom(ref_grid, 3), "ad");
     ref_mpi_stopwatch_stop(ref_mpi, "untangle");
@@ -1508,11 +1508,11 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  RXS(ref_args_find(argc, argv, "--blend", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--facelift", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    if (ref_mpi_once(ref_mpi)) printf("--blend %s import\n", argv[pos + 1]);
-    RSS(ref_blend_import(ref_grid, argv[pos + 1]), "attach");
-    ref_mpi_stopwatch_stop(ref_mpi, "blend loaded");
+    if (ref_mpi_once(ref_mpi)) printf("--facelift %s import\n", argv[pos + 1]);
+    RSS(ref_facelift_import(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
   }
 
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
