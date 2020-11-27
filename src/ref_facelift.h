@@ -70,6 +70,7 @@ REF_STATUS ref_facelift_tec(REF_FACELIFT ref_facelift, const char *filename);
 REF_STATUS ref_facelift_max_distance(REF_FACELIFT ref_facelift,
                                      REF_DBL *distance);
 REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid, REF_DBL complexity);
+REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL complexity);
 
 END_C_DECLORATION
 

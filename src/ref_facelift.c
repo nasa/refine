@@ -1144,3 +1144,54 @@ REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
+  REF_FACELIFT ref_facelift;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *metric;
+  REF_INT node, i;
+  REF_DBL hmax;
+  REF_DBL m[6], combined[6];
+  REF_DBL gradation = 1.0;
+
+  /* reset facelift to match grid */
+  ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
+  if (NULL != ref_facelift) ref_facelift_free(ref_facelift);
+  ref_facelift = NULL;
+  RSS(ref_facelift_attach(ref_grid), "attach");
+  ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
+
+  RSS(ref_egads_diagonal(ref_grid_geom(ref_grid), REF_EMPTY, &hmax),
+      "egads bbox diag");
+  hmax /=
+      MAX(1.0,
+          ref_geom_segments_per_bounding_box_diagonal(ref_grid_geom(ref_grid)));
+
+  ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
+
+  each_ref_node_valid_node(ref_node, node) {
+    metric[0 + 6 * node] = 1.0 / hmax / hmax;
+    metric[1 + 6 * node] = 0.0;
+    metric[2 + 6 * node] = 0.0;
+    metric[3 + 6 * node] = 1.0 / hmax / hmax;
+    metric[4 + 6 * node] = 0.0;
+    metric[5 + 6 * node] = 1.0 / hmax / hmax;
+  }
+
+  RSS(ref_recon_roundoff_limit(metric, ref_grid), "floor eigs above zero");
+
+  RSS(ref_facelift_gradation_at_complexity(metric, ref_grid, gradation,
+                                           target_complexity),
+      "gradation at complexity");
+
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_node_metric_get(ref_node, node, m), "curve metric");
+    RSS(ref_matrix_intersect(&(metric[6 * node]), m, combined), "intersect");
+    for (i = 0; i < 6; i++) metric[i + 6 * node] = combined[i];
+  }
+  RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "to");
+
+  ref_free(metric);
+
+  return REF_SUCCESS;
+}
