@@ -248,7 +248,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_DBL *distance, *uplus, yplus;
   REF_INT node;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
-  REF_DBL gradation = 1.0;
+  REF_DBL gradation = 10.0;
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
