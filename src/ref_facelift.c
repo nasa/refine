@@ -1157,6 +1157,7 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_DBL gradation = 1.0;
   REF_INT geom, item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL is_node;
+  REF_INT node0, node1, cell_node;
 
   /* reset facelift to match grid */
   ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
@@ -1188,8 +1189,21 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
       node = ref_geom_node(ref_geom, geom);
       RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node?");
       if (is_node) continue;
+      node0 = REF_EMPTY;
+      node1 = REF_EMPTY;
       each_ref_cell_having_node(ref_cell, node, item, cell) {
         RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          if (node == nodes[cell_node]) continue;
+          if (REF_EMPTY == node0) {
+            REIS(REF_EMPTY, node1, "already set");
+            node1 = nodes[cell_node];
+          } else {
+            node0 = nodes[cell_node];
+          }
+        }
+        RUS(REF_EMPTY, node0, "node0 not set");
+        RUS(REF_EMPTY, node1, "node1 not set");
       }
     }
   }
