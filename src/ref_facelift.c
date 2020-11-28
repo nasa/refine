@@ -1148,11 +1148,15 @@ REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid,
 REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_FACELIFT ref_facelift;
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_DBL *metric;
   REF_INT node, i;
   REF_DBL hmax;
   REF_DBL m[6], combined[6];
   REF_DBL gradation = 1.0;
+  REF_INT geom, item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL is_node;
 
   /* reset facelift to match grid */
   ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
@@ -1160,6 +1164,7 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
   ref_facelift = NULL;
   RSS(ref_facelift_attach(ref_grid), "attach");
   ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
+  RSS(ref_geom_constrain_all(ref_grid), "constrain");
 
   RSS(ref_egads_diagonal(ref_grid_geom(ref_grid), REF_EMPTY, &hmax),
       "egads bbox diag");
@@ -1176,6 +1181,17 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
     metric[3 + 6 * node] = 1.0 / hmax / hmax;
     metric[4 + 6 * node] = 0.0;
     metric[5 + 6 * node] = 1.0 / hmax / hmax;
+  }
+
+  each_ref_geom(ref_geom, geom) {
+    if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
+      node = ref_geom_node(ref_geom, geom);
+      RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node?");
+      if (is_node) continue;
+      each_ref_cell_having_node(ref_cell, node, item, cell) {
+        RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+      }
+    }
   }
 
   RSS(ref_recon_roundoff_limit(metric, ref_grid), "floor eigs above zero");
