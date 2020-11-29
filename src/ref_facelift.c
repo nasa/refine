@@ -1156,10 +1156,9 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_DBL m[6], combined[6];
   REF_INT p_norm = 2;
   REF_DBL gradation = 1.0;
-  REF_INT geom, item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT geom, geom_list[2];
+  REF_INT nnode, node_list[2], max_node = 2;
   REF_BOOL is_node;
-  REF_INT node0, node1, cell_node;
-  REF_INT geom0, geom1;
   REF_DBL d0, d1, h0, h1, dx[3], uxx;
 
   /* reset facelift to match grid */
@@ -1182,44 +1181,38 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
   each_ref_geom(ref_geom, geom) {
     if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
       node = ref_geom_node(ref_geom, geom);
-      id = ref_geom_id(ref_geom, node);
+      id = ref_geom_id(ref_geom, geom);
       RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node?");
       if (is_node) continue;
-      node0 = REF_EMPTY;
-      geom0 = REF_EMPTY;
-      node1 = REF_EMPTY;
-      geom1 = REF_EMPTY;
-      each_ref_cell_having_node(ref_cell, node, item, cell) {
-        RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-        each_ref_cell_cell_node(ref_cell, cell_node) {
-          if (node == nodes[cell_node]) continue;
-          if (REF_EMPTY == node0) {
-            REIS(REF_EMPTY, node1, "already set");
-            node1 = nodes[cell_node];
-            RSS(ref_geom_find(ref_geom, node1, REF_GEOM_EDGE, id, &geom1),
-                "geom1");
-          } else {
-            node0 = nodes[cell_node];
-            RSS(ref_geom_find(ref_geom, node0, REF_GEOM_EDGE, id, &geom0),
-                "geom0");
-          }
-        }
-        RUS(REF_EMPTY, node0, "node0 not set");
-        RUS(REF_EMPTY, geom0, "geom0 not set");
-        RUS(REF_EMPTY, node1, "node1 not set");
-        RUS(REF_EMPTY, geom1, "geom1 not set");
-      }
+      RSS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode,
+                                    node_list),
+          "around");
+      REIS(2, nnode, "two geom node neighbors");
+      RSB(ref_geom_find(ref_geom, node_list[0], REF_GEOM_EDGE, id,
+                        &(geom_list[0])),
+          "geom0", {
+            printf("id %d\n", id);
+            ref_geom_tattle(ref_geom, node);
+            ref_geom_tattle(ref_geom, node_list[0]);
+          });
+      RSB(ref_geom_find(ref_geom, node_list[1], REF_GEOM_EDGE, id,
+                        &(geom_list[1])),
+          "geom1", {
+            printf("id %d\n", id);
+            ref_geom_tattle(ref_geom, node);
+            ref_geom_tattle(ref_geom, node_list[1]);
+          });
       d0 = ref_facelift_distance(ref_facelift, geom) -
-           ref_facelift_distance(ref_facelift, geom0);
+           ref_facelift_distance(ref_facelift, geom_list[0]);
       for (i = 0; i < 3; i++)
-        dx[i] =
-            ref_node_xyz(ref_node, i, node) - ref_node_xyz(ref_node, i, node0);
+        dx[i] = ref_node_xyz(ref_node, i, node) -
+                ref_node_xyz(ref_node, i, node_list[0]);
       h0 = sqrt(ref_math_dot(dx, dx));
-      d1 = ref_facelift_distance(ref_facelift, geom1) -
+      d1 = ref_facelift_distance(ref_facelift, geom_list[1]) -
            ref_facelift_distance(ref_facelift, geom);
       for (i = 0; i < 3; i++)
-        dx[i] =
-            ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
+        dx[i] = ref_node_xyz(ref_node, i, node_list[1]) -
+                ref_node_xyz(ref_node, i, node);
       h1 = sqrt(ref_math_dot(dx, dx));
       uxx = 0.0;
       if (ref_math_divisible(d0, h0) && ref_math_divisible(d1, h1)) {
