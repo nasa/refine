@@ -1151,13 +1151,16 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_DBL *metric;
-  REF_INT node, i;
+  REF_INT node, i, id;
   REF_DBL hmax;
   REF_DBL m[6], combined[6];
+  REF_INT p_norm = 2;
   REF_DBL gradation = 1.0;
   REF_INT geom, item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL is_node;
   REF_INT node0, node1, cell_node;
+  REF_INT geom0, geom1;
+  REF_DBL d0, d1, h0, h1, dx[3], uxx;
 
   /* reset facelift to match grid */
   ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
@@ -1173,24 +1176,19 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
       MAX(1.0,
           ref_geom_segments_per_bounding_box_diagonal(ref_grid_geom(ref_grid)));
 
-  ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
-
-  each_ref_node_valid_node(ref_node, node) {
-    metric[0 + 6 * node] = 1.0 / hmax / hmax;
-    metric[1 + 6 * node] = 0.0;
-    metric[2 + 6 * node] = 0.0;
-    metric[3 + 6 * node] = 1.0 / hmax / hmax;
-    metric[4 + 6 * node] = 0.0;
-    metric[5 + 6 * node] = 1.0 / hmax / hmax;
-  }
+  ref_malloc_init(metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  RSS(ref_recon_roundoff_limit(metric, ref_grid), "floor eigs above zero");
 
   each_ref_geom(ref_geom, geom) {
     if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
       node = ref_geom_node(ref_geom, geom);
+      id = ref_geom_id(ref_geom, node);
       RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node?");
       if (is_node) continue;
       node0 = REF_EMPTY;
+      geom0 = REF_EMPTY;
       node1 = REF_EMPTY;
+      geom1 = REF_EMPTY;
       each_ref_cell_having_node(ref_cell, node, item, cell) {
         RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
         each_ref_cell_cell_node(ref_cell, cell_node) {
@@ -1198,18 +1196,47 @@ REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL target_complexity) {
           if (REF_EMPTY == node0) {
             REIS(REF_EMPTY, node1, "already set");
             node1 = nodes[cell_node];
+            RSS(ref_geom_find(ref_geom, node1, REF_GEOM_EDGE, id, &geom1),
+                "geom1");
           } else {
             node0 = nodes[cell_node];
+            RSS(ref_geom_find(ref_geom, node0, REF_GEOM_EDGE, id, &geom0),
+                "geom0");
           }
         }
         RUS(REF_EMPTY, node0, "node0 not set");
+        RUS(REF_EMPTY, geom0, "geom0 not set");
         RUS(REF_EMPTY, node1, "node1 not set");
+        RUS(REF_EMPTY, geom1, "geom1 not set");
       }
+      d0 = ref_facelift_distance(ref_facelift, geom) -
+           ref_facelift_distance(ref_facelift, geom0);
+      for (i = 0; i < 3; i++)
+        dx[i] =
+            ref_node_xyz(ref_node, i, node) - ref_node_xyz(ref_node, i, node0);
+      h0 = sqrt(ref_math_dot(dx, dx));
+      d1 = ref_facelift_distance(ref_facelift, geom1) -
+           ref_facelift_distance(ref_facelift, geom);
+      for (i = 0; i < 3; i++)
+        dx[i] =
+            ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
+      h1 = sqrt(ref_math_dot(dx, dx));
+      uxx = 0.0;
+      if (ref_math_divisible(d0, h0) && ref_math_divisible(d1, h1)) {
+        uxx = ((d0 / h0) + (d1 / h1)) / (0.5 * (h0 + h1));
+        uxx = ABS(uxx);
+      }
+      metric[0 + 6 * node] = MAX(metric[0 + 6 * node], uxx);
+      metric[1 + 6 * node] = 0.0;
+      metric[2 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = MAX(metric[3 + 6 * node], uxx);
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = MAX(metric[5 + 6 * node], uxx);
     }
   }
 
-  RSS(ref_recon_roundoff_limit(metric, ref_grid), "floor eigs above zero");
-
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
+      "local scale lp norm");
   RSS(ref_facelift_gradation_at_complexity(metric, ref_grid, gradation,
                                            target_complexity),
       "gradation at complexity");
