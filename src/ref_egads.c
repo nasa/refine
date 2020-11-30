@@ -142,7 +142,7 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
        EG_getTopology(solid, &geom, &oclass, &mtype, NULL, &nchild, &children,
                       &senses),
        "EG topo body type");
-  RAB(SOLIDBODY == mtype || FACEBODY == mtype || SHEETBODY,
+  RAB(SOLIDBODY == mtype || FACEBODY == mtype || SHEETBODY == mtype,
       "expected SOLIDBODY or FACEBODY or SHEETBODY",
       { printf("mtype %d\n", mtype); });
   ref_geom->solid = (void *)solid;
@@ -2239,7 +2239,7 @@ REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
   if (NULL != ref_geom_facelift(ref_geom)) {
     RSS(ref_facelift_eval_at(ref_geom_facelift(ref_geom), type, id, params, xyz,
-                          dxyz_dtuv),
+                             dxyz_dtuv),
         "facelift eval wrapper");
     return REF_SUCCESS;
   }
@@ -2338,7 +2338,8 @@ REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   REF_BOOL verbose = REF_FALSE;
 
   if (NULL != ref_geom_facelift(ref_geom)) {
-    RSS(ref_facelift_inverse_eval(ref_geom_facelift(ref_geom), type, id, xyz, param),
+    RSS(ref_facelift_inverse_eval(ref_geom_facelift(ref_geom), type, id, xyz,
+                                  param),
         "facelift inv eval wrapper");
     return REF_SUCCESS;
   }
