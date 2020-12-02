@@ -62,9 +62,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_facelift_attach(ref_grid), "attach");
     {
       REF_FACELIFT ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
-      RSS(ref_facelift_tec(ref_facelift, "ref_facelift_viz.tec"), "facelift tec");
+      RSS(ref_facelift_tec(ref_facelift, "ref_facelift_viz.tec"),
+          "facelift tec");
       RSS(ref_geom_tec(ref_grid, "ref_facelift_geom.tec"), "facelift tec");
-      RSS(ref_export_tec_surf(ref_facelift_grid(ref_facelift), "ref_facelift_surf.tec"),
+      RSS(ref_export_tec_surf(ref_facelift_grid(ref_facelift),
+                              "ref_facelift_surf.tec"),
           "facelift tec");
       RSS(ref_export_by_extension(ref_facelift_grid(ref_facelift),
                                   "ref_facelift_surrogate.meshb"),
@@ -95,7 +97,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_facelift_curve"), "al");
     RSS(ref_facelift_multiscale(ref_grid, complexity), "facelift multiscale");
-    RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_facelift_multiscale"), "al");
+    RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_facelift_multiscale"),
+        "al");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
@@ -118,8 +121,10 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "facelift load");
     {
       REF_FACELIFT ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
-      RSS(ref_facelift_tec(ref_facelift, "ref_facelift_import_viz.tec"), "facelift tec");
-      RSS(ref_geom_tec(ref_grid, "ref_facelift_import_geom.tec"), "facelift tec");
+      RSS(ref_facelift_tec(ref_facelift, "ref_facelift_import_viz.tec"),
+          "facelift tec");
+      RSS(ref_geom_tec(ref_grid, "ref_facelift_import_geom.tec"),
+          "facelift tec");
       RSS(ref_export_tec_surf(ref_facelift_grid(ref_facelift),
                               "ref_facelift_import_surf.tec"),
           "facelift tec");

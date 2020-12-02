@@ -248,6 +248,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_DBL *distance, *uplus, yplus;
   REF_INT node;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+  REF_DBL gradation = 10.0;
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -265,7 +266,8 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
       "local lp=4 norm scaling");
-  RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         complexity),
       "set complexity");
 
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
@@ -349,7 +351,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
   }
 
-  RXS(ref_args_find(argc, argv, "--facelift", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--facelift", &pos), REF_NOT_FOUND,
+      "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     if (ref_mpi_once(ref_mpi)) printf("--facelift %s import\n", argv[pos + 1]);
     RSS(ref_facelift_import(ref_grid, argv[pos + 1]), "attach");
@@ -512,7 +515,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
         ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
         if (REF_EMPTY != pos && pos < argc - 1) {
           complexity = atof(argv[pos + 1]);
-          if (ref_mpi_once(ref_mpi)) printf("--facelift-metric %f\n", complexity);
+          if (ref_mpi_once(ref_mpi))
+            printf("--facelift-metric %f\n", complexity);
           RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
           ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
         }
@@ -1508,7 +1512,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  RXS(ref_args_find(argc, argv, "--facelift", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--facelift", &pos), REF_NOT_FOUND,
+      "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     if (ref_mpi_once(ref_mpi)) printf("--facelift %s import\n", argv[pos + 1]);
     RSS(ref_facelift_import(ref_grid, argv[pos + 1]), "attach");
