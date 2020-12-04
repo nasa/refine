@@ -1,0 +1,4 @@
+box 0   0 0 0.5 1 0
+box 0.5 0 0 0.5 1 0
+join
+dump boxbox.egads
