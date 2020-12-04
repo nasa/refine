@@ -1,5 +1,6 @@
 /*
 
+rm -rf boxboxeff.egads
 gcc-10  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
 -I/Users/mpark/local/pkgs/EGADS/trunk/include -o egads_effective \
 egads_effective.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
@@ -91,6 +92,16 @@ int main(void) {
   is_equal(EGADS_SUCCESS, EG_saveModel(newModel, "boxboxeff.egads"),
            "EG save eff");
   EG_deleteObject(newModel);
+
+  is_equal(EGADS_SUCCESS,
+           EG_loadModel(context, 0, "boxboxeff.egads", &newModel), "EG load");
+
+  is_equal(EGADS_SUCCESS,
+           EG_getTopology(newModel, &geom, &oclass, &mtype, NULL, &nbody,
+                          &bodies, &senses),
+           "EG topo bodies");
+  is_equal(3, nbody,
+           "expected 3 bodies: body, tessellation and effective topology body");
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
   return 0;
