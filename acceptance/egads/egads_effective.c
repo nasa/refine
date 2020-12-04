@@ -1,9 +1,9 @@
 /*
 
-gcc-7  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized
--I/Users/mpark/esp/EngSketchPad/include -o egads_inv_projection
-egads_inv_projection.c -Wl,-rpath,/Users/mpark/esp/EngSketchPad/lib
--L/Users/mpark/esp/EngSketchPad/lib -legads   -lm
+gcc-10  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized
+-I/Users/mpark/local/pkgs/EGADS/trunk/include -o egads_effective
+egads_effective.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib
+-L/Users/mpark/local/pkgs/EGADS/trunk/lib -legads   -lm
 
 */
 
@@ -35,22 +35,20 @@ egads_inv_projection.c -Wl,-rpath,/Users/mpark/esp/EngSketchPad/lib
 int main(void) {
   ego context;
   ego model = NULL;
-  ego geom, *bodies, *children;
-  int oclass, mtype, nbody, *senses, nchild;
+  ego geom, *bodies;
+  int oclass, mtype, nbody, *senses;
   ego solid;
-  int nface;
-  ego *faces;
-  int faceid;
-  double input_xyz[3];
-  double param[2];
-  double output_xyz[3];
+  double params[3];
+  ego tess;
+  int tess_status, nvert;
+  double angle;
+  ego ebody;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
   is_true(EG_setOutLevel(context, 3) >= 0, "make verbose");
 
-  is_equal(EGADS_SUCCESS,
-           EG_loadModel(context, 0, "onera-m6-sharp-te.egads", &model),
+  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, "boxbox.egads", &model),
            "EG load");
 
   is_equal(EGADS_SUCCESS,
@@ -59,38 +57,23 @@ int main(void) {
            "EG topo bodies");
   is_equal(1, nbody, "expected 1 body");
   solid = bodies[0];
-  is_equal(EGADS_SUCCESS,
-           EG_getTopology(solid, &geom, &oclass, &mtype, NULL, &nchild,
-                          &children, &senses),
-           "EG topo body type");
-  is_equal(SOLIDBODY, mtype, "expected SOLIDBODY");
 
-  is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
-           "EG face topo");
+  params[0] = 0.1;
+  params[1] = 0.01;
+  params[2] = 20.0;
 
-  faceid = 2;
+  is_equal(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
+  is_equal(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
+           "EG tess");
+  is_equal(1, tess_status, "tess not closed");
 
-  input_xyz[0] = 25.0;
-  input_xyz[1] = 0.0;
-  input_xyz[2] = 25.0;
-  is_equal(EGADS_SUCCESS,
-           EG_invEvaluate(faces[faceid - 1], input_xyz, param, output_xyz),
-           "EG inv  eval");
+  angle = 10.0;
+  is_equal(EGADS_SUCCESS, EG_virtualize(tess, angle, &ebody), "virt");
+  is_equal(EGADS_SUCCESS, EG_finalize(ebody), "fin")
 
-  printf(" input %f %f %f\n", input_xyz[0], input_xyz[1], input_xyz[2]);
-  printf("output %f %f %f\n", output_xyz[0], output_xyz[1], output_xyz[2]);
-  printf(" param %f %f\n", param[0], param[1]);
+      is_equal(EGADS_SUCCESS, EG_saveModel(model, "boxboxeff.egads"),
+               "EG save eff");
 
-  input_xyz[0] = 25.0;
-  input_xyz[1] = 0.0;
-  input_xyz[2] = -25.0;
-  is_equal(EGADS_SUCCESS,
-           EG_invEvaluate(faces[faceid - 1], input_xyz, param, output_xyz),
-           "EG inv  eval");
-
-  printf(" input %f %f %f\n", input_xyz[0], input_xyz[1], input_xyz[2]);
-  printf("output %f %f %f\n", output_xyz[0], output_xyz[1], output_xyz[2]);
-  printf(" param %f %f\n", param[0], param[1]);
-
+  is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
   return 0;
 }
