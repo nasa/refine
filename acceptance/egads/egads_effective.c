@@ -1,6 +1,6 @@
 /*
 
-rm -rf boxboxeff.egads
+rm -rf boxboxeff.egads ; \
 gcc-10  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
 -I/Users/mpark/local/pkgs/EGADS/trunk/include -o egads_effective \
 egads_effective.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
@@ -107,6 +107,7 @@ int main(void) {
                           &bodies, &senses),
            "EG topo bodies");
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
+  is_equal(MODEL, oclass, "not model");
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
   return 0;
