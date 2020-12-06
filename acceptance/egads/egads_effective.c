@@ -118,6 +118,9 @@ int main(void) {
                EG_getInfo(bodies[ibody], &bodyclass, &bodytype, &owner, &prev,
                           &next),
                "info");
+      if (BODY == bodyclass) printf("BODY ");
+      if (TESSELLATION == bodyclass) printf("TESSELLATION ");
+      if (EBODY == bodyclass) printf("EBODY ");
       printf("body %d oclass %d mtype %d\n", ibody, bodyclass, bodytype);
     }
   }
