@@ -109,6 +109,19 @@ int main(void) {
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
   is_equal(MODEL, oclass, "not model");
 
+  {
+    int ibody;
+    int bodyclass, bodytype;
+    ego owner, prev, next;
+    for (ibody = 0; ibody < mtype; ibody++) {
+      is_equal(EGADS_SUCCESS,
+               EG_getInfo(bodies[ibody], &bodyclass, &bodytype, &owner, &prev,
+                          &next),
+               "info");
+      printf("body %d oclass %d mtype %d\n", ibody, bodyclass, bodytype);
+    }
+  }
+
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
   return 0;
 }
