@@ -43,6 +43,7 @@ int main(void) {
   double params[3];
   int tess_status, nvert;
   double angle;
+  ego solid;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -109,6 +110,7 @@ int main(void) {
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
   is_equal(MODEL, oclass, "not model");
 
+  solid = NULL;
   {
     int ibody;
     int bodyclass, bodytype;
@@ -122,7 +124,27 @@ int main(void) {
       if (TESSELLATION == bodyclass) printf("TESSELLATION ");
       if (EBODY == bodyclass) printf("EBODY ");
       printf("body %d oclass %d mtype %d\n", ibody, bodyclass, bodytype);
+      if (EBODY == bodyclass) solid = bodies[ibody];
     }
+  }
+
+  {
+    ego *faces, *edges, *nodes;
+    int nface, nedge, nnode;
+
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+             "EG node topo");
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
+             "EG edge topo");
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
+             "EG face topo");
+    printf("nnode %d nedge %d nface %d\n", nnode, nedge, nface);
+
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
+             "EG edge topo");
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
+             "EG face topo");
+    printf("effective nedge %d nface %d\n", nedge, nface);
   }
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
