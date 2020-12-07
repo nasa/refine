@@ -143,19 +143,24 @@ int main(int argc, char *argv[]) {
     int nface, nedge, nnode;
     ego tess;
 
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, NULL),
+    is_equal(EGADS_SUCCESS,
+             EG_getBodyTopos(bodies[0], NULL, NODE, &nnode, NULL),
              "EG node topo");
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, NULL),
+    is_equal(EGADS_SUCCESS,
+             EG_getBodyTopos(bodies[0], NULL, EDGE, &nedge, NULL),
              "EG edge topo");
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, NULL),
+    is_equal(EGADS_SUCCESS,
+             EG_getBodyTopos(bodies[0], NULL, FACE, &nface, NULL),
              "EG face topo");
     printf("nnode %d nedge %d nface %d\n", nnode, nedge, nface);
 
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, NULL),
+             "EG node topo");
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, NULL),
              "EG edge topo");
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, NULL),
              "EG face topo");
-    printf("effective nedge %d nface %d\n", nedge, nface);
+    printf("effective nnode %d nedge %d nface %d\n", nnode, nedge, nface);
 
     is_equal(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
   }
