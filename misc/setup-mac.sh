@@ -24,6 +24,19 @@ parmetis_path="/Users/mpark/local/pkgs/parmetis-4.0.3"
 metis_path="/Users/mpark/local/pkgs/parmetis-4.0.3"
 mpi_path="/Users/mpark/local/pkgs/openmpi-4.0.5/build"
 
+mkdir -p svn
+( cd svn && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-mpi=${mpi_path} \
+    --with-metis=${metis_path} \
+    --with-parmetis=${parmetis_path} \
+    --with-EGADS=/Users/mpark/local/pkgs/EGADS/trunk \
+    --with-OpenCASCADE=${opencascade_path} \
+    CFLAGS=" -DHAVE_EGADS_EFFECTIVE ${clangflags}" \
+    ) \
+    || exit
+
 mkdir -p egads
 ( cd egads && \
     ../configure \
