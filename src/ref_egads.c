@@ -965,30 +965,31 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
         }
       }
     }
-    REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
-    diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-                (box[1] - box[4]) * (box[1] - box[4]) +
-                (box[2] - box[5]) * (box[2] - box[5]));
-    if (max_chord > 0.2)
+    if (max_chord > 0.2) {
+      REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
+      diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                  (box[1] - box[4]) * (box[1] - box[4]) +
+                  (box[2] - box[5]) * (box[2] - box[5]));
       printf("face %d rel chord %f abs len %f abs chord %f diag %f\n", face + 1,
              max_chord, max_chord_length, max_chord_offset, diag);
-    if (max_chord > 0.2 && (auto_tparams & REF_EGADS_CHORD_TPARAM)) {
-      params[0] = 0.25 * diag;
-      params[1] = 0.025 * diag;
-      params[2] = 15.0;
-      RSS(ref_list_contains(face_locked, face + 1, &contains), "lock face");
-      if (!contains)
-        RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
-            "update tparams");
-      for (edge = 0; edge < (ref_geom->nedge); edge++) {
-        if (face + 1 == e2f[0 + 2 * edge] || face + 1 == e2f[0 + 2 * edge]) {
-          RSS(ref_list_contains(face_locked, e2f[0 + 2 * edge], &contains0),
-              "lock face0");
-          RSS(ref_list_contains(face_locked, e2f[1 + 2 * edge], &contains1),
-              "lock face1");
-          if (!contains0 && !contains1)
-            RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
-                "update tparams");
+      if (auto_tparams & REF_EGADS_CHORD_TPARAM) {
+        params[0] = 0.25 * diag;
+        params[1] = 0.025 * diag;
+        params[2] = 15.0;
+        RSS(ref_list_contains(face_locked, face + 1, &contains), "lock face");
+        if (!contains)
+          RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
+              "update tparams");
+        for (edge = 0; edge < (ref_geom->nedge); edge++) {
+          if (face + 1 == e2f[0 + 2 * edge] || face + 1 == e2f[0 + 2 * edge]) {
+            RSS(ref_list_contains(face_locked, e2f[0 + 2 * edge], &contains0),
+                "lock face0");
+            RSS(ref_list_contains(face_locked, e2f[1 + 2 * edge], &contains1),
+                "lock face1");
+            if (!contains0 && !contains1)
+              RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
+                  "update tparams");
+          }
         }
       }
     }
