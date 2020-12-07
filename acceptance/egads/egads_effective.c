@@ -58,6 +58,7 @@ int main(void) {
            EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
                           &senses),
            "EG topo bodies");
+  printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
   is_equal(1, nbody, "expected 1 body");
 
   /* copy the Body so we can use/save it later */
