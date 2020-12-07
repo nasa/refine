@@ -138,6 +138,7 @@ int main(void) {
   {
     ego *faces, *edges, *nodes;
     int nface, nedge, nnode;
+    ego tess;
 
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
              "EG node topo");
@@ -152,6 +153,8 @@ int main(void) {
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
              "EG face topo");
     printf("effective nedge %d nface %d\n", nedge, nface);
+
+    is_equal(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
   }
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
