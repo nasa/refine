@@ -34,7 +34,7 @@ egads_effective.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
     }                                                                  \
   }
 
-int main(void) {
+int main(int argc, char *argv[]) {
   ego context;
   ego model = NULL;
   ego geom, *bodies;
@@ -47,12 +47,16 @@ int main(void) {
   int neface;
   ego *efaces;
 
+  if (argc < 3) {
+    printf("usage: \n %s project.egads effective_project.egads\n", argv[0]);
+    return 1;
+  }
+
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
   is_true(EG_setOutLevel(context, 2) >= 0, "make verbose");
 
-  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, "boxbox.egads", &model),
-           "EG load");
+  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, argv[1], &model), "EG load");
 
   is_equal(EGADS_SUCCESS,
            EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
@@ -103,12 +107,12 @@ int main(void) {
            "EG topo bodies");
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
 
-  is_equal(EGADS_SUCCESS, EG_saveModel(newModel, "boxboxeff.egads"),
-           "EG save eff");
+  remove(argv[2]);
+  is_equal(EGADS_SUCCESS, EG_saveModel(newModel, argv[2]), "EG save eff");
   EG_deleteObject(newModel);
 
-  is_equal(EGADS_SUCCESS,
-           EG_loadModel(context, 0, "boxboxeff.egads", &newModel), "EG load");
+  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, argv[2], &newModel),
+           "EG load");
 
   is_equal(EGADS_SUCCESS,
            EG_getTopology(newModel, &geom, &oclass, &mtype, NULL, &nbody,
