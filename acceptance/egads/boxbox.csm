@@ -1,4 +1,8 @@
 box 0   0 0 0.5 1 0
+select face
+attribute effective_face 1
 box 0.5 0 0 0.5 1 0
+select face
+attribute effective_face 1
 join
 dump boxbox.egads

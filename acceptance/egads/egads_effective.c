@@ -44,6 +44,8 @@ int main(void) {
   int tess_status, nvert;
   double angle;
   ego solid;
+  int neface;
+  ego *efaces;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -79,6 +81,10 @@ int main(void) {
   angle = 10.0;
   is_equal(EGADS_SUCCESS, EG_initEBody(newBodies[1], angle, &newBodies[2]),
            "initEB");
+  is_equal(EGADS_SUCCESS,
+           EG_makeAttrEFaces(newBodies[2], "effective_face", &neface, &efaces),
+           "finEB");
+  EG_free(efaces);
   is_equal(EGADS_SUCCESS, EG_finishEBody(newBodies[2]), "finEB");
 
   /* make the model with the body, tessellation and effective topology body
