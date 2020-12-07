@@ -2257,6 +2257,13 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   REF_DBL short_edge, diag;
   REF_DBL curve;
   REF_DBL location[3];
+
+  if (ref_geom_effective(ref_geom)) {
+    /* EFFECTIVE */
+    printf("ref_geom_feedback does not support Effective EGADS\n");
+    return REF_SUCCESS;
+  }
+
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
