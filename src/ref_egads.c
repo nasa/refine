@@ -1923,6 +1923,9 @@ REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #ifdef HAVE_EGADS
   ego object, *objects;
   double tol;
+  int egads_status;
+
+  *tolerance = 0.0;
 
   object = (ego)NULL;
   switch (type) {
@@ -1949,8 +1952,16 @@ REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
       RSS(REF_IMPLEMENT, "unknown surface type");
   }
 
-  REIS(EGADS_SUCCESS, EG_getTolerance(object, &tol), "EG tolerance");
-  *tolerance = tol;
+  egads_status = EG_getTolerance(object, &tol);
+  if (EGADS_SUCCESS == egads_status) {
+    *tolerance = tol;
+  }
+  if (EGADS_NOTTOPO == egads_status) {
+    /* EFFECTIVE */
+    *tolerance = 0.0;
+    return REF_SUCCESS;
+  }
+  REIS(EGADS_SUCCESS, egads_status, "EG tolerance");
 
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
