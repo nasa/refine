@@ -634,14 +634,14 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_egads_tess(ref_grid, auto_tparams, global_params), "tess egads");
   ref_free(global_params);
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
-  sprintf(filename, "%s-init-geom.tec", project);
-  if (ref_mpi_once(ref_mpi))
-    RSS(ref_geom_tec(ref_grid, filename), "geom export");
-  ref_mpi_stopwatch_stop(ref_mpi, "export init-geom");
   sprintf(filename, "%s-init-surf.tec", project);
   if (ref_mpi_once(ref_mpi))
     RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
   ref_mpi_stopwatch_stop(ref_mpi, "export init-surf");
+  sprintf(filename, "%s-init-geom.tec", project);
+  if (ref_mpi_once(ref_mpi))
+    RSS(ref_geom_tec(ref_grid, filename), "geom export");
+  ref_mpi_stopwatch_stop(ref_mpi, "export init-geom");
   if (REF_FALSE) {
     sprintf(filename, "%s-init-surf.meshb", project);
     if (ref_mpi_once(ref_mpi))
