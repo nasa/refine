@@ -84,7 +84,7 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   ego context;
   ego model = NULL;
   ego geom, *bodies, *children;
-  int oclass, mtype, nbody, *senses, nchild;
+  int oclass, nego, mtype, nbody, *senses, nchild;
   ego solid, *faces, *edges, *nodes;
   int nface, nedge, nnode;
   REF_INT face;
@@ -133,11 +133,29 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 #endif
 
   REIS(EGADS_SUCCESS,
-       EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
+       EG_getTopology(model, &geom, &oclass, &nego, NULL, &nbody, &bodies,
                       &senses),
        "EG topo bodies");
   REIS(1, nbody, "expected 1 body");
   solid = bodies[0];
+#ifdef HAVE_EGADS_EFFECTIVE
+  {
+    int ibody;
+    int bodyclass, bodytype;
+    ego owner, prev, next;
+    for (ibody = 0; ibody < nego; ibody++) {
+      REIS(EGADS_SUCCESS,
+           EG_getInfo(bodies[ibody], &bodyclass, &bodytype, &owner, &prev,
+                      &next),
+           "info");
+      if (EBODY == bodyclass) {
+        solid = bodies[ibody];
+        printf("EBODY extracted from model\n");
+      }
+    }
+  }
+
+#endif
   REIS(EGADS_SUCCESS,
        EG_getTopology(solid, &geom, &oclass, &mtype, NULL, &nchild, &children,
                       &senses),
