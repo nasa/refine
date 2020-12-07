@@ -84,6 +84,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
+  ref_geom->effective = REF_FALSE;
   ref_geom->manifold = REF_TRUE;
   ref_geom->contex_owned = REF_TRUE;
   ref_geom->context = NULL;
@@ -181,6 +182,7 @@ REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
   ref_geom_recipient->nnode = ref_geom_donor->nnode;
   ref_geom_recipient->nedge = ref_geom_donor->nedge;
   ref_geom_recipient->nface = ref_geom_donor->nface;
+  ref_geom_recipient->effective = ref_geom_donor->effective;
   ref_geom_recipient->manifold = ref_geom_donor->manifold;
   ref_geom_recipient->context = ref_geom_donor->context;
   ref_geom_recipient->solid = ref_geom_donor->solid;

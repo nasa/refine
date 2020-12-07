@@ -150,6 +150,7 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
            "info");
       if (EBODY == bodyclass) {
         solid = bodies[ibody];
+        ref_geom_effective(ref_geom) = REF_TRUE;
         printf("EBODY extracted from model\n");
       }
     }
