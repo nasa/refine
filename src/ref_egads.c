@@ -2000,15 +2000,22 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
     normal[1] = curvature[2];
     normal[2] = curvature[3];
     return REF_SUCCESS;
-  } else {
-    printf("EG_curvature %d (-24 is DEGEN) edgeid %d t %e\n", egads_status,
-           edgeid, t);
+  }
+  if (EGADS_NOTGEOM == egads_status) {
+    /* EFFECTIVE */
     *k = 0;
     normal[0] = 1;
     normal[1] = 0;
     normal[2] = 0;
-    return REF_FAILURE;
+    return REF_SUCCESS;
   }
+  printf("EG_curvature %d (-24 is DEGEN) edgeid %d t %e\n", egads_status,
+         edgeid, t);
+  *k = 0;
+  normal[0] = 1;
+  normal[1] = 0;
+  normal[2] = 0;
+  return REF_FAILURE;
 #else
   printf("curvature 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -2132,9 +2139,9 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
     s[1] = curvature[6];
     s[2] = curvature[7];
     return REF_SUCCESS;
-  } else {
-    printf("EG_curvature %d (-24 is DEGEN) faceid %d u %f v %f\n", egads_status,
-           faceid, uv[0], uv[1]);
+  }
+  if (EGADS_NOTGEOM == egads_status) {
+    /* EFFECTIVE */
     *kr = 0.0;
     r[0] = 1.0;
     r[1] = 0.0;
@@ -2143,8 +2150,19 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
     s[0] = 0.0;
     s[1] = 1.0;
     s[2] = 0.0;
-    return REF_FAILURE;
+    return REF_SUCCESS;
   }
+  printf("EG_curvature %d (-24 is DEGEN) faceid %d u %f v %f\n", egads_status,
+         faceid, uv[0], uv[1]);
+  *kr = 0.0;
+  r[0] = 1.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+  *ks = 0.0;
+  s[0] = 0.0;
+  s[1] = 1.0;
+  s[2] = 0.0;
+  return REF_FAILURE;
 #else
   printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
