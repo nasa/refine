@@ -2837,6 +2837,7 @@ REF_STATUS ref_egads_quilt(const char *filename) {
     int nface, i;
     ego *faces;
     REF_DICT ref_dict;
+    REF_INT key, flag, minflag, maxflag, n, value;
     RSS(ref_dict_create(&ref_dict), "create");
     REIS(EGADS_SUCCESS,
          EG_getBodyTopos(effective[0], NULL, FACE, &nface, &faces),
@@ -2857,6 +2858,21 @@ REF_STATUS ref_egads_quilt(const char *filename) {
         }
       }
     }
+    minflag = REF_INT_MAX;
+    maxflag = REF_INT_MIN;
+    each_ref_dict_key_value(ref_dict, i, key, flag) {
+      minflag = MIN(flag, minflag);
+      maxflag = MAX(flag, maxflag);
+    }
+    printf("flag range %d %d\n", minflag, maxflag);
+    for (flag = minflag; flag <= maxflag; flag++) {
+      n = 0;
+      each_ref_dict_key_value(ref_dict, i, key, value) {
+        if (flag == value) n++;
+      }
+      printf("flag %d has %d members\n", flag, n);
+    }
+    EG_free(faces);
     RSS(ref_dict_free(ref_dict), "free");
   }
 
