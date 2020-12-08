@@ -47,7 +47,7 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   RSS(ref_cell_create(&ref_grid_tri(ref_grid), REF_CELL_TRI), "tri create");
   RSS(ref_cell_create(&ref_grid_qua(ref_grid), REF_CELL_QUA), "qua create");
 
-  ref_grid_cell(ref_grid, 9) = NULL;
+  ref_grid_cell(ref_grid, REF_GRID_MAX_CELL) = NULL;
 
   RSS(ref_geom_create(&ref_grid_geom(ref_grid)), "geom create");
   RSS(ref_gather_create(&ref_grid_gather(ref_grid)), "gather create");
@@ -66,6 +66,7 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
 }
 
 REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
+  REF_INT group;
   REF_GRID ref_grid;
 
   ref_malloc(*ref_grid_ptr, 1, REF_GRID_STRUCT);
@@ -75,27 +76,13 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
   RSS(ref_node_deep_copy(&ref_grid_node(ref_grid), ref_grid_node(original)),
       "node deep copy");
 
-  RSS(ref_cell_deep_copy(&ref_grid_tet(ref_grid), ref_grid_tet(original)),
-      "tet deep copy");
-  RSS(ref_cell_deep_copy(&ref_grid_pyr(ref_grid), ref_grid_pyr(original)),
-      "pyr deep copy");
-  RSS(ref_cell_deep_copy(&ref_grid_pri(ref_grid), ref_grid_pri(original)),
-      "pri deep copy");
-  RSS(ref_cell_deep_copy(&ref_grid_hex(ref_grid), ref_grid_hex(original)),
-      "hex deep copy");
+  for (group = 0; group < REF_GRID_MAX_CELL; group++) {
+    RSS(ref_cell_deep_copy(&ref_grid_cell(ref_grid, group),
+                           ref_grid_cell(original, group)),
+        "cell deep copy");
+  }
 
-  RSS(ref_cell_deep_copy(&ref_grid_edg(ref_grid), ref_grid_edg(original)),
-      "edg deep copy");
-  RSS(ref_cell_deep_copy(&ref_grid_ed2(ref_grid), ref_grid_ed2(original)),
-      "ed2 deep copy");
-  RSS(ref_cell_deep_copy(&ref_grid_ed3(ref_grid), ref_grid_ed3(original)),
-      "ed3 deep copy");
-  RSS(ref_cell_deep_copy(&ref_grid_tri(ref_grid), ref_grid_tri(original)),
-      "tri deep copy");
-  RSS(ref_cell_deep_copy(&ref_grid_qua(ref_grid), ref_grid_qua(original)),
-      "qua deep copy");
-
-  ref_grid_cell(ref_grid, 9) = NULL;
+  ref_grid_cell(ref_grid, REF_GRID_MAX_CELL) = NULL;
 
   ref_grid_mpi(ref_grid) = ref_grid_mpi(original);
   RSS(ref_geom_deep_copy(&ref_grid_geom(ref_grid), ref_grid_geom(original)),
