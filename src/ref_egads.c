@@ -2868,9 +2868,25 @@ REF_STATUS ref_egads_quilt(const char *filename) {
     for (flag = minflag; flag <= maxflag; flag++) {
       n = 0;
       each_ref_dict_key_value(ref_dict, i, key, value) {
-        if (flag == value) n++;
+        if (flag == value) {
+          n++;
+        }
       }
       printf("flag %d has %d members\n", flag, n);
+      if (n > 0) {
+        ego eface, *group_faces;
+        ref_malloc(group_faces, n, ego);
+        n = 0;
+        each_ref_dict_key_value(ref_dict, i, key, value) {
+          if (flag == value) {
+            group_faces[n] = faces[key];
+            n++;
+          }
+        }
+        REIS(EGADS_SUCCESS, EG_makeEFace(effective[2], n, group_faces, &eface),
+             "initEB");
+        ref_free(group_faces);
+      }
     }
     EG_free(faces);
     RSS(ref_dict_free(ref_dict), "free");
