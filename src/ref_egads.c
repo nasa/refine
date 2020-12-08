@@ -2843,6 +2843,27 @@ REF_STATUS ref_egads_quilt(const char *filename) {
                        &effective_model),
        "make Topo Model");
 
+  {
+    int nface, nedge, nnode;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, NODE, &nnode, NULL),
+         "EG node topo");
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, EDGE, &nedge, NULL),
+         "EG edge topo");
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, FACE, &nface, NULL),
+         "EG face topo");
+    printf("original  nnode %d nedge %d nface %d\n", nnode, nedge, nface);
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[2], NULL, NODE, &nnode, NULL),
+         "EG node topo");
+    REIS(EGADS_SUCCESS,
+         EG_getBodyTopos(effective[2], NULL, EEDGE, &nedge, NULL),
+         "EG edge topo");
+    REIS(EGADS_SUCCESS,
+         EG_getBodyTopos(effective[2], NULL, EFACE, &nface, NULL),
+         "EG face topo");
+    printf("effective nnode %d nedge %d nface %d\n", nnode, nedge, nface);
+  }
+
+  printf("save effective model %s\n", output);
   remove(output); /* allow failure when does not exist */
   REIS(EGADS_SUCCESS, EG_saveModel(effective_model, output), "EG save eff");
   EG_deleteObject(effective_model);
