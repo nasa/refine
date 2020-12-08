@@ -2780,9 +2780,21 @@ REF_STATUS ref_egads_quilt(const char *filename) {
   ego geom, *bodies;
   int oclass, mtype, nbody, *senses;
   ego effective[3];
+  ego effective_model;
   double params[3], diag, box[6];
   int tess_status, nvert;
   double angle;
+  size_t end_of_string;
+  char project[1000];
+  char output[1024];
+
+  end_of_string = MIN(1023, strlen(filename));
+  RAS((7 < end_of_string &&
+       strncmp(&(filename[end_of_string - 6]), ".egads", 6) == 0),
+      ".egads extension missing");
+  strncpy(project, filename, end_of_string - 6);
+  project[end_of_string - 6] = '\0';
+  sprintf(output, "%s-eff.egads", project);
 
   REIS(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -2822,11 +2834,18 @@ REF_STATUS ref_egads_quilt(const char *filename) {
        "initEB");
   REIS(EGADS_SUCCESS, EG_finishEBody(effective[2]), "finEB");
 
-  /*
-  remove(argv[2]);
-  REIS(EGADS_SUCCESS, EG_saveModel(effective, argv[2]), "EG save eff");
-  EG_deleteObject(effective);
-  */
+  /* make the model with the body, tessellation and effective topology body
+     notes: 1) mtype = 3 is the total number of objects in the model
+               Body Objects must be first
+            2) nchild = 1 are the number of actual Body Objects */
+  REIS(EGADS_SUCCESS,
+       EG_makeTopology(context, NULL, MODEL, 3, NULL, 1, effective, NULL,
+                       &effective_model),
+       "make Topo Model");
+
+  remove(output); /* allow failure when does not exist */
+  REIS(EGADS_SUCCESS, EG_saveModel(effective_model, output), "EG save eff");
+  EG_deleteObject(effective_model);
 
   REIS(EGADS_SUCCESS, EG_close(context), "EG close");
 
