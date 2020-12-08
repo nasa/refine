@@ -2773,9 +2773,63 @@ REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id) {
 }
 
 REF_STATUS ref_egads_quilt(const char *filename) {
-#if defined(HAVE_EGADS) && defined(HAVE_EGADS_EFFECTIVE)
-  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s for %s\n",
-         __func__, filename);
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
+    defined(HAVE_EGADS_EFFECTIVE)
+  ego context;
+  ego model = NULL;
+  ego geom, *bodies;
+  int oclass, mtype, nbody, *senses;
+  ego effective[3];
+  double params[3], diag, box[6];
+  int tess_status, nvert;
+  double angle;
+
+  REIS(EGADS_SUCCESS, EG_open(&context), "EG open");
+  /* Success returns the old output level. (0-silent to 3-debug) */
+  RAS(EG_setOutLevel(context, 2) >= 0, "make verbose");
+
+  REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
+                      &senses),
+       "EG topo bodies");
+  printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
+  REIS(1, nbody, "expected 1 body");
+
+  /* copy the Body so we can use/save it later */
+  REIS(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &effective[0]),
+       "EG copy object");
+  EG_deleteObject(model);
+
+  REIS(EGADS_SUCCESS, EG_getBoundingBox(effective[0], box), "EG bounding box");
+  diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+              (box[1] - box[4]) * (box[1] - box[4]) +
+              (box[2] - box[5]) * (box[2] - box[5]));
+
+  params[0] = 0.025 * diag;
+  params[1] = 0.0075 * diag;
+  params[2] = 20.0;
+
+  REIS(EGADS_SUCCESS, EG_makeTessBody(effective[0], params, &(effective[1])),
+       "EG tess");
+  REIS(EGADS_SUCCESS,
+       EG_statusTessBody(effective[1], &geom, &tess_status, &nvert), "EG tess");
+  REIS(1, tess_status, "tess not closed");
+
+  angle = 10.0;
+  REIS(EGADS_SUCCESS, EG_initEBody(effective[1], angle, &effective[2]),
+       "initEB");
+  REIS(EGADS_SUCCESS, EG_finishEBody(effective[2]), "finEB");
+
+  /*
+  remove(argv[2]);
+  REIS(EGADS_SUCCESS, EG_saveModel(effective, argv[2]), "EG save eff");
+  EG_deleteObject(effective);
+  */
+
+  REIS(EGADS_SUCCESS, EG_close(context), "EG close");
+
   return REF_SUCCESS;
 #else
   printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s for %s\n",
