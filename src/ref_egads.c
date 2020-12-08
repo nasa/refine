@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "ref_cloud.h"
+#include "ref_dict.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
@@ -2832,6 +2833,33 @@ REF_STATUS ref_egads_quilt(const char *filename) {
   angle = 10.0;
   REIS(EGADS_SUCCESS, EG_initEBody(effective[1], angle, &effective[2]),
        "initEB");
+  {
+    int nface, i;
+    ego *faces;
+    REF_DICT ref_dict;
+    RSS(ref_dict_create(&ref_dict), "create");
+    REIS(EGADS_SUCCESS,
+         EG_getBodyTopos(effective[0], NULL, FACE, &nface, &faces),
+         "EG face topo");
+    for (i = 0; i < nface; i++) {
+      int len, atype;
+      const double *preals;
+      const int *pints;
+      const char *string;
+
+      if (EGADS_SUCCESS == EG_attributeRet(faces[i], "group", &atype, &len,
+                                           &pints, &preals, &string)) {
+        if (ATTRINT == atype)
+          RSS(ref_dict_store(ref_dict, i, pints[0]), "store");
+        if (ATTRREAL == atype) {
+          double dbl = round(preals[0]);
+          RSS(ref_dict_store(ref_dict, i, (REF_INT)dbl), "store");
+        }
+      }
+    }
+    RSS(ref_dict_free(ref_dict), "free");
+  }
+
   REIS(EGADS_SUCCESS, EG_finishEBody(effective[2]), "finEB");
 
   /* make the model with the body, tessellation and effective topology body
