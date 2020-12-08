@@ -41,7 +41,7 @@ struct REF_GRID_STRUCT {
   REF_MPI mpi;
   REF_NODE node;
 
-  REF_CELL cell[9];
+  REF_CELL cell[10];
 
   REF_GEOM geom;
   REF_GATHER gather;
@@ -79,7 +79,8 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_tri(ref_grid) ref_grid_cell(ref_grid, 4)
 #define ref_grid_qua(ref_grid) ref_grid_cell(ref_grid, 5)
 #define ref_grid_edg(ref_grid) ref_grid_cell(ref_grid, 6)
-#define ref_grid_ed3(ref_grid) ref_grid_cell(ref_grid, 7)
+#define ref_grid_ed2(ref_grid) ref_grid_cell(ref_grid, 7)
+#define ref_grid_ed3(ref_grid) ref_grid_cell(ref_grid, 8)
 
 #define ref_grid_geom(ref_grid) ((ref_grid)->geom)
 #define ref_grid_gather(ref_grid) ((ref_grid)->gather)
@@ -107,7 +108,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
 #define each_ref_grid_1d_ref_cell(ref_grid, group, ref_cell)                  \
-  for ((group) = 6, (ref_cell) = ref_grid_cell(ref_grid, group); (group) < 8; \
+  for ((group) = 6, (ref_cell) = ref_grid_cell(ref_grid, group); (group) < 9; \
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
 #define each_ref_grid_2d_3d_ref_cell(ref_grid, group, ref_cell)               \
@@ -115,7 +116,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
 #define each_ref_grid_all_ref_cell(ref_grid, group, ref_cell)                 \
-  for ((group) = 0, (ref_cell) = ref_grid_cell(ref_grid, group); (group) < 8; \
+  for ((group) = 0, (ref_cell) = ref_grid_cell(ref_grid, group); (group) < 9; \
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
 REF_STATUS ref_grid_inspect(REF_GRID ref_grid);
