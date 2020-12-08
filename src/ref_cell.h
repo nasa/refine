@@ -295,5 +295,32 @@ boundary elements right hand normal point into element, see f2n
                        inode0------0-----inode1
 
 
-                inode0---m2--m3--inode1
+                       inode0-----m2----inode1
+
+                       inode0---m2--m3--inode1
+
+                              inode2
+                                 / \
+                                /   \
+                               /     \
+                              /       \
+                            m5        m4
+                            /           \
+                           /             \
+                          /               \
+                         /                 \
+                      inode0----m3-----inode1
+
+                              inode2
+                                 / \
+                                /   \
+                              m7    m6
+                              /       \
+                             /         \
+                            /    m9     \
+                          m8            m5
+                          /               \
+                         /                 \
+                      inode0--m3----m4---inode1
+
 */
