@@ -61,7 +61,8 @@ static void usage(const char *name) {
   printf("  interpolate  Interpolate a field from one mesh to another\n");
   printf("  loop         Multiscale metric, adapt, and interpolation.\n");
   printf("  multiscale   Compute a multiscale metric.\n");
-  /*printf("  node       reports location of a node by index\n");*/
+  /*printf("  node       Reports location of a node by index\n");*/
+  /*printf("  quilt      Construct effective EGADS model.\n");*/
   printf("  surface      Extract mesh surface.\n");
   printf("  translate    Convert mesh formats.\n");
   printf("  visualize    Convert solution formats.\n");
@@ -210,6 +211,11 @@ static void multiscale_help(const char *name) {
 static void node_help(const char *name) {
   printf("usage: \n %s node input.meshb node_index node_index ...\n", name);
   printf("  node_index is zero-based\n");
+  printf("\n");
+}
+static void quilt_help(const char *name) {
+  printf("usage: \n %s quilt original.egads\n", name);
+  printf("  originaleff.egads is output EGADS model with EBODY\n");
   printf("\n");
 }
 static void surface_help(const char *name) {
@@ -2080,6 +2086,15 @@ static REF_STATUS node(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
+  if (ref_mpi_once(ref_mpi)) quilt_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS quilt(REF_MPI ref_mpi, int argc, char *argv[]) {
+  if (argc < 3) goto shutdown;
+  RSS(ref_egads_quilt(argv[2]), "quilt");
+  return REF_SUCCESS;
+shutdown:
   if (ref_mpi_once(ref_mpi)) node_help(argv[0]);
   return REF_FAILURE;
 }
@@ -2407,6 +2422,13 @@ int main(int argc, char *argv[]) {
       RSS(node(ref_mpi, argc, argv), "translate");
     } else {
       if (ref_mpi_once(ref_mpi)) node_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "q", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(quilt(ref_mpi, argc, argv), "quilt");
+    } else {
+      if (ref_mpi_once(ref_mpi)) quilt_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "s", 1) == 0) {

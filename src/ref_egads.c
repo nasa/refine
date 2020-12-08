@@ -2771,3 +2771,15 @@ REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id) {
 #endif
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_egads_quilt(const char *filename) {
+#if defined(HAVE_EGADS) && defined(HAVE_EGADS_EFFECTIVE)
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s for %s\n",
+         __func__, filename);
+  return REF_SUCCESS;
+#else
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s for %s\n",
+         __func__, filename);
+  return REF_SUCCESS;
+#endif
+}
