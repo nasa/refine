@@ -34,7 +34,7 @@ egads_effective.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
     }                                                                  \
   }
 
-int main(void) {
+int main(int argc, char *argv[]) {
   ego context;
   ego model = NULL;
   ego geom, *bodies;
@@ -44,18 +44,25 @@ int main(void) {
   int tess_status, nvert;
   double angle;
   ego solid;
+  int neface;
+  ego *efaces;
+
+  if (argc < 3) {
+    printf("usage: \n %s project.egads effective_project.egads\n", argv[0]);
+    return 1;
+  }
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
   is_true(EG_setOutLevel(context, 2) >= 0, "make verbose");
 
-  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, "boxbox.egads", &model),
-           "EG load");
+  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, argv[1], &model), "EG load");
 
   is_equal(EGADS_SUCCESS,
            EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
                           &senses),
            "EG topo bodies");
+  printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
   is_equal(1, nbody, "expected 1 body");
 
   /* copy the Body so we can use/save it later */
@@ -79,6 +86,10 @@ int main(void) {
   angle = 10.0;
   is_equal(EGADS_SUCCESS, EG_initEBody(newBodies[1], angle, &newBodies[2]),
            "initEB");
+  is_equal(EGADS_SUCCESS,
+           EG_makeAttrEFaces(newBodies[2], "effective_face", &neface, &efaces),
+           "finEB");
+  EG_free(efaces);
   is_equal(EGADS_SUCCESS, EG_finishEBody(newBodies[2]), "finEB");
 
   /* make the model with the body, tessellation and effective topology body
@@ -96,12 +107,12 @@ int main(void) {
            "EG topo bodies");
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
 
-  is_equal(EGADS_SUCCESS, EG_saveModel(newModel, "boxboxeff.egads"),
-           "EG save eff");
+  remove(argv[2]);
+  is_equal(EGADS_SUCCESS, EG_saveModel(newModel, argv[2]), "EG save eff");
   EG_deleteObject(newModel);
 
-  is_equal(EGADS_SUCCESS,
-           EG_loadModel(context, 0, "boxboxeff.egads", &newModel), "EG load");
+  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, argv[2], &newModel),
+           "EG load");
 
   is_equal(EGADS_SUCCESS,
            EG_getTopology(newModel, &geom, &oclass, &mtype, NULL, &nbody,
@@ -129,22 +140,29 @@ int main(void) {
   }
 
   {
-    ego *faces, *edges, *nodes;
     int nface, nedge, nnode;
+    ego tess;
 
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+    is_equal(EGADS_SUCCESS,
+             EG_getBodyTopos(bodies[0], NULL, NODE, &nnode, NULL),
              "EG node topo");
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
+    is_equal(EGADS_SUCCESS,
+             EG_getBodyTopos(bodies[0], NULL, EDGE, &nedge, NULL),
              "EG edge topo");
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
+    is_equal(EGADS_SUCCESS,
+             EG_getBodyTopos(bodies[0], NULL, FACE, &nface, NULL),
              "EG face topo");
     printf("nnode %d nedge %d nface %d\n", nnode, nedge, nface);
 
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, NULL),
+             "EG node topo");
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, NULL),
              "EG edge topo");
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, NULL),
              "EG face topo");
-    printf("effective nedge %d nface %d\n", nedge, nface);
+    printf("effective nnode %d nedge %d nface %d\n", nnode, nedge, nface);
+
+    is_equal(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
   }
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");

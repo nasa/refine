@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "ref_cloud.h"
+#include "ref_dict.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
@@ -84,7 +85,7 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   ego context;
   ego model = NULL;
   ego geom, *bodies, *children;
-  int oclass, mtype, nbody, *senses, nchild;
+  int oclass, nego, mtype, nbody, *senses, nchild;
   ego solid, *faces, *edges, *nodes;
   int nface, nedge, nnode;
   REF_INT face;
@@ -133,11 +134,30 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 #endif
 
   REIS(EGADS_SUCCESS,
-       EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
+       EG_getTopology(model, &geom, &oclass, &nego, NULL, &nbody, &bodies,
                       &senses),
        "EG topo bodies");
   REIS(1, nbody, "expected 1 body");
   solid = bodies[0];
+#ifdef HAVE_EGADS_EFFECTIVE
+  {
+    int ibody;
+    int bodyclass, bodytype;
+    ego owner, prev, next;
+    for (ibody = 0; ibody < nego; ibody++) {
+      REIS(EGADS_SUCCESS,
+           EG_getInfo(bodies[ibody], &bodyclass, &bodytype, &owner, &prev,
+                      &next),
+           "info");
+      if (EBODY == bodyclass) {
+        solid = bodies[ibody];
+        ref_geom_effective(ref_geom) = REF_TRUE;
+        printf("EBODY extracted from model\n");
+      }
+    }
+  }
+
+#endif
   REIS(EGADS_SUCCESS,
        EG_getTopology(solid, &geom, &oclass, &mtype, NULL, &nchild, &children,
                       &senses),
@@ -148,6 +168,20 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   ref_geom->solid = (void *)solid;
   ref_geom->manifold = SOLIDBODY == mtype;
 
+#ifdef HAVE_EGADS_EFFECTIVE
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+       "EG node topo");
+  ref_geom->nnode = nnode;
+  ref_geom->nodes = (void *)nodes;
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
+       "EG edge topo");
+  ref_geom->nedge = nedge;
+  ref_geom->edges = (void *)edges;
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
+       "EG face topo");
+  ref_geom->nface = nface;
+  ref_geom->faces = (void *)faces;
+#else
   REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
        "EG node topo");
   ref_geom->nnode = nnode;
@@ -160,6 +194,7 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
        "EG face topo");
   ref_geom->nface = nface;
   ref_geom->faces = (void *)faces;
+#endif
 
   /* use face mtype SFORWARD, SREVERSE to set uv_area_sign */
   /* If it is SFORWARD (1) then the Face's Normal is in the same direction as
@@ -932,30 +967,31 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
         }
       }
     }
-    REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
-    diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-                (box[1] - box[4]) * (box[1] - box[4]) +
-                (box[2] - box[5]) * (box[2] - box[5]));
-    if (max_chord > 0.2)
+    if (max_chord > 0.2) {
+      REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
+      diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                  (box[1] - box[4]) * (box[1] - box[4]) +
+                  (box[2] - box[5]) * (box[2] - box[5]));
       printf("face %d rel chord %f abs len %f abs chord %f diag %f\n", face + 1,
              max_chord, max_chord_length, max_chord_offset, diag);
-    if (max_chord > 0.2 && (auto_tparams & REF_EGADS_CHORD_TPARAM)) {
-      params[0] = 0.25 * diag;
-      params[1] = 0.025 * diag;
-      params[2] = 15.0;
-      RSS(ref_list_contains(face_locked, face + 1, &contains), "lock face");
-      if (!contains)
-        RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
-            "update tparams");
-      for (edge = 0; edge < (ref_geom->nedge); edge++) {
-        if (face + 1 == e2f[0 + 2 * edge] || face + 1 == e2f[0 + 2 * edge]) {
-          RSS(ref_list_contains(face_locked, e2f[0 + 2 * edge], &contains0),
-              "lock face0");
-          RSS(ref_list_contains(face_locked, e2f[1 + 2 * edge], &contains1),
-              "lock face1");
-          if (!contains0 && !contains1)
-            RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
-                "update tparams");
+      if (auto_tparams & REF_EGADS_CHORD_TPARAM) {
+        params[0] = 0.25 * diag;
+        params[1] = 0.025 * diag;
+        params[2] = 15.0;
+        RSS(ref_list_contains(face_locked, face + 1, &contains), "lock face");
+        if (!contains)
+          RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
+              "update tparams");
+        for (edge = 0; edge < (ref_geom->nedge); edge++) {
+          if (face + 1 == e2f[0 + 2 * edge] || face + 1 == e2f[0 + 2 * edge]) {
+            RSS(ref_list_contains(face_locked, e2f[0 + 2 * edge], &contains0),
+                "lock face0");
+            RSS(ref_list_contains(face_locked, e2f[1 + 2 * edge], &contains1),
+                "lock face1");
+            if (!contains0 && !contains1)
+              RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
+                  "update tparams");
+          }
         }
       }
     }
@@ -1889,6 +1925,9 @@ REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #ifdef HAVE_EGADS
   ego object, *objects;
   double tol;
+  int egads_status;
+
+  *tolerance = 0.0;
 
   object = (ego)NULL;
   switch (type) {
@@ -1915,8 +1954,16 @@ REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
       RSS(REF_IMPLEMENT, "unknown surface type");
   }
 
-  REIS(EGADS_SUCCESS, EG_getTolerance(object, &tol), "EG tolerance");
-  *tolerance = tol;
+  egads_status = EG_getTolerance(object, &tol);
+  if (EGADS_SUCCESS == egads_status) {
+    *tolerance = tol;
+  }
+  if (EGADS_NOTTOPO == egads_status) {
+    /* EFFECTIVE */
+    *tolerance = 0.0;
+    return REF_SUCCESS;
+  }
+  REIS(EGADS_SUCCESS, egads_status, "EG tolerance");
 
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -1966,15 +2013,22 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
     normal[1] = curvature[2];
     normal[2] = curvature[3];
     return REF_SUCCESS;
-  } else {
-    printf("EG_curvature %d (-24 is DEGEN) edgeid %d t %e\n", egads_status,
-           edgeid, t);
+  }
+  if (EGADS_NOTGEOM == egads_status) {
+    /* EFFECTIVE */
     *k = 0;
     normal[0] = 1;
     normal[1] = 0;
     normal[2] = 0;
-    return REF_FAILURE;
+    return REF_SUCCESS;
   }
+  printf("EG_curvature %d (-24 is DEGEN) edgeid %d t %e\n", egads_status,
+         edgeid, t);
+  *k = 0;
+  normal[0] = 1;
+  normal[1] = 0;
+  normal[2] = 0;
+  return REF_FAILURE;
 #else
   printf("curvature 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -2098,9 +2152,9 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
     s[1] = curvature[6];
     s[2] = curvature[7];
     return REF_SUCCESS;
-  } else {
-    printf("EG_curvature %d (-24 is DEGEN) faceid %d u %f v %f\n", egads_status,
-           faceid, uv[0], uv[1]);
+  }
+  if (EGADS_NOTGEOM == egads_status) {
+    /* EFFECTIVE */
     *kr = 0.0;
     r[0] = 1.0;
     r[1] = 0.0;
@@ -2109,8 +2163,19 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
     s[0] = 0.0;
     s[1] = 1.0;
     s[2] = 0.0;
-    return REF_FAILURE;
+    return REF_SUCCESS;
   }
+  printf("EG_curvature %d (-24 is DEGEN) faceid %d u %f v %f\n", egads_status,
+         faceid, uv[0], uv[1]);
+  *kr = 0.0;
+  r[0] = 1.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+  *ks = 0.0;
+  s[0] = 0.0;
+  s[1] = 1.0;
+  s[2] = 0.0;
+  return REF_FAILURE;
 #else
   printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -2706,4 +2771,169 @@ REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id) {
   SUPRESS_UNUSED_COMPILER_WARNING(id);
 #endif
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_egads_quilt(const char *filename) {
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
+    defined(HAVE_EGADS_EFFECTIVE)
+  ego context;
+  ego model = NULL;
+  ego geom, *bodies;
+  int oclass, mtype, nbody, *senses;
+  ego effective[3];
+  ego effective_model;
+  double params[3], diag, box[6];
+  int tess_status, nvert;
+  double angle;
+  size_t end_of_string;
+  char project[1000];
+  char output[1024];
+
+  end_of_string = MIN(1023, strlen(filename));
+  RAS((7 < end_of_string &&
+       strncmp(&(filename[end_of_string - 6]), ".egads", 6) == 0),
+      ".egads extension missing");
+  strncpy(project, filename, end_of_string - 6);
+  project[end_of_string - 6] = '\0';
+  sprintf(output, "%s-eff.egads", project);
+
+  REIS(EGADS_SUCCESS, EG_open(&context), "EG open");
+  /* Success returns the old output level. (0-silent to 3-debug) */
+  RAS(EG_setOutLevel(context, 2) >= 0, "make verbose");
+
+  REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
+                      &senses),
+       "EG topo bodies");
+  printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
+  REIS(1, nbody, "expected 1 body");
+
+  /* copy the Body so we can use/save it later */
+  REIS(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &effective[0]),
+       "EG copy object");
+  EG_deleteObject(model);
+
+  REIS(EGADS_SUCCESS, EG_getBoundingBox(effective[0], box), "EG bounding box");
+  diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+              (box[1] - box[4]) * (box[1] - box[4]) +
+              (box[2] - box[5]) * (box[2] - box[5]));
+
+  params[0] = 0.025 * diag;
+  params[1] = 0.0075 * diag;
+  params[2] = 20.0;
+
+  REIS(EGADS_SUCCESS, EG_makeTessBody(effective[0], params, &(effective[1])),
+       "EG tess");
+  REIS(EGADS_SUCCESS,
+       EG_statusTessBody(effective[1], &geom, &tess_status, &nvert), "EG tess");
+  REIS(1, tess_status, "tess not closed");
+
+  angle = 10.0;
+  REIS(EGADS_SUCCESS, EG_initEBody(effective[1], angle, &effective[2]),
+       "initEB");
+  {
+    int nface, i;
+    ego *faces;
+    REF_DICT ref_dict;
+    REF_INT key, flag, minflag, maxflag, n, value;
+    RSS(ref_dict_create(&ref_dict), "create");
+    REIS(EGADS_SUCCESS,
+         EG_getBodyTopos(effective[0], NULL, FACE, &nface, &faces),
+         "EG face topo");
+    for (i = 0; i < nface; i++) {
+      int len, atype;
+      const double *preals;
+      const int *pints;
+      const char *string;
+
+      if (EGADS_SUCCESS == EG_attributeRet(faces[i], "group", &atype, &len,
+                                           &pints, &preals, &string)) {
+        if (ATTRINT == atype)
+          RSS(ref_dict_store(ref_dict, i, pints[0]), "store");
+        if (ATTRREAL == atype) {
+          double dbl = round(preals[0]);
+          RSS(ref_dict_store(ref_dict, i, (REF_INT)dbl), "store");
+        }
+      }
+    }
+    minflag = REF_INT_MAX;
+    maxflag = REF_INT_MIN;
+    each_ref_dict_key_value(ref_dict, i, key, flag) {
+      minflag = MIN(flag, minflag);
+      maxflag = MAX(flag, maxflag);
+    }
+    printf("flag range %d %d\n", minflag, maxflag);
+    for (flag = minflag; flag <= maxflag; flag++) {
+      n = 0;
+      each_ref_dict_key_value(ref_dict, i, key, value) {
+        if (flag == value) {
+          n++;
+        }
+      }
+      printf("flag %d has %d members\n", flag, n);
+      if (n > 0) {
+        ego eface, *group_faces;
+        ref_malloc(group_faces, n, ego);
+        n = 0;
+        each_ref_dict_key_value(ref_dict, i, key, value) {
+          if (flag == value) {
+            group_faces[n] = faces[key];
+            n++;
+          }
+        }
+        REIS(EGADS_SUCCESS, EG_makeEFace(effective[2], n, group_faces, &eface),
+             "initEB");
+        ref_free(group_faces);
+      }
+    }
+    EG_free(faces);
+    RSS(ref_dict_free(ref_dict), "free");
+  }
+
+  REIS(EGADS_SUCCESS, EG_finishEBody(effective[2]), "finEB");
+
+  /* make the model with the body, tessellation and effective topology body
+     notes: 1) mtype = 3 is the total number of objects in the model
+               Body Objects must be first
+            2) nchild = 1 are the number of actual Body Objects */
+  REIS(EGADS_SUCCESS,
+       EG_makeTopology(context, NULL, MODEL, 3, NULL, 1, effective, NULL,
+                       &effective_model),
+       "make Topo Model");
+
+  {
+    int nface, nedge, nnode;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, NODE, &nnode, NULL),
+         "EG node topo");
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, EDGE, &nedge, NULL),
+         "EG edge topo");
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, FACE, &nface, NULL),
+         "EG face topo");
+    printf("original  nnode %d nedge %d nface %d\n", nnode, nedge, nface);
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[2], NULL, NODE, &nnode, NULL),
+         "EG node topo");
+    REIS(EGADS_SUCCESS,
+         EG_getBodyTopos(effective[2], NULL, EEDGE, &nedge, NULL),
+         "EG edge topo");
+    REIS(EGADS_SUCCESS,
+         EG_getBodyTopos(effective[2], NULL, EFACE, &nface, NULL),
+         "EG face topo");
+    printf("effective nnode %d nedge %d nface %d\n", nnode, nedge, nface);
+  }
+
+  printf("save effective model %s\n", output);
+  remove(output); /* allow failure when does not exist */
+  REIS(EGADS_SUCCESS, EG_saveModel(effective_model, output), "EG save eff");
+  EG_deleteObject(effective_model);
+
+  REIS(EGADS_SUCCESS, EG_close(context), "EG close");
+
+  return REF_SUCCESS;
+#else
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s for %s\n",
+         __func__, filename);
+  return REF_SUCCESS;
+#endif
 }

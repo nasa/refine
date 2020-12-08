@@ -8,4 +8,6 @@ cylinder 0 offset -width 0 offset 0 radius
 union 0 0 -30*offset # -10*offset worked with 118
 
 dump cylcyl.egads
+dump cylcyl.step
+dump cylcyl.iges
 
