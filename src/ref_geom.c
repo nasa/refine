@@ -27,6 +27,7 @@
 
 #include "ref_cell.h"
 #include "ref_dict.h"
+#include "ref_edge.h"
 #include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_gather.h"
@@ -3144,5 +3145,13 @@ REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
   *radius = MAX(*radius, ABS(t0 - (*center)));
   *radius = MAX(*radius, ABS(t1 - (*center)));
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_enrich2(REF_GRID *enriched_ptr, REF_GRID ref_grid) {
+  REF_EDGE ref_edge;
+  RSS(ref_grid_deep_copy(enriched_ptr, ref_grid), "create");
+  RSS(ref_edge_create(&ref_edge, ref_grid), "edge");
+  RSS(ref_edge_free(ref_edge), "free edge");
   return REF_SUCCESS;
 }
