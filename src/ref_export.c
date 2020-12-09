@@ -261,7 +261,7 @@ static REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
+static REF_STATUS ref_export_tec_edg_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -317,8 +317,7 @@ static REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_quadratic_edge_zone(REF_GRID ref_grid,
-                                                     FILE *file) {
+static REF_STATUS ref_export_tec_ed2_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -372,8 +371,7 @@ static REF_STATUS ref_export_tec_quadratic_edge_zone(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_cubic_edge_zone(REF_GRID ref_grid,
-                                                 FILE *file) {
+static REF_STATUS ref_export_tec_ed3_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -804,9 +802,9 @@ static REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename) {
   RSS(ref_export_tec_surf_zone(ref_grid, file), "surf");
   RSS(ref_export_tec_tr2_zone(ref_grid, file), "tr2");
   RSS(ref_export_tec_tr3_zone(ref_grid, file), "tr3");
-  RSS(ref_export_tec_edge_zone(ref_grid, file), "edge");
-  RSS(ref_export_tec_quadratic_edge_zone(ref_grid, file), "quadratic edge");
-  RSS(ref_export_tec_cubic_edge_zone(ref_grid, file), "cubic edge");
+  RSS(ref_export_tec_edg_zone(ref_grid, file), "edg");
+  RSS(ref_export_tec_ed2_zone(ref_grid, file), "ed2");
+  RSS(ref_export_tec_ed3_zone(ref_grid, file), "ed3");
 
   fclose(file);
   return REF_SUCCESS;
