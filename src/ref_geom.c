@@ -3148,10 +3148,30 @@ REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_enrich2(REF_GRID *enriched_ptr, REF_GRID ref_grid) {
+REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
-  RSS(ref_grid_deep_copy(enriched_ptr, ref_grid), "create");
+  REF_INT edge, *edge_node, part, node;
+  REF_GLOB global;
   RSS(ref_edge_create(&ref_edge, ref_grid), "edge");
+  ref_malloc_init(edge_node, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+    if (ref_mpi_rank(ref_mpi) == part) {
+      RSS(ref_node_next_global(ref_node, &global), "next global");
+      RSS(ref_node_add(ref_node, global, &node), "add node");
+      edge_node[edge] = node;
+      RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
+                                    ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
+          "new node");
+      RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                               ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
+          "new node");
+      RSS(ref_geom_constrain(ref_grid, node), "geom constraint");
+    }
+  }
+
   RSS(ref_edge_free(ref_edge), "free edge");
   return REF_SUCCESS;
 }
