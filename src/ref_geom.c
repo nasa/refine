@@ -3154,6 +3154,9 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
   REF_EDGE ref_edge;
   REF_INT edge, *edge_node, part, node;
   REF_GLOB global;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell, new_cell;
+  REF_CELL ref_cell = ref_grid_tr2(ref_grid);
   RSS(ref_edge_create(&ref_edge, ref_grid), "edge");
   ref_malloc_init(edge_node, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
@@ -3170,6 +3173,18 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
           "new node");
       RSS(ref_geom_constrain(ref_grid, node), "geom constraint");
     }
+  }
+
+  each_ref_cell_valid_cell_with_nodes(ref_grid_tri(ref_grid), cell, nodes) {
+    nodes[ref_cell_id_index(ref_cell)] =
+        nodes[ref_cell_id_index(ref_grid_tri(ref_grid))];
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge01");
+    nodes[3] = edge_node[edge];
+    RSS(ref_edge_with(ref_edge, nodes[1], nodes[2], &edge), "find edge12");
+    nodes[4] = edge_node[edge];
+    RSS(ref_edge_with(ref_edge, nodes[2], nodes[0], &edge), "find edge20");
+    nodes[5] = edge_node[edge];
+    RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add");
   }
 
   RSS(ref_edge_free(ref_edge), "free edge");
