@@ -33,6 +33,9 @@ typedef enum REF_CELL_TYPES { /* 0 */ REF_CELL_EDG,
                               /* 6 */ REF_CELL_PYR,
                               /* 7 */ REF_CELL_PRI,
                               /* 8 */ REF_CELL_HEX } REF_CELL_TYPE;
+#define REF_CELL_N_TYPE (9)
+#define REF_CELL_MAX_SIZE_PER (8)
+#define REF_CELL_MAX_FACE_PER (6)
 END_C_DECLORATION
 
 #include "ref_adj.h"
@@ -40,9 +43,6 @@ END_C_DECLORATION
 #include "ref_node.h"
 
 BEGIN_C_DECLORATION
-
-#define REF_CELL_MAX_SIZE_PER (8)
-#define REF_CELL_MAX_FACE_PER (6)
 
 struct REF_CELL_STRUCT {
   REF_CELL_TYPE type;

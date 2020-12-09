@@ -37,13 +37,11 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-#define REF_GRID_MAX_CELL (9)
-
 struct REF_GRID_STRUCT {
   REF_MPI mpi;
   REF_NODE node;
 
-  REF_CELL cell[REF_GRID_MAX_CELL + 1];
+  REF_CELL cell[REF_CELL_N_TYPE + 1];
 
   REF_GEOM geom;
   REF_GATHER gather;
@@ -118,7 +116,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 
 #define each_ref_grid_all_ref_cell(ref_grid, group, ref_cell)    \
   for ((group) = 0, (ref_cell) = ref_grid_cell(ref_grid, group); \
-       (group) < REF_GRID_MAX_CELL;                              \
+       (group) < REF_CELL_N_TYPE;                                \
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
 REF_STATUS ref_grid_inspect(REF_GRID ref_grid);
