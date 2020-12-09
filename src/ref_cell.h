@@ -24,17 +24,19 @@
 BEGIN_C_DECLORATION
 typedef struct REF_CELL_STRUCT REF_CELL_STRUCT;
 typedef REF_CELL_STRUCT *REF_CELL;
-typedef enum REF_CELL_TYPES { /* 0 */ REF_CELL_EDG,
-                              /* 1 */ REF_CELL_ED2,
-                              /* 2 */ REF_CELL_ED3,
-                              /* 3 */ REF_CELL_TRI,
-                              /* 4 */ REF_CELL_QUA,
-                              /* 5 */ REF_CELL_TET,
-                              /* 6 */ REF_CELL_PYR,
-                              /* 7 */ REF_CELL_PRI,
-                              /* 8 */ REF_CELL_HEX } REF_CELL_TYPE;
-#define REF_CELL_N_TYPE (9)
-#define REF_CELL_MAX_SIZE_PER (8)
+typedef enum REF_CELL_TYPES { /*  0 */ REF_CELL_EDG,
+                              /*  1 */ REF_CELL_ED2,
+                              /*  2 */ REF_CELL_ED3,
+                              /*  3 */ REF_CELL_TRI,
+                              /*  4 */ REF_CELL_TR2,
+                              /*  5 */ REF_CELL_TR3,
+                              /*  6 */ REF_CELL_QUA,
+                              /*  7 */ REF_CELL_TET,
+                              /*  8 */ REF_CELL_PYR,
+                              /*  9 */ REF_CELL_PRI,
+                              /* 10 */ REF_CELL_HEX } REF_CELL_TYPE;
+#define REF_CELL_N_TYPE (11)
+#define REF_CELL_MAX_SIZE_PER (11)
 #define REF_CELL_MAX_FACE_PER (6)
 END_C_DECLORATION
 
