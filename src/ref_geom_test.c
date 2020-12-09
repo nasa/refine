@@ -87,8 +87,11 @@ int main(int argc, char *argv[]) {
     printf("load geom %s\n", argv[3]);
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    printf("enrich2\n");
+    RSS(ref_geom_enrich2(ref_grid), "enrich2");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich2");
     printf("write tec %s\n", "ref_geom_enrich2.tec");
-    RSS(ref_export_by_extension(ref_grid, "ref_geom_enrich2..tec"), "tec");
+    RSS(ref_export_by_extension(ref_grid, "ref_geom_enrich2.tec"), "tec");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
