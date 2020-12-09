@@ -169,18 +169,33 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   ref_geom->manifold = SOLIDBODY == mtype;
 
 #ifdef HAVE_EGADS_EFFECTIVE
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
-       "EG node topo");
-  ref_geom->nnode = nnode;
-  ref_geom->nodes = (void *)nodes;
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
-       "EG edge topo");
-  ref_geom->nedge = nedge;
-  ref_geom->edges = (void *)edges;
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
-       "EG face topo");
-  ref_geom->nface = nface;
-  ref_geom->faces = (void *)faces;
+  if (ref_geom_effective(ref_geom)) {
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+         "EG node topo");
+    ref_geom->nnode = nnode;
+    ref_geom->nodes = (void *)nodes;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
+         "EG edge topo");
+    ref_geom->nedge = nedge;
+    ref_geom->edges = (void *)edges;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
+         "EG face topo");
+    ref_geom->nface = nface;
+    ref_geom->faces = (void *)faces;
+  } else {
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+         "EG node topo");
+    ref_geom->nnode = nnode;
+    ref_geom->nodes = (void *)nodes;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
+         "EG edge topo");
+    ref_geom->nedge = nedge;
+    ref_geom->edges = (void *)edges;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
+         "EG face topo");
+    ref_geom->nface = nface;
+    ref_geom->faces = (void *)faces;
+  }
 #else
   REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
        "EG node topo");
