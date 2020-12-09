@@ -4,7 +4,15 @@ set width 0.5
 set radius 0.25
 
 cylinder 0 0 0 0 0 width radius
+select face 1
+attribute group 1
+select face 2
+attribute group 2
 cylinder 0 offset -width 0 offset 0 radius
+select face 1
+attribute group 1
+select face 2
+attribute group 2
 union 0 0 -30*offset # -10*offset worked with 118
 
 dump cylcyl.egads
