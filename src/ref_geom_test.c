@@ -75,6 +75,27 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--enrich2", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REIS(4, argc, "required args: --enrich2 grid.ext geom.egads");
+    REIS(1, pos, "required args: --enrich2 grid.ext geom.egads");
+    printf("import grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
+    printf("load geom %s\n", argv[3]);
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    printf("write tec %s\n", "ref_geom_enrich2.tec");
+    RSS(ref_export_by_extension(ref_grid, "ref_geom_enrich2..tec"), "tec");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--viz", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY) {
     REF_GRID ref_grid;
