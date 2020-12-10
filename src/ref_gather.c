@@ -1210,7 +1210,8 @@ static REF_STATUS ref_gather_node_scalar_txt(REF_NODE ref_node, REF_INT ldim,
         for (im = 0; im < ldim - 1; im++) {
           fprintf(file, "%.15e%s", xyzm[im + (ldim + 1) * i], separator);
         }
-        fprintf(file, "%.15e\n", xyzm[(ldim - 1) + (ldim + 1) * i]);
+        if (ldim > 0)
+          fprintf(file, "%.15e\n", xyzm[(ldim - 1) + (ldim + 1) * i]);
       }
   }
 
