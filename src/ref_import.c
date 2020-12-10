@@ -1048,6 +1048,90 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_IMPLEMENT;
 }
 
+static REF_STATUS ref_import_i_like_cfd_grid(REF_GRID *ref_grid_ptr,
+                                             REF_MPI ref_mpi,
+                                             const char *filename) {
+  FILE *file;
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT node, new_node;
+  REF_INT nnode, ntri, nquad;
+  REF_INT new_cell, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT id, nid, i;
+  REF_INT *count;
+  REF_INT n0, n1, n2, n3;
+  REF_DBL x, y;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
+  ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_grid_twod(ref_grid) = REF_TRUE;
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  REIS(3, fscanf(file, "%d %d %d\n", &nnode, &ntri, &nquad),
+       "read nnode ntri nquad");
+
+  for (node = 0; node < nnode; node++) {
+    REIS(2, fscanf(file, "%lf %lf", &x, &y), "read xy");
+    RSS(ref_node_add(ref_node, node, &new_node), "add node");
+    ref_node_xyz(ref_node, 0, new_node) = x;
+    ref_node_xyz(ref_node, 1, new_node) = y;
+    ref_node_xyz(ref_node, 2, new_node) = 0.0;
+  }
+  RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
+
+  id = 1;
+
+  for (cell = 0; cell < ntri; cell++) {
+    REIS(3, fscanf(file, "%d %d %d", &n0, &n1, &n2), "read tri");
+    nodes[0] = n0 - 1;
+    nodes[1] = n1 - 1;
+    nodes[2] = n2 - 1;
+    nodes[3] = id;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
+        "tri face for tri");
+  }
+
+  for (cell = 0; cell < nquad; cell++) {
+    REIS(4, fscanf(file, "%d %d %d %d", &n0, &n1, &n2, &n3), "read quad");
+    nodes[0] = n0 - 1;
+    nodes[1] = n1 - 1;
+    nodes[2] = n2 - 1;
+    nodes[3] = n3 - 1;
+    nodes[4] = id;
+    RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell),
+        "quad face for qua");
+  }
+
+  REIS(1, fscanf(file, "%d\n", &nid), "number of edge groups");
+  ref_malloc(count, nid, REF_INT);
+  for (id = 1; id <= nid; id++) {
+    REIS(1, fscanf(file, "%d\n", &(count[id - 1])), "elements in edge groups");
+  }
+  for (id = 1; id <= nid; id++) {
+    REIS(1, fscanf(file, "%d\n", &n0), "first edge node");
+    for (i = 1; i < count[id - 1]; i++) {
+      REIS(1, fscanf(file, "%d\n", &n1), "next edge node");
+      nodes[0] = n0 - 1;
+      nodes[1] = n1 - 1;
+      nodes[2] = id;
+      RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
+          "add edge to edg");
+      n0 = n1;
+    }
+  }
+
+  ref_free(count);
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS meshb_real(FILE *file, REF_INT version, REF_DBL *real) {
   float temp_float;
   double temp_double;
@@ -1401,6 +1485,9 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_import_msh(ref_grid_ptr, ref_mpi, filename), "msh failed");
   } else if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
     RSS(ref_import_meshb(ref_grid_ptr, ref_mpi, filename), "meshb failed");
+  } else if (strcmp(&filename[end_of_string - 5], ".grid") == 0) {
+    RSS(ref_import_i_like_cfd_grid(ref_grid_ptr, ref_mpi, filename),
+        "I Like CFD grid failed");
   } else {
     printf("%s: %d: %s %s\n", __FILE__, __LINE__,
            "input file name extension unknown", filename);
