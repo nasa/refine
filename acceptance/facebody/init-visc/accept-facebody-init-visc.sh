@@ -38,5 +38,5 @@ adapt_cycle square-circle-vol cycle01 10
 adapt_cycle cycle01 cycle02 10
 
 cat cycle02.status
-../../check.rb cycle02.status 0.2 5.0
+../../check.rb cycle02.status 0.2 8.0
 
