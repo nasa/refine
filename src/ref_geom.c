@@ -3209,6 +3209,14 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
     }
   }
 
+  each_ref_cell_valid_cell_with_nodes(ref_grid_edg(ref_grid), cell, nodes) {
+    nodes[ref_cell_id_index(ref_grid_ed2(ref_grid))] =
+        nodes[ref_cell_id_index(ref_grid_edg(ref_grid))];
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge01");
+    nodes[3] = edge_node[edge];
+    RSS(ref_cell_add(ref_grid_ed2(ref_grid), nodes, &new_cell), "add");
+  }
+
   each_ref_cell_valid_cell_with_nodes(ref_grid_tri(ref_grid), cell, nodes) {
     nodes[ref_cell_id_index(ref_grid_tr2(ref_grid))] =
         nodes[ref_cell_id_index(ref_grid_tri(ref_grid))];
@@ -3265,6 +3273,22 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
           "new node");
       RSS(ref_geom_constrain(ref_grid, node), "geom constraint");
     }
+  }
+
+  each_ref_cell_valid_cell_with_nodes(ref_grid_edg(ref_grid), cell, nodes) {
+    nodes[ref_cell_id_index(ref_grid_ed3(ref_grid))] =
+        nodes[ref_cell_id_index(ref_grid_edg(ref_grid))];
+
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge01");
+    if (nodes[0] == ref_edge_e2n(ref_edge, 0, edge)) {
+      nodes[2] = edge_node[0 + 2 * edge]; /* forward edge, tri side direction */
+      nodes[3] = edge_node[1 + 2 * edge];
+    } else {
+      nodes[2] = edge_node[1 + 2 * edge]; /* reverse edge, tri side direction */
+      nodes[3] = edge_node[0 + 2 * edge];
+    }
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), nodes, &new_cell), "add");
   }
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_tri(ref_grid), cell, nodes) {
