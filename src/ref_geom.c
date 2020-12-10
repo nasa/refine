@@ -3231,7 +3231,7 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
   REF_GLOB global;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell;
-  REF_CELL ref_cell = ref_grid_tr2(ref_grid);
+  REF_CELL ref_cell = ref_grid_tr3(ref_grid);
   REF_DBL t;
   RSS(ref_edge_create(&ref_edge, ref_grid), "edge");
   ref_malloc_init(edge_node, 2 * ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
@@ -3274,6 +3274,7 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
 
     nodes[ref_cell_id_index(ref_cell)] =
         nodes[ref_cell_id_index(ref_grid_tri(ref_grid))];
+
     RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge01");
     if (nodes[0] == ref_edge_e2n(ref_edge, 0, edge)) {
       nodes[3] = edge_node[0 + 2 * edge]; /* forward edge, tri side direction */
