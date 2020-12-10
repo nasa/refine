@@ -87,6 +87,8 @@ int main(int argc, char *argv[]) {
     printf("load geom %s\n", argv[3]);
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mark jump degen");
     printf("enrich2\n");
     RSS(ref_geom_enrich2(ref_grid), "enrich2");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich2");
@@ -111,6 +113,8 @@ int main(int argc, char *argv[]) {
     printf("load geom %s\n", argv[3]);
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mark jump degen");
     printf("enrich3\n");
     RSS(ref_geom_enrich3(ref_grid), "enrich3");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich3");
