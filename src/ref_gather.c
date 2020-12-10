@@ -2272,9 +2272,11 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
 
   end_of_string = strlen(filename);
 
-  if (strcmp(&filename[end_of_string - 4], ".tec") == 0 ||
-      strcmp(&filename[end_of_string - 4], ".dat") == 0 ||
-      strcmp(&filename[end_of_string - 2], ".t") == 0) {
+  if ((end_of_string > 4 &&
+       strcmp(&filename[end_of_string - 4], ".tec") == 0) ||
+      (end_of_string > 4 &&
+       strcmp(&filename[end_of_string - 4], ".dat") == 0) ||
+      (end_of_string > 2 && strcmp(&filename[end_of_string - 2], ".t") == 0)) {
     RSS(ref_gather_scalar_tec(ref_grid, ldim, scalar, scalar_names, filename),
         "scalar tec");
     return REF_SUCCESS;
