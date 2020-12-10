@@ -289,6 +289,7 @@ REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
                                            REF_DBL *center, REF_DBL *radius);
 
 REF_STATUS ref_geom_enrich2(REF_GRID ref_grid);
+REF_STATUS ref_geom_enrich3(REF_GRID ref_grid);
 
 END_C_DECLORATION
 
