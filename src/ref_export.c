@@ -357,8 +357,8 @@ static REF_STATUS ref_export_tec_ed2_zone(REF_GRID ref_grid, FILE *file) {
 
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
-        fprintf(file, " %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[1]] + 1);
-        fprintf(file, " %d %d\n", g2l[nodes[1]] + 1, g2l[nodes[2]] + 1);
+        fprintf(file, " %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[2]] + 1);
+        fprintf(file, " %d %d\n", g2l[nodes[2]] + 1, g2l[nodes[1]] + 1);
       }
     }
 
@@ -411,9 +411,9 @@ static REF_STATUS ref_export_tec_ed3_zone(REF_GRID ref_grid, FILE *file) {
 
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
-        fprintf(file, " %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[1]] + 1);
-        fprintf(file, " %d %d\n", g2l[nodes[1]] + 1, g2l[nodes[2]] + 1);
+        fprintf(file, " %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[2]] + 1);
         fprintf(file, " %d %d\n", g2l[nodes[2]] + 1, g2l[nodes[3]] + 1);
+        fprintf(file, " %d %d\n", g2l[nodes[3]] + 1, g2l[nodes[1]] + 1);
       }
     }
 
