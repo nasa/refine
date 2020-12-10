@@ -3213,7 +3213,7 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
     nodes[ref_cell_id_index(ref_grid_ed2(ref_grid))] =
         nodes[ref_cell_id_index(ref_grid_edg(ref_grid))];
     RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge01");
-    nodes[3] = edge_node[edge];
+    nodes[2] = edge_node[edge];
     RSS(ref_cell_add(ref_grid_ed2(ref_grid), nodes, &new_cell), "add");
   }
 
