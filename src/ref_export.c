@@ -583,7 +583,7 @@ static REF_STATUS ref_export_tec_tr3_zone(REF_GRID ref_grid, FILE *file) {
         "extract this tri");
 
     fprintf(file,
-            "zone t=\"p2tri%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zone t=\"p3tri%d\", nodes=%d, elements=%d, datapacking=%s, "
             "zonetype=%s\n",
             boundary_tag, nnode, 9 * ncell, "point", "fetriangle");
 
@@ -593,7 +593,6 @@ static REF_STATUS ref_export_tec_tr3_zone(REF_GRID ref_grid, FILE *file) {
               ref_node_xyz(ref_node, 1, l2g[node]),
               ref_node_xyz(ref_node, 2, l2g[node]));
 
-    ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
         fprintf(file, " %d %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[3]] + 1,
@@ -609,7 +608,7 @@ static REF_STATUS ref_export_tec_tr3_zone(REF_GRID ref_grid, FILE *file) {
         fprintf(file, " %d %d %d\n", g2l[nodes[2]] + 1, g2l[nodes[7]] + 1,
                 g2l[nodes[6]] + 1);
         fprintf(file, " %d %d %d\n", g2l[nodes[6]] + 1, g2l[nodes[7]] + 1,
-                g2l[nodes[8]] + 1);
+                g2l[nodes[9]] + 1);
 
         fprintf(file, " %d %d %d\n", g2l[nodes[9]] + 1, g2l[nodes[5]] + 1,
                 g2l[nodes[6]] + 1);
