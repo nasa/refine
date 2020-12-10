@@ -2267,8 +2267,11 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
   RAS(1 <= faceid && faceid <= ref_geom->nface, "face id out of range");
   face_ego = faces[faceid - 1];
 
-  REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
-       "eval edge face uv");
+  REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
+       "eval edge face uv", {
+         printf("faceid %d edgeid %d sense %d t %f\n", faceid, edgeid, sense,
+                t);
+       });
 
   return REF_SUCCESS;
 #else
