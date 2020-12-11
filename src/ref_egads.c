@@ -1411,9 +1411,10 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
       each_ref_geom_node(ref_geom, node_geom) {
         if (geom_node_id == ref_geom_id(ref_geom, node_geom)) {
           node = ref_geom_node(ref_geom, node_geom);
-          RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, face + 1,
+          RSB(ref_geom_find(ref_geom, node, REF_GEOM_FACE, face + 1,
                             &face_geom),
-              "face for degen edge at node not found");
+              "face for degen edge at node not found",
+              { printf("edgeid %d faceid %d\n", edge + 1, face + 1); });
         }
       }
 
