@@ -39,7 +39,16 @@ static REF_STATUS ref_edge_builder_uniq(REF_EDGE ref_edge, REF_GRID ref_grid) {
                     REF_EMPTY);
   }
 
-  each_ref_grid_2d_3d_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+        node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+        node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+        RSS(ref_edge_uniq(ref_edge, node0, node1), "add uniq");
+      }
+    }
+  }
+  each_ref_grid_2d_ref_cell(ref_grid, group, ref_cell) {
     each_ref_cell_valid_cell(ref_cell, cell) {
       each_ref_cell_cell_edge(ref_cell, cell_edge) {
         node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);

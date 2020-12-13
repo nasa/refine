@@ -169,18 +169,33 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   ref_geom->manifold = SOLIDBODY == mtype;
 
 #ifdef HAVE_EGADS_EFFECTIVE
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
-       "EG node topo");
-  ref_geom->nnode = nnode;
-  ref_geom->nodes = (void *)nodes;
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
-       "EG edge topo");
-  ref_geom->nedge = nedge;
-  ref_geom->edges = (void *)edges;
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
-       "EG face topo");
-  ref_geom->nface = nface;
-  ref_geom->faces = (void *)faces;
+  if (ref_geom_effective(ref_geom)) {
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+         "EG node topo");
+    ref_geom->nnode = nnode;
+    ref_geom->nodes = (void *)nodes;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
+         "EG edge topo");
+    ref_geom->nedge = nedge;
+    ref_geom->edges = (void *)edges;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
+         "EG face topo");
+    ref_geom->nface = nface;
+    ref_geom->faces = (void *)faces;
+  } else {
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+         "EG node topo");
+    ref_geom->nnode = nnode;
+    ref_geom->nodes = (void *)nodes;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
+         "EG edge topo");
+    ref_geom->nedge = nedge;
+    ref_geom->edges = (void *)edges;
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
+         "EG face topo");
+    ref_geom->nface = nface;
+    ref_geom->faces = (void *)faces;
+  }
 #else
   REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
        "EG node topo");
@@ -1396,9 +1411,10 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
       each_ref_geom_node(ref_geom, node_geom) {
         if (geom_node_id == ref_geom_id(ref_geom, node_geom)) {
           node = ref_geom_node(ref_geom, node_geom);
-          RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, face + 1,
+          RSB(ref_geom_find(ref_geom, node, REF_GEOM_FACE, face + 1,
                             &face_geom),
-              "face for degen edge at node not found");
+              "face for degen edge at node not found",
+              { printf("edgeid %d faceid %d\n", edge + 1, face + 1); });
         }
       }
 
@@ -2252,8 +2268,11 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
   RAS(1 <= faceid && faceid <= ref_geom->nface, "face id out of range");
   face_ego = faces[faceid - 1];
 
-  REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
-       "eval edge face uv");
+  REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
+       "eval edge face uv", {
+         printf("faceid %d edgeid %d sense %d t %f\n", faceid, edgeid, sense,
+                t);
+       });
 
   return REF_SUCCESS;
 #else

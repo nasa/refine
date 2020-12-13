@@ -261,63 +261,7 @@ static REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_cubic_edge_zone(REF_GRID ref_grid,
-                                                 FILE *file) {
-  REF_NODE ref_node;
-  REF_CELL ref_cell;
-  REF_INT node;
-  REF_INT *g2l, *l2g;
-  REF_INT nedge;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT cell;
-  REF_INT nnode;
-  REF_DICT ref_dict;
-  REF_INT boundary_tag, boundary_index;
-
-  ref_node = ref_grid_node(ref_grid);
-
-  RSS(ref_dict_create(&ref_dict), "create dict");
-
-  ref_cell = ref_grid_ed3(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
-        "mark tri");
-  }
-
-  each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
-    RSS(ref_grid_cell_id_nodes(ref_grid, ref_cell, boundary_tag, &nnode, &nedge,
-                               &g2l, &l2g),
-        "extract this edge");
-
-    fprintf(file,
-            "zone t=\"p2edge%d\", nodes=%d, elements=%d, datapacking=%s, "
-            "zonetype=%s\n",
-            boundary_tag, nnode, 3 * nedge, "point", "felineseg");
-
-    for (node = 0; node < nnode; node++)
-      fprintf(file, " %.16e %.16e %.16e\n",
-              ref_node_xyz(ref_node, 0, l2g[node]),
-              ref_node_xyz(ref_node, 1, l2g[node]),
-              ref_node_xyz(ref_node, 2, l2g[node]));
-
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
-        fprintf(file, " %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[1]] + 1);
-        fprintf(file, " %d %d\n", g2l[nodes[1]] + 1, g2l[nodes[2]] + 1);
-        fprintf(file, " %d %d\n", g2l[nodes[2]] + 1, g2l[nodes[3]] + 1);
-      }
-    }
-
-    ref_free(l2g);
-    ref_free(g2l);
-  }
-
-  RSS(ref_dict_free(ref_dict), "free dict");
-
-  return REF_SUCCESS;
-}
-
-static REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
+static REF_STATUS ref_export_tec_edg_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -361,6 +305,115 @@ static REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
           fprintf(file, " %d", g2l[nodes[cell_node]] + 1);
         }
         fprintf(file, "\n");
+      }
+    }
+
+    ref_free(l2g);
+    ref_free(g2l);
+  }
+
+  RSS(ref_dict_free(ref_dict), "free dict");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_export_tec_ed2_zone(REF_GRID ref_grid, FILE *file) {
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *g2l, *l2g;
+  REF_INT nedge;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnode;
+  REF_DICT ref_dict;
+  REF_INT boundary_tag, boundary_index;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_dict_create(&ref_dict), "create dict");
+
+  ref_cell = ref_grid_ed2(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+        "mark tri");
+  }
+
+  each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
+    RSS(ref_grid_cell_id_nodes(ref_grid, ref_cell, boundary_tag, &nnode, &nedge,
+                               &g2l, &l2g),
+        "extract this edge");
+
+    fprintf(file,
+            "zone t=\"p2edge%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            boundary_tag, nnode, 2 * nedge, "point", "felineseg");
+
+    for (node = 0; node < nnode; node++)
+      fprintf(file, " %.16e %.16e %.16e\n",
+              ref_node_xyz(ref_node, 0, l2g[node]),
+              ref_node_xyz(ref_node, 1, l2g[node]),
+              ref_node_xyz(ref_node, 2, l2g[node]));
+
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        fprintf(file, " %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[2]] + 1);
+        fprintf(file, " %d %d\n", g2l[nodes[2]] + 1, g2l[nodes[1]] + 1);
+      }
+    }
+
+    ref_free(l2g);
+    ref_free(g2l);
+  }
+
+  RSS(ref_dict_free(ref_dict), "free dict");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_export_tec_ed3_zone(REF_GRID ref_grid, FILE *file) {
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *g2l, *l2g;
+  REF_INT nedge;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnode;
+  REF_DICT ref_dict;
+  REF_INT boundary_tag, boundary_index;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_dict_create(&ref_dict), "create dict");
+
+  ref_cell = ref_grid_ed3(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+        "mark tri");
+  }
+
+  each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
+    RSS(ref_grid_cell_id_nodes(ref_grid, ref_cell, boundary_tag, &nnode, &nedge,
+                               &g2l, &l2g),
+        "extract this edge");
+
+    fprintf(file,
+            "zone t=\"p3edge%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            boundary_tag, nnode, 3 * nedge, "point", "felineseg");
+
+    for (node = 0; node < nnode; node++)
+      fprintf(file, " %.16e %.16e %.16e\n",
+              ref_node_xyz(ref_node, 0, l2g[node]),
+              ref_node_xyz(ref_node, 1, l2g[node]),
+              ref_node_xyz(ref_node, 2, l2g[node]));
+
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        fprintf(file, " %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[2]] + 1);
+        fprintf(file, " %d %d\n", g2l[nodes[2]] + 1, g2l[nodes[3]] + 1);
+        fprintf(file, " %d %d\n", g2l[nodes[3]] + 1, g2l[nodes[1]] + 1);
       }
     }
 
@@ -432,6 +485,137 @@ static REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
         for (node = 0; node < 4; node++)
           fprintf(file, " %d", g2l[nodes[node]] + 1);
         fprintf(file, "\n");
+      }
+    }
+
+    ref_free(l2g);
+    ref_free(g2l);
+  }
+
+  RSS(ref_dict_free(ref_dict), "free dict");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_export_tec_tr2_zone(REF_GRID ref_grid, FILE *file) {
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *g2l, *l2g;
+  REF_INT ncell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnode;
+  REF_DICT ref_dict;
+  REF_INT boundary_tag, boundary_index;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_dict_create(&ref_dict), "create dict");
+
+  ref_cell = ref_grid_tr2(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) RSS(
+      ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+      "mark tri");
+
+  each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
+    RSS(ref_grid_cell_id_nodes(ref_grid, ref_cell, boundary_tag, &nnode, &ncell,
+                               &g2l, &l2g),
+        "extract this tri");
+
+    fprintf(file,
+            "zone t=\"p2tri%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            boundary_tag, nnode, 4 * ncell, "point", "fetriangle");
+
+    for (node = 0; node < nnode; node++)
+      fprintf(file, " %.16e %.16e %.16e\n",
+              ref_node_xyz(ref_node, 0, l2g[node]),
+              ref_node_xyz(ref_node, 1, l2g[node]),
+              ref_node_xyz(ref_node, 2, l2g[node]));
+
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        fprintf(file, " %d %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[3]] + 1,
+                g2l[nodes[5]] + 1);
+        fprintf(file, " %d %d %d\n", g2l[nodes[1]] + 1, g2l[nodes[4]] + 1,
+                g2l[nodes[3]] + 1);
+        fprintf(file, " %d %d %d\n", g2l[nodes[2]] + 1, g2l[nodes[5]] + 1,
+                g2l[nodes[4]] + 1);
+        fprintf(file, " %d %d %d\n", g2l[nodes[3]] + 1, g2l[nodes[4]] + 1,
+                g2l[nodes[5]] + 1);
+      }
+    }
+
+    ref_free(l2g);
+    ref_free(g2l);
+  }
+
+  RSS(ref_dict_free(ref_dict), "free dict");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_export_tec_tr3_zone(REF_GRID ref_grid, FILE *file) {
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *g2l, *l2g;
+  REF_INT ncell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnode;
+  REF_DICT ref_dict;
+  REF_INT boundary_tag, boundary_index;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_dict_create(&ref_dict), "create dict");
+
+  ref_cell = ref_grid_tr3(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) RSS(
+      ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+      "mark tri");
+
+  each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
+    RSS(ref_grid_cell_id_nodes(ref_grid, ref_cell, boundary_tag, &nnode, &ncell,
+                               &g2l, &l2g),
+        "extract this tri");
+
+    fprintf(file,
+            "zone t=\"p3tri%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            boundary_tag, nnode, 9 * ncell, "point", "fetriangle");
+
+    for (node = 0; node < nnode; node++)
+      fprintf(file, " %.16e %.16e %.16e\n",
+              ref_node_xyz(ref_node, 0, l2g[node]),
+              ref_node_xyz(ref_node, 1, l2g[node]),
+              ref_node_xyz(ref_node, 2, l2g[node]));
+
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        fprintf(file, " %d %d %d\n", g2l[nodes[0]] + 1, g2l[nodes[3]] + 1,
+                g2l[nodes[8]] + 1);
+        fprintf(file, " %d %d %d\n", g2l[nodes[8]] + 1, g2l[nodes[3]] + 1,
+                g2l[nodes[9]] + 1);
+
+        fprintf(file, " %d %d %d\n", g2l[nodes[1]] + 1, g2l[nodes[5]] + 1,
+                g2l[nodes[4]] + 1);
+        fprintf(file, " %d %d %d\n", g2l[nodes[4]] + 1, g2l[nodes[5]] + 1,
+                g2l[nodes[9]] + 1);
+
+        fprintf(file, " %d %d %d\n", g2l[nodes[2]] + 1, g2l[nodes[7]] + 1,
+                g2l[nodes[6]] + 1);
+        fprintf(file, " %d %d %d\n", g2l[nodes[6]] + 1, g2l[nodes[7]] + 1,
+                g2l[nodes[9]] + 1);
+
+        fprintf(file, " %d %d %d\n", g2l[nodes[9]] + 1, g2l[nodes[5]] + 1,
+                g2l[nodes[6]] + 1);
+        fprintf(file, " %d %d %d\n", g2l[nodes[9]] + 1, g2l[nodes[7]] + 1,
+                g2l[nodes[8]] + 1);
+        fprintf(file, " %d %d %d\n", g2l[nodes[9]] + 1, g2l[nodes[3]] + 1,
+                g2l[nodes[4]] + 1);
       }
     }
 
@@ -612,10 +796,13 @@ static REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename) {
   fprintf(file, "title=\"tecplot refine geometry file\"\n");
   fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
 
-  RSS(ref_export_tec_surf_zone(ref_grid, file), "surf");
   RSS(ref_export_tec_vol_zone(ref_grid, file), "vol");
-  RSS(ref_export_tec_edge_zone(ref_grid, file), "edge");
-  RSS(ref_export_tec_cubic_edge_zone(ref_grid, file), "cubic edge");
+  RSS(ref_export_tec_surf_zone(ref_grid, file), "surf");
+  RSS(ref_export_tec_tr2_zone(ref_grid, file), "tr2");
+  RSS(ref_export_tec_tr3_zone(ref_grid, file), "tr3");
+  RSS(ref_export_tec_edg_zone(ref_grid, file), "edg");
+  RSS(ref_export_tec_ed2_zone(ref_grid, file), "ed2");
+  RSS(ref_export_tec_ed3_zone(ref_grid, file), "ed3");
 
   fclose(file);
   return REF_SUCCESS;

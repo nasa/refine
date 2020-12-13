@@ -30,9 +30,12 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
   ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
   switch (ref_cell_type(ref_cell)) {
     case REF_CELL_EDG:
-    case REF_CELL_TRI:
-    case REF_CELL_QUA:
+    case REF_CELL_ED2:
     case REF_CELL_ED3:
+    case REF_CELL_TRI:
+    case REF_CELL_TR2:
+    case REF_CELL_TR3:
+    case REF_CELL_QUA:
       ref_cell_last_node_is_an_id(ref_cell) = REF_TRUE;
       break;
     case REF_CELL_TET:
@@ -47,11 +50,20 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
     case REF_CELL_EDG:
       ref_cell_node_per(ref_cell) = 2;
       break;
+    case REF_CELL_ED2:
+      ref_cell_node_per(ref_cell) = 3;
+      break;
     case REF_CELL_ED3:
       ref_cell_node_per(ref_cell) = 4;
       break;
     case REF_CELL_TRI:
       ref_cell_node_per(ref_cell) = 3;
+      break;
+    case REF_CELL_TR2:
+      ref_cell_node_per(ref_cell) = 6;
+      break;
+    case REF_CELL_TR3:
+      ref_cell_node_per(ref_cell) = 10;
       break;
     case REF_CELL_QUA:
       ref_cell_node_per(ref_cell) = 4;
@@ -77,12 +89,13 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
 
   switch (ref_cell_type(ref_cell)) {
     case REF_CELL_EDG:
-      ref_cell_edge_per(ref_cell) = 1;
-      break;
+    case REF_CELL_ED2:
     case REF_CELL_ED3:
       ref_cell_edge_per(ref_cell) = 1;
       break;
     case REF_CELL_TRI:
+    case REF_CELL_TR2:
+    case REF_CELL_TR3:
       ref_cell_edge_per(ref_cell) = 3;
       break;
     case REF_CELL_QUA:
@@ -111,14 +124,14 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
 
   switch (ref_cell_type(ref_cell)) {
     case REF_CELL_EDG:
-      ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
-      ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
-      break;
+    case REF_CELL_ED2:
     case REF_CELL_ED3:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       break;
     case REF_CELL_TRI:
+    case REF_CELL_TR2:
+    case REF_CELL_TR3:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 1;
@@ -219,12 +232,13 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
 
   switch (ref_cell_type(ref_cell)) {
     case REF_CELL_EDG:
-      ref_cell_face_per(ref_cell) = 0;
-      break;
+    case REF_CELL_ED2:
     case REF_CELL_ED3:
       ref_cell_face_per(ref_cell) = 0;
       break;
     case REF_CELL_TRI:
+    case REF_CELL_TR2:
+    case REF_CELL_TR3:
       ref_cell_face_per(ref_cell) = 1;
       break;
     case REF_CELL_QUA:
@@ -250,9 +264,12 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
 
   switch (ref_cell_type(ref_cell)) {
     case REF_CELL_EDG:
+    case REF_CELL_ED2:
     case REF_CELL_ED3:
       break;
     case REF_CELL_TRI:
+    case REF_CELL_TR2:
+    case REF_CELL_TR3:
       ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
@@ -511,14 +528,23 @@ REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
     case REF_CELL_EDG:
       *keyword = 5;
       break;
+    case REF_CELL_ED2:
+      *keyword = 25;
+      break;
+    case REF_CELL_ED3:
+      *keyword = 92;
+      break;
     case REF_CELL_TRI:
       *keyword = 6;
       break;
+    case REF_CELL_TR2:
+      *keyword = 24;
+      break;
+    case REF_CELL_TR3:
+      *keyword = 90;
+      break;
     case REF_CELL_QUA:
       *keyword = 7;
-      break;
-    case REF_CELL_ED3:
-      *keyword = 25;
       break;
     case REF_CELL_TET:
       *keyword = 8;
