@@ -2371,7 +2371,7 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   int one = 1;
   int filetype = 0;
   int ascii[1024];
-  int numvar = 3 + ldim;
+  int i, len, numvar = 3 + ldim;
 
   file = fopen(filename, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -2396,6 +2396,17 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   ascii[0] = (int)'z';
   ascii[1] = 0;
   REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
+  for (i = 0; i < ldim; i++) {
+    len = 0;
+    if (NULL == scalar_names) {
+      char default_name[1000];
+      sprintf(default_name, "V%d", i + 1);
+      RSS(ref_gather_plt_char_int(default_name, 1024, &len, ascii), "a2i");
+    } else {
+      RSS(ref_gather_plt_char_int(scalar_names[i], 1024, &len, ascii), "a2i");
+    }
+    REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "var");
+  }
 
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
   SUPRESS_UNUSED_COMPILER_WARNING(scalar);
