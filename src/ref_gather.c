@@ -2351,6 +2351,49 @@ REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar,
+                                        const char **scalar_names,
+                                        const char *filename) {
+  FILE *file;
+  int one = 1;
+  int filetype = 0;
+  int ascii[1024];
+  int numvar = 3 + ldim;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  REIS(8, fwrite(&"#!TDV112", sizeof(char), 8, file), "header");
+  REIS(1, fwrite(&one, sizeof(int), 1, file), "magic");
+  REIS(1, fwrite(&filetype, sizeof(int), 1, file), "filetype");
+
+  ascii[0] = (int)'f';
+  ascii[1] = (int)'t';
+  ascii[2] = 0;
+  REIS(3, fwrite(&ascii, sizeof(int), 3, file), "title");
+
+  REIS(1, fwrite(&numvar, sizeof(int), 1, file), "numvar");
+  ascii[0] = (int)'x';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
+  ascii[0] = (int)'y';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
+  ascii[0] = (int)'z';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
+
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(scalar);
+  SUPRESS_UNUSED_COMPILER_WARNING(scalar_names);
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
                                           REF_DBL *scalar,
                                           const char **scalar_names,
@@ -2359,6 +2402,11 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
 
   end_of_string = strlen(filename);
 
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".plt") == 0) {
+    RSS(ref_gather_scalar_plt(ref_grid, ldim, scalar, scalar_names, filename),
+        "scalar tec");
+    return REF_SUCCESS;
+  }
   if ((end_of_string > 4 &&
        strcmp(&filename[end_of_string - 4], ".tec") == 0) ||
       (end_of_string > 4 &&
