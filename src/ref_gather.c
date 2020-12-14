@@ -2363,15 +2363,128 @@ REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
   return REF_INCREASE_LIMIT;
 }
 
+static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
+                                                      FILE *file) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  int ascii[8];
+  float zonemarker = 299.0;
+  int parentzone = -1;
+  int strandid = -1;
+  double solutiontime = 0.0;
+  int notused = -1;
+  int zonetype = 4;    /*4=FETETRAHEDRON*/
+  int datapacking = 0; /*0=Block, point does not work.*/
+  int varloc = 0;      /*0 = Don't specify, all data is located at nodes*/
+  int faceneighbors = 0;
+  int numpts;
+  int numelements;
+  REF_LONG ncell;
+  REF_GLOB nnode, *l2c;
+  int celldim = 0;
+  int aux = 0;
+  float eohmarker = 357.0;
+  int dataformat = 1;
+  int passive = 0;
+  int varsharing = 0;
+  int connsharing = -1;
+  float data;
+  double mindata, maxdata;
+  REF_INT *o2n, *n2o;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell, node, node_per, ixyz;
+  int index;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
+  RAS(nnode > 0 && ncell > 0, "empty zone");
+
+  RAS(nnode <= REF_INT_MAX, "too many nodes for int");
+  numpts = (int)nnode;
+  RAS(ncell <= REF_INT_MAX, "too many tets for int");
+  numpts = (int)ncell;
+
+  REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
+
+  ascii[0] = (int)'e';
+  ascii[1] = (int)'4';
+  ascii[2] = 0;
+  REIS(3, fwrite(&ascii, sizeof(int), 3, file), "title");
+
+  REIS(1, fwrite(&parentzone, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&strandid, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&solutiontime, sizeof(double), 1, file), "double");
+  REIS(1, fwrite(&notused, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&zonetype, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&datapacking, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&varloc, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&faceneighbors, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&numpts, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&numelements, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&celldim, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&celldim, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&celldim, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&aux, sizeof(int), 1, file), "int");
+
+  REIS(1, fwrite(&eohmarker, sizeof(float), 1, file), "eohmarker");
+  REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
+
+  REIS(1, fwrite(&dataformat, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&dataformat, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&dataformat, sizeof(int), 1, file), "int");
+
+  REIS(1, fwrite(&passive, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&varsharing, sizeof(int), 1, file), "int");
+  REIS(1, fwrite(&connsharing, sizeof(int), 1, file), "int");
+
+  RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    mindata = ref_node_xyz(ref_node, ixyz, n2o[0]);
+    maxdata = ref_node_xyz(ref_node, ixyz, n2o[0]);
+    for (node = 1; node < ref_node_n(ref_node); node++) {
+      mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, n2o[node]));
+      maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, n2o[node]));
+    }
+    REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
+    REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    for (node = 0; node < ref_node_n(ref_node); node++) {
+      data = (float)ref_node_xyz(ref_node, ixyz, n2o[node]);
+      REIS(1, fwrite(&data, sizeof(float), 1, file), "data");
+    }
+
+  node_per = ref_cell_node_per(ref_cell);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    for (node = 0; node < node_per; node++) {
+      index = o2n[nodes[node]];
+      REIS(1, fwrite(&index, sizeof(int), 1, file), "index");
+    }
+  }
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  ref_free(l2c);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
                                         REF_DBL *scalar,
                                         const char **scalar_names,
                                         const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
   int one = 1;
   int filetype = 0;
   int ascii[1024];
   int i, len, numvar = 3 + ldim;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
 
   file = fopen(filename, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -2408,7 +2521,8 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
     REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "var");
   }
 
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  RSS(ref_gather_plt_tet_zone_with_header(ref_grid, file), "plt tet zone");
+
   SUPRESS_UNUSED_COMPILER_WARNING(scalar);
   SUPRESS_UNUSED_COMPILER_WARNING(scalar_names);
 
