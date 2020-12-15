@@ -299,16 +299,16 @@ static REF_STATUS ref_gather_node_tec_block(REF_NODE ref_node, REF_GLOB nnode,
       RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, n, REF_DBL_TYPE), "sum");
 
       if (ref_mpi_once(ref_mpi)) {
-        /*
         REIS(n, fwrite(xyzm, sizeof(double), (unsigned long)n, file),
              "block chunk");
-        */
+        /*
         for (i = 0; i < n; i++) {
           float single_float;
           single_float = (float)xyzm[i];
           REIS(1, fwrite(&single_float, sizeof(float), 1, file),
                "single float");
         }
+        */
       }
     }
     REIS(nnode, nnode_written, "node miscount");
@@ -2507,7 +2507,7 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   int celldim = 0;
   int aux = 0;
   float eohmarker = 357.0;
-  int dataformat = 1; /*1=Float, 2=Double*/
+  int dataformat = 2; /*1=Float, 2=Double*/
   int passive = 0;
   int varsharing = 0;
   int connsharing = -1;
