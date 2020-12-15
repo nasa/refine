@@ -331,7 +331,8 @@ static REF_STATUS ref_gather_node_tec_block(REF_NODE ref_node, REF_GLOB nnode,
 
 static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
                                       REF_LONG ncell_expected, REF_GLOB *l2c,
-                                      REF_BOOL binary, FILE *file) {
+                                      REF_BOOL binary, REF_BOOL as_brick,
+                                      FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -351,10 +352,26 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
           globals[node] = l2c[nodes[node]] + 1;
         }
         if (binary) {
-          for (node = 0; node < node_per; node++) {
+          if (as_brick) {
             int int_node;
-            int_node = (int)globals[node] - 1; /* tecplot zero-based */
+            int_node = (int)globals[0] - 1; /* tecplot zero-based */
             REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            int_node = (int)globals[1] - 1;
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            int_node = (int)globals[2] - 1;
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            int_node = (int)globals[3] - 1;
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+          } else {
+            for (node = 0; node < node_per; node++) {
+              int int_node;
+              int_node = (int)globals[node] - 1; /* tecplot zero-based */
+              REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            }
           }
         } else {
           for (node = 0; node < node_per; node++) {
@@ -378,10 +395,26 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
           c2n[node + node_per * cell]++;
         }
         if (binary) {
-          for (node = 0; node < node_per; node++) {
+          if (as_brick) {
             int int_node;
-            int_node = (int)c2n[node + node_per * cell] - 1; /* zero-based */
+            int_node = (int)c2n[0 + node_per * cell] - 1; /* zero-based */
             REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            int_node = (int)c2n[1 + node_per * cell] - 1; /* zero-based */
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            int_node = (int)c2n[2 + node_per * cell] - 1; /* zero-based */
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            int_node = (int)c2n[3 + node_per * cell] - 1; /* zero-based */
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+          } else {
+            for (node = 0; node < node_per; node++) {
+              int int_node;
+              int_node = (int)c2n[node + node_per * cell] - 1; /* zero-based */
+              REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            }
           }
         } else {
           for (node = 0; node < node_per; node++) {
@@ -742,7 +775,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar,
                                ref_gather->grid_file),
       "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE,
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, REF_FALSE,
                           ref_gather->grid_file),
       "t");
   ref_free(l2c);
@@ -827,7 +860,8 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   }
 
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 2, scalar, file), "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, REF_FALSE,
+                          file),
       "nodes");
 
   if (ref_grid_once(ref_grid)) fclose(file);
@@ -869,7 +903,8 @@ static REF_STATUS ref_gather_tec(REF_GRID ref_grid, const char *filename) {
               nnode, ncell, "point", "felineseg");
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE,
+                            REF_FALSE, file),
         "nodes");
   }
   ref_free(l2c);
@@ -886,7 +921,8 @@ static REF_STATUS ref_gather_tec(REF_GRID ref_grid, const char *filename) {
               nnode, ncell, "point", "fetriangle");
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE,
+                            REF_FALSE, file),
         "nodes");
   }
   ref_free(l2c);
@@ -903,7 +939,8 @@ static REF_STATUS ref_gather_tec(REF_GRID ref_grid, const char *filename) {
               nnode, ncell, "point", "fetetrahedron");
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE,
+                            REF_FALSE, file),
         "nodes");
   }
   ref_free(l2c);
@@ -2394,7 +2431,8 @@ static REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
         "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE,
+                            REF_FALSE, file),
         "t");
   }
   ref_free(l2c);
@@ -2491,7 +2529,8 @@ REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
   return REF_INCREASE_LIMIT;
 }
 
-static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid, FILE *file) {
+static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid,
+                                            REF_BOOL as_brick, FILE *file) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   int ascii[8];
   float zonemarker = 299.0;
@@ -2499,7 +2538,7 @@ static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid, FILE *file) {
   int strandid = -1;
   double solutiontime = 0.0;
   int notused = -1;
-  int zonetype = 4;    /*4=FETETRAHEDRON*/
+  int zonetype;
   int datapacking = 0; /*0=Block, point does not work.*/
   int varloc = 0;      /*0 = Don't specify, all data is located at nodes*/
   int faceneighbors = 0;
@@ -2509,6 +2548,12 @@ static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid, FILE *file) {
   REF_GLOB nnode, *l2c;
   int celldim = 0;
   int aux = 0;
+
+  if (as_brick) {
+    zonetype = 5; /*5=FEBRICK*/
+  } else {
+    zonetype = 4; /*4=FETETRAHEDRON*/
+  }
 
   ref_cell = ref_grid_tet(ref_grid);
   RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
@@ -2548,7 +2593,8 @@ static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid, FILE *file) {
 }
 
 static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
-                                          REF_DBL *scalar, FILE *file) {
+                                          REF_DBL *scalar, REF_BOOL as_brick,
+                                          FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   float zonemarker = 299.0;
@@ -2605,7 +2651,8 @@ static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
                                 file),
       "block points");
 
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_TRUE, file),
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_TRUE, as_brick,
+                          file),
       "c2n");
 
   ref_free(l2c);
@@ -2616,6 +2663,7 @@ static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
 static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
                                         REF_DBL *scalar,
                                         const char **scalar_names,
+                                        REF_BOOL as_brick,
                                         const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
@@ -2662,11 +2710,12 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
     REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "var");
   }
 
-  RSS(ref_gather_plt_tet_header(ref_grid, file), "plt tet zone");
+  RSS(ref_gather_plt_tet_header(ref_grid, as_brick, file), "plt tet zone");
 
   REIS(1, fwrite(&eohmarker, sizeof(float), 1, file), "eohmarker");
 
-  RSS(ref_gather_plt_tet_zone(ref_grid, ldim, scalar, file), "plt tet zone");
+  RSS(ref_gather_plt_tet_zone(ref_grid, ldim, scalar, as_brick, file),
+      "plt tet zone");
 
   fclose(file);
 
@@ -2681,8 +2730,16 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
 
   end_of_string = strlen(filename);
 
+  if (end_of_string > 10 &&
+      strcmp(&filename[end_of_string - 10], "-brick.plt") == 0) {
+    RSS(ref_gather_scalar_plt(ref_grid, ldim, scalar, scalar_names, REF_TRUE,
+                              filename),
+        "scalar tec");
+    return REF_SUCCESS;
+  }
   if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".plt") == 0) {
-    RSS(ref_gather_scalar_plt(ref_grid, ldim, scalar, scalar_names, filename),
+    RSS(ref_gather_scalar_plt(ref_grid, ldim, scalar, scalar_names, REF_FALSE,
+                              filename),
         "scalar tec");
     return REF_SUCCESS;
   }
