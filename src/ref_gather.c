@@ -315,9 +315,10 @@ static REF_STATUS ref_gather_node_tec_block(REF_NODE ref_node, REF_GLOB nnode,
 
 static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
                                       REF_LONG ncell_expected, REF_GLOB *l2c,
-                                      FILE *file) {
+                                      REF_BOOL binary, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
+  int int_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_GLOB globals[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
@@ -332,12 +333,20 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) == part) {
         for (node = 0; node < node_per; node++) {
-          globals[node] = l2c[nodes[node]];
-          globals[node]++;
-          fprintf(file, " " REF_GLOB_FMT, globals[node]);
+          globals[node] = l2c[nodes[node]] + 1;
+        }
+        if (binary) {
+          for (node = 0; node < node_per; node++) {
+            int_node = (int)globals[node];
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+          }
+        } else {
+          for (node = 0; node < node_per; node++) {
+            fprintf(file, " " REF_GLOB_FMT, globals[node]);
+          }
+          fprintf(file, "\n");
         }
         ncell_actual++;
-        fprintf(file, "\n");
       }
     }
   }
@@ -351,10 +360,20 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
       for (cell = 0; cell < ncell; cell++) {
         for (node = 0; node < node_per; node++) {
           c2n[node + node_per * cell]++;
-          fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
+        }
+        if (binary) {
+          for (node = 0; node < node_per; node++) {
+            int_node = (int)c2n[node + node_per * cell];
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+          }
+        } else {
+          for (node = 0; node < node_per; node++) {
+            c2n[node + node_per * cell]++;
+            fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
+          }
+          fprintf(file, "\n");
         }
         ncell_actual++;
-        fprintf(file, "\n");
       }
       ref_free(c2n);
     }
@@ -706,7 +725,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar,
                                ref_gather->grid_file),
       "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c,
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE,
                           ref_gather->grid_file),
       "t");
   ref_free(l2c);
@@ -791,7 +810,8 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   }
 
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 2, scalar, file), "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+      "nodes");
 
   if (ref_grid_once(ref_grid)) fclose(file);
 
@@ -832,7 +852,8 @@ static REF_STATUS ref_gather_tec(REF_GRID ref_grid, const char *filename) {
               nnode, ncell, "point", "felineseg");
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+        "nodes");
   }
   ref_free(l2c);
 
@@ -848,7 +869,8 @@ static REF_STATUS ref_gather_tec(REF_GRID ref_grid, const char *filename) {
               nnode, ncell, "point", "fetriangle");
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+        "nodes");
   }
   ref_free(l2c);
 
@@ -864,7 +886,8 @@ static REF_STATUS ref_gather_tec(REF_GRID ref_grid, const char *filename) {
               nnode, ncell, "point", "fetetrahedron");
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 0, NULL, file), "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+        "nodes");
   }
   ref_free(l2c);
 
@@ -2354,7 +2377,8 @@ static REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
         "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "t");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_FALSE, file),
+        "t");
   }
   ref_free(l2c);
 
@@ -2478,10 +2502,7 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   int varsharing = 0;
   int connsharing = -1;
   double mindata, maxdata;
-  REF_INT *o2n, *n2o;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT cell, node, node_per, ixyz, i;
-  int index;
+  REF_INT node, ixyz, i;
 
   ref_cell = ref_grid_tet(ref_grid);
   RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
@@ -2526,8 +2547,6 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   REIS(1, fwrite(&varsharing, sizeof(int), 1, file), "int");
   REIS(1, fwrite(&connsharing, sizeof(int), 1, file), "int");
 
-  RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
-
   for (ixyz = 0; ixyz < 3; ixyz++) {
     mindata = REF_DBL_MAX;
     maxdata = REF_DBL_MIN;
@@ -2556,16 +2575,8 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   RSS(ref_gather_node_tec_block(ref_node, nnode, l2c, ldim, scalar, file),
       "block points");
 
-  node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    for (node = 0; node < node_per; node++) {
-      index = o2n[nodes[node]];
-      REIS(1, fwrite(&index, sizeof(int), 1, file), "index");
-    }
-  }
-
-  ref_free(n2o);
-  ref_free(o2n);
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_TRUE, file),
+      "c2n");
 
   ref_free(l2c);
 
