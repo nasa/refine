@@ -2364,6 +2364,8 @@ REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
 }
 
 static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
+                                                      REF_INT ldim,
+                                                      REF_DBL *scalar,
                                                       FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -2392,7 +2394,7 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   double mindata, maxdata;
   REF_INT *o2n, *n2o;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT cell, node, node_per, ixyz;
+  REF_INT cell, node, node_per, ixyz, i;
   int index;
 
   ref_cell = ref_grid_tet(ref_grid);
@@ -2441,11 +2443,25 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
   for (ixyz = 0; ixyz < 3; ixyz++) {
-    mindata = ref_node_xyz(ref_node, ixyz, n2o[0]);
-    maxdata = ref_node_xyz(ref_node, ixyz, n2o[0]);
-    for (node = 1; node < ref_node_n(ref_node); node++) {
-      mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, n2o[node]));
-      maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, n2o[node]));
+    mindata = REF_DBL_MAX;
+    maxdata = REF_DBL_MIN;
+    for (node = 0; node < ref_node_max(ref_node); node++) {
+      if (REF_EMPTY != l2c[node] && ref_node_owned(ref_node, node)) {
+        mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, l2c[node]));
+        maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, l2c[node]));
+      }
+    }
+    REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
+    REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
+  }
+  for (i = 0; i < ldim; i++) {
+    mindata = REF_DBL_MAX;
+    maxdata = REF_DBL_MIN;
+    for (node = 0; node < ref_node_max(ref_node); node++) {
+      if (REF_EMPTY != l2c[node] && ref_node_owned(ref_node, node)) {
+        mindata = MIN(mindata, scalar[i + ldim * node]);
+        maxdata = MAX(maxdata, scalar[i + ldim * node]);
+      }
     }
     REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
     REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
@@ -2521,10 +2537,8 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
     REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "var");
   }
 
-  RSS(ref_gather_plt_tet_zone_with_header(ref_grid, file), "plt tet zone");
-
-  SUPRESS_UNUSED_COMPILER_WARNING(scalar);
-  SUPRESS_UNUSED_COMPILER_WARNING(scalar_names);
+  RSS(ref_gather_plt_tet_zone_with_header(ref_grid, ldim, scalar, file),
+      "plt tet zone");
 
   fclose(file);
 
