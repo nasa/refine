@@ -2521,7 +2521,7 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   RAS(nnode <= REF_INT_MAX, "too many nodes for int");
   numpts = (int)nnode;
   RAS(ncell <= REF_INT_MAX, "too many tets for int");
-  numpts = (int)ncell;
+  numelements = (int)ncell;
 
   REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
 
