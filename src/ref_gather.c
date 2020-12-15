@@ -2491,11 +2491,7 @@ REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
   return REF_INCREASE_LIMIT;
 }
 
-static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
-                                                      REF_INT ldim,
-                                                      REF_DBL *scalar,
-                                                      FILE *file) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid, FILE *file) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   int ascii[8];
   float zonemarker = 299.0;
@@ -2513,13 +2509,6 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   REF_GLOB nnode, *l2c;
   int celldim = 0;
   int aux = 0;
-  float eohmarker = 357.0;
-  int dataformat = 2; /*1=Float, 2=Double*/
-  int passive = 0;
-  int varsharing = 0;
-  int connsharing = -1;
-  double mindata, maxdata;
-  REF_INT node, ixyz, i;
 
   ref_cell = ref_grid_tet(ref_grid);
   RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
@@ -2553,7 +2542,30 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
   REIS(1, fwrite(&celldim, sizeof(int), 1, file), "int");
   REIS(1, fwrite(&aux, sizeof(int), 1, file), "int");
 
-  REIS(1, fwrite(&eohmarker, sizeof(float), 1, file), "eohmarker");
+  ref_free(l2c);
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
+                                          REF_DBL *scalar, FILE *file) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  float zonemarker = 299.0;
+  REF_LONG ncell;
+  REF_GLOB nnode, *l2c;
+  int dataformat = 2; /*1=Float, 2=Double*/
+  int passive = 0;
+  int varsharing = 0;
+  int connsharing = -1;
+  double mindata, maxdata;
+  REF_INT node, ixyz, i;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
+  RAS(nnode > 0 && ncell > 0, "empty zone");
+
   REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
 
   for (i = 0; i < 3 + ldim; i++) {
@@ -2611,6 +2623,7 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   int filetype = 0;
   int ascii[1024];
   int i, len, numvar = 3 + ldim;
+  float eohmarker = 357.0;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
@@ -2649,8 +2662,11 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
     REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "var");
   }
 
-  RSS(ref_gather_plt_tet_zone_with_header(ref_grid, ldim, scalar, file),
-      "plt tet zone");
+  RSS(ref_gather_plt_tet_header(ref_grid, file), "plt tet zone");
+
+  REIS(1, fwrite(&eohmarker, sizeof(float), 1, file), "eohmarker");
+
+  RSS(ref_gather_plt_tet_zone(ref_grid, ldim, scalar, file), "plt tet zone");
 
   fclose(file);
 
