@@ -79,6 +79,9 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
                                           const char *filename);
 REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid, const char *filename);
 
+REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
+                                   REF_INT *n, REF_INT *int_string);
+
 END_C_DECLORATION
 
 #endif /* REF_GATHER_H */

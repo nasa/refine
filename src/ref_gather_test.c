@@ -689,6 +689,17 @@ int main(int argc, char *argv[]) {
       REIS(0, remove(filename), "test clean up");
   }
 
+  { /* tecplot char2int */
+    char char_string[] = "Dog";
+    REF_INT int_string[10], max = 10, n;
+    RSS(ref_gather_plt_char_int(char_string, max, &n, int_string), "conv");
+    REIS(68, int_string[0], "D");
+    REIS(111, int_string[1], "o");
+    REIS(103, int_string[2], "g");
+    REIS(0, int_string[3], "NULL");
+    REIS(4, n, "length");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 
