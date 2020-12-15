@@ -697,6 +697,7 @@ int main(int argc, char *argv[]) {
     REIS(111, int_string[1], "o");
     REIS(103, int_string[2], "g");
     REIS(0, int_string[3], "NULL");
+    REIS(4, n, "length");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

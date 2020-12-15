@@ -2465,10 +2465,10 @@ REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
 REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
                                    REF_INT *n, REF_INT *int_string) {
   REF_INT i;
-  n = 0;
+  *n = 0;
   for (i = 0; i < max; i++) {
     int_string[i] = (REF_INT)char_string[i];
-    n++;
+    (*n)++;
     if (0 == int_string[i]) return REF_SUCCESS;
   }
   return REF_INCREASE_LIMIT;
