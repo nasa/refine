@@ -228,7 +228,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_GLOB nnode,
 
 static REF_STATUS ref_gather_node_tec_block(REF_NODE ref_node, REF_GLOB nnode,
                                             REF_GLOB *l2c, REF_INT ldim,
-                                            REF_DBL *scalar, FILE *file) {
+                                            REF_DBL *scalar, int dataformat,
+                                            FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
@@ -299,16 +300,22 @@ static REF_STATUS ref_gather_node_tec_block(REF_NODE ref_node, REF_GLOB nnode,
       RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, n, REF_DBL_TYPE), "sum");
 
       if (ref_mpi_once(ref_mpi)) {
-        REIS(n, fwrite(xyzm, sizeof(double), (unsigned long)n, file),
-             "block chunk");
-        /*
-        for (i = 0; i < n; i++) {
-          float single_float;
-          single_float = (float)xyzm[i];
-          REIS(1, fwrite(&single_float, sizeof(float), 1, file),
-               "single float");
+        switch (dataformat) {
+          case 1:
+            for (i = 0; i < n; i++) {
+              float single_float;
+              single_float = (float)xyzm[i];
+              REIS(1, fwrite(&single_float, sizeof(float), 1, file),
+                   "single float");
+            }
+            break;
+          case 2:
+            REIS(n, fwrite(xyzm, sizeof(double), (unsigned long)n, file),
+                 "block chunk");
+            break;
+          default:
+            return REF_IMPLEMENT;
         }
-        */
       }
     }
     REIS(nnode, nnode_written, "node miscount");
@@ -2582,7 +2589,8 @@ static REF_STATUS ref_gather_plt_tet_zone_with_header(REF_GRID ref_grid,
     REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
   }
 
-  RSS(ref_gather_node_tec_block(ref_node, nnode, l2c, ldim, scalar, file),
+  RSS(ref_gather_node_tec_block(ref_node, nnode, l2c, ldim, scalar, dataformat,
+                                file),
       "block points");
 
   RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_TRUE, file),
