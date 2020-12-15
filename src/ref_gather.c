@@ -296,13 +296,14 @@ static REF_STATUS ref_gather_node_tec_block(REF_NODE ref_node, REF_GLOB nnode,
         }
       }
 
-      RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, 1, REF_DBL_TYPE), "sum");
+      RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, n, REF_DBL_TYPE), "sum");
 
       if (ref_mpi_once(ref_mpi)) {
         REIS(n, fwrite(xyzm, sizeof(double), (unsigned long)n, file),
              "block chunk");
       }
     }
+    REIS(nnode, nnode_written, "node miscount");
   }
 
   ref_free(xyzm);
