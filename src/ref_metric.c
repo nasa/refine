@@ -2749,3 +2749,53 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
   }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
+                                REF_DBL *hh) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+  REF_DBL *metric_imply;
+  ref_malloc(metric_imply, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_metric_imply_from(metric_imply, ref_grid), "imply");
+
+  each_ref_node_valid_node(ref_node, node) {
+    REF_DBL e, d_imply[12], hmin, hmax, d_met[12], h;
+    REF_DBL ar;
+
+    RSS(ref_matrix_diag_m(&(metric_imply[6 * node]), d_imply), "eigen decomp");
+    e = MAX(MAX(ref_matrix_eig(d_imply, 0), ref_matrix_eig(d_imply, 1)),
+            ref_matrix_eig(d_imply, 1));
+    RAS(e >= 0, "neg eig");
+    RAS(ref_math_divisible(1.0, sqrt(e)), "div zero");
+    hmin = 1.0 / sqrt(e);
+
+    e = MIN(MIN(ref_matrix_eig(d_imply, 0), ref_matrix_eig(d_imply, 1)),
+            ref_matrix_eig(d_imply, 1));
+    RAS(e >= 0, "neg eig");
+    RAS(ref_math_divisible(1.0, sqrt(e)), "div zero");
+    hmax = 1.0 / sqrt(e);
+
+    RAS(ref_math_divisible(hmin, hmax), "div zero");
+    ar = hmin / hmax;
+
+    RSS(ref_matrix_diag_m(&(metric[6 * node]), d_met), "eigen decomp");
+    RSS(ref_matrix_ascending_eig(d_met), "really descend?");
+    if (ar < 0.5) {
+      e = ref_matrix_eig(d_met, 1);
+    } else {
+      e = ref_matrix_eig(d_met, 0);
+    }
+    RAS(e >= 0, "neg eig");
+    RAS(ref_math_divisible(1.0, sqrt(e)), "div zero");
+    h = 1.0 / sqrt(e);
+
+    hh[0 + 2 * node] = h;
+    hh[1 + 2 * node] = h;
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, hh, 2), "update ghosts");
+
+  ref_free(metric_imply);
+
+  return REF_SUCCESS;
+}
