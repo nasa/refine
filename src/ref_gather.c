@@ -1324,18 +1324,21 @@ static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
 static REF_STATUS ref_gather_node_scalar_txt(REF_NODE ref_node, REF_INT ldim,
                                              REF_DBL *scalar,
                                              const char *separator,
-                                             FILE *file) {
+                                             REF_BOOL prepend_xyz, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
   REF_GLOB global, nnode_written, first;
-  REF_INT local, n, i, im;
+  REF_INT local, n, i, im, nxyz;
   REF_STATUS status;
+
+  nxyz = 0;
+  if (prepend_xyz) nxyz = 3;
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
-  ref_malloc(local_xyzm, (ldim + 1) * chunk, REF_DBL);
-  ref_malloc(xyzm, (ldim + 1) * chunk, REF_DBL);
+  ref_malloc(local_xyzm, (nxyz + ldim + 1) * chunk, REF_DBL);
+  ref_malloc(xyzm, (nxyz + ldim + 1) * chunk, REF_DBL);
 
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
@@ -1345,7 +1348,7 @@ static REF_STATUS ref_gather_node_scalar_txt(REF_NODE ref_node, REF_INT ldim,
 
     nnode_written += n;
 
-    for (i = 0; i < (ldim + 1) * chunk; i++) local_xyzm[i] = 0.0;
+    for (i = 0; i < (nxyz + ldim + 1) * chunk; i++) local_xyzm[i] = 0.0;
 
     for (i = 0; i < n; i++) {
       global = first + i;
@@ -1353,29 +1356,35 @@ static REF_STATUS ref_gather_node_scalar_txt(REF_NODE ref_node, REF_INT ldim,
       RXS(status, REF_NOT_FOUND, "node local failed");
       if (REF_SUCCESS == status &&
           ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
+        for (im = 0; im < nxyz; im++)
+          local_xyzm[im + (nxyz + ldim + 1) * i] =
+              ref_node_xyz(ref_node, im, local);
         for (im = 0; im < ldim; im++)
-          local_xyzm[im + (ldim + 1) * i] = scalar[im + ldim * local];
-        local_xyzm[ldim + (ldim + 1) * i] = 1.0;
+          local_xyzm[nxyz + im + (nxyz + ldim + 1) * i] =
+              scalar[im + ldim * local];
+        local_xyzm[nxyz + ldim + (nxyz + ldim + 1) * i] = 1.0;
       } else {
-        for (im = 0; im < (ldim + 1); im++)
-          local_xyzm[im + (ldim + 1) * i] = 0.0;
+        for (im = 0; im < (nxyz + ldim + 1); im++)
+          local_xyzm[im + (nxyz + ldim + 1) * i] = 0.0;
       }
     }
 
-    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (ldim + 1) * n, REF_DBL_TYPE),
+    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (nxyz + ldim + 1) * n,
+                    REF_DBL_TYPE),
         "sum");
 
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
-        if (ABS(xyzm[ldim + (ldim + 1) * i] - 1.0) > 0.1) {
+        if (ABS(xyzm[nxyz + ldim + (nxyz + ldim + 1) * i] - 1.0) > 0.1) {
           printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
-                 xyzm[ldim + (ldim + 1) * i]);
+                 xyzm[nxyz + ldim + (nxyz + ldim + 1) * i]);
         }
-        for (im = 0; im < ldim - 1; im++) {
-          fprintf(file, "%.15e%s", xyzm[im + (ldim + 1) * i], separator);
+        for (im = 0; im < nxyz + ldim - 1; im++) {
+          fprintf(file, "%.15e%s", xyzm[im + (nxyz + ldim + 1) * i], separator);
         }
         if (ldim > 0)
-          fprintf(file, "%.15e\n", xyzm[(ldim - 1) + (ldim + 1) * i]);
+          fprintf(file, "%.15e\n",
+                  xyzm[(nxyz + ldim - 1) + (nxyz + ldim + 1) * i]);
       }
   }
 
@@ -2119,7 +2128,8 @@ static REF_STATUS ref_gather_scalar_txt(REF_GRID ref_grid, REF_INT ldim,
     RNS(file, "unable to open file");
   }
 
-  RSS(ref_gather_node_scalar_txt(ref_node, ldim, scalar, separator, file),
+  RSS(ref_gather_node_scalar_txt(ref_node, ldim, scalar, separator, REF_FALSE,
+                                 file),
       "nodes");
 
   if (ref_grid_once(ref_grid)) fclose(file);
@@ -2344,6 +2354,55 @@ REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
 
   RSS(ref_mpi_sum(ref_mpi, &ngeom_local, ngeom, 1, REF_INT_TYPE), "sum");
   RSS(ref_mpi_bcast(ref_mpi, ngeom, 1, REF_INT_TYPE), "bcast");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_scalar_pcd(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar,
+                                        const char **scalar_names,
+                                        const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  FILE *file;
+  REF_INT i;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    fprintf(file, "# .PCD v.7 - Point Cloud Data file format\n");
+    fprintf(file, "VERSION .7\n");
+    fprintf(file, "FIELDS x y z");
+    if (NULL != scalar_names) {
+      for (i = 0; i < ldim; i++) fprintf(file, " \"%s\"", scalar_names[i]);
+    } else {
+      for (i = 0; i < ldim; i++) fprintf(file, " \"V%d\"", i + 1);
+    }
+    fprintf(file, "\n");
+    fprintf(file, "SIZE");
+    for (i = 0; i < 3 + ldim; i++) fprintf(file, " 4");
+    fprintf(file, "\n");
+    fprintf(file, "TYPE");
+    for (i = 0; i < 3 + ldim; i++) fprintf(file, " F");
+    fprintf(file, "\n");
+    fprintf(file, "COUNT");
+    for (i = 0; i < 3 + ldim; i++) fprintf(file, " 1");
+    fprintf(file, "\n");
+    fprintf(file, "WIDTH " REF_GLOB_FMT "\n", ref_node_n_global(ref_node));
+    fprintf(file, "VIEWPOINT 0 0 0 1 0 0 0\n");
+    fprintf(file, "POINTS " REF_GLOB_FMT "\n", ref_node_n_global(ref_node));
+    fprintf(file, "DATA ascii\n");
+  }
+
+  RSS(ref_gather_node_scalar_txt(ref_node, ldim, scalar, " ", REF_TRUE, file),
+      "text export");
+
+  if (ref_grid_once(ref_grid)) {
+    fclose(file);
+  }
 
   return REF_SUCCESS;
 }
@@ -2750,6 +2809,11 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
       (end_of_string > 2 && strcmp(&filename[end_of_string - 2], ".t") == 0)) {
     RSS(ref_gather_scalar_tec(ref_grid, ldim, scalar, scalar_names, filename),
         "scalar tec");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".pcd") == 0) {
+    RSS(ref_gather_scalar_pcd(ref_grid, ldim, scalar, scalar_names, filename),
+        "scalar pcd");
     return REF_SUCCESS;
   }
   if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0) {
