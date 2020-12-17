@@ -94,7 +94,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich2");
     printf("write tec %s\n", "ref_geom_enrich2.tec");
     RSS(ref_export_by_extension(ref_grid, "ref_geom_enrich2.tec"), "tec");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich");
+    RSS(ref_export_by_extension(ref_grid, "ref_geom_enrich2.meshb"), "tec");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "export");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
@@ -120,7 +121,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich3");
     printf("write tec %s\n", "ref_geom_enrich3.tec");
     RSS(ref_export_by_extension(ref_grid, "ref_geom_enrich3.tec"), "tec");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "enrich");
+    RSS(ref_export_by_extension(ref_grid, "ref_geom_enrich3.meshb"), "tec");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "export");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
