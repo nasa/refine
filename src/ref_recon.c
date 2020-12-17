@@ -39,7 +39,7 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT i, node, cell, group, cell_node;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL div_by_zero;
   REF_DBL cell_vol, cell_grad[3];
   REF_DBL *vol;
@@ -72,6 +72,30 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
                 grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
             for (cell_node = 0; cell_node < 4; cell_node++)
               vol[nodes[cell_node]] += cell_vol;
+            break;
+          case 6:
+            tri_nodes[0] = nodes[0];
+            tri_nodes[1] = nodes[1];
+            tri_nodes[2] = nodes[2];
+            RSS(ref_node_tri_area(ref_node, tri_nodes, &cell_vol), "vol");
+            RSS(ref_node_tri_grad_nodes(ref_node, tri_nodes, scalar, cell_grad),
+                "vol");
+            for (cell_node = 0; cell_node < 3; cell_node++)
+              for (i = 0; i < 3; i++)
+                grad[i + 3 * tri_nodes[cell_node]] += cell_vol * cell_grad[i];
+            for (cell_node = 0; cell_node < 3; cell_node++)
+              vol[tri_nodes[cell_node]] += cell_vol;
+            tri_nodes[0] = nodes[5];
+            tri_nodes[1] = nodes[4];
+            tri_nodes[2] = nodes[3];
+            RSS(ref_node_tri_area(ref_node, tri_nodes, &cell_vol), "vol");
+            RSS(ref_node_tri_grad_nodes(ref_node, tri_nodes, scalar, cell_grad),
+                "vol");
+            for (cell_node = 0; cell_node < 3; cell_node++)
+              for (i = 0; i < 3; i++)
+                grad[i + 3 * tri_nodes[cell_node]] += cell_vol * cell_grad[i];
+            for (cell_node = 0; cell_node < 3; cell_node++)
+              vol[tri_nodes[cell_node]] += cell_vol;
             break;
           default:
             RSS(REF_IMPLEMENT, "implement cell type");

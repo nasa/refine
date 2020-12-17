@@ -206,6 +206,7 @@ static void multiscale_help(const char *name) {
   printf("       negative: mixed-space gradation.\n");
   printf("   --buffer coarsens the metric approaching the x max boundary.\n");
   printf("   --hessian expects hessian.* in place of scalar.{solb,snap}.\n");
+  printf("   --pcd <project.pcd> exports isotropic spacing.\n");
   printf("\n");
 }
 static void node_help(const char *name) {
@@ -2045,6 +2046,20 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi))
     printf("actual complexity %e\n", current_complexity);
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+
+  RXS(ref_args_find(argc, argv, "--pcd", &pos), REF_NOT_FOUND, "arg search");
+  printf("pos %d arc %d\n", pos, argc);
+  if (REF_EMPTY != pos && pos + 1 < argc) {
+    REF_DBL *hh;
+    const char *title[] = {"spacing", "decay"};
+    ref_malloc(hh, 2 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_isotropic(metric, ref_grid, hh), "iso");
+    ref_mpi_stopwatch_stop(ref_mpi, "isotropic");
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", argv[pos + 1]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, 2, hh, title, argv[pos + 1]),
+        "dump hh");
+    ref_free(hh);
+  }
 
   ref_free(metric);
 
