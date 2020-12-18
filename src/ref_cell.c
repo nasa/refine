@@ -1437,8 +1437,23 @@ REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename) {
 
 REF_STATUS ref_cell_shape(REF_CELL ref_cell, REF_DBL *bary, REF_DBL *shape) {
   REF_INT cell_node;
-  each_ref_cell_cell_node(ref_cell, cell_node) {
-    shape[cell_node] = bary[cell_node];
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
+    case REF_CELL_TRI:
+    case REF_CELL_TET:
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        shape[cell_node] = bary[cell_node];
+      }
+      break;
+    case REF_CELL_ED2:
+    case REF_CELL_ED3:
+    case REF_CELL_TR2:
+    case REF_CELL_TR3:
+    case REF_CELL_QUA:
+    case REF_CELL_PYR:
+    case REF_CELL_PRI:
+    case REF_CELL_HEX:
+      return REF_IMPLEMENT;
   }
   return REF_SUCCESS;
 }
