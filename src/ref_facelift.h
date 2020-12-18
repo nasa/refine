@@ -41,6 +41,8 @@ struct REF_FACELIFT_STRUCT {
 
 #define ref_facelift_grid(ref_facelift) ((ref_facelift)->grid)
 
+#define ref_facelift_direct(ref_facelift) (NULL == (ref_facelift)->displacement)
+
 #define ref_facelift_displacement(ref_facelift, ixyz, geom) \
   ((ref_facelift)->displacement[(ixyz) + 3 * (geom)])
 #define ref_facelift_distance(ref_facelift, geom)                  \

@@ -162,6 +162,8 @@ static REF_STATUS ref_facelift_solve_face(REF_FACELIFT ref_facelift) {
   REF_INT item, cell_node, other_geom, center;
   REF_DBL disp[3], hits;
 
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
+
   /* psudo laplace */
   each_ref_geom_face(ref_geom, center_geom) {
     if (!ref_facelift_strong_bc(ref_facelift, center_geom)) {
@@ -206,6 +208,8 @@ static REF_STATUS ref_facelift_initialize_face(REF_FACELIFT ref_facelift,
   REF_DBL edge_xyz[3], face_xyz[3];
   REF_INT i, edge_geom, face_geom, node, item;
 
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
+
   /* also displace edge and face to geom nodes */
 
   each_ref_geom_edge(ref_geom, edge_geom) {
@@ -237,6 +241,8 @@ static REF_STATUS ref_facelift_solve_edge(REF_FACELIFT ref_facelift) {
   REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell_node, other_geom, center;
   REF_DBL disp[3], hits;
+
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
 
   /* psudo laplace */
   each_ref_geom_edge(ref_geom, center_geom) {
@@ -282,6 +288,8 @@ static REF_STATUS ref_facelift_initialize_edge(REF_FACELIFT ref_facelift) {
   REF_DBL node_xyz[3], edge_xyz[3];
   REF_INT i, node_geom, edge_geom, node, item;
 
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
+
   /* also displace edge and face to geom nodes */
 
   each_ref_geom_node(ref_geom, node_geom) {
@@ -310,6 +318,9 @@ static REF_STATUS ref_facelift_apply(REF_FACELIFT ref_facelift) {
   REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
   REF_DBL xyz[3];
   REF_INT geom;
+
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
+
   each_ref_geom_face(ref_geom, geom) {
     RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, ref_geom_id(ref_geom, geom),
                           &(ref_geom_param(ref_geom, 0, geom)), xyz, NULL),
@@ -343,6 +354,8 @@ static REF_STATUS ref_facelift_infer_displacement(REF_FACELIFT ref_facelift) {
   REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
   REF_DBL geom_xyz[3];
   REF_INT i, geom, node;
+
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
 
   each_ref_geom(ref_geom, geom) {
     RSS(ref_egads_eval(ref_geom, geom, geom_xyz, NULL), "eval geom");
@@ -482,6 +495,8 @@ static REF_STATUS ref_facelift_displacement_at(REF_FACELIFT ref_facelift,
   displacement[1] = 0.0;
   displacement[2] = 0.0;
 
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
+
   if (REF_GEOM_EDGE == type) {
     RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
         "enclose");
@@ -593,6 +608,8 @@ static REF_STATUS ref_facelift_edge_tec_zone(REF_FACELIFT ref_facelift,
   REF_INT jump_geom = REF_EMPTY;
   REF_DBL *t, tvalue;
   REF_DBL radius, normal[3], xyz[3];
+
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
@@ -726,6 +743,8 @@ static REF_STATUS ref_facelift_face_tec_zone(REF_FACELIFT ref_facelift,
   REF_INT sens;
   REF_DBL *uv, param[2];
   REF_DBL xyz[3];
+
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
 
   RSS(ref_dict_create(&ref_dict), "create dict");
   RSS(ref_dict_create(&ref_dict_jump), "create dict");
@@ -891,6 +910,8 @@ REF_STATUS ref_facelift_tec(REF_FACELIFT ref_facelift, const char *filename) {
   FILE *file;
   REF_INT geom, id, min_id, max_id;
 
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
+
   file = fopen(filename, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
@@ -930,6 +951,8 @@ REF_STATUS ref_facelift_max_distance(REF_FACELIFT ref_facelift,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_INT geom, node;
+
+  RAS(!ref_facelift_direct(ref_facelift), "requires indirect facelift");
 
   each_ref_node_valid_node(ref_node, node) { distance[node] = 0.0; }
 
@@ -1151,4 +1174,3 @@ REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
-
