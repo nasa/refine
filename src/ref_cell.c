@@ -1446,6 +1446,10 @@ REF_STATUS ref_cell_shape(REF_CELL ref_cell, REF_DBL *bary, REF_DBL *shape) {
       }
       break;
     case REF_CELL_ED2:
+      shape[2] = 4.0 * bary[0] * bary[1];
+      shape[0] = bary[0] - 0.5 * shape[2];
+      shape[1] = bary[1] - 0.5 * shape[2];
+      break;
     case REF_CELL_ED3:
     case REF_CELL_TR2:
     case REF_CELL_TR3:
