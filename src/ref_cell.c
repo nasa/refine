@@ -1453,6 +1453,7 @@ REF_STATUS ref_cell_shape(REF_CELL ref_cell, REF_DBL *bary, REF_DBL *shape) {
     case REF_CELL_PYR:
     case REF_CELL_PRI:
     case REF_CELL_HEX:
+      each_ref_cell_cell_node(ref_cell, cell_node) { shape[cell_node] = 0.0; }
       return REF_IMPLEMENT;
   }
   return REF_SUCCESS;
