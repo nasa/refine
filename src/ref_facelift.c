@@ -34,8 +34,11 @@
 #include "ref_node.h"
 #include "ref_recon.h"
 
+#define ref_facelift_direct(ref_facelift) (NULL == (ref_facelift)->displacement)
 #define ref_facelift_geom(ref_facelift) \
   (ref_grid_geom(ref_facelift_grid(ref_facelift)))
+#define ref_facelift_edg(ref_facelift) ((ref_facelift)->edg_cell)
+#define ref_facelift_tri(ref_facelift) ((ref_facelift)->tri_cell)
 #define ref_facelift_strong_bc(ref_facelift, geom) \
   ((ref_facelift)->strong_bc[(geom)])
 #define ref_facelift_edge_search(ref_facelift, iedge) \
@@ -45,7 +48,6 @@
 
 static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
   REF_INT nedge, iedge, nface, iface;
-  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -56,7 +58,7 @@ static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
   nedge = ref_geom->nedge;
 
   if (0 < nedge) {
-    ref_cell = ref_grid_edg(ref_grid);
+    ref_cell = ref_facelift_edg(ref_facelift);
 
     ref_malloc_init(ref_facelift->edge_search, nedge, REF_SEARCH, NULL);
     for (iedge = 0; iedge < nedge; iedge++) {
@@ -83,7 +85,7 @@ static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
   nface = ref_geom->nface;
 
   if (0 < nface) {
-    ref_cell = ref_grid_tri(ref_grid);
+    ref_cell = ref_facelift_tri(ref_facelift);
 
     ref_malloc_init(ref_facelift->face_search, nface, REF_SEARCH, NULL);
     for (iface = 0; iface < nface; iface++) {
@@ -117,6 +119,12 @@ REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift_ptr,
   ref_facelift = *ref_facelift_ptr;
 
   ref_facelift_grid(ref_facelift) = freeable_ref_grid;
+
+  ref_facelift_edg(ref_facelift) =
+      ref_grid_edg(ref_facelift_grid(ref_facelift));
+  ref_facelift_tri(ref_facelift) =
+      ref_grid_tri(ref_facelift_grid(ref_facelift));
+
   if (direct) {
     ref_facelift->displacement = NULL;
     ref_facelift->strong_bc = NULL;
@@ -156,8 +164,7 @@ REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift) {
 
 static REF_STATUS ref_facelift_solve_face(REF_FACELIFT ref_facelift) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
-  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_CELL ref_cell = ref_facelift_tri(ref_facelift);
   REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell_node, other_geom, center;
   REF_DBL disp[3], hits;
@@ -236,8 +243,7 @@ static REF_STATUS ref_facelift_initialize_face(REF_FACELIFT ref_facelift,
 
 static REF_STATUS ref_facelift_solve_edge(REF_FACELIFT ref_facelift) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
-  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
-  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_CELL ref_cell = ref_facelift_edg(ref_facelift);
   REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell_node, other_geom, center;
   REF_DBL disp[3], hits;
@@ -394,7 +400,6 @@ REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename) {
 REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
                                   REF_INT id, REF_DBL *param, REF_INT *cell,
                                   REF_DBL *bary) {
-  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_LIST ref_list;
   REF_SEARCH ref_search;
@@ -413,7 +418,7 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
   if (REF_GEOM_EDGE == type) {
     RSS(ref_list_create(&ref_list), "create list");
     ref_search = ref_facelift_edge_search(ref_facelift, id - 1);
-    ref_cell = ref_grid_edg(ref_grid);
+    ref_cell = ref_facelift_edg(ref_facelift);
     parampad[0] = param[0];
     parampad[1] = 0.0;
     parampad[2] = 0.0;
@@ -448,7 +453,7 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
   if (REF_GEOM_FACE == type) {
     RSS(ref_list_create(&ref_list), "create list");
     ref_search = ref_facelift_face_search(ref_facelift, id - 1);
-    ref_cell = ref_grid_tri(ref_grid);
+    ref_cell = ref_facelift_tri(ref_facelift);
     parampad[0] = param[0];
     parampad[1] = param[1];
     parampad[2] = 0.0;
@@ -599,7 +604,7 @@ static REF_STATUS ref_facelift_edge_tec_zone(REF_FACELIFT ref_facelift,
                                              REF_INT id, FILE *file) {
   REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_CELL ref_cell = ref_facelift_edg(ref_facelift);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_DICT ref_dict;
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -734,7 +739,7 @@ static REF_STATUS ref_facelift_face_tec_zone(REF_FACELIFT ref_facelift,
                                              REF_INT id, FILE *file) {
   REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_CELL ref_cell = ref_facelift_tri(ref_facelift);
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DICT ref_dict, ref_dict_jump, ref_dict_degen;
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1063,6 +1068,7 @@ REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid,
   ref_facelift = NULL;
   RSS(ref_facelift_attach(ref_grid), "attach");
   ref_facelift = ref_geom_facelift(ref_grid_geom(ref_grid));
+  ref_cell = ref_facelift_tri(ref_facelift);
 
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
 
@@ -1078,7 +1084,6 @@ REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid,
   }
 
   complexity = 0.0;
-  ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {

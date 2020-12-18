@@ -35,14 +35,12 @@ struct REF_FACELIFT_STRUCT {
   REF_GRID grid;
   REF_DBL *displacement;
   REF_BOOL *strong_bc;
+  REF_CELL edg_cell, tri_cell;
   REF_SEARCH *edge_search;
   REF_SEARCH *face_search;
 };
 
 #define ref_facelift_grid(ref_facelift) ((ref_facelift)->grid)
-
-#define ref_facelift_direct(ref_facelift) (NULL == (ref_facelift)->displacement)
-
 #define ref_facelift_displacement(ref_facelift, ixyz, geom) \
   ((ref_facelift)->displacement[(ixyz) + 3 * (geom)])
 #define ref_facelift_distance(ref_facelift, geom)                  \
