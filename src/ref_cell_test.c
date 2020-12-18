@@ -1213,7 +1213,7 @@ int main(int argc, char *argv[]) {
   { /* ed2 */
     REF_CELL ref_cell;
     REF_DBL bary[2], shape[3];
-    RSS(ref_cell_create(&ref_cell, REF_CELL_ED2), "edg");
+    RSS(ref_cell_create(&ref_cell, REF_CELL_ED2), "ed2");
     bary[0] = 1.0;
     bary[1] = 0.0;
     RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
@@ -1232,6 +1232,101 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, shape[0], -1, "s0");
     RWDS(1.0, shape[1], -1, "s1");
     RWDS(0.0, shape[2], -1, "s2");
+    ref_cell_free(ref_cell);
+  }
+
+  { /* tri */
+    REF_CELL ref_cell;
+    REF_DBL bary[3], shape[3];
+    RSS(ref_cell_create(&ref_cell, REF_CELL_TRI), "tri");
+    bary[0] = 1.0;
+    bary[1] = 0.0;
+    bary[2] = 0.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(1.0, shape[0], -1, "s0");
+    RWDS(0.0, shape[1], -1, "s1");
+    RWDS(0.0, shape[2], -1, "s2");
+    bary[0] = 0.0;
+    bary[1] = 1.0;
+    bary[2] = 0.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.0, shape[0], -1, "s0");
+    RWDS(1.0, shape[1], -1, "s1");
+    RWDS(0.0, shape[2], -1, "s2");
+    bary[0] = 0.0;
+    bary[1] = 0.0;
+    bary[2] = 1.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.0, shape[0], -1, "s0");
+    RWDS(0.0, shape[1], -1, "s1");
+    RWDS(1.0, shape[2], -1, "s2");
+    ref_cell_free(ref_cell);
+  }
+
+  { /* tr2 */
+    REF_CELL ref_cell;
+    REF_DBL bary[3], shape[6];
+    RSS(ref_cell_create(&ref_cell, REF_CELL_TR2), "tr2");
+    bary[0] = 1.0;
+    bary[1] = 0.0;
+    bary[2] = 0.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(1.0, shape[0], -1, "s0");
+    RWDS(0.0, shape[1], -1, "s1");
+    RWDS(0.0, shape[2], -1, "s2");
+    RWDS(0.0, shape[3], -1, "s3");
+    RWDS(0.0, shape[4], -1, "s4");
+    RWDS(0.0, shape[5], -1, "s5");
+    bary[0] = 0.0;
+    bary[1] = 1.0;
+    bary[2] = 0.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.0, shape[0], -1, "s0");
+    RWDS(1.0, shape[1], -1, "s1");
+    RWDS(0.0, shape[2], -1, "s2");
+    RWDS(0.0, shape[3], -1, "s3");
+    RWDS(0.0, shape[4], -1, "s4");
+    RWDS(0.0, shape[5], -1, "s5");
+    bary[0] = 0.0;
+    bary[1] = 0.0;
+    bary[2] = 1.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.0, shape[0], -1, "s0");
+    RWDS(0.0, shape[1], -1, "s1");
+    RWDS(1.0, shape[2], -1, "s2");
+    RWDS(0.0, shape[3], -1, "s3");
+    RWDS(0.0, shape[4], -1, "s4");
+    RWDS(0.0, shape[5], -1, "s5");
+    bary[0] = 0.5;
+    bary[1] = 0.5;
+    bary[2] = 0.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.0, shape[0], -1, "s0");
+    RWDS(0.0, shape[1], -1, "s1");
+    RWDS(0.0, shape[2], -1, "s2");
+    RWDS(1.0, shape[3], -1, "s3");
+    RWDS(0.0, shape[4], -1, "s4");
+    RWDS(0.0, shape[5], -1, "s5");
+    bary[0] = 0.0;
+    bary[1] = 0.5;
+    bary[2] = 0.5;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.0, shape[0], -1, "s0");
+    RWDS(0.0, shape[1], -1, "s1");
+    RWDS(0.0, shape[2], -1, "s2");
+    RWDS(0.0, shape[3], -1, "s3");
+    RWDS(1.0, shape[4], -1, "s4");
+    RWDS(0.0, shape[5], -1, "s5");
+    bary[0] = 0.5;
+    bary[1] = 0.0;
+    bary[2] = 0.5;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.0, shape[0], -1, "s0");
+    RWDS(0.0, shape[1], -1, "s1");
+    RWDS(0.0, shape[2], -1, "s2");
+    RWDS(0.0, shape[3], -1, "s3");
+    RWDS(0.0, shape[4], -1, "s4");
+    RWDS(1.0, shape[5], -1, "s5");
     ref_cell_free(ref_cell);
   }
 
