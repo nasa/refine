@@ -108,7 +108,7 @@ static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
 }
 
 REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift_ptr,
-                               REF_GRID freeable_ref_grid) {
+                               REF_GRID freeable_ref_grid, REF_BOOL direct) {
   REF_FACELIFT ref_facelift;
   REF_INT n;
 
@@ -117,9 +117,14 @@ REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift_ptr,
   ref_facelift = *ref_facelift_ptr;
 
   ref_facelift_grid(ref_facelift) = freeable_ref_grid;
-  n = ref_geom_max(ref_facelift_geom(ref_facelift));
-  ref_malloc_init(ref_facelift->displacement, 3 * n, REF_DBL, 0.0);
-  ref_malloc_init(ref_facelift->strong_bc, n, REF_BOOL, REF_FALSE);
+  if (direct) {
+    ref_facelift->displacement = NULL;
+    ref_facelift->strong_bc = NULL;
+  } else {
+    n = ref_geom_max(ref_facelift_geom(ref_facelift));
+    ref_malloc_init(ref_facelift->displacement, 3 * n, REF_DBL, 0.0);
+    ref_malloc_init(ref_facelift->strong_bc, n, REF_BOOL, REF_FALSE);
+  }
 
   RSS(ref_facelift_cache_search(ref_facelift), "cache tri uv");
 
@@ -323,7 +328,8 @@ REF_STATUS ref_facelift_attach(REF_GRID ref_grid) {
   REF_GRID freeable_ref_grid;
   REF_FACELIFT ref_facelift;
   RSS(ref_grid_deep_copy(&freeable_ref_grid, ref_grid), "deep copy");
-  RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid), "create");
+  RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid, REF_FALSE),
+      "create");
   ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
   RSS(ref_facelift_initialize_edge(ref_facelift), "init disp");
   RSS(ref_facelift_initialize_face(ref_facelift, ref_grid_geom(ref_grid)),
@@ -365,7 +371,8 @@ REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename) {
     RSS(ref_geom_verify_topo(ref_grid), "geom topo");
     RSS(ref_geom_verify_param(ref_grid), "geom param");
   }
-  RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid), "create");
+  RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid, REF_FALSE),
+      "create");
   ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
   RSS(ref_facelift_infer_displacement(ref_facelift), "infer displacement");
   return REF_SUCCESS;

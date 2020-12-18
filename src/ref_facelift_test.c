@@ -139,7 +139,8 @@ int main(int argc, char *argv[]) {
     REF_FACELIFT ref_facelift;
     REF_GRID freeable_ref_grid;
     RSS(ref_grid_create(&freeable_ref_grid, ref_mpi), "create");
-    RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid), "create");
+    RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid, REF_FALSE),
+        "create");
     RSS(ref_facelift_free(ref_facelift), "free");
   }
 

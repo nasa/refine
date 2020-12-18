@@ -49,7 +49,7 @@ struct REF_FACELIFT_STRUCT {
         pow(ref_facelift_displacement(ref_facelift, 2, geom), 2)))
 
 REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift,
-                               REF_GRID freeable_ref_grid);
+                               REF_GRID freeable_ref_grid, REF_BOOL direct);
 REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift);
 
 REF_STATUS ref_facelift_attach(REF_GRID ref_grid);
