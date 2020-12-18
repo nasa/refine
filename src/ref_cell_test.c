@@ -1260,6 +1260,13 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, shape[0], -1, "s0");
     RWDS(0.0, shape[1], -1, "s1");
     RWDS(1.0, shape[2], -1, "s2");
+    bary[0] = 1.0 / 3.0;
+    bary[1] = 1.0 / 3.0;
+    bary[2] = 1.0 / 3.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(1.0 / 3.0, shape[0], -1, "s0");
+    RWDS(1.0 / 3.0, shape[1], -1, "s1");
+    RWDS(1.0 / 3.0, shape[2], -1, "s2");
     ref_cell_free(ref_cell);
   }
 
@@ -1327,6 +1334,16 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, shape[3], -1, "s3");
     RWDS(0.0, shape[4], -1, "s4");
     RWDS(1.0, shape[5], -1, "s5");
+    bary[0] = 1.0 / 3.0;
+    bary[1] = 1.0 / 3.0;
+    bary[2] = 1.0 / 3.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(-1.0 / 9.0, shape[0], -1, "s0");
+    RWDS(-1.0 / 9.0, shape[1], -1, "s1");
+    RWDS(-1.0 / 9.0, shape[2], -1, "s2");
+    RWDS(4.0 / 9.0, shape[3], -1, "s3");
+    RWDS(4.0 / 9.0, shape[4], -1, "s4");
+    RWDS(4.0 / 9.0, shape[5], -1, "s5");
     ref_cell_free(ref_cell);
   }
 
