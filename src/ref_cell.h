@@ -214,6 +214,8 @@ REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
 
 REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename);
 
+REF_STATUS ref_cell_shape(REF_CELL ref_cell, REF_DBL *bary, REF_DBL *shape);
+
 END_C_DECLORATION
 
 #endif /* REF_CELL_H */

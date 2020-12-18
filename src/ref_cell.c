@@ -1434,3 +1434,11 @@ REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_cell_shape(REF_CELL ref_cell, REF_DBL *bary, REF_DBL *shape) {
+  REF_INT cell_node;
+  each_ref_cell_cell_node(ref_cell, cell_node) {
+    shape[cell_node] = bary[cell_node];
+  }
+  return REF_SUCCESS;
+}

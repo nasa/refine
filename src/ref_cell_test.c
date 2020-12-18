@@ -1188,6 +1188,28 @@ int main(int argc, char *argv[]) {
     ref_cell_free(ref_cell);
   }
 
+  {
+    REF_CELL ref_cell;
+    REF_DBL bary[2], shape[2];
+    RSS(ref_cell_create(&ref_cell, REF_CELL_EDG), "edg");
+    bary[0] = 1.0;
+    bary[1] = 0.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(1.0, shape[0], -1, "s0");
+    RWDS(0.0, shape[1], -1, "s1");
+    bary[0] = 0.5;
+    bary[1] = 0.5;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.5, shape[0], -1, "s0");
+    RWDS(0.5, shape[1], -1, "s1");
+    bary[0] = 0.0;
+    bary[1] = 1.0;
+    RSS(ref_cell_shape(ref_cell, bary, shape), "shape");
+    RWDS(0.0, shape[0], -1, "s0");
+    RWDS(1.0, shape[1], -1, "s1");
+    ref_cell_free(ref_cell);
+  }
+
   RSS(ref_mpi_free(ref_mpi), "cleanup");
   RSS(ref_mpi_stop(), "stop");
   return 0;
