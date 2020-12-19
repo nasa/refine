@@ -8,7 +8,7 @@ sync surf/tri/face zone titles
 facelift boundary representation model tolerance reduction
   + rename blend to facelift
   ref_facelift_displacement_at higher order
-  intialization higher order
+  initialization higher order
   more parallel friendly
   ref_recon fallback for incomplete stencil
   chain rule derivatives?
@@ -18,6 +18,9 @@ surrogate surface
   support twod geom
   + share via meshb
   + higher order surface
+  inverse eval
+  eval derivatives
+  eval curvature
   when EGADS not available
   support virtual topology
   many-to-many association virtual topology
