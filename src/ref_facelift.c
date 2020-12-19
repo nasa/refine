@@ -509,7 +509,6 @@ static REF_STATUS ref_facelift_displacement_at(REF_FACELIFT ref_facelift,
                                                REF_INT type, REF_INT id,
                                                REF_DBL *params,
                                                REF_DBL *displacement) {
-  REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL bary[3], clip[3];
@@ -524,7 +523,7 @@ static REF_STATUS ref_facelift_displacement_at(REF_FACELIFT ref_facelift,
         "enclose");
     if (REF_EMPTY == cell) return REF_SUCCESS;
     RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
-    RSS(ref_cell_nodes(ref_grid_edg(ref_grid), cell, nodes), "nodes");
+    RSS(ref_cell_nodes(ref_facelift_edg(ref_facelift), cell, nodes), "nodes");
 
     RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_EDGE, id, &geom), "find 0");
     displacement[0] +=
@@ -547,7 +546,7 @@ static REF_STATUS ref_facelift_displacement_at(REF_FACELIFT ref_facelift,
         "enclose");
     if (REF_EMPTY == cell) return REF_SUCCESS;
     RSS(ref_node_clip_bary3(bary, clip), "clip face bary");
-    RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "nodes");
+    RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), cell, nodes), "nodes");
 
     RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, id, &geom), "find 0");
     displacement[0] +=
