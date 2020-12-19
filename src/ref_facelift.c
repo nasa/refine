@@ -125,6 +125,23 @@ REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift_ptr,
   ref_facelift_tri(ref_facelift) =
       ref_grid_tri(ref_facelift_grid(ref_facelift));
 
+  if (ref_cell_n(ref_grid_ed2(ref_facelift_grid(ref_facelift))) > 0) {
+    ref_facelift_edg(ref_facelift) =
+        ref_grid_ed2(ref_facelift_grid(ref_facelift));
+  }
+  if (ref_cell_n(ref_grid_ed3(ref_facelift_grid(ref_facelift))) > 0) {
+    ref_facelift_edg(ref_facelift) =
+        ref_grid_ed3(ref_facelift_grid(ref_facelift));
+  }
+  if (ref_cell_n(ref_grid_tr2(ref_facelift_grid(ref_facelift))) > 0) {
+    ref_facelift_tri(ref_facelift) =
+        ref_grid_tr2(ref_facelift_grid(ref_facelift));
+  }
+  if (ref_cell_n(ref_grid_tr3(ref_facelift_grid(ref_facelift))) > 0) {
+    ref_facelift_tri(ref_facelift) =
+        ref_grid_tr3(ref_facelift_grid(ref_facelift));
+  }
+
   if (direct) {
     ref_facelift->displacement = NULL;
     ref_facelift->strong_bc = NULL;
