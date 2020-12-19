@@ -583,12 +583,40 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
   REF_DBL displacement[3];
   RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv),
       "egads eval");
-  RSS(ref_facelift_displacement_at(ref_facelift, type, id, params,
-                                   displacement),
-      "facelift displacement");
-  xyz[0] += displacement[0];
-  xyz[1] += displacement[1];
-  xyz[2] += displacement[2];
+  if (ref_facelift_direct(ref_facelift)) {
+    RSS(ref_facelift_displacement_at(ref_facelift, type, id, params,
+                                     displacement),
+        "facelift displacement");
+    xyz[0] += displacement[0];
+    xyz[1] += displacement[1];
+    xyz[2] += displacement[2];
+  } else {
+    REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
+    REF_INT i, cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_DBL bary[3], clip[3];
+    REF_DBL shape[REF_CELL_MAX_NODE_PER];
+    REF_CELL ref_cell = NULL;
+    RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
+        "enclose");
+    if (REF_EMPTY == cell) return REF_SUCCESS;
+    if (REF_GEOM_EDGE == type) {
+      ref_cell = ref_facelift_edg(ref_facelift);
+      RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
+    }
+    if (REF_GEOM_FACE == type) {
+      ref_cell = ref_facelift_tri(ref_facelift);
+      RSS(ref_node_clip_bary3(bary, clip), "clip face bary");
+    }
+    RSS(ref_cell_shape(ref_cell, clip, shape), "shape");
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    for (i = 0; i < 3; i++) {
+      xyz[i] = 0.0;
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        xyz[i] +=
+            shape[cell_node] * ref_node_xyz(ref_node, i, nodes[cell_node]);
+      }
+    }
+  }
   return REF_SUCCESS;
 }
 
