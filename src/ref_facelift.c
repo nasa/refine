@@ -403,9 +403,10 @@ REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename) {
   RSS(ref_geom_share_context(ref_geom, ref_grid_geom(ref_grid)),
       "share context");
   if (ref_geom_model_loaded(ref_geom)) {
-    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
-    RSS(ref_geom_verify_topo(ref_grid), "geom topo");
-    RSS(ref_geom_verify_param(ref_grid), "geom param");
+    RSS(ref_egads_mark_jump_degen(freeable_ref_grid),
+        "T and UV jumps; UV degen");
+    RSS(ref_geom_verify_topo(freeable_ref_grid), "geom topo");
+    RSS(ref_geom_verify_param(freeable_ref_grid), "geom param");
   }
   RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid, REF_FALSE),
       "create");
@@ -425,9 +426,10 @@ REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid, const char *filename) {
   RSS(ref_geom_share_context(ref_geom, ref_grid_geom(ref_grid)),
       "share context");
   if (ref_geom_model_loaded(ref_geom)) {
-    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
-    RSS(ref_geom_verify_topo(ref_grid), "geom topo");
-    RSS(ref_geom_verify_param(ref_grid), "geom param");
+    RSS(ref_egads_mark_jump_degen(freeable_ref_grid),
+        "T and UV jumps; UV degen");
+    RSS(ref_geom_verify_topo(freeable_ref_grid), "geom topo");
+    RSS(ref_geom_verify_param(freeable_ref_grid), "geom param");
   }
   RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid, REF_TRUE),
       "create");
