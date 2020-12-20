@@ -57,5 +57,5 @@ adapt_cycle cylcyl cycle01 2
 adapt_cycle cycle01 cycle02 15
 
 cat cycle02.status
-../../check.rb cycle02.status 0.3 3.0
+../../check.rb cycle02.status 0.3 10.0
 
