@@ -1604,8 +1604,12 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
       RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge");
       RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face");
       no_face = ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
+                ref_cell_node_empty(ref_grid_tr2(ref_grid), node) &&
+                ref_cell_node_empty(ref_grid_tr3(ref_grid), node) &&
                 ref_cell_node_empty(ref_grid_qua(ref_grid), node);
-      no_edge = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
+      no_edge = ref_cell_node_empty(ref_grid_edg(ref_grid), node) &&
+                ref_cell_node_empty(ref_grid_ed2(ref_grid), node) &&
+                ref_cell_node_empty(ref_grid_ed3(ref_grid), node);
       if (geom_node) {
         if (no_edge && ref_node_owned(ref_node, node)) {
           THROW("geom node missing edge");
