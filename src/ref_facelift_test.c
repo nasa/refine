@@ -78,6 +78,51 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--surrogate", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REIS(5, argc,
+         "required args: --surrogate orig.ext geom.egads surrogate.ext");
+    REIS(1, pos,
+         "required args: --surrogate orig.ext geom.egads surrogate.ext");
+    if (ref_mpi_once(ref_mpi)) printf("import grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
+    if (ref_mpi_once(ref_mpi)) printf("load geom %s\n", argv[3]);
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom mark");
+    if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
+    RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
+    if (ref_mpi_once(ref_mpi)) printf("underlying egads tolerance\n");
+    RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+    RSS(ref_geom_verify_param(ref_grid), "geom param");
+    ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+    if (ref_mpi_once(ref_mpi)) printf("underlying egads tolerance\n");
+    if (ref_mpi_once(ref_mpi)) printf("ref_facelift_orig_geom.tec\n");
+    if (ref_mpi_once(ref_mpi))
+      RSS(ref_geom_tec(ref_grid, "ref_facelift_orig_geom.tec"), "geom export");
+    printf("facelift surrogate %s\n", argv[4]);
+    RSS(ref_facelift_surrogate(ref_grid, argv[4]), "surrogate");
+    if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
+    RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
+    if (ref_mpi_once(ref_mpi)) printf("surrogate tolerance\n");
+    RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+    RSS(ref_geom_verify_param(ref_grid), "geom param");
+    ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+    if (ref_mpi_once(ref_mpi)) printf("ref_facelift_surr_geom.tec\n");
+    if (ref_mpi_once(ref_mpi))
+      RSS(ref_geom_tec(ref_grid, "ref_facelift_surr_geom.tec"), "geom export");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--metric", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY) {
     REF_GRID ref_grid;
