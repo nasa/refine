@@ -613,13 +613,6 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
   RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv),
       "egads eval");
   if (ref_facelift_direct(ref_facelift)) {
-    RSS(ref_facelift_displacement_at(ref_facelift, type, id, params,
-                                     displacement),
-        "facelift displacement");
-    xyz[0] += displacement[0];
-    xyz[1] += displacement[1];
-    xyz[2] += displacement[2];
-  } else {
     REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
     REF_INT i, cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
     REF_DBL bary[3], clip[3];
@@ -645,6 +638,13 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
             shape[cell_node] * ref_node_xyz(ref_node, i, nodes[cell_node]);
       }
     }
+  } else {
+    RSS(ref_facelift_displacement_at(ref_facelift, type, id, params,
+                                     displacement),
+        "facelift displacement");
+    xyz[0] += displacement[0];
+    xyz[1] += displacement[1];
+    xyz[2] += displacement[2];
   }
   return REF_SUCCESS;
 }
@@ -661,14 +661,18 @@ REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift, REF_INT type,
   RSS(ref_egads_inverse_eval(ref_geom, type, id, geom_xyz, param),
       "inv eval before");
 
-  RSS(ref_facelift_displacement_at(ref_facelift, type, id, param, displacement),
-      "facelift displacement");
+  if (ref_facelift_direct(ref_facelift)) {
+  } else {
+    RSS(ref_facelift_displacement_at(ref_facelift, type, id, param,
+                                     displacement),
+        "facelift displacement");
 
-  geom_xyz[0] -= displacement[0];
-  geom_xyz[1] -= displacement[1];
-  geom_xyz[2] -= displacement[2];
-  RSS(ref_egads_inverse_eval(ref_geom, type, id, geom_xyz, param),
-      "inv eval before");
+    geom_xyz[0] -= displacement[0];
+    geom_xyz[1] -= displacement[1];
+    geom_xyz[2] -= displacement[2];
+    RSS(ref_egads_inverse_eval(ref_geom, type, id, geom_xyz, param),
+        "inv eval before");
+  }
 
   return REF_SUCCESS;
 }
