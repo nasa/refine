@@ -3145,8 +3145,8 @@ REF_STATUS ref_geom_bary2(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL t,
   RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_EDGE, &t1, &sens),
       "uv1");
 
-  bary[0] = ABS(t1 - t);
-  bary[1] = ABS(t - t0);
+  bary[0] = t1 - t;
+  bary[1] = t - t0;
 
   total = bary[0] + bary[1];
 
