@@ -366,6 +366,14 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
   }
 
+  RXS(ref_args_find(argc, argv, "--surrogate", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) printf("--surrogate %s import\n", argv[pos + 1]);
+    RSS(ref_facelift_surrogate(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
+  }
+
   RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos)
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
@@ -1524,6 +1532,14 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     if (ref_mpi_once(ref_mpi)) printf("--facelift %s import\n", argv[pos + 1]);
     RSS(ref_facelift_import(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
+  }
+
+  RXS(ref_args_find(argc, argv, "--surrogate", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) printf("--surrogate %s import\n", argv[pos + 1]);
+    RSS(ref_facelift_surrogate(ref_grid, argv[pos + 1]), "attach");
     ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
   }
 
