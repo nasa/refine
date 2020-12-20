@@ -372,6 +372,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("--surrogate %s import\n", argv[pos + 1]);
     RSS(ref_facelift_surrogate(ref_grid, argv[pos + 1]), "attach");
     ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
+  if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
+  RSS(ref_geom_constrain_all(ref_grid), "constrain");
+  ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
+  if (ref_mpi_once(ref_mpi)) printf("verify constrained param\n");
+  RSS(ref_geom_verify_param(ref_grid), "constrained params");
+  ref_mpi_stopwatch_stop(ref_mpi, "verify param");
   }
 
   RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
@@ -1541,6 +1547,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("--surrogate %s import\n", argv[pos + 1]);
     RSS(ref_facelift_surrogate(ref_grid, argv[pos + 1]), "attach");
     ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
+    if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
+    RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
+    if (ref_mpi_once(ref_mpi)) printf("verify constrained param\n");
+    RSS(ref_geom_verify_param(ref_grid), "constrained params");
+    ref_mpi_stopwatch_stop(ref_mpi, "verify param");
   }
 
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
