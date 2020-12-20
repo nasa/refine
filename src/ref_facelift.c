@@ -69,6 +69,7 @@ static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
 
     /* cache each t edg */
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      nodes[2] = nodes[ref_cell_id_index(ref_cell)]; /* expects P1 */
       RSS(ref_geom_edg_t_bounding_sphere2(ref_geom, nodes, center, &radius),
           "bound with circle");
       center[1] = 0.0;
@@ -96,6 +97,7 @@ static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
 
     /* cache each uv tri */
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      nodes[3] = nodes[ref_cell_id_index(ref_cell)]; /* expects P1 */
       RSS(ref_geom_tri_uv_bounding_sphere3(ref_geom, nodes, center, &radius),
           "bound with circle");
       center[2] = 0.0;
@@ -473,6 +475,7 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
     each_ref_list_item(ref_list, item) {
       candidate = ref_list_value(ref_list, item);
       RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
+      nodes[2] = nodes[ref_cell_id_index(ref_cell)]; /* expects P1 */
       RSS(ref_geom_bary2(ref_geom, nodes, param[0], current_bary), "bary");
       min_bary = MIN(current_bary[0], current_bary[1]);
       if (REF_EMPTY == best_candidate || min_bary > best_bary) {
@@ -485,6 +488,7 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
 
     *cell = best_candidate;
     RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
+    nodes[2] = nodes[ref_cell_id_index(ref_cell)]; /* expects P1 */
     RSS(ref_geom_bary2(ref_geom, nodes, param[0], bary), "bary");
 
     RSS(ref_list_free(ref_list), "free list");
@@ -508,6 +512,7 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
     each_ref_list_item(ref_list, item) {
       candidate = ref_list_value(ref_list, item);
       RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
+      nodes[3] = nodes[ref_cell_id_index(ref_cell)]; /* expects P1 */
       RSS(ref_geom_bary3(ref_geom, nodes, param, current_bary), "bary");
       min_bary = MIN(MIN(current_bary[0], current_bary[1]), current_bary[2]);
       if (REF_EMPTY == best_candidate || min_bary > best_bary) {
@@ -520,6 +525,7 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
 
     *cell = best_candidate;
     RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
+    nodes[3] = nodes[ref_cell_id_index(ref_cell)]; /* expects P1 */
     RSS(ref_geom_bary3(ref_geom, nodes, param, bary), "bary");
 
     RSS(ref_list_free(ref_list), "free list");
