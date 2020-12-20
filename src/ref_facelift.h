@@ -54,6 +54,7 @@ REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift);
 
 REF_STATUS ref_facelift_attach(REF_GRID ref_grid);
 REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename);
+REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid, const char *filename);
 
 REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
                                   REF_INT id, REF_DBL *param, REF_INT *cell,

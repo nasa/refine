@@ -414,6 +414,27 @@ REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid, const char *filename) {
+  REF_GRID freeable_ref_grid;
+  REF_FACELIFT ref_facelift;
+  REF_GEOM ref_geom;
+  RSS(ref_import_by_extension(&freeable_ref_grid, ref_grid_mpi(ref_grid),
+                              filename),
+      "import");
+  ref_geom = ref_grid_geom(freeable_ref_grid);
+  RSS(ref_geom_share_context(ref_geom, ref_grid_geom(ref_grid)),
+      "share context");
+  if (ref_geom_model_loaded(ref_geom)) {
+    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+    RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+    RSS(ref_geom_verify_param(ref_grid), "geom param");
+  }
+  RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid, REF_TRUE),
+      "create");
+  ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
                                   REF_INT id, REF_DBL *param, REF_INT *cell,
                                   REF_DBL *bary) {
