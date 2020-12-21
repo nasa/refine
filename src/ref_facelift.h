@@ -66,6 +66,10 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
 REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift, REF_INT type,
                                      REF_INT id, REF_DBL *xyz, REF_DBL *param);
 
+REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
+                                     REF_INT faceid, REF_INT sense, REF_DBL t,
+                                     REF_DBL *uv);
+
 REF_STATUS ref_facelift_tec(REF_FACELIFT ref_facelift, const char *filename);
 
 REF_STATUS ref_facelift_max_distance(REF_FACELIFT ref_facelift,

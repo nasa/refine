@@ -677,6 +677,41 @@ REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift, REF_INT type,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
+                                     REF_INT faceid, REF_INT sense, REF_DBL t,
+                                     REF_DBL *uv) {
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
+  REF_CELL ref_cell = ref_facelift_edg(ref_facelift);
+  REF_INT i, cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL bary[2], clip[2], faceuv[2];
+  REF_DBL shape[REF_CELL_MAX_NODE_PER];
+  RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t, uv),
+      "edge uv");
+
+  if (ref_facelift_direct(ref_facelift)) {
+    RAS(0 == sense, "implement sense != 0 for uv jumps");
+    RSS(ref_facelift_enclosing(ref_facelift, REF_GEOM_EDGE, edgeid, &t, &cell,
+                               bary),
+        "enclose");
+    if (REF_EMPTY == cell) return REF_SUCCESS;
+    RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
+    RSS(ref_cell_shape(ref_cell, clip, shape), "shape");
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    for (i = 0; i < 2; i++) {
+      uv[i] = 0.0;
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        RSS(ref_geom_tuv(ref_geom, nodes[cell_node], REF_GEOM_FACE, faceid,
+                         faceuv),
+            "face uv");
+        uv[i] += shape[cell_node] * faceuv[i];
+      }
+    }
+
+  } else {
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_facelift_edge_tec_zone(REF_FACELIFT ref_facelift,
                                              REF_INT id, FILE *file) {
   REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
