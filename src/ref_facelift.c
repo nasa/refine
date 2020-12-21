@@ -181,6 +181,42 @@ REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_facelift_tattle(REF_GEOM ref_geom, REF_INT node) {
+  REF_FACELIFT ref_facelift = ref_geom_facelift(ref_geom);
+  REF_INT item, geom;
+  REF_INT type, id;
+  REF_DBL params[2];
+  REF_DBL bary[3];
+  REF_INT cell;
+
+  if (NULL == ref_facelift) return REF_SUCCESS;
+  if (!ref_facelift_direct(ref_facelift)) return REF_SUCCESS;
+
+  printf(" tattle on node = %d\n", node);
+  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
+    type = ref_geom_type(ref_geom, geom);
+    id = ref_geom_id(ref_geom, geom);
+    switch (type) {
+      case REF_GEOM_EDGE:
+        params[0] = ref_geom_param(ref_geom, 0, geom);
+        RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
+            "enclose");
+        printf("edg %d id %d bary %f %f\n", cell, id, bary[0], bary[1]);
+        break;
+      case REF_GEOM_FACE:
+        params[0] = ref_geom_param(ref_geom, 0, geom);
+        params[1] = ref_geom_param(ref_geom, 1, geom);
+        RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
+            "enclose");
+        printf("tri %d id %d bary %f %f %f\n", cell, id, bary[0], bary[1],
+               bary[2]);
+        break;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_facelift_solve_face(REF_FACELIFT ref_facelift) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_CELL ref_cell = ref_facelift_tri(ref_facelift);
