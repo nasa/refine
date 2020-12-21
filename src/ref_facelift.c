@@ -188,6 +188,7 @@ REF_STATUS ref_facelift_tattle(REF_GEOM ref_geom, REF_INT node) {
   REF_DBL params[2];
   REF_DBL bary[3];
   REF_INT cell;
+  REF_DBL xyz[3];
 
   if (NULL == ref_facelift) return REF_SUCCESS;
   if (!ref_facelift_direct(ref_facelift)) return REF_SUCCESS;
@@ -199,17 +200,22 @@ REF_STATUS ref_facelift_tattle(REF_GEOM ref_geom, REF_INT node) {
     switch (type) {
       case REF_GEOM_EDGE:
         params[0] = ref_geom_param(ref_geom, 0, geom);
+        RSS(ref_facelift_eval_at(ref_facelift, type, id, params, xyz, NULL),
+            "eval");
         RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
             "enclose");
-        printf("edg %d id %d bary %f %f\n", cell, id, bary[0], bary[1]);
+        printf("edg id %d xyz %f %f %f bary %f %f\n", id, xyz[0], xyz[1],
+               xyz[2], bary[0], bary[1]);
         break;
       case REF_GEOM_FACE:
         params[0] = ref_geom_param(ref_geom, 0, geom);
         params[1] = ref_geom_param(ref_geom, 1, geom);
+        RSS(ref_facelift_eval_at(ref_facelift, type, id, params, xyz, NULL),
+            "eval");
         RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
             "enclose");
-        printf("tri %d id %d bary %f %f %f\n", cell, id, bary[0], bary[1],
-               bary[2]);
+        printf("tri id %d xyz %f %f %f bary %f %f %f\n", id, xyz[0], xyz[1],
+               xyz[2], bary[0], bary[1], bary[2]);
         break;
     }
   }
