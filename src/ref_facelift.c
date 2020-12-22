@@ -181,7 +181,9 @@ REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_tattle(REF_GEOM ref_geom, REF_INT node) {
+REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_FACELIFT ref_facelift = ref_geom_facelift(ref_geom);
   REF_INT item, geom;
   REF_INT type, id;
@@ -193,7 +195,9 @@ REF_STATUS ref_facelift_tattle(REF_GEOM ref_geom, REF_INT node) {
   if (NULL == ref_facelift) return REF_SUCCESS;
   if (!ref_facelift_direct(ref_facelift)) return REF_SUCCESS;
 
-  printf(" tattle on node = %d\n", node);
+  printf(" tattle on node = %d %f %f %f\n", node,
+         ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+         ref_node_xyz(ref_node, 2, node));
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
     type = ref_geom_type(ref_geom, geom);
     id = ref_geom_id(ref_geom, geom);
