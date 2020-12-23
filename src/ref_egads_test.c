@@ -96,7 +96,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_construct(ref_grid_geom(ref_grid), "cylinder"),
         "create cylinder");
     RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_geom_verify_param(ref_grid), "egads params");
     RSS(ref_geom_enrich2(ref_grid), "enrich2");
+    RSS(ref_geom_verify_param(ref_grid), "egads params");
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
@@ -106,7 +108,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_construct(ref_grid_geom(ref_grid), "cylinder"),
         "create cylinder");
     RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_geom_verify_param(ref_grid), "egads params");
     RSS(ref_geom_enrich3(ref_grid), "enrich3");
+    RSS(ref_geom_verify_param(ref_grid), "egads params");
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
