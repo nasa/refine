@@ -74,6 +74,9 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (ref_egads_allows_construction()) {
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

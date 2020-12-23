@@ -290,6 +290,14 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   return REF_SUCCESS;
 }
 
+REF_BOOL ref_egads_allows_construction(void) {
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
+  return REF_TRUE;
+#else
+  return REF_FALSE;
+#endif
+}
+
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
                                               int *surface_type) {
