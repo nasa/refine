@@ -301,29 +301,17 @@ REF_BOOL ref_egads_allows_construction(void) {
 
 REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
 #if defined(HAVE_EGADS)
-  int stype;
-  double data[8] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   ego body;
   RAS(ref_egads_allows_construction(), "construction not allowed");
-  stype = REF_EMPTY;
+  body = NULL;
   if (0 == strcmp("cylinder", solid)) {
-    stype = CYLINDER;
-    /* axis point */
-    data[0] = 0.0;
-    data[1] = 0.0;
-    data[2] = 0.0;
-    /* axis point */
-    data[3] = 1.0;
-    data[4] = 0.0;
-    data[5] = 0.0;
-    /* radius */
-    data[6] = 1.0;
+    int stype = CYLINDER;
+    double data[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
+    REIS(EGADS_SUCCESS,
+         EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
+         "make solid body");
   }
-  RUB(REF_EMPTY, stype, "unknown solid",
-      { printf("no stype for %s\n", solid); });
-  REIS(EGADS_SUCCESS,
-       EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
-       "make solid body");
+  RNB(body, "unknown solid", { printf(">%s<\n", solid); });
   ref_geom->solid = (void *)body;
   ref_geom->manifold = REF_TRUE;
 
