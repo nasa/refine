@@ -3338,6 +3338,14 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
   }
 
   RSS(ref_edge_free(ref_edge), "free edge");
+
+  each_ref_cell_valid_cell(ref_grid_edg(ref_grid), cell) {
+    ref_cell_remove(ref_grid_edg(ref_grid), cell);
+  }
+  each_ref_cell_valid_cell(ref_grid_tri(ref_grid), cell) {
+    ref_cell_remove(ref_grid_tri(ref_grid), cell);
+  }
+
   return REF_SUCCESS;
 }
 
@@ -3441,5 +3449,13 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
   }
 
   RSS(ref_edge_free(ref_edge), "free edge");
+
+  each_ref_cell_valid_cell(ref_grid_edg(ref_grid), cell) {
+    ref_cell_remove(ref_grid_edg(ref_grid), cell);
+  }
+  each_ref_cell_valid_cell(ref_grid_tri(ref_grid), cell) {
+    ref_cell_remove(ref_grid_tri(ref_grid), cell);
+  }
+
   return REF_SUCCESS;
 }
