@@ -3340,6 +3340,7 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
     RSS(ref_cell_add(ref_grid_tr2(ref_grid), nodes, &new_cell), "add");
   }
 
+  ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
 
   each_ref_cell_valid_cell(ref_grid_edg(ref_grid), cell) {
@@ -3451,6 +3452,7 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
     RSS(ref_cell_add(ref_grid_tr3(ref_grid), nodes, &new_cell), "add");
   }
 
+  ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
 
   each_ref_cell_valid_cell(ref_grid_edg(ref_grid), cell) {
