@@ -74,11 +74,20 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (ref_egads_allows_construction()) {
+  if (ref_egads_allows_construction()) { /* single cylinder */
     REF_GEOM ref_geom;
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "cylinder"), "create cylinder");
     RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
+  if (ref_egads_allows_construction()) { /* single cylinder tess */
+    REF_GRID ref_grid;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "cylinder"),
+        "create cylinder");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_grid_free(ref_grid), "free grid");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
