@@ -291,6 +291,19 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
+  remove(filename); /* ignore failure */
+  REIS(EGADS_SUCCESS, EG_saveModel((ego)(ref_geom->solid), filename),
+       "EG save");
+#else
+  printf("nothing for %s, No EGADS(full) linked for %s\n", __func__, filename);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+#endif
+
+  return REF_SUCCESS;
+}
+
 REF_BOOL ref_egads_allows_construction(void) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   return REF_TRUE;

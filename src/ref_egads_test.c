@@ -118,6 +118,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
     RSS(ref_geom_verify_param(ref_grid), "egads params");
     /* RSS(ref_geom_tec(ref_grid, "steinmetz.tec"),"geom"); */
+    /* RSS(ref_export_by_extension(ref_grid, "steinmetz.meshb"), "meshb"); */
+    /* RSS(ref_egads_save(ref_grid_geom(ref_grid), "steinmetz.egads"), "egd");*/
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
