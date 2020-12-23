@@ -80,93 +80,16 @@ REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 #ifdef HAVE_EGADS
-  ego context;
-  ego model = NULL;
-  ego geom, *bodies, *children;
-  int oclass, nego, mtype, nbody, *senses, nchild;
-  ego solid, *faces, *edges, *nodes;
+static REF_STATUS ref_egads_cache_solid_object(REF_GEOM ref_geom) {
+  ego solid = (ego)(ref_geom->solid);
+  ego *faces, *edges, *nodes;
   int nface, nedge, nnode;
   REF_INT face;
+  int oclass, mtype, *senses, nchild;
+  ego *children;
   ego ref;
   double uv_box[4];
-
-  context = (ego)(ref_geom->context);
-
-#ifdef HAVE_EGADS_LITE
-  {
-    /* entry point NOT in egads.h */
-    int EG_importModel(egObject * context, const size_t nbytes,
-                       const char stream[], egObject **model);
-
-    SUPRESS_UNUSED_COMPILER_WARNING(filename);
-
-    RAS(0 < ref_geom_cad_data_size(ref_geom), "zero size cad_data");
-    RNS(ref_geom_cad_data(ref_geom), "cad_data NULL");
-    REIS(EGADS_SUCCESS,
-         EG_importModel(context, (size_t)ref_geom_cad_data_size(ref_geom),
-                        (char *)ref_geom_cad_data(ref_geom), &model),
-         "EG load");
-  }
-#else
-  if (NULL == filename) THROW("filename NULL for EGADS(full) load");
-  REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
-
-  {
-    /* entry point NOT in egads.h */
-    int EG_exportModel(ego mobject, size_t * nbytes, char *stream[]);
-
-    REF_SIZE cad_data_size;
-    REF_BYTE *cad_data;
-
-    REIS(EGADS_SUCCESS, EG_exportModel(model, &cad_data_size, &cad_data),
-         "EG stream");
-    ref_geom_cad_data_size(ref_geom) = cad_data_size;
-    /* safe non-NULL free, if already allocated, to prevent memory leaks */
-    ref_free(ref_geom->cad_data);
-    ref_malloc_size_t(ref_geom_cad_data(ref_geom),
-                      ref_geom_cad_data_size(ref_geom), REF_BYTE);
-    memcpy(ref_geom_cad_data(ref_geom), cad_data,
-           ref_geom_cad_data_size(ref_geom));
-    EG_free(cad_data);
-  }
-#endif
-
-  REIS(EGADS_SUCCESS,
-       EG_getTopology(model, &geom, &oclass, &nego, NULL, &nbody, &bodies,
-                      &senses),
-       "EG topo bodies");
-  REIS(1, nbody, "expected 1 body");
-  solid = bodies[0];
-#ifdef HAVE_EGADS_EFFECTIVE
-  {
-    int ibody;
-    int bodyclass, bodytype;
-    ego owner, prev, next;
-    for (ibody = 0; ibody < nego; ibody++) {
-      REIS(EGADS_SUCCESS,
-           EG_getInfo(bodies[ibody], &bodyclass, &bodytype, &owner, &prev,
-                      &next),
-           "info");
-      if (EBODY == bodyclass) {
-        solid = bodies[ibody];
-        ref_geom_effective(ref_geom) = REF_TRUE;
-        printf("EBODY extracted from model\n");
-      }
-    }
-  }
-
-#endif
-  REIS(EGADS_SUCCESS,
-       EG_getTopology(solid, &geom, &oclass, &mtype, NULL, &nchild, &children,
-                      &senses),
-       "EG topo body type");
-  RAB(SOLIDBODY == mtype || FACEBODY == mtype || SHEETBODY == mtype,
-      "expected SOLIDBODY or FACEBODY or SHEETBODY",
-      { printf("mtype %d\n", mtype); });
-  ref_geom->solid = (void *)solid;
-  ref_geom->manifold = SOLIDBODY == mtype;
 
 #ifdef HAVE_EGADS_EFFECTIVE
   if (ref_geom_effective(ref_geom)) {
@@ -281,6 +204,95 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
       }
     }
   }
+  return REF_SUCCESS;
+}
+#endif
+
+REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
+#ifdef HAVE_EGADS
+  ego context;
+  ego model = NULL;
+  ego geom, *bodies, *children;
+  int oclass, nego, mtype, nbody, *senses, nchild;
+  ego solid;
+
+  context = (ego)(ref_geom->context);
+
+#ifdef HAVE_EGADS_LITE
+  {
+    /* entry point NOT in egads.h */
+    int EG_importModel(egObject * context, const size_t nbytes,
+                       const char stream[], egObject **model);
+
+    SUPRESS_UNUSED_COMPILER_WARNING(filename);
+
+    RAS(0 < ref_geom_cad_data_size(ref_geom), "zero size cad_data");
+    RNS(ref_geom_cad_data(ref_geom), "cad_data NULL");
+    REIS(EGADS_SUCCESS,
+         EG_importModel(context, (size_t)ref_geom_cad_data_size(ref_geom),
+                        (char *)ref_geom_cad_data(ref_geom), &model),
+         "EG load");
+  }
+#else
+  if (NULL == filename) THROW("filename NULL for EGADS(full) load");
+  REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
+
+  {
+    /* entry point NOT in egads.h */
+    int EG_exportModel(ego mobject, size_t * nbytes, char *stream[]);
+
+    REF_SIZE cad_data_size;
+    REF_BYTE *cad_data;
+
+    REIS(EGADS_SUCCESS, EG_exportModel(model, &cad_data_size, &cad_data),
+         "EG stream");
+    ref_geom_cad_data_size(ref_geom) = cad_data_size;
+    /* safe non-NULL free, if already allocated, to prevent memory leaks */
+    ref_free(ref_geom->cad_data);
+    ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                      ref_geom_cad_data_size(ref_geom), REF_BYTE);
+    memcpy(ref_geom_cad_data(ref_geom), cad_data,
+           ref_geom_cad_data_size(ref_geom));
+    EG_free(cad_data);
+  }
+#endif
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(model, &geom, &oclass, &nego, NULL, &nbody, &bodies,
+                      &senses),
+       "EG topo bodies");
+  REIS(1, nbody, "expected 1 body");
+  solid = bodies[0];
+#ifdef HAVE_EGADS_EFFECTIVE
+  {
+    int ibody;
+    int bodyclass, bodytype;
+    ego owner, prev, next;
+    for (ibody = 0; ibody < nego; ibody++) {
+      REIS(EGADS_SUCCESS,
+           EG_getInfo(bodies[ibody], &bodyclass, &bodytype, &owner, &prev,
+                      &next),
+           "info");
+      if (EBODY == bodyclass) {
+        solid = bodies[ibody];
+        ref_geom_effective(ref_geom) = REF_TRUE;
+        printf("EBODY extracted from model\n");
+      }
+    }
+  }
+
+#endif
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(solid, &geom, &oclass, &mtype, NULL, &nchild, &children,
+                      &senses),
+       "EG topo body type");
+  RAB(SOLIDBODY == mtype || FACEBODY == mtype || SHEETBODY == mtype,
+      "expected SOLIDBODY or FACEBODY or SHEETBODY",
+      { printf("mtype %d\n", mtype); });
+  ref_geom->solid = (void *)solid;
+  ref_geom->manifold = (SOLIDBODY == mtype);
+
+  RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
 
 #else
   printf("nothing for %s, No EGADS linked for %s\n", __func__, filename);
