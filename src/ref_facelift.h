@@ -35,12 +35,12 @@ struct REF_FACELIFT_STRUCT {
   REF_GRID grid;
   REF_DBL *displacement;
   REF_BOOL *strong_bc;
+  REF_CELL edg_cell, tri_cell;
   REF_SEARCH *edge_search;
   REF_SEARCH *face_search;
 };
 
 #define ref_facelift_grid(ref_facelift) ((ref_facelift)->grid)
-
 #define ref_facelift_displacement(ref_facelift, ixyz, geom) \
   ((ref_facelift)->displacement[(ixyz) + 3 * (geom)])
 #define ref_facelift_distance(ref_facelift, geom)                  \
@@ -49,11 +49,14 @@ struct REF_FACELIFT_STRUCT {
         pow(ref_facelift_displacement(ref_facelift, 2, geom), 2)))
 
 REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift,
-                               REF_GRID freeable_ref_grid);
+                               REF_GRID freeable_ref_grid, REF_BOOL direct);
 REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift);
+
+REF_STATUS ref_facelift_tattle(REF_GRID ref_geom, REF_INT node);
 
 REF_STATUS ref_facelift_attach(REF_GRID ref_grid);
 REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename);
+REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid, const char *filename);
 
 REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
                                   REF_INT id, REF_DBL *param, REF_INT *cell,
@@ -65,12 +68,15 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
 REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift, REF_INT type,
                                      REF_INT id, REF_DBL *xyz, REF_DBL *param);
 
+REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
+                                     REF_INT faceid, REF_INT sense, REF_DBL t,
+                                     REF_DBL *uv);
+
 REF_STATUS ref_facelift_tec(REF_FACELIFT ref_facelift, const char *filename);
 
 REF_STATUS ref_facelift_max_distance(REF_FACELIFT ref_facelift,
                                      REF_DBL *distance);
 REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid, REF_DBL complexity);
-REF_STATUS ref_facelift_edger(REF_GRID ref_grid, REF_DBL complexity);
 
 END_C_DECLORATION
 

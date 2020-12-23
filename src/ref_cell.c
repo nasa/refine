@@ -1434,3 +1434,63 @@ REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_cell_shape(REF_CELL ref_cell, REF_DBL *bary, REF_DBL *shape) {
+  REF_INT cell_node;
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
+    case REF_CELL_TRI:
+    case REF_CELL_TET:
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        shape[cell_node] = bary[cell_node];
+      }
+      break;
+    case REF_CELL_ED2:
+      shape[2] = 4.0 * bary[0] * bary[1];
+      shape[0] = bary[0] - 0.5 * shape[2];
+      shape[1] = bary[1] - 0.5 * shape[2];
+      break;
+    case REF_CELL_ED3:
+      shape[0] =
+          9.0 / 2.0 * bary[0] * (bary[0] - 1.0 / 3.0) * (bary[0] - 2.0 / 3.0);
+      shape[1] =
+          9.0 / 2.0 * bary[1] * (bary[1] - 1.0 / 3.0) * (bary[1] - 2.0 / 3.0);
+      shape[2] = 27.0 / 2.0 * bary[0] * bary[1] * (bary[0] - 1.0 / 3.0);
+      shape[3] = 27.0 / 2.0 * bary[1] * bary[0] * (bary[1] - 1.0 / 3.0);
+      break;
+    case REF_CELL_TR2:
+      shape[3] = 4.0 * bary[0] * bary[1];
+      shape[4] = 4.0 * bary[1] * bary[2];
+      shape[5] = 4.0 * bary[2] * bary[0];
+      shape[0] = bary[0] - 0.5 * shape[3] - 0.5 * shape[5];
+      shape[1] = bary[1] - 0.5 * shape[3] - 0.5 * shape[4];
+      shape[2] = bary[2] - 0.5 * shape[4] - 0.5 * shape[5];
+      break;
+    case REF_CELL_TR3:
+      shape[0] =
+          9.0 / 2.0 * bary[0] * (bary[0] - 1.0 / 3.0) * (bary[0] - 2.0 / 3.0);
+      shape[1] =
+          9.0 / 2.0 * bary[1] * (bary[1] - 1.0 / 3.0) * (bary[1] - 2.0 / 3.0);
+      shape[2] =
+          9.0 / 2.0 * bary[2] * (bary[2] - 1.0 / 3.0) * (bary[2] - 2.0 / 3.0);
+
+      shape[3] = 27.0 / 2.0 * bary[0] * bary[1] * (bary[0] - 1.0 / 3.0);
+      shape[4] = 27.0 / 2.0 * bary[0] * bary[1] * (bary[1] - 1.0 / 3.0);
+
+      shape[5] = 27.0 / 2.0 * bary[1] * bary[2] * (bary[1] - 1.0 / 3.0);
+      shape[6] = 27.0 / 2.0 * bary[1] * bary[2] * (bary[2] - 1.0 / 3.0);
+
+      shape[7] = 27.0 / 2.0 * bary[2] * bary[0] * (bary[2] - 1.0 / 3.0);
+      shape[8] = 27.0 / 2.0 * bary[2] * bary[0] * (bary[0] - 1.0 / 3.0);
+
+      shape[9] = 27.0 * bary[0] * bary[1] * bary[2];
+      break;
+    case REF_CELL_QUA:
+    case REF_CELL_PYR:
+    case REF_CELL_PRI:
+    case REF_CELL_HEX:
+      each_ref_cell_cell_node(ref_cell, cell_node) { shape[cell_node] = 0.0; }
+      return REF_IMPLEMENT;
+  }
+  return REF_SUCCESS;
+}
