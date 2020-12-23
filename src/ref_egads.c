@@ -299,6 +299,43 @@ REF_BOOL ref_egads_allows_construction(void) {
 #endif
 }
 
+REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
+#if defined(HAVE_EGADS)
+  int stype;
+  double data[8] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  ego body;
+  RAS(ref_egads_allows_construction(), "construction not allowed");
+  stype = REF_EMPTY;
+  if (0 == strcmp("cylinder", solid)) {
+    stype = CYLINDER;
+    /* axis point */
+    data[0] = 0.0;
+    data[1] = 0.0;
+    data[2] = 0.0;
+    /* axis point */
+    data[3] = 1.0;
+    data[4] = 0.0;
+    data[5] = 0.0;
+    /* radius */
+    data[6] = 1.0;
+  }
+  RUB(REF_EMPTY, stype, "unknown solid",
+      { printf("no stype for %s\n", solid); });
+  REIS(EGADS_SUCCESS,
+       EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
+       "make solid body");
+  ref_geom->solid = (void *)body;
+  ref_geom->manifold = REF_TRUE;
+
+  RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
+
+#else
+  printf("nothing for %s, No EGADS linked for %s\n", __func__, solid);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+#endif
+  return REF_SUCCESS;
+}
+
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
                                               int *surface_type) {

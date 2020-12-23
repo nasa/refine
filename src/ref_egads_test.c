@@ -75,6 +75,10 @@ int main(int argc, char *argv[]) {
   }
 
   if (ref_egads_allows_construction()) {
+    REF_GEOM ref_geom;
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "cylinder"), "create cylinder");
+    RSS(ref_geom_free(ref_geom), "free geom");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
