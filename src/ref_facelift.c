@@ -730,7 +730,7 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_CELL ref_cell = ref_facelift_edg(ref_facelift);
   REF_INT i, cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL bary[2], clip[2], faceuv[2];
+  REF_DBL bary[3], clip[3], faceuv[2];
   RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t, uv),
       "edge uv");
 
