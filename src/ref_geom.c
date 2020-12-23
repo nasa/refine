@@ -1134,10 +1134,13 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid,
-                                                 REF_INT node0, REF_INT node1,
-                                                 REF_DBL node1_weight,
-                                                 REF_INT new_node) {
+/* unused */
+REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid, REF_INT node0,
+                                          REF_INT node1, REF_DBL node1_weight,
+                                          REF_INT new_node);
+REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid, REF_INT node0,
+                                          REF_INT node1, REF_DBL node1_weight,
+                                          REF_INT new_node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -3309,11 +3312,11 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
       edge_node[edge] = node;
       RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
                                     ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
-          "new node");
-      RSS(ref_geom_add_constrain_midnode(
-              ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-              ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
-          "new node");
+          "new reals");
+      RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                               ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
+          "new geom");
+      RSS(ref_geom_constrain(ref_grid, node), "geom constrain");
     }
   }
 
@@ -3373,10 +3376,10 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
       RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
                                     ref_edge_e2n(ref_edge, 1, edge), t, node),
           "new node");
-      RSS(ref_geom_add_constrain_midnode(
-              ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-              ref_edge_e2n(ref_edge, 1, edge), t, node),
-          "new node");
+      RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                               ref_edge_e2n(ref_edge, 1, edge), t, node),
+          "new geom");
+      RSS(ref_geom_constrain(ref_grid, node), "geom constrain");
       t = 2.0 / 3.0;
       RSS(ref_node_next_global(ref_node, &global), "next global");
       RSS(ref_node_add(ref_node, global, &node), "add node");
@@ -3384,10 +3387,10 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
       RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
                                     ref_edge_e2n(ref_edge, 1, edge), t, node),
           "new node");
-      RSS(ref_geom_add_constrain_midnode(
-              ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-              ref_edge_e2n(ref_edge, 1, edge), t, node),
-          "new node");
+      RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                               ref_edge_e2n(ref_edge, 1, edge), t, node),
+          "new geom");
+      RSS(ref_geom_constrain(ref_grid, node), "geom constrain");
     }
   }
 
