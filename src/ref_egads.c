@@ -311,6 +311,35 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
          EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
          "make solid body");
   }
+  if (0 == strcmp("steinmetz", solid)) {
+    int stype = CYLINDER;
+    ego cyl1, cyl2;
+    {
+      double data[7] = {-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
+      REIS(EGADS_SUCCESS,
+           EG_makeSolidBody((ego)(ref_geom->context), stype, data, &cyl1),
+           "make solid body");
+    }
+    {
+      double data[7] = {0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 1.0};
+      REIS(EGADS_SUCCESS,
+           EG_makeSolidBody((ego)(ref_geom->context), stype, data, &cyl2),
+           "make solid body");
+    }
+    {
+      ego stein, geom, *bodies;
+      int oclass, nego, nbody, *senses;
+      REIS(EGADS_SUCCESS,
+           EG_generalBoolean(cyl1, cyl2, INTERSECTION, 0.0, &stein),
+           "make solid body");
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(stein, &geom, &oclass, &nego, NULL, &nbody, &bodies,
+                          &senses),
+           "EG topo bodies");
+      REIS(1, nbody, "expected 1 body");
+      body = bodies[0];
+    }
+  }
   RNB(body, "unknown solid", { printf(">%s<\n", solid); });
   ref_geom->solid = (void *)body;
   ref_geom->manifold = REF_TRUE;
