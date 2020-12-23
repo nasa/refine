@@ -658,6 +658,7 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
   REF_DBL displacement[3];
   RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv),
       "egads eval");
+  if (REF_GEOM_NODE == type) return REF_SUCCESS;
   if (ref_facelift_direct(ref_facelift)) {
     REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
     REF_INT i, cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
