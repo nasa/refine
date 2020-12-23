@@ -95,44 +95,33 @@ static REF_STATUS ref_egads_cache_solid_object(REF_GEOM ref_geom) {
   if (ref_geom_effective(ref_geom)) {
     REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
          "EG node topo");
-    ref_geom->nnode = nnode;
-    ref_geom->nodes = (void *)nodes;
     REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
          "EG edge topo");
-    ref_geom->nedge = nedge;
-    ref_geom->edges = (void *)edges;
     REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
          "EG face topo");
-    ref_geom->nface = nface;
-    ref_geom->faces = (void *)faces;
   } else {
     REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
          "EG node topo");
-    ref_geom->nnode = nnode;
-    ref_geom->nodes = (void *)nodes;
     REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
          "EG edge topo");
-    ref_geom->nedge = nedge;
-    ref_geom->edges = (void *)edges;
     REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
          "EG face topo");
-    ref_geom->nface = nface;
-    ref_geom->faces = (void *)faces;
   }
 #else
   REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
        "EG node topo");
-  ref_geom->nnode = nnode;
-  ref_geom->nodes = (void *)nodes;
   REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
        "EG edge topo");
-  ref_geom->nedge = nedge;
-  ref_geom->edges = (void *)edges;
   REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
        "EG face topo");
+#endif
+
+  ref_geom->nnode = nnode;
+  ref_geom->nodes = (void *)nodes;
+  ref_geom->nedge = nedge;
+  ref_geom->edges = (void *)edges;
   ref_geom->nface = nface;
   ref_geom->faces = (void *)faces;
-#endif
 
   /* use face mtype SFORWARD, SREVERSE to set uv_area_sign */
   /* If it is SFORWARD (1) then the Face's Normal is in the same direction as
