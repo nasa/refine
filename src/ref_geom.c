@@ -1606,6 +1606,64 @@ REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node, REF_DBL *dot_prod) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_max_gap(REF_GRID ref_grid, REF_DBL *max_gap) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT geom;
+  REF_INT node;
+  REF_DBL xyz[3];
+  REF_DBL dist, max, global_max;
+
+  *max_gap = 0.0;
+
+  if (!ref_geom_model_loaded(ref_geom)) return REF_SUCCESS;
+
+  max = 0.0;
+  each_ref_geom_node(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+    max = MAX(max, dist);
+  }
+  RSS(ref_mpi_max(ref_mpi, &max, &global_max, REF_DBL_TYPE), "mpi max node");
+  max = global_max;
+  *max_gap = MAX(*max_gap, max);
+
+  max = 0.0;
+  each_ref_geom_edge(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+    max = MAX(max, dist);
+  }
+  RSS(ref_mpi_max(ref_mpi, &max, &global_max, REF_DBL_TYPE), "mpi max edge");
+  max = global_max;
+  *max_gap = MAX(*max_gap, max);
+
+  max = 0.0;
+  each_ref_geom_face(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+    max = MAX(max, dist);
+  }
+  RSS(ref_mpi_max(ref_mpi, &max, &global_max, REF_DBL_TYPE), "mpi max face");
+  max = global_max;
+  *max_gap = MAX(*max_gap, max);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);

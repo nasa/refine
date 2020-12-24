@@ -245,6 +245,7 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
 REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node,
                            REF_DBL *dot_product);
 
+REF_STATUS ref_geom_max_gap(REF_GRID ref_grid, REF_DBL *max_gap);
 REF_STATUS ref_geom_verify_param(REF_GRID ref_grid);
 REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid);
 
