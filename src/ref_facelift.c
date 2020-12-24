@@ -667,7 +667,7 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
     REF_CELL ref_cell = NULL;
     RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
         "enclose");
-    if (REF_EMPTY == cell) return REF_SUCCESS;
+    RUS(REF_EMPTY, cell, "no enclosing found");
     if (REF_GEOM_EDGE == type) {
       ref_cell = ref_facelift_edg(ref_facelift);
       RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
@@ -739,7 +739,7 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
     RSS(ref_facelift_enclosing(ref_facelift, REF_GEOM_EDGE, edgeid, &t, &cell,
                                bary),
         "enclose");
-    if (REF_EMPTY == cell) return REF_SUCCESS;
+    RUS(REF_EMPTY, cell, "no enclosing found");
     RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     for (i = 0; i < 2; i++) {
