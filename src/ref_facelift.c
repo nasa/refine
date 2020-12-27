@@ -724,6 +724,34 @@ REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift, REF_INT type,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
+                                             REF_INT edgeid, REF_INT faceid,
+                                             REF_INT sense, REF_DBL t,
+                                             REF_DBL *uv);
+REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
+                                             REF_INT edgeid, REF_INT faceid,
+                                             REF_INT sense, REF_DBL t,
+                                             REF_DBL *uv) {
+  REF_DBL edgexyz[3], facexyz[3], dist;
+  RAS(0 == sense, "implement sense != 0 for uv jumps");
+
+  RSS(ref_facelift_eval_at(ref_facelift, REF_GEOM_EDGE, edgeid, &t, edgexyz,
+                           NULL),
+      "eval edge");
+  RSS(ref_facelift_eval_at(ref_facelift, REF_GEOM_FACE, faceid, uv, facexyz,
+                           NULL),
+      "eval face");
+  dist =
+      sqrt(pow(facexyz[0] - edgexyz[0], 2) + pow(facexyz[1] - edgexyz[1], 2) +
+           pow(facexyz[2] - edgexyz[2], 2));
+  if (dist > 1.0e-14) {
+    printf("edge %d t %f dist %f\n", edgeid, t, dist);
+    printf("face %d uv %f %f\n", faceid, uv[0], uv[1]);
+    THROW("not 1e-14 watertight");
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
                                      REF_INT faceid, REF_INT sense, REF_DBL t,
                                      REF_DBL *uv) {
