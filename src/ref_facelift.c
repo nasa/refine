@@ -745,7 +745,7 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
   dist =
       sqrt(pow(facexyz[0] - edgexyz[0], 2) + pow(facexyz[1] - edgexyz[1], 2) +
            pow(facexyz[2] - edgexyz[2], 2));
-  if (dist > 1.0e-14) {
+  if (dist > 1.0e-12) {
     REF_INT edg_cell, tri_cell;
     REF_DBL edg_bary[3], tri_bary[3];
     REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -759,7 +759,7 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
         "enclose");
     RUS(REF_EMPTY, tri_cell, "no enclosing found");
 
-    printf("edge %d t %f dist %f\n", edgeid, t, dist);
+    printf("edge %d t %f dist %e\n", edgeid, t, dist);
     printf("face %d uv %f %f\n", faceid, uv[0], uv[1]);
     printf("edg bary %f %f %f\n", edg_bary[0], edg_bary[1], edg_bary[2]);
     printf("tri bary %f %f %f\n", tri_bary[0], tri_bary[1], tri_bary[2]);
