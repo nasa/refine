@@ -732,6 +732,7 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
                                              REF_INT edgeid, REF_INT faceid,
                                              REF_INT sense, REF_DBL t,
                                              REF_DBL *uv) {
+  REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL edgexyz[3], facexyz[3], dist;
   RAS(0 == sense, "implement sense != 0 for uv jumps");
 
@@ -745,8 +746,43 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
       sqrt(pow(facexyz[0] - edgexyz[0], 2) + pow(facexyz[1] - edgexyz[1], 2) +
            pow(facexyz[2] - edgexyz[2], 2));
   if (dist > 1.0e-14) {
+    REF_INT edg_cell, tri_cell;
+    REF_DBL edg_bary[3], tri_bary[3];
+    REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT geom;
+    RSS(ref_facelift_enclosing(ref_facelift, REF_GEOM_EDGE, edgeid, &t,
+                               &edg_cell, edg_bary),
+        "enclose");
+    RUS(REF_EMPTY, edg_cell, "no enclosing found");
+    RSS(ref_facelift_enclosing(ref_facelift, REF_GEOM_FACE, faceid, uv,
+                               &tri_cell, tri_bary),
+        "enclose");
+    RUS(REF_EMPTY, tri_cell, "no enclosing found");
+
     printf("edge %d t %f dist %f\n", edgeid, t, dist);
     printf("face %d uv %f %f\n", faceid, uv[0], uv[1]);
+    printf("edg bary %f %f %f\n", edg_bary[0], edg_bary[1], edg_bary[2]);
+    printf("tri bary %f %f %f\n", tri_bary[0], tri_bary[1], tri_bary[2]);
+
+    RSS(ref_cell_nodes(ref_facelift_edg(ref_facelift), edg_cell, nodes),
+        "nodes");
+    RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_EDGE, edgeid, &geom), "gm");
+    printf("t0 %f\n", ref_geom_param(ref_geom, 0, geom));
+    RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_EDGE, edgeid, &geom), "gm");
+    printf("t1 %f\n", ref_geom_param(ref_geom, 0, geom));
+
+    RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), tri_cell, nodes),
+        "nodes");
+    RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, faceid, &geom), "gm");
+    printf("uv0 %f %f\n", ref_geom_param(ref_geom, 0, geom),
+           ref_geom_param(ref_geom, 1, geom));
+    RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_FACE, faceid, &geom), "gm");
+    printf("uv1 %f %f\n", ref_geom_param(ref_geom, 0, geom),
+           ref_geom_param(ref_geom, 1, geom));
+    RSS(ref_geom_find(ref_geom, nodes[2], REF_GEOM_FACE, faceid, &geom), "gm");
+    printf("uv2 %f %f\n", ref_geom_param(ref_geom, 0, geom),
+           ref_geom_param(ref_geom, 1, geom));
+
     THROW("not 1e-14 watertight");
   }
   return REF_SUCCESS;
