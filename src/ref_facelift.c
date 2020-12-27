@@ -745,7 +745,7 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
   dist =
       sqrt(pow(facexyz[0] - edgexyz[0], 2) + pow(facexyz[1] - edgexyz[1], 2) +
            pow(facexyz[2] - edgexyz[2], 2));
-  if (dist > 1.0e-12) {
+  if (dist > 1.0e-10) {
     REF_INT edg_cell, tri_cell;
     REF_DBL edg_bary[3], tri_bary[3];
     REF_INT nodes[REF_CELL_MAX_SIZE_PER];
