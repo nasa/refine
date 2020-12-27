@@ -771,6 +771,13 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
     RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_EDGE, edgeid, &geom), "gm");
     printf("t1 %f\n", ref_geom_param(ref_geom, 0, geom));
 
+    RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, faceid, &geom), "gm");
+    printf("uv0 %f %f along\n", ref_geom_param(ref_geom, 0, geom),
+           ref_geom_param(ref_geom, 1, geom));
+    RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_FACE, faceid, &geom), "gm");
+    printf("uv1 %f %f along\n", ref_geom_param(ref_geom, 0, geom),
+           ref_geom_param(ref_geom, 1, geom));
+
     RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), tri_cell, nodes),
         "nodes");
     RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, faceid, &geom), "gm");
