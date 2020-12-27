@@ -853,7 +853,6 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
                                         ref_geom_id(ref_geom, edge_geom),
                                         faceid, sense, t, edgeuv),
               "facelift eval wrapper");
-          return REF_SUCCESS;
         } else {
           RSS(ref_egads_edge_face_uv(ref_geom, ref_geom_id(ref_geom, edge_geom),
                                      faceid, sense, t, edgeuv),

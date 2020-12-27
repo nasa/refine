@@ -819,9 +819,13 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
         RSS(ref_geom_tuv(ref_geom, nodes[cell_node], REF_GEOM_FACE, faceid,
                          faceuv),
             "face uv");
-        uv[i] += 0.5 * faceuv[i];
+        uv[i] += clip[cell_node] * faceuv[i];
       }
     }
+
+    RSS(ref_facelift_edge_face_watertight(ref_facelift, edgeid, faceid, sense,
+                                          t, uv),
+        "facelift watertight check");
 
   } else {
   }

@@ -271,7 +271,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     RSS(ref_smooth_pass(ref_grid), "smooth pass");
     RSS(ref_geom_max_gap(ref_grid, &gap), "geom gap");
-    RAB(gap < 1.0e-14, "expected watertight", { printf("gap %e\n", gap); });
+    RAB(gap < 1.0e-12, "expected watertight", { printf("gap %e\n", gap); });
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
