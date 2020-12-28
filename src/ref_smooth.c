@@ -412,6 +412,13 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
                                  &q2),
           "set uv for q2");
     }
+    if (q1 > q2) { /* could not improve */
+      RSS(ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, dq_duv, step1,
+                                 &q1),
+          "set uv for q1");
+      RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, uv), "uv");
+      break; /* give up */
+    }
     RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, uv), "uv");
 
     if (verbose && tries > 25) {
