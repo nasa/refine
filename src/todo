@@ -5,28 +5,34 @@ understand interp max error reports
 
 sync surf/tri/face zone titles
 
-facelift boundary representation model tolerance reduction
-  + rename blend to facelift
-  ref_facelift_displacement_at higher order
-  initialization higher order
-  more parallel friendly
-  ref_recon fallback for incomplete stencil
-  chain rule derivatives?
-  actual Laplacian for blend smoothing?
-
-surrogate surface
-  support twod geom
+facelift direct surrogate boundary representation tolerance
+  streamline bootstrap, adapt, and loop options
+  parallel enrich
+  parallel read and replicate surrogate
+  smooth enrich surface (conform curvature metric)
+  plot displacment between surrogate and egads
+  plot boundary representation tolerance independently
   + share via meshb
   + higher order surface
   inverse eval
   eval derivatives
   eval curvature
-  when EGADS not available
+  when EGADS not available (compute UV?)
   support virtual topology
   many-to-many association virtual topology
-  allow inv eval to hop objects
+  uv free? bary plus hop
+
+facelift indirect displacement  boundary representation tolerance (paused)
+  ref_facelift_displacement_at higher order
+  parallel
+  ref_recon fallback for incomplete stencil
+  chain rule derivatives?
+  actual Laplacian for blend smoothing?
 
 curved higher order meshing
+  twod
+  smoothing
+  cavity
 
 ref_geom ref_egads
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
@@ -214,6 +220,8 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ rename blend to facelift
 
 + initial meshlink
   + ref adapt
