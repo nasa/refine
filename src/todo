@@ -14,6 +14,8 @@ facelift direct surrogate boundary representation tolerance
   plot boundary representation tolerance independently
   + share via meshb
   + higher order surface
+  jump
+  degen?
   inverse eval
   eval derivatives
   eval curvature
