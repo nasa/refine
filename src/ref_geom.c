@@ -3357,6 +3357,8 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell;
 
+  RSS(ref_node_synchronize_globals(ref_node), "sync glob");
+
   RSS(ref_geom_constrain_all(ref_grid), "constrain");
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "edge");

@@ -6,24 +6,24 @@ understand interp max error reports
 sync surf/tri/face zone titles
 
 facelift direct surrogate boundary representation tolerance
+  enrich at linear parameters, positions via evaluation
   streamline bootstrap, adapt, and loop options
-  parallel enrich
-  parallel read
-  parallel replicate surrogate
-  smooth enrich surface (conform curvature metric)
-  plot displacment between surrogate and egads
-  plot boundary representation tolerance independently
+  parallel bootstrap friendly enrich
+  parallel replicate surrogate instead of all import
+  smooth enrich surface (conform curvature metric?)
+  plot displacement between surrogate and EGADS
+  plot interpolated boundary representation tolerance independently
   + share via meshb
   + higher order surface
   jump
   degen?
-  inverse eval
-  eval derivatives
-  eval curvature
-  when EGADS not available (compute UV?)
+  inverse evaluation
+  evaluation derivatives
+  evaluation curvature
+  when EGADS not available (construct UV?)
   support virtual topology
   many-to-many association virtual topology
-  uv free? bary plus hop
+  UV free? bary walk plus hop
 
 facelift indirect displacement  boundary representation tolerance (paused)
   ref_facelift_displacement_at higher order
