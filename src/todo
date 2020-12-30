@@ -8,7 +8,8 @@ sync surf/tri/face zone titles
 facelift direct surrogate boundary representation tolerance
   streamline bootstrap, adapt, and loop options
   parallel enrich
-  parallel read and replicate surrogate
+  parallel read
+  parallel replicate surrogate
   smooth enrich surface (conform curvature metric)
   plot displacment between surrogate and egads
   plot boundary representation tolerance independently
