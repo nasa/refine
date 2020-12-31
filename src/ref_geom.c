@@ -1656,6 +1656,7 @@ REF_STATUS ref_geom_max_gap(REF_GRID ref_grid, REF_DBL *max_gap) {
   RSS(ref_mpi_max(ref_mpi, &max, &global_max, REF_DBL_TYPE), "mpi max face");
   max = global_max;
   *max_gap = MAX(*max_gap, max);
+  RSS(ref_mpi_bcast(ref_mpi, max_gap, 1, REF_DBL_TYPE), "mpi bcast gap");
 
   return REF_SUCCESS;
 }
