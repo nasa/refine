@@ -6,7 +6,7 @@ understand interp max error reports
 sync surf/tri/face zone titles
 
 facelift direct surrogate boundary representation tolerance
-  enrich at linear parameters, positions via evaluation
+  + enrich at linear parameters, positions via evaluation
   streamline bootstrap, adapt, and loop options
   parallel bootstrap friendly enrich
   parallel replicate surrogate instead of all import
