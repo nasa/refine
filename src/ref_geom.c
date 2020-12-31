@@ -3379,6 +3379,8 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
     }
   }
 
+  RSS(ref_node_shift_new_globals(ref_node), "shift glob");
+
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(ref_grid), cell, nodes) {
     nodes[ref_cell_id_index(ref_grid_ed2(ref_grid))] =
         nodes[ref_cell_id_index(ref_grid_edg(ref_grid))];
