@@ -6,6 +6,8 @@ understand interp max error reports
 sync surf/tri/face zone titles
 
 facelift direct surrogate boundary representation tolerance
+  + share via meshb
+  + higher order surface
   + enrich at linear parameters, positions via evaluation
   + parallel replicate surrogate instead of all import
   + streamline bootstrap, adapt, and loop options
@@ -13,9 +15,7 @@ facelift direct surrogate boundary representation tolerance
   plot displacement between surrogate and EGADS
   plot interpolated boundary representation tolerance independently
   smooth enrich surface (conform curvature metric?)
-  + share via meshb
-  + higher order surface
-  jump
+  jump?
   degen?
   inverse evaluation
   evaluation derivatives
