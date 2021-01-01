@@ -200,6 +200,18 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
+  if (1 == argc) { /* replicate tet b8.ugrid */
+    REF_GRID ref_grid = NULL;
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "set up tet");
+    }
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_grid_free(ref_grid), "free");
+    }
+  }
+
   if (1 < argc) { /* part and migrate argument, world comm */
     REF_GRID import_grid;
 
