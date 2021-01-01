@@ -469,12 +469,10 @@ REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid, const char *filename) {
   REF_GRID surrogate;
   REF_FACELIFT ref_facelift;
   if (ref_mpi_once(ref_mpi)) {
-    RSS(ref_import_by_extension(&surrogate, ref_grid_mpi(ref_grid), filename),
-        "import");
+    RSS(ref_import_by_extension(&surrogate, ref_mpi, filename), "import");
     nnode = ref_node_n_global(ref_grid_node(surrogate));
     RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
   } else {
-    RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
     RSS(ref_grid_create(&surrogate, ref_mpi), "create grid");
     RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
     RSS(ref_node_initialize_n_global(ref_grid_node(surrogate), nnode),
