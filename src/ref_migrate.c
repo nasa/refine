@@ -1673,35 +1673,22 @@ REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
 REF_STATUS ref_migrate_replicate_ghost(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GLOB nnode, global;
-  REF_INT local, i;
-  REF_DBL *xyz = NULL;
+  REF_GLOB global;
+  REF_INT local;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  nnode = ref_node_n_global(ref_node);
-  ref_malloc(xyz, 3 * nnode, REF_DBL);
-  if (ref_mpi_once(ref_mpi)) {
-    for (global = 0; global < nnode; global++) {
-      RSS(ref_node_local(ref_node, global, &local), "local");
-      for (i = 0; i < 3; i++) {
-        xyz[i + 3 * global] = ref_node_xyz(ref_node, i, local);
-      }
-    }
-  }
-  RSS(ref_mpi_bcast(ref_mpi, xyz, (REF_INT)(3 * nnode), REF_DBL_TYPE),
-      "bcast xyz");
   if (!ref_mpi_once(ref_mpi)) {
-    for (global = 0; global < nnode; global++) {
+    for (global = 0; global < ref_node_n_global(ref_node); global++) {
       RSS(ref_node_add(ref_node, global, &local), "new_node");
       ref_node_part(ref_node, local) = 0;
-      for (i = 0; i < 3; i++) {
-        ref_node_xyz(ref_node, i, local) = xyz[i + 3 * global];
-      }
     }
   }
+
+  RSS(ref_node_ghost_real(ref_node), "ghost real");
+  RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "ghost geom");
 
   return REF_SUCCESS;
 }
