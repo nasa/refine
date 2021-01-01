@@ -427,6 +427,12 @@ cd ${source_dir}/acceptance/offset/cylcyl
 ( ./accept-offset-cylcyl.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-offset-boxbox
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/offset/boxbox
+( ./accept-offset-boxbox.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-om6-recon

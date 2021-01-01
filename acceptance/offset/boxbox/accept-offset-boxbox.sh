@@ -22,7 +22,7 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field} ${inproj}.meshb ${inproj}.solb
     ${src}/ref adapt ${inproj}.meshb \
 	  -g boxbox.egads \
-	  --facelift boxbox-surrogate.meshb \
+	  --surrogate boxbox-surrogate.meshb \
 	  -m ${inproj}.solb \
 	  -x ${outproj}.meshb \
 	  -f ${outproj}-final.tec \
@@ -36,25 +36,16 @@ function adapt_cycle {
 serveCSM -batch boxbox.csm
 
 ${src}/ref boostrap boxbox.egads \
-      --facelift boxbox-facelift.meshb
-
-${src}/ref adapt boxbox-adapt-surf.meshb \
-      -g boxbox.egads \
-      --facelift-metric 100 \
-      -s 5 \
-      -x boxbox-surrogate.meshb \
-      -f boxbox-surrogate-final.tec
-
-${src}/ref_facelift_test --viz boxbox-surrogate.meshb boxbox.egads
+      --surrogate boxbox-surrogate.meshb
 
 ${src}/ref adapt boxbox-vol.meshb \
       -g boxbox.egads \
-      --facelift boxbox-surrogate.meshb \
+      --surrogate boxbox-surrogate.meshb \
       -x boxbox.meshb \
       -f boxbox-final.tec
 
 adapt_cycle boxbox cycle01 2
-adapt_cycle cycle01 cycle02 15
+adapt_cycle cycle01 cycle02 10
 
 cat cycle02.status
 ../../check.rb cycle02.status 0.3 3.0
