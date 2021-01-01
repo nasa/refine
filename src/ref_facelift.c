@@ -464,23 +464,28 @@ REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename) {
 }
 
 REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid, const char *filename) {
-  REF_GRID freeable_ref_grid;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_GLOB nnode = 0;
+  REF_GRID surrogate;
   REF_FACELIFT ref_facelift;
-  REF_GEOM ref_geom;
-  RSS(ref_import_by_extension(&freeable_ref_grid, ref_grid_mpi(ref_grid),
-                              filename),
-      "import");
-  ref_geom = ref_grid_geom(freeable_ref_grid);
-  RSS(ref_geom_share_context(ref_geom, ref_grid_geom(ref_grid)),
-      "share context");
-  if (ref_geom_model_loaded(ref_geom)) {
-    RSS(ref_egads_mark_jump_degen(freeable_ref_grid),
-        "T and UV jumps; UV degen");
-    RSS(ref_geom_verify_topo(freeable_ref_grid), "geom topo");
-    RSS(ref_geom_verify_param(freeable_ref_grid), "geom param");
+  if (ref_mpi_once(ref_mpi)) {
+    RSS(ref_import_by_extension(&surrogate, ref_mpi, filename), "import");
+    nnode = ref_node_n_global(ref_grid_node(surrogate));
+    RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
+  } else {
+    RSS(ref_grid_create(&surrogate, ref_mpi), "create grid");
+    RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
+    RSS(ref_node_initialize_n_global(ref_grid_node(surrogate), nnode),
+        "init nnodesg");
   }
-  RSS(ref_facelift_create(&ref_facelift, freeable_ref_grid, REF_TRUE),
-      "create");
+  RSS(ref_migrate_replicate_ghost(surrogate), "replicant");
+  RSS(ref_geom_share_context(ref_grid_geom(surrogate), ref_grid_geom(ref_grid)),
+      "share context");
+  if (ref_geom_model_loaded(ref_grid_geom(surrogate))) {
+    RSS(ref_egads_mark_jump_degen(surrogate), "T and UV jumps; UV degen");
+    RSS(ref_geom_verify_topo(surrogate), "geom topo");
+  }
+  RSS(ref_facelift_create(&ref_facelift, surrogate, REF_TRUE), "create");
   ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
   return REF_SUCCESS;
 }
