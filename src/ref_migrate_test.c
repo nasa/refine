@@ -216,6 +216,8 @@ int main(int argc, char *argv[]) {
     }
 
     RSS(ref_migrate_replicate_ghost(ref_grid), "replicant");
+    REIS(nnode, ref_node_n(ref_grid_node(ref_grid)),
+         "local nodes match global");
 
     RSS(ref_grid_free(ref_grid), "free");
   }
