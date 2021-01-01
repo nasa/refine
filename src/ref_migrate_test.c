@@ -202,14 +202,22 @@ int main(int argc, char *argv[]) {
 
   if (1 == argc) { /* replicate tet b8.ugrid */
     REF_GRID ref_grid = NULL;
+    REF_GLOB nnode = 0;
 
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "set up tet");
+      nnode = ref_node_n_global(ref_grid_node(ref_grid));
+    }
+    RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
+    if (!ref_mpi_once(ref_mpi)) {
+      RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+      RSS(ref_node_initialize_n_global(ref_grid_node(ref_grid), nnode),
+          "init nnodesg");
     }
 
-    if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_grid_free(ref_grid), "free");
-    }
+    RSS(ref_migrate_replicate_ghost(ref_grid), "replicant");
+
+    RSS(ref_grid_free(ref_grid), "free");
   }
 
   if (1 < argc) { /* part and migrate argument, world comm */
