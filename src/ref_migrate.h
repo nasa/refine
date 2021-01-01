@@ -93,6 +93,9 @@ REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
 REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
                                    REF_DBL *ratio);
 
+REF_STATUS ref_migrate_replicate(REF_GRID *replicant,
+                                 REF_GRID ref_grid_rank_zero, REF_MPI ref_mpi);
+
 END_C_DECLORATION
 
 #endif /* REF_MIGRATE_H */

@@ -1669,3 +1669,47 @@ REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
   }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_migrate_replicate(REF_GRID *ref_grid_ptr, REF_GRID orig,
+                                 REF_MPI ref_mpi) {
+  REF_GRID ref_grid = NULL;
+  REF_NODE ref_node = NULL;
+  REF_GLOB nnode, global;
+  REF_INT local, i;
+  REF_DBL *xyz = NULL;
+
+  RSS(ref_node_synchronize_globals(ref_grid_node(orig)), "sync global nodes");
+
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+
+  if (ref_mpi_once(ref_mpi)) {
+    nnode = ref_node_n_global(ref_grid_node(orig));
+    ref_malloc(xyz, 3 * nnode, REF_DBL);
+    for (global = 0; global < nnode; global++) {
+      RSS(ref_node_local(ref_grid_node(orig), global, &local), "local");
+      for (i = 0; i < 3; i++) {
+        xyz[i + 3 * global] = ref_node_xyz(ref_grid_node(orig), i, local);
+      }
+    }
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_LONG_TYPE), "bcast nnode");
+  if (!ref_mpi_once(ref_mpi)) {
+    RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
+    ref_grid = (*ref_grid_ptr);
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(xyz, 3 * nnode, REF_DBL);
+  }
+  RSS(ref_mpi_bcast(ref_mpi, xyz, (REF_INT)(3 * nnode), REF_DBL_TYPE),
+      "bcast xyz");
+  if (!ref_mpi_once(ref_mpi)) {
+    for (global = 0; global < nnode; global++) {
+      RSS(ref_node_add(ref_node, global, &local), "new_node");
+      ref_node_part(ref_node, local) = 0;
+      for (i = 0; i < 3; i++) {
+        ref_node_xyz(ref_node, i, local) = xyz[i + 3 * global];
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
