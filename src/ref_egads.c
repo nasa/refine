@@ -80,17 +80,130 @@ REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
   return REF_SUCCESS;
 }
 
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_cache_solid_object(REF_GEOM ref_geom) {
+  ego solid = (ego)(ref_geom->solid);
+  ego *faces, *edges, *nodes;
+  int nface, nedge, nnode;
+  REF_INT face;
+  int oclass, mtype, *senses, nchild;
+  ego *children;
+  ego ref;
+  double uv_box[4];
+
+#ifdef HAVE_EGADS_EFFECTIVE
+  if (ref_geom_effective(ref_geom)) {
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+         "EG node topo");
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
+         "EG edge topo");
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
+         "EG face topo");
+  } else {
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+         "EG node topo");
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
+         "EG edge topo");
+    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
+         "EG face topo");
+  }
+#else
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+       "EG node topo");
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
+       "EG edge topo");
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
+       "EG face topo");
+#endif
+
+  ref_geom->nnode = nnode;
+  ref_geom->nodes = (void *)nodes;
+  ref_geom->nedge = nedge;
+  ref_geom->edges = (void *)edges;
+  ref_geom->nface = nface;
+  ref_geom->faces = (void *)faces;
+
+  /* use face mtype SFORWARD, SREVERSE to set uv_area_sign */
+  /* If it is SFORWARD (1) then the Face's Normal is in the same direction as
+     the surface (u cross v), which points outward of the solid. If it is
+     SREVERSE (-1), then the natural surface normal points inward and the
+     Face points consistently out of the solid. */
+  ref_malloc_init(ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 0.0);
+  for (face = 0; face < nface; face++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->faces))[face], &ref, &oclass, &mtype,
+                        uv_box, &nchild, &children, &senses),
+         "topo");
+    switch (mtype) {
+      /* refine assumes normal point into the domain (solid), flip sign */
+      case SFORWARD:
+        (ref_geom->uv_area_sign)[face] = -1.0;
+        break;
+      case SREVERSE:
+        (ref_geom->uv_area_sign)[face] = 1.0;
+        break;
+      default:
+        printf("mtype %d\n", mtype);
+        RSS(REF_IMPLEMENT, "unknown face type, expected SFORWARD or SREVERSE");
+    }
+  }
+
+  ref_malloc_init(ref_geom->initial_cell_height, ref_geom->nface, REF_DBL,
+                  -1.0);
+  for (face = 0; face < nface; face++) {
+    int len, atype;
+    const double *preals;
+    const int *pints;
+    const char *string;
+    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
+                                         "initial_cell_height", &atype, &len,
+                                         &pints, &preals, &string)) {
+      if (ATTRREAL == atype && len == 1) {
+        ref_geom->initial_cell_height[face] = preals[0];
+      }
+    }
+  }
+
+  ref_malloc_init(ref_geom->face_min_length, ref_geom->nface, REF_DBL, -1.0);
+  for (face = 0; face < nface; face++) {
+    int len, atype;
+    const double *preals;
+    const int *pints;
+    const char *string;
+    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
+                                         "min_length", &atype, &len, &pints,
+                                         &preals, &string)) {
+      if (ATTRREAL == atype && len == 1) {
+        ref_geom->face_min_length[face] = preals[0];
+      }
+    }
+  }
+
+  ref_malloc_init(ref_geom->face_seg_per_rad, ref_geom->nface, REF_DBL, -999.0);
+  for (face = 0; face < nface; face++) {
+    int len, atype;
+    const double *preals;
+    const int *pints;
+    const char *string;
+    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
+                                         "seg_per_rad", &atype, &len, &pints,
+                                         &preals, &string)) {
+      if (ATTRREAL == atype && len == 1) {
+        ref_geom->face_seg_per_rad[face] = preals[0];
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+#endif
+
 REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 #ifdef HAVE_EGADS
   ego context;
   ego model = NULL;
   ego geom, *bodies, *children;
   int oclass, nego, mtype, nbody, *senses, nchild;
-  ego solid, *faces, *edges, *nodes;
-  int nface, nedge, nnode;
-  REF_INT face;
-  ego ref;
-  double uv_box[4];
+  ego solid;
 
   context = (ego)(ref_geom->context);
 
@@ -166,127 +279,90 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
       "expected SOLIDBODY or FACEBODY or SHEETBODY",
       { printf("mtype %d\n", mtype); });
   ref_geom->solid = (void *)solid;
-  ref_geom->manifold = SOLIDBODY == mtype;
+  ref_geom->manifold = (SOLIDBODY == mtype);
 
-#ifdef HAVE_EGADS_EFFECTIVE
-  if (ref_geom_effective(ref_geom)) {
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
-         "EG node topo");
-    ref_geom->nnode = nnode;
-    ref_geom->nodes = (void *)nodes;
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
-         "EG edge topo");
-    ref_geom->nedge = nedge;
-    ref_geom->edges = (void *)edges;
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
-         "EG face topo");
-    ref_geom->nface = nface;
-    ref_geom->faces = (void *)faces;
-  } else {
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
-         "EG node topo");
-    ref_geom->nnode = nnode;
-    ref_geom->nodes = (void *)nodes;
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
-         "EG edge topo");
-    ref_geom->nedge = nedge;
-    ref_geom->edges = (void *)edges;
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
-         "EG face topo");
-    ref_geom->nface = nface;
-    ref_geom->faces = (void *)faces;
-  }
-#else
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
-       "EG node topo");
-  ref_geom->nnode = nnode;
-  ref_geom->nodes = (void *)nodes;
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
-       "EG edge topo");
-  ref_geom->nedge = nedge;
-  ref_geom->edges = (void *)edges;
-  REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
-       "EG face topo");
-  ref_geom->nface = nface;
-  ref_geom->faces = (void *)faces;
-#endif
-
-  /* use face mtype SFORWARD, SREVERSE to set uv_area_sign */
-  /* If it is SFORWARD (1) then the Face's Normal is in the same direction as
-     the surface (u cross v), which points outward of the solid. If it is
-     SREVERSE (-1), then the natural surface normal points inward and the
-     Face points consistently out of the solid. */
-  ref_malloc_init(ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 0.0);
-  for (face = 0; face < nface; face++) {
-    REIS(EGADS_SUCCESS,
-         EG_getTopology(((ego *)(ref_geom->faces))[face], &ref, &oclass, &mtype,
-                        uv_box, &nchild, &children, &senses),
-         "topo");
-    switch (mtype) {
-      /* refine assumes normal point into the domain (solid), flip sign */
-      case SFORWARD:
-        (ref_geom->uv_area_sign)[face] = -1.0;
-        break;
-      case SREVERSE:
-        (ref_geom->uv_area_sign)[face] = 1.0;
-        break;
-      default:
-        printf("mtype %d\n", mtype);
-        RSS(REF_IMPLEMENT, "unknown face type, expected SFORWARD or SREVERSE");
-    }
-  }
-
-  ref_malloc_init(ref_geom->initial_cell_height, ref_geom->nface, REF_DBL,
-                  -1.0);
-  for (face = 0; face < nface; face++) {
-    int len, atype;
-    const double *preals;
-    const int *pints;
-    const char *string;
-    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
-                                         "initial_cell_height", &atype, &len,
-                                         &pints, &preals, &string)) {
-      if (ATTRREAL == atype && len == 1) {
-        ref_geom->initial_cell_height[face] = preals[0];
-      }
-    }
-  }
-
-  ref_malloc_init(ref_geom->face_min_length, ref_geom->nface, REF_DBL, -1.0);
-  for (face = 0; face < nface; face++) {
-    int len, atype;
-    const double *preals;
-    const int *pints;
-    const char *string;
-    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
-                                         "min_length", &atype, &len, &pints,
-                                         &preals, &string)) {
-      if (ATTRREAL == atype && len == 1) {
-        ref_geom->face_min_length[face] = preals[0];
-      }
-    }
-  }
-
-  ref_malloc_init(ref_geom->face_seg_per_rad, ref_geom->nface, REF_DBL, -999.0);
-  for (face = 0; face < nface; face++) {
-    int len, atype;
-    const double *preals;
-    const int *pints;
-    const char *string;
-    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
-                                         "seg_per_rad", &atype, &len, &pints,
-                                         &preals, &string)) {
-      if (ATTRREAL == atype && len == 1) {
-        ref_geom->face_seg_per_rad[face] = preals[0];
-      }
-    }
-  }
+  RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
 
 #else
   printf("nothing for %s, No EGADS linked for %s\n", __func__, filename);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
 #endif
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
+  remove(filename); /* ignore failure */
+  REIS(EGADS_SUCCESS, EG_saveModel((ego)(ref_geom->solid), filename),
+       "EG save");
+#else
+  printf("nothing for %s, No EGADS(full) linked for %s\n", __func__, filename);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+#endif
+
+  return REF_SUCCESS;
+}
+
+REF_BOOL ref_egads_allows_construction(void) {
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
+  return REF_TRUE;
+#else
+  return REF_FALSE;
+#endif
+}
+
+REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
+#if defined(HAVE_EGADS)
+  ego body;
+  RAS(ref_egads_allows_construction(), "construction not allowed");
+  body = NULL;
+  if (0 == strcmp("cylinder", solid)) {
+    int stype = CYLINDER;
+    double data[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
+    REIS(EGADS_SUCCESS,
+         EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
+         "make solid body");
+  }
+  if (0 == strcmp("steinmetz", solid)) {
+    int stype = CYLINDER;
+    ego cyl1, cyl2;
+    {
+      double data[7] = {-1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
+      REIS(EGADS_SUCCESS,
+           EG_makeSolidBody((ego)(ref_geom->context), stype, data, &cyl1),
+           "make solid body");
+    }
+    {
+      double data[7] = {0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 1.0};
+      REIS(EGADS_SUCCESS,
+           EG_makeSolidBody((ego)(ref_geom->context), stype, data, &cyl2),
+           "make solid body");
+    }
+    {
+      ego stein, geom, *bodies;
+      int oclass, nego, nbody, *senses;
+      REIS(EGADS_SUCCESS,
+           EG_generalBoolean(cyl1, cyl2, INTERSECTION, 0.0, &stein),
+           "make solid body");
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(stein, &geom, &oclass, &nego, NULL, &nbody, &bodies,
+                          &senses),
+           "EG topo bodies");
+      REIS(1, nbody, "expected 1 body");
+      body = bodies[0];
+    }
+  }
+  RNB(body, "unknown solid", { printf(">%s<\n", solid); });
+  ref_geom->solid = (void *)body;
+  ref_geom->manifold = REF_TRUE;
+
+  RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
+
+#else
+  printf("nothing for %s, No EGADS linked for %s\n", __func__, solid);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+#endif
   return REF_SUCCESS;
 }
 

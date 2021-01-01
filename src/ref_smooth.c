@@ -284,10 +284,16 @@ static REF_STATUS ref_smooth_tri_quality(REF_GRID ref_grid, REF_INT node,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_DBL uvnew[2];
+  REF_DBL min_uv_area;
   uvnew[0] = uv[0] + step * dq_duv[0];
   uvnew[1] = uv[1] + step * dq_duv[1];
 
   RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uvnew), "set uv");
+  RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "set uv");
+  if (min_uv_area < ref_node_min_uv_area(ref_node)) {
+    *qnew = -3.0;
+    return REF_SUCCESS;
+  }
   RSS(ref_geom_constrain(ref_grid, node), "constrain");
   RSS(ref_node_tri_quality(ref_node, nodes, qnew), "qual");
 
@@ -405,6 +411,13 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
       RSS(ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, dq_duv, step2,
                                  &q2),
           "set uv for q2");
+    }
+    if (q1 > q2) { /* could not improve */
+      RSS(ref_smooth_tri_quality(ref_grid, node, id, nodes, uv, dq_duv, step1,
+                                 &q1),
+          "set uv for q1");
+      RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, uv), "uv");
+      break; /* give up */
     }
     RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, uv), "uv");
 

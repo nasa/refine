@@ -372,12 +372,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("--surrogate %s import\n", argv[pos + 1]);
     RSS(ref_facelift_surrogate(ref_grid, argv[pos + 1]), "attach");
     ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
-  if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
-  RSS(ref_geom_constrain_all(ref_grid), "constrain");
-  ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
-  if (ref_mpi_once(ref_mpi)) printf("verify constrained param\n");
-  RSS(ref_geom_verify_param(ref_grid), "constrained params");
-  ref_mpi_stopwatch_stop(ref_mpi, "verify param");
+    if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
+    RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
+    if (ref_mpi_once(ref_mpi)) printf("verify constrained param\n");
+    RSS(ref_geom_verify_param(ref_grid), "constrained params");
+    ref_mpi_stopwatch_stop(ref_mpi, "verify param");
   }
 
   RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
@@ -771,6 +771,30 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "untangle");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
+  }
+
+  RXS(ref_args_find(argc, argv, "--surrogate", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    REF_FACELIFT ref_facelift;
+    REF_GRID surrogate;
+    REF_DBL gap;
+    if (ref_mpi_once(ref_mpi)) {
+      printf("--surrogate %s requested\n", argv[pos + 1]);
+    }
+    REIS(REF_MIGRATE_SINGLE, ref_grid_partitioner(ref_grid),
+         "parallel implemtnation is ixncomplete");
+    RSS(ref_geom_max_gap(ref_grid, &gap), "geom gap");
+    if (ref_mpi_once(ref_mpi)) printf("original gap %e\n", gap);
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_grid_deep_copy(&surrogate, ref_grid), "free grid");
+      RSS(ref_geom_enrich3(surrogate), "enrich3");
+      RSS(ref_facelift_create(&ref_facelift, surrogate, REF_TRUE), "create");
+      ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
+      RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    }
+    RSS(ref_geom_max_gap(ref_grid, &gap), "geom gap");
+    if (ref_mpi_once(ref_mpi)) printf("surrogate gap %e\n", gap);
   }
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {

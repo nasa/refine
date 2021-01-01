@@ -853,7 +853,6 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
                                         ref_geom_id(ref_geom, edge_geom),
                                         faceid, sense, t, edgeuv),
               "facelift eval wrapper");
-          return REF_SUCCESS;
         } else {
           RSS(ref_egads_edge_face_uv(ref_geom, ref_geom_id(ref_geom, edge_geom),
                                      faceid, sense, t, edgeuv),
@@ -1599,6 +1598,65 @@ REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node, REF_DBL *dot_prod) {
           MIN(*dot_prod, area_sign0 * area_sign1 * ref_math_dot(n0, n1));
     }
   }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_max_gap(REF_GRID ref_grid, REF_DBL *max_gap) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT geom;
+  REF_INT node;
+  REF_DBL xyz[3];
+  REF_DBL dist, max, global_max;
+
+  *max_gap = 0.0;
+
+  if (!ref_geom_model_loaded(ref_geom)) return REF_SUCCESS;
+
+  max = 0.0;
+  each_ref_geom_node(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+    max = MAX(max, dist);
+  }
+  RSS(ref_mpi_max(ref_mpi, &max, &global_max, REF_DBL_TYPE), "mpi max node");
+  max = global_max;
+  *max_gap = MAX(*max_gap, max);
+
+  max = 0.0;
+  each_ref_geom_edge(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+    max = MAX(max, dist);
+  }
+  RSS(ref_mpi_max(ref_mpi, &max, &global_max, REF_DBL_TYPE), "mpi max edge");
+  max = global_max;
+  *max_gap = MAX(*max_gap, max);
+
+  max = 0.0;
+  each_ref_geom_face(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+    max = MAX(max, dist);
+  }
+  RSS(ref_mpi_max(ref_mpi, &max, &global_max, REF_DBL_TYPE), "mpi max face");
+  max = global_max;
+  *max_gap = MAX(*max_gap, max);
+  RSS(ref_mpi_bcast(ref_mpi, max_gap, 1, REF_DBL_TYPE), "mpi bcast gap");
 
   return REF_SUCCESS;
 }
@@ -3297,6 +3355,8 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell;
 
+  RSS(ref_node_synchronize_globals(ref_node), "sync glob");
+
   RSS(ref_geom_constrain_all(ref_grid), "constrain");
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "edge");
@@ -3309,13 +3369,15 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
       edge_node[edge] = node;
       RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
                                     ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
-          "new node");
+          "new reals");
       RSS(ref_geom_add_constrain_midnode(
               ref_grid, ref_edge_e2n(ref_edge, 0, edge),
               ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
-          "new node");
+          "new geom");
     }
   }
+
+  RSS(ref_node_shift_new_globals(ref_node), "shift glob");
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(ref_grid), cell, nodes) {
     nodes[ref_cell_id_index(ref_grid_ed2(ref_grid))] =
@@ -3337,6 +3399,7 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
     RSS(ref_cell_add(ref_grid_tr2(ref_grid), nodes, &new_cell), "add");
   }
 
+  ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
 
   each_ref_cell_valid_cell(ref_grid_edg(ref_grid), cell) {
@@ -3376,7 +3439,7 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
       RSS(ref_geom_add_constrain_midnode(
               ref_grid, ref_edge_e2n(ref_edge, 0, edge),
               ref_edge_e2n(ref_edge, 1, edge), t, node),
-          "new node");
+          "new geom");
       t = 2.0 / 3.0;
       RSS(ref_node_next_global(ref_node, &global), "next global");
       RSS(ref_node_add(ref_node, global, &node), "add node");
@@ -3387,7 +3450,7 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
       RSS(ref_geom_add_constrain_midnode(
               ref_grid, ref_edge_e2n(ref_edge, 0, edge),
               ref_edge_e2n(ref_edge, 1, edge), t, node),
-          "new node");
+          "new geom");
     }
   }
 
@@ -3414,7 +3477,6 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
         "new node");
     RSS(ref_geom_add_constrain_inside_midnode(ref_grid, nodes, node),
         "new node");
-    RSS(ref_geom_constrain(ref_grid, node), "geom constraint");
     nodes[9] = node;
 
     nodes[ref_cell_id_index(ref_grid_tr3(ref_grid))] =
@@ -3448,6 +3510,7 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
     RSS(ref_cell_add(ref_grid_tr3(ref_grid), nodes, &new_cell), "add");
   }
 
+  ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
 
   each_ref_cell_valid_cell(ref_grid_edg(ref_grid), cell) {

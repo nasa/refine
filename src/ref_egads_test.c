@@ -74,6 +74,55 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (ref_egads_allows_construction()) { /* single cylinder */
+    REF_GEOM ref_geom;
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "cylinder"), "create cylinder");
+    RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
+  if (ref_egads_allows_construction()) { /* single cylinder tess */
+    REF_GRID ref_grid;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "cylinder"),
+        "create cylinder");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  if (ref_egads_allows_construction()) { /* single cylinder enrich2 */
+    REF_GRID ref_grid;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "cylinder"),
+        "create cylinder");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_geom_enrich2(ref_grid), "enrich2");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  if (ref_egads_allows_construction()) { /* single cylinder enrich3 */
+    REF_GRID ref_grid;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "cylinder"),
+        "create cylinder");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_geom_enrich3(ref_grid), "enrich3");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  if (ref_egads_allows_construction()) { /* steinmetz */
+    REF_GRID ref_grid;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "steinmetz"),
+        "create cylinder");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_geom_verify_param(ref_grid), "egads params");
+    /* RSS(ref_geom_tec(ref_grid, "steinmetz.tec"),"geom"); */
+    /* RSS(ref_export_by_extension(ref_grid, "steinmetz.meshb"), "meshb"); */
+    /* RSS(ref_egads_save(ref_grid_geom(ref_grid), "steinmetz.egads"), "egd");*/
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

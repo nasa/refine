@@ -37,6 +37,10 @@ REF_STATUS ref_egads_open(REF_GEOM ref_geom);
 REF_STATUS ref_egads_close(REF_GEOM ref_geom);
 REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level);
 REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename);
+REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename);
+
+REF_BOOL ref_egads_allows_construction(void);
+REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid);
 
 REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
                           REF_DBL *global_params);
