@@ -1669,3 +1669,78 @@ REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
   }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_migrate_replicate_ghost(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GLOB global;
+  REF_INT local;
+  REF_INT group, ncell, cell, new_cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL ref_cell;
+  REF_GLOB *c2n;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
+
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+
+  if (!ref_mpi_once(ref_mpi)) {
+    for (global = 0; global < ref_node_n_global(ref_node); global++) {
+      RSS(ref_node_add(ref_node, global, &local), "new_node");
+      ref_node_part(ref_node, local) = 0;
+    }
+  }
+
+  RSS(ref_node_ghost_real(ref_node), "ghost real");
+  RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "ghost geom");
+
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    if (ref_mpi_once(ref_mpi)) {
+      ncell = ref_cell_n(ref_cell);
+      RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
+      ref_malloc(c2n, ref_cell_size_per(ref_cell) * ncell, REF_GLOB);
+      ncell = 0;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell);
+             cell_node++) {
+          c2n[cell_node + ref_cell_size_per(ref_cell) * ncell] =
+              ref_node_global(ref_node, nodes[cell_node]);
+        }
+        if (ref_cell_last_node_is_an_id(ref_cell)) {
+          c2n[ref_cell_id_index(ref_cell) +
+              ref_cell_size_per(ref_cell) * ncell] =
+              (REF_GLOB)nodes[ref_cell_id_index(ref_cell)];
+        }
+        ncell++;
+      }
+      REIS(ncell, ref_cell_n(ref_cell), "ncell miscount");
+      RSS(ref_mpi_bcast(ref_mpi, c2n, ncell * ref_cell_size_per(ref_cell),
+                        REF_GLOB_TYPE),
+          "bcast");
+      ref_free(c2n);
+    } else {
+      RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
+      ref_malloc(c2n, ref_cell_size_per(ref_cell) * ncell, REF_GLOB);
+      RSS(ref_mpi_bcast(ref_mpi, c2n, ncell * ref_cell_size_per(ref_cell),
+                        REF_GLOB_TYPE),
+          "bcast");
+      for (cell = 0; cell < ncell; cell++) {
+        for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell);
+             cell_node++) {
+          RSS(ref_node_local(
+                  ref_node, c2n[cell_node + cell * ref_cell_size_per(ref_cell)],
+                  &(nodes[cell_node])),
+              "g2l");
+        }
+        if (ref_cell_last_node_is_an_id(ref_cell)) {
+          nodes[ref_cell_id_index(ref_cell)] =
+              (REF_INT)c2n[ref_cell_id_index(ref_cell) +
+                           ref_cell_size_per(ref_cell) * cell];
+        }
+        RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add cell");
+      }
+      ref_free(c2n);
+    }
+  }
+
+  return REF_SUCCESS;
+}
