@@ -7,12 +7,12 @@ sync surf/tri/face zone titles
 
 facelift direct surrogate boundary representation tolerance
   + enrich at linear parameters, positions via evaluation
+  parallel replicate surrogate instead of all import
   streamline bootstrap, adapt, and loop options
   parallel bootstrap friendly enrich
-  parallel replicate surrogate instead of all import
-  smooth enrich surface (conform curvature metric?)
   plot displacement between surrogate and EGADS
   plot interpolated boundary representation tolerance independently
+  smooth enrich surface (conform curvature metric?)
   + share via meshb
   + higher order surface
   jump
