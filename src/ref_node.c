@@ -332,6 +332,7 @@ REF_STATUS ref_node_add(REF_NODE ref_node, REF_GLOB global, REF_INT *node) {
 
   status = ref_node_local(ref_node, global, node);
   if (REF_SUCCESS == status) return REF_SUCCESS;
+  RXS(status, REF_NOT_FOUND, "ref_node_local unexpected status");
 
   RSS(ref_node_add_core(ref_node, global, node), "core");
 
