@@ -779,6 +779,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_FACELIFT ref_facelift;
     REF_GRID surrogate;
     REF_DBL gap;
+    REF_GLOB nnode = 0;
     if (ref_mpi_once(ref_mpi)) {
       printf("--surrogate %s requested\n", argv[pos + 1]);
     }
@@ -789,12 +790,29 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_grid_deep_copy(&surrogate, ref_grid), "free grid");
       RSS(ref_geom_enrich3(surrogate), "enrich3");
+      nnode = ref_node_n_global(ref_grid_node(surrogate));
+      RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
+      RSS(ref_migrate_replicate_ghost(surrogate), "replicant");
       RSS(ref_facelift_create(&ref_facelift, surrogate, REF_TRUE), "create");
       ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
-      RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    } else {
+      RSS(ref_grid_create(&surrogate, ref_mpi), "create grid");
+      RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
+      RSS(ref_node_initialize_n_global(ref_grid_node(surrogate), nnode),
+          "init nnodesg");
+      RSS(ref_migrate_replicate_ghost(ref_grid), "replicant");
+      RSS(ref_facelift_create(&ref_facelift, surrogate, REF_TRUE), "create");
+      ref_geom_facelift(ref_grid_geom(ref_grid)) = ref_facelift;
     }
+    ref_mpi_stopwatch_stop(ref_mpi, "enrich attach surrogate");
+    RSS(ref_geom_constrain_all(ref_grid), "constrain");
     RSS(ref_geom_max_gap(ref_grid, &gap), "geom gap");
     if (ref_mpi_once(ref_mpi)) printf("surrogate gap %e\n", gap);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("gather %s\n", argv[pos + 1]);
+    }
+    RSS(ref_gather_by_extension(ref_grid, argv[pos + 1]), "gather surrogate");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather surrogate");
   }
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
