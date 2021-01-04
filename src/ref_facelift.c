@@ -739,6 +739,7 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
                                              REF_DBL *uv) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL edgexyz[3], facexyz[3], dist;
+  REF_DBL len, tol;
   RAS(0 == sense, "implement sense != 0 for uv jumps");
 
   RSS(ref_facelift_eval_at(ref_facelift, REF_GEOM_EDGE, edgeid, &t, edgexyz,
@@ -750,7 +751,10 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
   dist =
       sqrt(pow(facexyz[0] - edgexyz[0], 2) + pow(facexyz[1] - edgexyz[1], 2) +
            pow(facexyz[2] - edgexyz[2], 2));
-  if (dist > 1.0e-10) {
+  tol = 1.0e-12; /* increase tol if not O(1) */
+  len = sqrt(ref_math_dot(edgexyz, edgexyz));
+  if (len > 1.0) tol = tol * len;
+  if (dist > tol) {
     REF_INT edg_cell, tri_cell;
     REF_DBL edg_bary[3], tri_bary[3];
     REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -764,8 +768,11 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
         "enclose");
     RUS(REF_EMPTY, tri_cell, "no enclosing found");
 
-    printf("edge %d t %f dist %e\n", edgeid, t, dist);
+    printf("edge %d t %f dist %e tol %e len %e\n", edgeid, t, dist, tol, len);
     printf("face %d uv %f %f\n", faceid, uv[0], uv[1]);
+    printf("edge xyz %e %e %e\n", edgexyz[0], edgexyz[1], edgexyz[2]);
+    printf("face xyz %e %e %e\n", facexyz[0], facexyz[1], facexyz[2]);
+
     printf("edg bary %f %f %f\n", edg_bary[0], edg_bary[1], edg_bary[2]);
     printf("tri bary %f %f %f\n", tri_bary[0], tri_bary[1], tri_bary[2]);
 
