@@ -824,7 +824,7 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
     printf("uv2 %f %f\n", ref_geom_param(ref_geom, 0, geom),
            ref_geom_param(ref_geom, 1, geom));
 
-    THROW("not 1e-14 watertight");
+    THROW("not watertight within tol");
   }
   return REF_SUCCESS;
 }
