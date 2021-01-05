@@ -873,6 +873,30 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
     linear_nodes[3] =
         tri_nodes[ref_cell_id_index(ref_facelift_tri(ref_facelift))];
 
+    { /* use the opposite node free uv for degen */
+      REF_INT geom;
+      RSS(ref_geom_find(ref_geom, edg_nodes[0], REF_GEOM_FACE, faceid, &geom),
+          "geom");
+      if (0 < ref_geom_degen(ref_geom, geom)) {
+        clipv[0] = 0.0;
+        clipv[1] = 1.0;
+      }
+      if (0 > ref_geom_degen(ref_geom, geom)) {
+        clipu[0] = 0.0;
+        clipu[1] = 1.0;
+      }
+      RSS(ref_geom_find(ref_geom, edg_nodes[1], REF_GEOM_FACE, faceid, &geom),
+          "geom");
+      if (0 < ref_geom_degen(ref_geom, geom)) {
+        clipv[0] = 1.0;
+        clipv[1] = 0.0;
+      }
+      if (0 > ref_geom_degen(ref_geom, geom)) {
+        clipu[0] = 1.0;
+        clipu[1] = 0.0;
+      }
+    }
+
     uv[0] = 0.0;
     uv[1] = 0.0;
     for (cell_node = 0; cell_node < 2; cell_node++) {
