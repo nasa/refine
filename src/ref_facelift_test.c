@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
     REF_DBL gap;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
     RSS(ref_egads_construct(ref_grid_geom(ref_grid), "steinmetz"),
-        "create cylinder");
+        "create geom");
     RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
     RSS(ref_geom_constrain_all(ref_grid), "constrain");
     RSS(ref_grid_deep_copy(&surrogate, ref_grid), "free grid");
@@ -239,7 +239,7 @@ int main(int argc, char *argv[]) {
     REF_DBL gap;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
     RSS(ref_egads_construct(ref_grid_geom(ref_grid), "steinmetz"),
-        "create cylinder");
+        "create geom");
     RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
     RSS(ref_geom_constrain_all(ref_grid), "constrain");
     RSS(ref_grid_deep_copy(&surrogate, ref_grid), "free grid");
@@ -260,7 +260,7 @@ int main(int argc, char *argv[]) {
     REF_DBL gap;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
     RSS(ref_egads_construct(ref_grid_geom(ref_grid), "steinmetz"),
-        "create cylinder");
+        "create geom");
     RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
     RSS(ref_geom_constrain_all(ref_grid), "constrain");
     RSS(ref_grid_deep_copy(&surrogate, ref_grid), "free grid");
