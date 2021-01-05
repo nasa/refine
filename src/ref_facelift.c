@@ -773,8 +773,9 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
   dist =
       sqrt(pow(facexyz[0] - edgexyz[0], 2) + pow(facexyz[1] - edgexyz[1], 2) +
            pow(facexyz[2] - edgexyz[2], 2));
-  tol = 1.0e-12; /* increase tol if not O(1) */
-  len = sqrt(ref_math_dot(edgexyz, edgexyz));
+  tol = 1.0e-10; /* increase tol if not O(1) */
+  len = sqrt(ref_math_dot(edgexyz, edgexyz) + uv[0] * uv[0] + uv[1] * uv[1] +
+             t * t);
   if (len > 1.0) tol = tol * len;
   if (dist > tol) {
     REF_INT edg_cell, tri_cell;
