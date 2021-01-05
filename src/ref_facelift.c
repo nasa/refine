@@ -190,12 +190,14 @@ REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
   REF_DBL params[2];
   REF_DBL bary[3];
   REF_INT cell;
-  REF_DBL xyz[3];
+  REF_DBL xyz[3], faceuv[2];
+  REF_INT linear_nodes[REF_CELL_MAX_SIZE_PER], tuv_sense;
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
 
   if (NULL == ref_facelift) return REF_SUCCESS;
   if (!ref_facelift_direct(ref_facelift)) return REF_SUCCESS;
 
-  printf(" tattle on node = %d %f %f %f\n", node,
+  printf(" facelift tattle on node = %d at %f %f %f\n", node,
          ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
          ref_node_xyz(ref_node, 2, node));
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
@@ -218,8 +220,28 @@ REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
             "eval");
         RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
             "enclose");
-        printf("tri id %d xyz %f %f %f bary %f %f %f\n", id, xyz[0], xyz[1],
-               xyz[2], bary[0], bary[1], bary[2]);
+        printf("tri id %d xyz %f %f %f uv %f %f\n", id, xyz[0], xyz[1], xyz[2],
+               params[0], params[1]);
+        RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), cell, tri_nodes),
+            "edg tri nodes");
+        linear_nodes[0] = tri_nodes[0];
+        linear_nodes[1] = tri_nodes[1];
+        linear_nodes[2] = tri_nodes[2];
+        linear_nodes[3] =
+            tri_nodes[ref_cell_id_index(ref_facelift_tri(ref_facelift))];
+        RSS(ref_geom_cell_tuv(ref_geom, linear_nodes[0], linear_nodes,
+                              REF_GEOM_FACE, faceuv, &tuv_sense),
+            "face uv");
+        printf("bary[0] %f uv %f %f\n", bary[0], faceuv[0], faceuv[1]);
+        RSS(ref_geom_cell_tuv(ref_geom, linear_nodes[1], linear_nodes,
+                              REF_GEOM_FACE, faceuv, &tuv_sense),
+            "face uv");
+        printf("bary[1] %f uv %f %f\n", bary[1], faceuv[0], faceuv[1]);
+        RSS(ref_geom_cell_tuv(ref_geom, linear_nodes[2], linear_nodes,
+                              REF_GEOM_FACE, faceuv, &tuv_sense),
+            "face uv");
+        printf("bary[2] %f uv %f %f\n", bary[2], faceuv[0], faceuv[1]);
+
         break;
     }
   }
@@ -739,6 +761,7 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
                                              REF_DBL *uv) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL edgexyz[3], facexyz[3], dist;
+  REF_DBL len, tol;
   RAS(0 == sense, "implement sense != 0 for uv jumps");
 
   RSS(ref_facelift_eval_at(ref_facelift, REF_GEOM_EDGE, edgeid, &t, edgexyz,
@@ -750,7 +773,11 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
   dist =
       sqrt(pow(facexyz[0] - edgexyz[0], 2) + pow(facexyz[1] - edgexyz[1], 2) +
            pow(facexyz[2] - edgexyz[2], 2));
-  if (dist > 1.0e-10) {
+  tol = 1.0e-10; /* increase tol if not O(1) */
+  len = sqrt(ref_math_dot(edgexyz, edgexyz) + uv[0] * uv[0] + uv[1] * uv[1] +
+             t * t);
+  if (len > 1.0) tol = tol * len;
+  if (dist > tol) {
     REF_INT edg_cell, tri_cell;
     REF_DBL edg_bary[3], tri_bary[3];
     REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -764,8 +791,11 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
         "enclose");
     RUS(REF_EMPTY, tri_cell, "no enclosing found");
 
-    printf("edge %d t %f dist %e\n", edgeid, t, dist);
+    printf("edge %d t %f dist %e tol %e len %e\n", edgeid, t, dist, tol, len);
     printf("face %d uv %f %f\n", faceid, uv[0], uv[1]);
+    printf("edge xyz %e %e %e\n", edgexyz[0], edgexyz[1], edgexyz[2]);
+    printf("face xyz %e %e %e\n", facexyz[0], facexyz[1], facexyz[2]);
+
     printf("edg bary %f %f %f\n", edg_bary[0], edg_bary[1], edg_bary[2]);
     printf("tri bary %f %f %f\n", tri_bary[0], tri_bary[1], tri_bary[2]);
 
@@ -795,7 +825,7 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
     printf("uv2 %f %f\n", ref_geom_param(ref_geom, 0, geom),
            ref_geom_param(ref_geom, 1, geom));
 
-    THROW("not 1e-14 watertight");
+    THROW("not watertight within tol");
   }
   return REF_SUCCESS;
 }
@@ -804,9 +834,10 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
                                      REF_INT faceid, REF_INT sense, REF_DBL t,
                                      REF_DBL *uv) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
-  REF_CELL ref_cell = ref_facelift_edg(ref_facelift);
-  REF_INT i, cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL bary[3], clip[3], faceuv[2];
+  REF_INT i, cell_node, cell, edg_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, cells[2], edg_tri, tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT linear_nodes[REF_CELL_MAX_SIZE_PER], tuv_sense;
+  REF_DBL bary[3], clipu[3], clipv[3], faceuv[2];
   RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t, uv),
       "edge uv");
 
@@ -816,16 +847,65 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
                                bary),
         "enclose");
     RUS(REF_EMPTY, cell, "no enclosing found");
-    RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    for (i = 0; i < 2; i++) {
-      uv[i] = 0.0;
-      for (cell_node = 0; cell_node < 2; cell_node++) {
-        RSS(ref_geom_tuv(ref_geom, nodes[cell_node], REF_GEOM_FACE, faceid,
-                         faceuv),
-            "face uv");
-        uv[i] += clip[cell_node] * faceuv[i];
+    RSS(ref_node_clip_bary2(bary, clipu), "clip edge bary");
+    RSS(ref_node_clip_bary2(bary, clipv), "clip edge bary");
+    RSS(ref_cell_nodes(ref_facelift_edg(ref_facelift), cell, edg_nodes),
+        "edg nodes");
+    RSS(ref_cell_list_with2(ref_facelift_tri(ref_facelift), edg_nodes[0],
+                            edg_nodes[1], 2, &ncell, cells),
+        "more then two tris for edg");
+    RAS(ncell > 0, "no tri found for edg");
+    edg_tri = REF_EMPTY;
+    for (i = 0; i < ncell; i++) {
+      RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), cells[i], tri_nodes),
+          "tri nodes");
+      if (faceid ==
+          tri_nodes[ref_cell_id_index(ref_facelift_tri(ref_facelift))]) {
+        REIS(REF_EMPTY, edg_tri, "two tri found with id and sense=0");
+        edg_tri = cells[i];
       }
+    }
+    RUS(REF_EMPTY, edg_tri, "edg tri not found with id");
+    RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), edg_tri, tri_nodes),
+        "edg tri nodes");
+    linear_nodes[0] = tri_nodes[0];
+    linear_nodes[1] = tri_nodes[1];
+    linear_nodes[2] = tri_nodes[2];
+    linear_nodes[3] =
+        tri_nodes[ref_cell_id_index(ref_facelift_tri(ref_facelift))];
+
+    { /* use the opposite node free uv for degen */
+      REF_INT geom;
+      RSS(ref_geom_find(ref_geom, edg_nodes[0], REF_GEOM_FACE, faceid, &geom),
+          "geom");
+      if (0 < ref_geom_degen(ref_geom, geom)) {
+        clipv[0] = 0.0;
+        clipv[1] = 1.0;
+      }
+      if (0 > ref_geom_degen(ref_geom, geom)) {
+        clipu[0] = 0.0;
+        clipu[1] = 1.0;
+      }
+      RSS(ref_geom_find(ref_geom, edg_nodes[1], REF_GEOM_FACE, faceid, &geom),
+          "geom");
+      if (0 < ref_geom_degen(ref_geom, geom)) {
+        clipv[0] = 1.0;
+        clipv[1] = 0.0;
+      }
+      if (0 > ref_geom_degen(ref_geom, geom)) {
+        clipu[0] = 1.0;
+        clipu[1] = 0.0;
+      }
+    }
+
+    uv[0] = 0.0;
+    uv[1] = 0.0;
+    for (cell_node = 0; cell_node < 2; cell_node++) {
+      RSS(ref_geom_cell_tuv(ref_geom, edg_nodes[cell_node], linear_nodes,
+                            REF_GEOM_FACE, faceuv, &tuv_sense),
+          "face uv");
+      uv[0] += clipu[cell_node] * faceuv[0];
+      uv[1] += clipv[cell_node] * faceuv[1];
     }
 
     RSS(ref_facelift_edge_face_watertight(ref_facelift, edgeid, faceid, sense,

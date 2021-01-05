@@ -784,7 +784,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf("--surrogate %s requested\n", argv[pos + 1]);
     }
     REIS(REF_MIGRATE_SINGLE, ref_grid_partitioner(ref_grid),
-         "parallel implemtnation is ixncomplete");
+         "parallel implementation is incomplete");
     RSS(ref_geom_max_gap(ref_grid, &gap), "geom gap");
     if (ref_mpi_once(ref_mpi)) printf("original gap %e\n", gap);
     if (ref_mpi_once(ref_mpi)) {
@@ -808,7 +808,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       printf("gather %s\n", argv[pos + 1]);
     }
-    RSS(ref_gather_by_extension(ref_grid, argv[pos + 1]), "gather surrogate");
+    RSS(ref_gather_by_extension(surrogate, argv[pos + 1]), "gather surrogate");
     ref_mpi_stopwatch_stop(ref_mpi, "gather surrogate");
   }
 

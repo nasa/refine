@@ -324,6 +324,13 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
          EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
          "make solid body");
   }
+  if (0 == strcmp("sphere", solid)) {
+    int stype = SPHERE;
+    double data[4] = {0.0, 0.0, 0.0, 1.0};
+    REIS(EGADS_SUCCESS,
+         EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
+         "make solid body");
+  }
   if (0 == strcmp("steinmetz", solid)) {
     int stype = CYLINDER;
     ego cyl1, cyl2;

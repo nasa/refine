@@ -3238,12 +3238,40 @@ REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
   REF_DBL uv0[2], uv1[2], uv2[2];
   REF_INT sens;
   REF_DBL total;
+  REF_INT geom0, geom1, geom2;
   RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_FACE, uv0, &sens),
       "uv0");
   RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_FACE, uv1, &sens),
       "uv1");
   RSS(ref_geom_cell_tuv(ref_geom, nodes[2], nodes, REF_GEOM_FACE, uv2, &sens),
       "uv2");
+
+  RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, nodes[3], &geom0), "g0");
+  if (0 != ref_geom_degen(ref_geom, geom0)) {
+    if (0 < ref_geom_degen(ref_geom, geom0)) {
+      uv0[1] = uv[1];
+    } else {
+      uv0[0] = uv[0];
+    }
+  }
+
+  RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_FACE, nodes[3], &geom1), "g1");
+  if (0 != ref_geom_degen(ref_geom, geom1)) {
+    if (0 < ref_geom_degen(ref_geom, geom1)) {
+      uv1[1] = uv[1];
+    } else {
+      uv1[0] = uv[0];
+    }
+  }
+
+  RSS(ref_geom_find(ref_geom, nodes[2], REF_GEOM_FACE, nodes[3], &geom2), "g2");
+  if (0 != ref_geom_degen(ref_geom, geom2)) {
+    if (0 < ref_geom_degen(ref_geom, geom2)) {
+      uv2[1] = uv[1];
+    } else {
+      uv2[0] = uv[0];
+    }
+  }
 
   bary[0] = -uv1[0] * uv[1] + uv2[0] * uv[1] + uv[0] * uv1[1] -
             uv2[0] * uv1[1] - uv[0] * uv2[1] + uv1[0] * uv2[1];
