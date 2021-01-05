@@ -197,7 +197,7 @@ REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
   if (NULL == ref_facelift) return REF_SUCCESS;
   if (!ref_facelift_direct(ref_facelift)) return REF_SUCCESS;
 
-  printf(" tattle on node = %d %f %f %f\n", node,
+  printf(" facelift tattle on node = %d at %f %f %f\n", node,
          ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
          ref_node_xyz(ref_node, 2, node));
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
@@ -220,8 +220,8 @@ REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
             "eval");
         RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
             "enclose");
-        printf("tri id %d xyz %f %f %f bary %f %f %f\n", id, xyz[0], xyz[1],
-               xyz[2], bary[0], bary[1], bary[2]);
+        printf("tri id %d xyz %f %f %f uv %f %f\n", id, xyz[0], xyz[1], xyz[2],
+               params[0], params[1]);
         RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), cell, tri_nodes),
             "edg tri nodes");
         linear_nodes[0] = tri_nodes[0];
