@@ -836,7 +836,7 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
   REF_INT i, cell_node, cell, edg_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ncell, cells[2], edg_tri, tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT linear_nodes[REF_CELL_MAX_SIZE_PER], tuv_sense;
-  REF_DBL bary[3], clip[3], faceuv[2];
+  REF_DBL bary[3], clipu[3], clipv[3], faceuv[2];
   RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t, uv),
       "edge uv");
 
@@ -846,7 +846,8 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
                                bary),
         "enclose");
     RUS(REF_EMPTY, cell, "no enclosing found");
-    RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
+    RSS(ref_node_clip_bary2(bary, clipu), "clip edge bary");
+    RSS(ref_node_clip_bary2(bary, clipv), "clip edge bary");
     RSS(ref_cell_nodes(ref_facelift_edg(ref_facelift), cell, edg_nodes),
         "edg nodes");
     RSS(ref_cell_list_with2(ref_facelift_tri(ref_facelift), edg_nodes[0],
@@ -871,14 +872,15 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
     linear_nodes[2] = tri_nodes[2];
     linear_nodes[3] =
         tri_nodes[ref_cell_id_index(ref_facelift_tri(ref_facelift))];
-    for (i = 0; i < 2; i++) {
-      uv[i] = 0.0;
-      for (cell_node = 0; cell_node < 2; cell_node++) {
-        RSS(ref_geom_cell_tuv(ref_geom, edg_nodes[cell_node], linear_nodes,
-                              REF_GEOM_FACE, faceuv, &tuv_sense),
-            "face uv");
-        uv[i] += clip[cell_node] * faceuv[i];
-      }
+
+    uv[0] = 0.0;
+    uv[1] = 0.0;
+    for (cell_node = 0; cell_node < 2; cell_node++) {
+      RSS(ref_geom_cell_tuv(ref_geom, edg_nodes[cell_node], linear_nodes,
+                            REF_GEOM_FACE, faceuv, &tuv_sense),
+          "face uv");
+      uv[0] += clipu[cell_node] * faceuv[0];
+      uv[1] += clipv[cell_node] * faceuv[1];
     }
 
     RSS(ref_facelift_edge_face_watertight(ref_facelift, edgeid, faceid, sense,
