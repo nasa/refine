@@ -834,6 +834,8 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
                                      REF_DBL *uv) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_INT i, cell_node, cell, edg_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, cells[2], edg_tri, tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT linear_nodes[REF_CELL_MAX_SIZE_PER], tuv_sense;
   REF_DBL bary[3], clip[3], faceuv[2];
   RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t, uv),
       "edge uv");
@@ -846,12 +848,34 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
     RUS(REF_EMPTY, cell, "no enclosing found");
     RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
     RSS(ref_cell_nodes(ref_facelift_edg(ref_facelift), cell, edg_nodes),
-        "nodes");
+        "edg nodes");
+    RSS(ref_cell_list_with2(ref_facelift_tri(ref_facelift), edg_nodes[0],
+                            edg_nodes[1], 2, &ncell, cells),
+        "more then two tris for edg");
+    RAS(ncell > 0, "no tri found for edg");
+    edg_tri = REF_EMPTY;
+    for (i = 0; i < ncell; i++) {
+      RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), cells[i], tri_nodes),
+          "tri nodes");
+      if (faceid ==
+          tri_nodes[ref_cell_id_index(ref_facelift_tri(ref_facelift))]) {
+        REIS(REF_EMPTY, edg_tri, "two tri found with id and sense=0");
+        edg_tri = cells[i];
+      }
+    }
+    RUS(REF_EMPTY, edg_tri, "edg tri not found with id");
+    RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), edg_tri, tri_nodes),
+        "edg tri nodes");
+    linear_nodes[0] = tri_nodes[0];
+    linear_nodes[1] = tri_nodes[1];
+    linear_nodes[2] = tri_nodes[2];
+    linear_nodes[3] =
+        tri_nodes[ref_cell_id_index(ref_facelift_tri(ref_facelift))];
     for (i = 0; i < 2; i++) {
       uv[i] = 0.0;
       for (cell_node = 0; cell_node < 2; cell_node++) {
-        RSS(ref_geom_tuv(ref_geom, edg_nodes[cell_node], REF_GEOM_FACE, faceid,
-                         faceuv),
+        RSS(ref_geom_cell_tuv(ref_geom, edg_nodes[cell_node], linear_nodes,
+                              REF_GEOM_FACE, faceuv, &tuv_sense),
             "face uv");
         uv[i] += clip[cell_node] * faceuv[i];
       }
