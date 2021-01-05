@@ -190,7 +190,9 @@ REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
   REF_DBL params[2];
   REF_DBL bary[3];
   REF_INT cell;
-  REF_DBL xyz[3];
+  REF_DBL xyz[3], faceuv[2];
+  REF_INT linear_nodes[REF_CELL_MAX_SIZE_PER], tuv_sense;
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
 
   if (NULL == ref_facelift) return REF_SUCCESS;
   if (!ref_facelift_direct(ref_facelift)) return REF_SUCCESS;
@@ -220,6 +222,26 @@ REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
             "enclose");
         printf("tri id %d xyz %f %f %f bary %f %f %f\n", id, xyz[0], xyz[1],
                xyz[2], bary[0], bary[1], bary[2]);
+        RSS(ref_cell_nodes(ref_facelift_tri(ref_facelift), cell, tri_nodes),
+            "edg tri nodes");
+        linear_nodes[0] = tri_nodes[0];
+        linear_nodes[1] = tri_nodes[1];
+        linear_nodes[2] = tri_nodes[2];
+        linear_nodes[3] =
+            tri_nodes[ref_cell_id_index(ref_facelift_tri(ref_facelift))];
+        RSS(ref_geom_cell_tuv(ref_geom, linear_nodes[0], linear_nodes,
+                              REF_GEOM_FACE, faceuv, &tuv_sense),
+            "face uv");
+        printf("bary[0] %f uv %f %f\n", bary[0], faceuv[0], faceuv[1]);
+        RSS(ref_geom_cell_tuv(ref_geom, linear_nodes[1], linear_nodes,
+                              REF_GEOM_FACE, faceuv, &tuv_sense),
+            "face uv");
+        printf("bary[1] %f uv %f %f\n", bary[1], faceuv[0], faceuv[1]);
+        RSS(ref_geom_cell_tuv(ref_geom, linear_nodes[2], linear_nodes,
+                              REF_GEOM_FACE, faceuv, &tuv_sense),
+            "face uv");
+        printf("bary[2] %f uv %f %f\n", bary[2], faceuv[0], faceuv[1]);
+
         break;
     }
   }
