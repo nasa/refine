@@ -811,8 +811,7 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
                                      REF_INT faceid, REF_INT sense, REF_DBL t,
                                      REF_DBL *uv) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
-  REF_CELL ref_cell = ref_facelift_edg(ref_facelift);
-  REF_INT i, cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT i, cell_node, cell, edg_nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL bary[3], clip[3], faceuv[2];
   RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t, uv),
       "edge uv");
@@ -824,11 +823,12 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
         "enclose");
     RUS(REF_EMPTY, cell, "no enclosing found");
     RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    RSS(ref_cell_nodes(ref_facelift_edg(ref_facelift), cell, edg_nodes),
+        "nodes");
     for (i = 0; i < 2; i++) {
       uv[i] = 0.0;
       for (cell_node = 0; cell_node < 2; cell_node++) {
-        RSS(ref_geom_tuv(ref_geom, nodes[cell_node], REF_GEOM_FACE, faceid,
+        RSS(ref_geom_tuv(ref_geom, edg_nodes[cell_node], REF_GEOM_FACE, faceid,
                          faceuv),
             "face uv");
         uv[i] += clip[cell_node] * faceuv[i];
