@@ -2196,6 +2196,19 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
   object = faces[faceid - 1];
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
 
+#if !defined(HAVE_EGADS_LITE) && defined(HAVE_EGADS_EFFECTIVE)
+  if (ref_geom_effective(ref_geom)) {
+    ego underlying_object;
+    double underlying_uv[2];
+    REIS(EGADS_SUCCESS,
+         EG_effectiveMap(object, uv, &underlying_object, underlying_uv),
+         "map effective to brep");
+    object = underlying_object;
+    uv[0] = underlying_uv[0];
+    uv[1] = underlying_uv[1];
+  }
+#endif
+
   egads_status = EG_curvature(object, uv, curvature);
   /* classic marked degen where u or v collapses to a point, move tangent */
   if (0 != degen || EGADS_DEGEN == egads_status) {
