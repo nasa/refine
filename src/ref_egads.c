@@ -2092,6 +2092,18 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
 
   t = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
 
+#if !defined(HAVE_EGADS_LITE) && defined(HAVE_EGADS_EFFECTIVE)
+  if (ref_geom_effective(ref_geom)) {
+    ego underlying_object;
+    double underlying_t;
+    REIS(EGADS_SUCCESS,
+         EG_effectiveMap(object, &t, &underlying_object, &underlying_t),
+         "map effective to brep");
+    object = underlying_object;
+    t = underlying_t;
+  }
+#endif
+
   egads_status = EG_curvature(object, &t, curvature);
   if (EGADS_DEGEN == egads_status) {
     ego ref, *pchldrn;
