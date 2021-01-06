@@ -10,6 +10,7 @@ egads_effective_edgeuv.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "egads.h"
 
@@ -147,31 +148,39 @@ int main(void) {
   }
 
   {
-    int nface, nedge, nnode;
-    ego tess;
+    int nedge, nface;
+    ego *edges, *faces;
+    int i, sense;
+    ego edge, face;
+    double t, uv[2], face_eval[18], edge_eval[18], dist;
 
-    is_equal(EGADS_SUCCESS,
-             EG_getBodyTopos(bodies[0], NULL, NODE, &nnode, NULL),
-             "EG node topo");
-    is_equal(EGADS_SUCCESS,
-             EG_getBodyTopos(bodies[0], NULL, EDGE, &nedge, NULL),
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
              "EG edge topo");
-    is_equal(EGADS_SUCCESS,
-             EG_getBodyTopos(bodies[0], NULL, FACE, &nface, NULL),
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
              "EG face topo");
-    printf("nnode %d nedge %d nface %d\n", nnode, nedge, nface);
+    printf("effective nedge %d nface %d\n", nedge, nface);
 
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, NULL),
-             "EG node topo");
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, NULL),
-             "EG edge topo");
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, NULL),
-             "EG face topo");
-    printf("effective nnode %d nedge %d nface %d\n", nnode, nedge, nface);
-
-    is_equal(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
+    /* edge 16, face 7, t = [0.05 -> 0] */
+    edge=edges[16-1];
+    face=faces[7-1];
+    sense = 0;
+    for(i=0;i<11;i++){
+      t = 0.1-i*0.01;
+      is_equal(EGADS_SUCCESS, EG_getEdgeUV(face,edge,sense,t,uv),"EG edge UV");
+      is_equal(EGADS_SUCCESS, EG_evaluate(face,uv,face_eval),"EG eval face");
+      is_equal(EGADS_SUCCESS, EG_evaluate(edge,&t,edge_eval),"EG eval edge");
+      dist= sqrt(pow(face_eval[0]-edge_eval[0],2)+
+		 pow(face_eval[1]-edge_eval[1],2)+
+		 pow(face_eval[2]-edge_eval[2],2));
+      printf("t %.3f uv %.3f %.3f dist %.3e edge x=%.3f face x=%.3f\n",
+	     t,uv[0],uv[1],dist,edge_eval[0],face_eval[0]);
+    }    
+    EG_free(faces);
+    EG_free(edges);
+    
   }
 
+  
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
   return 0;
 }
