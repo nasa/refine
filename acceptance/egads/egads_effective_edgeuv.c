@@ -33,7 +33,7 @@ egads_effective_edgeuv.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
     }                                                                  \
   }
 
-int main(int argc, char *argv[]) {
+int main(void) {
   ego context;
   ego model = NULL;
   ego geom, *bodies;
@@ -43,8 +43,6 @@ int main(int argc, char *argv[]) {
   int tess_status, nvert;
   double angle;
   ego solid;
-  int neface;
-  ego *efaces;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -62,13 +60,13 @@ int main(int argc, char *argv[]) {
     {
       int stype = BOX;
       double offset = 0.01;
-      double data[] = {-0.5+offset, -0.5, -0.5, 1.0, 1.0, 0.5};
+      double data[] = {-0.5+offset, -0.5, 0.0, 1.0, 1.0, 0.5};
       is_equal(EGADS_SUCCESS,
            EG_makeSolidBody(context, stype, data, &box2),
            "make solid body");
     } 
     is_equal(EGADS_SUCCESS,
-	     EG_generalBoolean(box1, box2, UNION, 0.1, &model),
+	     EG_generalBoolean(box1, box2, FUSION, 0.1, &model),
 	     "make solid body");
   }
   is_equal(EGADS_SUCCESS,
@@ -78,6 +76,10 @@ int main(int argc, char *argv[]) {
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
   is_equal(1, nbody, "expected 1 body");
 
+  remove("egads_effective_edgeuv_orig.egads");
+  is_equal(EGADS_SUCCESS, EG_saveModel(bodies[0], "egads_effective_edgeuv_orig.egads"), "EG save eff");
+
+  
   /* copy the Body so we can use/save it later */
   is_equal(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &newBodies[0]),
            "EG copy object");
@@ -99,10 +101,6 @@ int main(int argc, char *argv[]) {
   angle = 10.0;
   is_equal(EGADS_SUCCESS, EG_initEBody(newBodies[1], angle, &newBodies[2]),
            "initEB");
-  is_equal(EGADS_SUCCESS,
-           EG_makeAttrEFaces(newBodies[2], "effective_face", &neface, &efaces),
-           "finEB");
-  EG_free(efaces);
   is_equal(EGADS_SUCCESS, EG_finishEBody(newBodies[2]), "finEB");
 
   /* make the model with the body, tessellation and effective topology body
@@ -120,12 +118,8 @@ int main(int argc, char *argv[]) {
            "EG topo bodies");
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
 
-  remove(argv[2]);
-  is_equal(EGADS_SUCCESS, EG_saveModel(newModel, argv[2]), "EG save eff");
-  EG_deleteObject(newModel);
-
-  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, argv[2], &newModel),
-           "EG load");
+  remove("egads_effective_edgeuv.egads");
+  is_equal(EGADS_SUCCESS, EG_saveModel(newModel, "egads_effective_edgeuv.egads"), "EG save eff");
 
   is_equal(EGADS_SUCCESS,
            EG_getTopology(newModel, &geom, &oclass, &mtype, NULL, &nbody,
