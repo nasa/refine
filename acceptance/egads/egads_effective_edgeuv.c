@@ -8,9 +8,9 @@ egads_effective_edgeuv.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
 
 */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "egads.h"
 
@@ -54,21 +54,18 @@ int main(void) {
     {
       int stype = BOX;
       double data[] = {-0.5, -0.5, -0.5, 1.0, 1.0, 0.5};
-      is_equal(EGADS_SUCCESS,
-           EG_makeSolidBody(context, stype, data, &box1),
-           "make solid body");
+      is_equal(EGADS_SUCCESS, EG_makeSolidBody(context, stype, data, &box1),
+               "make solid body");
     }
     {
       int stype = BOX;
       double offset = 0.01;
-      double data[] = {-0.5+offset, -0.5, 0.0, 1.0, 1.0, 0.5};
-      is_equal(EGADS_SUCCESS,
-           EG_makeSolidBody(context, stype, data, &box2),
-           "make solid body");
-    } 
-    is_equal(EGADS_SUCCESS,
-	     EG_generalBoolean(box1, box2, FUSION, 0.1, &model),
-	     "make solid body");
+      double data[] = {-0.5 + offset, -0.5, 0.0, 1.0, 1.0, 0.5};
+      is_equal(EGADS_SUCCESS, EG_makeSolidBody(context, stype, data, &box2),
+               "make solid body");
+    }
+    is_equal(EGADS_SUCCESS, EG_generalBoolean(box1, box2, FUSION, 0.1, &model),
+             "make solid body");
   }
   is_equal(EGADS_SUCCESS,
            EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
@@ -78,9 +75,10 @@ int main(void) {
   is_equal(1, nbody, "expected 1 body");
 
   remove("egads_effective_edgeuv_orig.egads");
-  is_equal(EGADS_SUCCESS, EG_saveModel(bodies[0], "egads_effective_edgeuv_orig.egads"), "EG save eff");
+  is_equal(EGADS_SUCCESS,
+           EG_saveModel(bodies[0], "egads_effective_edgeuv_orig.egads"),
+           "EG save eff");
 
-  
   /* copy the Body so we can use/save it later */
   is_equal(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &newBodies[0]),
            "EG copy object");
@@ -120,7 +118,9 @@ int main(void) {
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
 
   remove("egads_effective_edgeuv.egads");
-  is_equal(EGADS_SUCCESS, EG_saveModel(newModel, "egads_effective_edgeuv.egads"), "EG save eff");
+  is_equal(EGADS_SUCCESS,
+           EG_saveModel(newModel, "egads_effective_edgeuv.egads"),
+           "EG save eff");
 
   is_equal(EGADS_SUCCESS,
            EG_getTopology(newModel, &geom, &oclass, &mtype, NULL, &nbody,
@@ -161,26 +161,25 @@ int main(void) {
     printf("effective nedge %d nface %d\n", nedge, nface);
 
     /* edge 16, face 7, t = [0.05 -> 0] */
-    edge=edges[16-1];
-    face=faces[7-1];
+    edge = edges[16 - 1];
+    face = faces[7 - 1];
     sense = 0;
-    for(i=0;i<11;i++){
-      t = 0.1-i*0.01;
-      is_equal(EGADS_SUCCESS, EG_getEdgeUV(face,edge,sense,t,uv),"EG edge UV");
-      is_equal(EGADS_SUCCESS, EG_evaluate(face,uv,face_eval),"EG eval face");
-      is_equal(EGADS_SUCCESS, EG_evaluate(edge,&t,edge_eval),"EG eval edge");
-      dist= sqrt(pow(face_eval[0]-edge_eval[0],2)+
-		 pow(face_eval[1]-edge_eval[1],2)+
-		 pow(face_eval[2]-edge_eval[2],2));
-      printf("t %.3f uv %.3f %.3f dist %.3e edge x=%.3f face x=%.3f\n",
-	     t,uv[0],uv[1],dist,edge_eval[0],face_eval[0]);
-    }    
+    for (i = 0; i < 11; i++) {
+      t = 0.1 - i * 0.01;
+      is_equal(EGADS_SUCCESS, EG_getEdgeUV(face, edge, sense, t, uv),
+               "EG edge UV");
+      is_equal(EGADS_SUCCESS, EG_evaluate(face, uv, face_eval), "EG eval face");
+      is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval), "EG eval edge");
+      dist = sqrt(pow(face_eval[0] - edge_eval[0], 2) +
+                  pow(face_eval[1] - edge_eval[1], 2) +
+                  pow(face_eval[2] - edge_eval[2], 2));
+      printf("t %.3f uv %.3f %.3f dist %.3e edge x=%.3f face x=%.3f\n", t,
+             uv[0], uv[1], dist, edge_eval[0], face_eval[0]);
+    }
     EG_free(faces);
     EG_free(edges);
-    
   }
 
-  
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
   return 0;
 }
