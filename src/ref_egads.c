@@ -2093,7 +2093,7 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
   t = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
 
 #if !defined(HAVE_EGADS_LITE) && defined(HAVE_EGADS_EFFECTIVE)
-  if (ref_geom_effective(ref_geom)) {
+  if (ref_geom_effective(ref_geom) && !ref_geom_effective_curvature(ref_geom)) {
     ego underlying_object;
     double underlying_t;
     REIS(EGADS_SUCCESS,
@@ -2197,7 +2197,7 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
 
 #if !defined(HAVE_EGADS_LITE) && defined(HAVE_EGADS_EFFECTIVE)
-  if (ref_geom_effective(ref_geom)) {
+  if (ref_geom_effective(ref_geom) && !ref_geom_effective_curvature(ref_geom)) {
     ego underlying_object;
     double underlying_uv[2];
     REIS(EGADS_SUCCESS,
