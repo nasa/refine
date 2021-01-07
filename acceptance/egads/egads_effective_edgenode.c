@@ -148,36 +148,74 @@ int main(void) {
   }
 
   {
-    int nedge, nface;
-    ego *edges, *faces;
-    int i, sense;
-    ego edge, face;
-    double t, uv[2], face_eval[18], edge_eval[18], dist;
-
+    int nnode, nedge, nface;
+    ego *nodes, *edges, *faces;
+    ego node, edge;
+    double t, node_eval[18], edge_eval[18], dist;
+    double trange[2];
+    
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
+             "EG edge topo");
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
              "EG edge topo");
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EFACE, &nface, &faces),
              "EG face topo");
-    printf("effective nedge %d nface %d\n", nedge, nface);
+    printf("nnode %d effective nedge %d nface %d\n", nnode, nedge, nface);
 
-    /* edge 16, face 7, t = [0.05 -> 0] */
-    edge = edges[16 - 1];
-    face = faces[7 - 1];
-    sense = 0;
-    for (i = 0; i < 11; i++) {
-      t = 0.1 - i * 0.01;
-      is_equal(EGADS_SUCCESS, EG_getEdgeUV(face, edge, sense, t, uv),
-               "EG edge UV");
-      is_equal(EGADS_SUCCESS, EG_evaluate(face, uv, face_eval), "EG eval face");
-      is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval), "EG eval edge");
-      dist = sqrt(pow(face_eval[0] - edge_eval[0], 2) +
-                  pow(face_eval[1] - edge_eval[1], 2) +
-                  pow(face_eval[2] - edge_eval[2], 2));
-      printf("t %.3f uv %.3f %.3f dist %.3e edge x=%.3f face x=%.3f\n", t,
-             uv[0], uv[1], dist, edge_eval[0], face_eval[0]);
-    }
+    /* edge 7 t=0 node 2 */
+    node = nodes[2 - 1];
+    edge = edges[7 - 1];
+    t = 0;
+
+      {
+        ego tempref, *tempchldrn;
+        int tempclass, temptype, tempchild, *tempsens;
+        is_equal(EGADS_SUCCESS,
+             EG_getTopology(node, &tempref, &tempclass, &temptype, node_eval, &tempchild,
+                            &tempchldrn, &tempsens),
+             "EG topo node");
+        is_equal(EGADS_SUCCESS,
+             EG_getTopology(edge, &tempref, &tempclass, &temptype, trange, &tempchild,
+                            &tempchldrn, &tempsens),
+             "EG topo edge");
+      }
+    is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval), "EG eval edge");
+
+      dist = sqrt(pow(node_eval[0] - edge_eval[0], 2) +
+                  pow(node_eval[1] - edge_eval[1], 2) +
+                  pow(node_eval[2] - edge_eval[2], 2));
+      printf("t %.3f trange %f %f dist %.3e node x=%.3f edge x=%.3f\n", t,
+             trange[0], trange[1], dist, node_eval[0], edge_eval[0]);
+
+    /* edge 13 t=0 node 3 */
+    node = nodes[3 - 1];
+    edge = edges[13 - 1];
+    t = 0;
+
+      {
+        ego tempref, *tempchldrn;
+        int tempclass, temptype, tempchild, *tempsens;
+        is_equal(EGADS_SUCCESS,
+             EG_getTopology(node, &tempref, &tempclass, &temptype, node_eval, &tempchild,
+                            &tempchldrn, &tempsens),
+             "EG topo node");
+        is_equal(EGADS_SUCCESS,
+             EG_getTopology(edge, &tempref, &tempclass, &temptype, trange, &tempchild,
+                            &tempchldrn, &tempsens),
+             "EG topo edge");
+      }
+    is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval), "EG eval edge");
+
+      dist = sqrt(pow(node_eval[0] - edge_eval[0], 2) +
+                  pow(node_eval[1] - edge_eval[1], 2) +
+                  pow(node_eval[2] - edge_eval[2], 2));
+      printf("t %.3f trange %f %f dist %.3e node x=%.3f edge x=%.3f\n", t,
+             trange[0], trange[1], dist, node_eval[0], edge_eval[0]);
+
+    
     EG_free(faces);
     EG_free(edges);
+    EG_free(nodes);
   }
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");

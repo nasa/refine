@@ -1701,6 +1701,7 @@ REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &node_constraint), "n");
     if (node_constraint) {
       max_node = MAX(max_node, dist);
+      if(dist>1e-4)ref_geom_tattle(ref_geom,node);
     } else {
       max = MAX(max, dist);
     }
