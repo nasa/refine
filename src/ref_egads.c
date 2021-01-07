@@ -317,6 +317,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
   ego body;
   RAS(ref_egads_allows_construction(), "construction not allowed");
   body = NULL;
+#if !defined(HAVE_EGADS_LITE)
   if (0 == strcmp("cylinder", solid)) {
     int stype = CYLINDER;
     double data[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
@@ -360,6 +361,9 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
       body = bodies[0];
     }
   }
+#else
+  RSS(REF_IMPLEMENT, "requires full EGADS, not EGADSlite");
+#endif
   RNB(body, "unknown solid", { printf(">%s<\n", solid); });
   ref_geom->solid = (void *)body;
   ref_geom->manifold = REF_TRUE;
