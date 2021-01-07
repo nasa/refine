@@ -62,6 +62,7 @@ struct REF_GEOM_STRUCT {
   REF_ADJ ref_adj;
   REF_INT nnode, nedge, nface;
   REF_BOOL effective;
+  REF_BOOL effective_curvature;
   REF_BOOL manifold;
   REF_BOOL contex_owned;
   void *context;
@@ -81,6 +82,7 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_blank(ref_geom) ((ref_geom)->blank)
 #define ref_geom_adj(ref_geom) ((ref_geom)->ref_adj)
 #define ref_geom_effective(ref_geom) ((ref_geom)->effective)
+#define ref_geom_effective_curvature(ref_geom) ((ref_geom)->effective_curvature)
 #define ref_geom_manifold(ref_geom) ((ref_geom)->manifold)
 #define ref_geom_cad_data(ref_geom) ((ref_geom)->cad_data)
 #define ref_geom_cad_data_size(ref_geom) ((ref_geom)->cad_data_size)

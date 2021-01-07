@@ -2092,6 +2092,18 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
 
   t = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
 
+#if !defined(HAVE_EGADS_LITE) && defined(HAVE_EGADS_EFFECTIVE)
+  if (ref_geom_effective(ref_geom) && !ref_geom_effective_curvature(ref_geom)) {
+    ego underlying_object;
+    double underlying_t;
+    REIS(EGADS_SUCCESS,
+         EG_effectiveMap(object, &t, &underlying_object, &underlying_t),
+         "map effective to brep");
+    object = underlying_object;
+    t = underlying_t;
+  }
+#endif
+
   egads_status = EG_curvature(object, &t, curvature);
   if (EGADS_DEGEN == egads_status) {
     ego ref, *pchldrn;
@@ -2183,6 +2195,19 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
   RAS(0 < faceid && faceid <= ref_geom->nface, "face out of range");
   object = faces[faceid - 1];
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
+
+#if !defined(HAVE_EGADS_LITE) && defined(HAVE_EGADS_EFFECTIVE)
+  if (ref_geom_effective(ref_geom) && !ref_geom_effective_curvature(ref_geom)) {
+    ego underlying_object;
+    double underlying_uv[2];
+    REIS(EGADS_SUCCESS,
+         EG_effectiveMap(object, uv, &underlying_object, underlying_uv),
+         "map effective to brep");
+    object = underlying_object;
+    uv[0] = underlying_uv[0];
+    uv[1] = underlying_uv[1];
+  }
+#endif
 
   egads_status = EG_curvature(object, uv, curvature);
   /* classic marked degen where u or v collapses to a point, move tangent */
