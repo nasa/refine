@@ -151,7 +151,7 @@ int main(void) {
     int nedge;
     ego *edges;
     ego edge;
-    int i, n =21;
+    int i, n = 21;
     double trange[2];
 
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
@@ -159,7 +159,6 @@ int main(void) {
     printf("effective nedge %d\n", nedge);
 
     edge = edges[3 - 1];
-
 
     {
       ego tempref, *tempchldrn;
@@ -170,33 +169,38 @@ int main(void) {
                "EG topo edge");
     }
 
-    for (i=0;i<n;i++){
+    for (i = 0; i < n; i++) {
       /* [x,y,z,dx,dy,dz,dx2,dy2,dy2] */
       double t;
       double edge_eval[18], edge_eval_forward[18], edge_eval_reverse[18];
       double fd[18];
-      double s = i / (double)(n-1);
+      double s = i / (double)(n - 1);
       double dt = 1e-6;
-      t = s*trange[1]+(s-1.0)*trange[0]+dt;
-      is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval_forward), "EG eval edge");
-      t = s*trange[1]+(s-1.0)*trange[0]-dt;
-      is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval_reverse), "EG eval edge");
-      t = s*trange[1]+(s-1.0)*trange[0];
+      t = s * trange[1] + (s - 1.0) * trange[0] + dt;
+      is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval_forward),
+               "EG eval edge");
+      t = s * trange[1] + (s - 1.0) * trange[0] - dt;
+      is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval_reverse),
+               "EG eval edge");
+      t = s * trange[1] + (s - 1.0) * trange[0];
       is_equal(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval), "EG eval edge");
       fd[0] = edge_eval[0];
       fd[1] = edge_eval[1];
       fd[2] = edge_eval[2];
-      fd[3] = (edge_eval_forward[0]-edge_eval_reverse[0])/(2.0*dt);
-      fd[4] = (edge_eval_forward[1]-edge_eval_reverse[1])/(2.0*dt);
-      fd[5] = (edge_eval_forward[2]-edge_eval_reverse[2])/(2.0*dt);
-      fd[6] = (edge_eval_forward[0]+edge_eval_reverse[0]-2.0*edge_eval[0])/(dt*dt);
-      fd[7] = (edge_eval_forward[1]+edge_eval_reverse[1]-2.0*edge_eval[1])/(dt*dt);
-      fd[8] = (edge_eval_forward[2]+edge_eval_reverse[2]-2.0*edge_eval[2])/(dt*dt);
-      printf("t %e diff(dx/dt) %e diff(dy/dt) %e diff(dz/dt) %e\n",t,
-	     edge_eval[3]-fd[3],
-	     edge_eval[4]-fd[4],
-	     edge_eval[5]-fd[5]
-	     );
+      fd[3] = (edge_eval_forward[0] - edge_eval_reverse[0]) / (2.0 * dt);
+      fd[4] = (edge_eval_forward[1] - edge_eval_reverse[1]) / (2.0 * dt);
+      fd[5] = (edge_eval_forward[2] - edge_eval_reverse[2]) / (2.0 * dt);
+      fd[6] =
+          (edge_eval_forward[0] + edge_eval_reverse[0] - 2.0 * edge_eval[0]) /
+          (dt * dt);
+      fd[7] =
+          (edge_eval_forward[1] + edge_eval_reverse[1] - 2.0 * edge_eval[1]) /
+          (dt * dt);
+      fd[8] =
+          (edge_eval_forward[2] + edge_eval_reverse[2] - 2.0 * edge_eval[2]) /
+          (dt * dt);
+      printf("t %e diff(dx/dt) %e diff(dy/dt) %e diff(dz/dt) %e\n", t,
+             edge_eval[3] - fd[3], edge_eval[4] - fd[4], edge_eval[5] - fd[5]);
     }
 
     EG_free(edges);
