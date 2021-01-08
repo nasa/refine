@@ -151,7 +151,7 @@ int main(void) {
     int nedge;
     ego *edges;
     ego edge;
-    int i, n = 21;
+    int i, n = 101;
     double trange[2];
 
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EEDGE, &nedge, &edges),
@@ -199,9 +199,9 @@ int main(void) {
       fd[8] =
           (edge_eval_forward[2] + edge_eval_reverse[2] - 2.0 * edge_eval[2]) /
           (dt * dt);
-      printf("t %.3f x %8.5f dx %.3f (%.3f) z %8.5f dz %.3f (%.3f)\n", t,
-             edge_eval[0], edge_eval[3], fd[3], edge_eval[2], edge_eval[5],
-             fd[5]);
+      printf("t %.3f x %8.5f dx2 %6.3f (%6.3f) z %8.5f dz2 %6.3f (%6.3f)\n", t,
+             edge_eval[0], edge_eval[6], fd[6], edge_eval[2], edge_eval[8],
+             fd[8]);
     }
 
     EG_free(edges);
