@@ -1,10 +1,10 @@
 /*
 
 gcc-10  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
--I/Users/mpark/local/pkgs/EGADS/trunk/include -o egads_effective_edgenode \
-egads_effective_edgenode.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
+-I/Users/mpark/local/pkgs/EGADS/trunk/include -o egads_effective_fd \
+egads_effective_fd.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
 -L/Users/mpark/local/pkgs/EGADS/trunk/lib -legads   -lm \
-&& ./egads_effective_edgenode
+&& ./egads_effective_fd
 
 */
 
@@ -74,9 +74,9 @@ int main(void) {
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
   is_equal(1, nbody, "expected 1 body");
 
-  remove("egads_effective_edgenode_orig.egads");
+  remove("egads_effective_fd_orig.egads");
   is_equal(EGADS_SUCCESS,
-           EG_saveModel(bodies[0], "egads_effective_edgenode_orig.egads"),
+           EG_saveModel(bodies[0], "egads_effective_fd_orig.egads"),
            "EG save eff");
 
   /* copy the Body so we can use/save it later */
@@ -117,9 +117,9 @@ int main(void) {
            "EG topo bodies");
   printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
 
-  remove("egads_effective_edgenode_eff.egads");
+  remove("egads_effective_fd_eff.egads");
   is_equal(EGADS_SUCCESS,
-           EG_saveModel(newModel, "egads_effective_edgenode_eff.egads"),
+           EG_saveModel(newModel, "egads_effective_fd_eff.egads"),
            "EG save eff");
 
   is_equal(EGADS_SUCCESS,
