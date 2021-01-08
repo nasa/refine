@@ -199,8 +199,8 @@ int main(void) {
       fd[8] =
           (edge_eval_forward[2] + edge_eval_reverse[2] - 2.0 * edge_eval[2]) /
           (dt * dt);
-      printf("t %e dx %e (%e) dz %e (%e)\n", t,
-             edge_eval[3], fd[3], edge_eval[5], fd[5]);
+      printf("t %.3f x %8.5f dx %.3f (%.3f) z %8.5f dz %.3f (%.3f)\n", t,
+             edge_eval[0],edge_eval[3], fd[3], edge_eval[2], edge_eval[5], fd[5]);
     }
 
     EG_free(edges);
