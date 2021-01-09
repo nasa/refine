@@ -1,26 +1,5 @@
-# hole.csm written by ocsmSave (v1.17)
 
-# Constant, Design, and Output Parameters:
-
-# Global Attributes:
-
-# Branches:
-skbeg     0   0   0   1
-   skvar     xy   0.000000;0.000000;0.000000;0.000000;1.000000;0.000000;1.000000;1.000000;0.000000;1.000000;0.000000;0.000000;
-   skcon     X   1   -1  0
-   skcon     Y   1   -1  0
-   skcon     V   1   2  0
-   skcon     H   2   3  0
-   skcon     V   3   4  0
-   skcon     H   4   1  0
-   skcon     L   1   2  1
-   skcon     L   4   1  1
-   linseg    ::x[2]   ::y[2]   0
-   linseg    ::x[3]   ::y[3]   0
-   linseg    ::x[4]   ::y[4]   0
-   linseg    ::x[1]   ::y[1]   0
-skend     0
+box 0 0 0 1 1 0
 
 dump square.egads
 
-end
