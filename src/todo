@@ -1,5 +1,7 @@
 
 sync twod oriention with and without EGADS
+flip boundary orientation convention
+use CGNS winding
 
 understand interp max error reports
 
