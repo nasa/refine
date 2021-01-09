@@ -265,6 +265,12 @@ cd ${source_dir}/acceptance/facebody/init-visc
 ( ./accept-facebody-init-visc.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-facebody-parabola
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/facebody/parabola
+( ./accept-facebody-parabola.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-facebody-trig-multi
