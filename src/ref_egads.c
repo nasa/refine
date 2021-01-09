@@ -363,40 +363,42 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
   }
   if (0 == strcmp("revolve", solid)) {
     ego nodes[4], lines[4], edges[4];
-    double xyz[3], data[6];
-    /* nodes */
-    xyz[0] = 0;
-    xyz[1] = 0;
-    xyz[2] = 0;
-    REIS(EGADS_SUCCESS,
-         EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0, NULL,
-                         NULL, &nodes[0]),
-         "make node");
-    xyz[0] = 1;
-    xyz[1] = 0;
-    xyz[2] = 0;
-    REIS(EGADS_SUCCESS,
-         EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0, NULL,
-                         NULL, &nodes[1]),
-         "make node");
-    xyz[0] = 1;
-    xyz[1] = 1;
-    xyz[2] = 0;
-    REIS(EGADS_SUCCESS,
-         EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0, NULL,
-                         NULL, &nodes[2]),
-         "make node");
-    xyz[0] = 0;
-    xyz[1] = 1;
-    xyz[2] = 0;
-    REIS(EGADS_SUCCESS,
-         EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0, NULL,
-                         NULL, &nodes[3]),
-         "make node");
-    /* curves */
-    {
+    { /* nodes */
+      double xyz[3];
+      xyz[0] = 0;
+      xyz[1] = 0;
+      xyz[2] = 0;
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0,
+                           NULL, NULL, &nodes[0]),
+           "make node");
+      xyz[0] = 1;
+      xyz[1] = 0;
+      xyz[2] = 0;
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0,
+                           NULL, NULL, &nodes[1]),
+           "make node");
+      xyz[0] = 1;
+      xyz[1] = 1;
+      xyz[2] = 0;
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0,
+                           NULL, NULL, &nodes[2]),
+           "make node");
+      xyz[0] = 0;
+      xyz[1] = 1;
+      xyz[2] = 0;
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0,
+                           NULL, NULL, &nodes[3]),
+           "make node");
+    }
+
+    { /* curves */
       ego ref, *pchldrn;
       int oclass, mtype, nchild, *psens;
+      double data[6];
       REIS(EGADS_SUCCESS,
            EG_getTopology(nodes[0], &ref, &oclass, &mtype, &(data[0]), &nchild,
                           &pchldrn, &psens),
@@ -461,11 +463,11 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
                            data, &lines[3]),
            "line");
     }
-    /* edges */
-    {
+
+    { /* edges */
       ego ref, *pchldrn, objs[2];
       int oclass, mtype, nchild, *psens;
-      double dum[3], range[2];
+      double xyz[3], dum[3], range[2];
       objs[0] = nodes[0];
       objs[1] = nodes[1];
       REIS(EGADS_SUCCESS,
@@ -542,10 +544,11 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
                            range, 2, objs, NULL, &edges[3]),
            "make edge");
     }
-    /*loop and face*/
-    {
+
+    { /* loop, face, and revolve*/
       int senses[4] = {1, 1, 1, 1};
       ego loop, face;
+      double data[6];
       REIS(EGADS_SUCCESS,
            EG_makeTopology((ego)(ref_geom->context), NULL, LOOP, CLOSED, NULL,
                            4, edges, senses, &loop),
