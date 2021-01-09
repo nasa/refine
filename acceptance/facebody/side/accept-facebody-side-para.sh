@@ -7,14 +7,14 @@ set -u # Treat unset variables as error
 if [ $# -gt 0 ] ; then
     src=$1/src
 else
-    src=${HOME}/refine/parmetis/src
+    src=${HOME}/refine/egads/src
 fi
 
 tecplot=-t
 metric="-twod side"
 egads="-g square.egads"
 
-function adapt_cycle {
+function adapt_para {
     inproj=$1
     outproj=$2
     sweeps=$3
@@ -24,10 +24,9 @@ function adapt_cycle {
 	  ${inproj}.solb
 
     mpiexec -np ${cores} \
-	    ${src}/ref_driver \
-	    -i ${inproj}.meshb \
+	    ${src}/refmpi adapt \
+	    ${inproj}.meshb \
 	    -m ${inproj}.solb \
-	    ${egads} \
             -x ${outproj}.meshb \
 	    -s ${sweeps} ${tecplot}
 
@@ -39,11 +38,14 @@ function adapt_cycle {
 	  > ${outproj}.status
 }
 
-cp square.meshb cycle00.meshb
+serveCSM -batch square.csm
+cp square.egads para.egads
+${src}/ref bootstrap para.egads
+mv para-vol.meshb para00.meshb
 
-adapt_cycle cycle00 cycle01 10 2
-adapt_cycle cycle01 cycle02 10 2
+adapt_para para00 para01 10 2
+adapt_para para01 para02 10 2
 
-cat cycle02.status
-../../check.rb cycle02.status 0.5 1.75
+cat para02.status
+../../check.rb para02.status 0.5 1.75
 

@@ -281,6 +281,8 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       radius = 0.5;
       r = sqrt(x * x + y * y);
       scalar[node] = (r - radius);
+    } else if (strcmp(function_name, "parabola") == 0) {
+      scalar[node] = tanh(50 * (x - y * y));
     } else if (strcmp(function_name, "one") == 0) {
       scalar[node] = 1.0;
     } else if (strcmp(function_name, "half") == 0) {
@@ -302,6 +304,26 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       pressure = primitive[4];
       mach = sqrt(u * u + v * v + w * w) / sqrt(1.4 * pressure / rho);
       scalar[node] = mach;
+    } else {
+      printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
+             function_name);
+      return REF_NOT_FOUND;
+    }
+  }
+  return REF_SUCCESS;
+}
+static REF_STATUS ref_acceptance_g(REF_NODE ref_node, const char *function_name,
+                                   REF_DBL *scalar) {
+  REF_INT node;
+  REF_DBL x, y;
+  each_ref_node_valid_node(ref_node, node) {
+    x = ref_node_xyz(ref_node, 0, node);
+    y = ref_node_xyz(ref_node, 1, node);
+    if (strcmp(function_name, "parabola") == 0) {
+      /* tanh(50 * (x - y * y)) */
+      scalar[0 + 3 * node] = 50.0 / pow(cosh(50 * (x - y * y)), 2);
+      scalar[1 + 3 * node] = -100.0 * y / pow(cosh(50 * (x - y * y)), 2);
+      scalar[2 + 3 * node] = 0.0;
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
@@ -420,7 +442,6 @@ int main(int argc, char *argv[]) {
   REF_INT ugawg_pos;
   REF_INT xyz_pos;
   REF_INT twod_pos;
-  REF_INT u_pos;
   REF_INT pos;
 
   RSS(ref_mpi_start(argc, argv), "start");
@@ -553,11 +574,11 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  RXS(ref_args_find(argc, argv, "-u", &u_pos), REF_NOT_FOUND, "arg");
-  if (REF_EMPTY != u_pos) {
+  RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg");
+  if (REF_EMPTY != pos) {
     REF_DBL *scalar;
     REF_INT name_pos = 2;
-    REIS(1, u_pos, "required args: -u id mesh.ext scalar.solb\n");
+    REIS(1, pos, "required args: -u id mesh.ext scalar.solb\n");
     REIS(5, argc, "required args: -u id mesh.ext scalar.solb\n");
 
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[3]), "in");
@@ -566,6 +587,28 @@ int main(int argc, char *argv[]) {
     RSS(ref_acceptance_u(ref_grid_node(ref_grid), argv[name_pos], scalar),
         "fill u");
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, scalar, NULL, argv[4]),
+        "in");
+
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "-g", &pos), REF_NOT_FOUND, "arg");
+  if (REF_EMPTY != pos) {
+    REF_DBL *scalar;
+    REF_INT name_pos = 2;
+    REIS(1, pos, "required args: -g id mesh.ext scalar.solb\n");
+    REIS(5, argc, "required args: -g id mesh.ext scalar.solb\n");
+
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[3]), "in");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(scalar, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_acceptance_g(ref_grid_node(ref_grid), argv[name_pos], scalar),
+        "fill g");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 3, scalar, NULL, argv[4]),
         "in");
 
     ref_free(scalar);

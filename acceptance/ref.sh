@@ -265,6 +265,12 @@ cd ${source_dir}/acceptance/facebody/init-visc
 ( ./accept-facebody-init-visc.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-facebody-parabola
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/facebody/parabola
+( ./accept-facebody-parabola.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-facebody-trig-multi
@@ -526,7 +532,7 @@ wait
 LOG=${root_dir}/log.accept-facebody-side-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/facebody/side
-( ./accept-facebody-side-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-facebody-side-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 # 2 procs

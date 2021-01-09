@@ -1755,6 +1755,56 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_multigrad(REF_DBL *metric, REF_GRID ref_grid,
+                                REF_DBL *grad, REF_INT p_norm,
+                                REF_DBL gradation, REF_DBL target_complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node;
+  REF_DBL *dsdx, *gradx, *grady, *gradz;
+  ref_malloc_init(dsdx, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(gradx, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(grady, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(gradz, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  i = 0;
+  each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
+  RSS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradx), "gradx");
+
+  i = 1;
+  each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
+  RSS(ref_recon_l2_projection_grad(ref_grid, dsdx, grady), "grady");
+
+  i = 2;
+  each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
+  RSS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradz), "gradz");
+
+  /* average off-diagonals */
+  each_ref_node_valid_node(ref_node, node) {
+    metric[0 + 6 * node] = gradx[0 + 3 * node];
+    metric[1 + 6 * node] = 0.5 * (gradx[1 + 3 * node] + grady[0 + 3 * node]);
+    metric[2 + 6 * node] = 0.5 * (gradx[2 + 3 * node] + gradz[0 + 3 * node]);
+    metric[3 + 6 * node] = grady[1 + 3 * node];
+    metric[4 + 6 * node] = 0.5 * (grady[2 + 3 * node] + gradz[1 + 3 * node]);
+    metric[5 + 6 * node] = gradz[2 + 3 * node];
+  }
+
+  ref_free(gradz);
+  ref_free(grady);
+  ref_free(gradx);
+  ref_free(dsdx);
+
+  RSS(ref_recon_abs_value_hessian(ref_grid, metric), "abs");
+
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
+      "local scale lp norm");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         target_complexity),
+      "gradation at complexity");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
                                         REF_DBL *displaced, REF_DBL *scalar,
                                         REF_RECON_RECONSTRUCTION reconstruction,

@@ -37,7 +37,9 @@ function adapt_cycle {
 	  > ${outproj}.status
 }
 
-cp square.meshb cycle00.meshb
+serveCSM -batch square.csm
+${src}/ref bootstrap square.egads
+mv square-vol.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01 10
 adapt_cycle cycle01 cycle02 10

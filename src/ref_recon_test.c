@@ -91,6 +91,14 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_scalar_by_extension(ref_grid, 3 * ldim, derivatives, NULL,
                                        "ref_recon_deriv.tec"),
         "export derivatives");
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", "ref_recon_grad.solb");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 3 * ldim, grad, NULL,
+                                       "ref_recon_grad.solb"),
+        "export derivatives");
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", "ref_recon_grad.tec");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 3 * ldim, grad, NULL,
+                                       "ref_recon_grad.tec"),
+        "export derivatives");
 
     ref_free(function);
     ref_free(derivatives);
