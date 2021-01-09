@@ -281,6 +281,8 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       radius = 0.5;
       r = sqrt(x * x + y * y);
       scalar[node] = (r - radius);
+    } else if (strcmp(function_name, "parabola") == 0) {
+      scalar[node] = tanh(50*(x - y*y));
     } else if (strcmp(function_name, "one") == 0) {
       scalar[node] = 1.0;
     } else if (strcmp(function_name, "half") == 0) {
