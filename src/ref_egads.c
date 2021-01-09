@@ -362,7 +362,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
     }
   }
   if (0 == strcmp("revolve", solid)) {
-    ego nodes[4], lines[4], edges[4];
+    ego nodes[4], curves[4], edges[4];
     { /* nodes */
       double xyz[3];
       xyz[0] = 0;
@@ -412,7 +412,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
       data[5] -= data[2];
       REIS(EGADS_SUCCESS,
            EG_makeGeometry((ego)(ref_geom->context), CURVE, LINE, NULL, NULL,
-                           data, &lines[0]),
+                           data, &curves[0]),
            "line");
 
       REIS(EGADS_SUCCESS,
@@ -428,7 +428,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
       data[5] -= data[2];
       REIS(EGADS_SUCCESS,
            EG_makeGeometry((ego)(ref_geom->context), CURVE, LINE, NULL, NULL,
-                           data, &lines[1]),
+                           data, &curves[1]),
            "line");
 
       REIS(EGADS_SUCCESS,
@@ -444,7 +444,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
       data[5] -= data[2];
       REIS(EGADS_SUCCESS,
            EG_makeGeometry((ego)(ref_geom->context), CURVE, LINE, NULL, NULL,
-                           data, &lines[2]),
+                           data, &curves[2]),
            "line");
 
       REIS(EGADS_SUCCESS,
@@ -460,7 +460,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
       data[5] -= data[2];
       REIS(EGADS_SUCCESS,
            EG_makeGeometry((ego)(ref_geom->context), CURVE, LINE, NULL, NULL,
-                           data, &lines[3]),
+                           data, &curves[3]),
            "line");
     }
 
@@ -474,16 +474,16 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
            EG_getTopology(objs[0], &ref, &oclass, &mtype, xyz, &nchild,
                           &pchldrn, &psens),
            "node xyz");
-      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[0], xyz, &range[0], dum),
+      REIS(EGADS_SUCCESS, EG_invEvaluate(curves[0], xyz, &range[0], dum),
            "trange");
       REIS(EGADS_SUCCESS,
            EG_getTopology(objs[1], &ref, &oclass, &mtype, xyz, &nchild,
                           &pchldrn, &psens),
            "node xyz");
-      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[0], xyz, &range[1], dum),
+      REIS(EGADS_SUCCESS, EG_invEvaluate(curves[0], xyz, &range[1], dum),
            "trange");
       REIS(EGADS_SUCCESS,
-           EG_makeTopology((ego)(ref_geom->context), lines[0], EDGE, TWONODE,
+           EG_makeTopology((ego)(ref_geom->context), curves[0], EDGE, TWONODE,
                            range, 2, objs, NULL, &edges[0]),
            "make edge");
 
@@ -493,16 +493,16 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
            EG_getTopology(objs[0], &ref, &oclass, &mtype, xyz, &nchild,
                           &pchldrn, &psens),
            "node xyz");
-      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[1], xyz, &range[0], dum),
+      REIS(EGADS_SUCCESS, EG_invEvaluate(curves[1], xyz, &range[0], dum),
            "trange");
       REIS(EGADS_SUCCESS,
            EG_getTopology(objs[1], &ref, &oclass, &mtype, xyz, &nchild,
                           &pchldrn, &psens),
            "node xyz");
-      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[1], xyz, &range[1], dum),
+      REIS(EGADS_SUCCESS, EG_invEvaluate(curves[1], xyz, &range[1], dum),
            "trange");
       REIS(EGADS_SUCCESS,
-           EG_makeTopology((ego)(ref_geom->context), lines[1], EDGE, TWONODE,
+           EG_makeTopology((ego)(ref_geom->context), curves[1], EDGE, TWONODE,
                            range, 2, objs, NULL, &edges[1]),
            "make edge");
 
@@ -512,16 +512,16 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
            EG_getTopology(objs[0], &ref, &oclass, &mtype, xyz, &nchild,
                           &pchldrn, &psens),
            "node xyz");
-      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[2], xyz, &range[0], dum),
+      REIS(EGADS_SUCCESS, EG_invEvaluate(curves[2], xyz, &range[0], dum),
            "trange");
       REIS(EGADS_SUCCESS,
            EG_getTopology(objs[1], &ref, &oclass, &mtype, xyz, &nchild,
                           &pchldrn, &psens),
            "node xyz");
-      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[2], xyz, &range[1], dum),
+      REIS(EGADS_SUCCESS, EG_invEvaluate(curves[2], xyz, &range[1], dum),
            "trange");
       REIS(EGADS_SUCCESS,
-           EG_makeTopology((ego)(ref_geom->context), lines[2], EDGE, TWONODE,
+           EG_makeTopology((ego)(ref_geom->context), curves[2], EDGE, TWONODE,
                            range, 2, objs, NULL, &edges[2]),
            "make edge");
 
@@ -531,16 +531,16 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
            EG_getTopology(objs[0], &ref, &oclass, &mtype, xyz, &nchild,
                           &pchldrn, &psens),
            "node xyz");
-      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[3], xyz, &range[0], dum),
+      REIS(EGADS_SUCCESS, EG_invEvaluate(curves[3], xyz, &range[0], dum),
            "trange");
       REIS(EGADS_SUCCESS,
            EG_getTopology(objs[1], &ref, &oclass, &mtype, xyz, &nchild,
                           &pchldrn, &psens),
            "node xyz");
-      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[3], xyz, &range[1], dum),
+      REIS(EGADS_SUCCESS, EG_invEvaluate(curves[3], xyz, &range[1], dum),
            "trange");
       REIS(EGADS_SUCCESS,
-           EG_makeTopology((ego)(ref_geom->context), lines[3], EDGE, TWONODE,
+           EG_makeTopology((ego)(ref_geom->context), curves[3], EDGE, TWONODE,
                            range, 2, objs, NULL, &edges[3]),
            "make edge");
     }
