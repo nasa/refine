@@ -14,11 +14,11 @@ facelift direct surrogate boundary representation tolerance
   + parallel replicate surrogate instead of all import
   + streamline bootstrap, adapt, and loop options
   + parallel bootstrap friendly enrich
+  + jump
+  + degen
   plot displacement between surrogate and EGADS
   plot interpolated boundary representation tolerance independently
   smooth enrich surface (conform curvature metric?)
-  jump?
-  degen?
   inverse evaluation
   evaluation derivatives
   evaluation curvature
