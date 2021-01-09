@@ -545,28 +545,26 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
     /*loop and face*/
     {
       int senses[4] = {1, 1, 1, 1};
-      ego loop, wirebody, model, face;
+      ego loop, face;
       REIS(EGADS_SUCCESS,
            EG_makeTopology((ego)(ref_geom->context), NULL, LOOP, CLOSED, NULL,
                            4, edges, senses, &loop),
            "make loop");
-      REIS(EGADS_SUCCESS,
-           EG_makeTopology((ego)(ref_geom->context), NULL, BODY, WIREBODY, NULL,
-                           1, &loop, NULL, &wirebody),
-           "wirebody");
-      REIS(EGADS_SUCCESS,
-           EG_makeTopology((ego)(ref_geom->context), NULL, MODEL, 0, NULL, 1,
-                           &wirebody, NULL, &model),
-           "modelfy");
-      remove("wirebody.egads");
-      REIS(EGADS_SUCCESS, EG_saveModel(model, "wirebody.egads"), "EG save");
-
       REIS(EGADS_SUCCESS, EG_makeFace(loop, SREVERSE, NULL, &face), "face");
+      data[0] = 0.0;
+      data[1] = 0.0;
+      data[2] = 0.0;
+      data[3] = 1.0;
+      data[4] = 0.0;
+      data[5] = 0.0;
+      REIS(EGADS_SUCCESS, EG_rotate(face, 360.0, data, &body), "revolve");
 
+      /*
       REIS(EGADS_SUCCESS,
            EG_makeTopology((ego)(ref_geom->context), NULL, BODY, FACEBODY, NULL,
                            1, &face, NULL, &body),
-           "wirebody");
+           "facebody");
+      */
     }
   }
 #else
