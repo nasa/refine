@@ -7,14 +7,14 @@ set -u # Treat unset variables as error
 if [ $# -gt 0 ] ; then
     src=$1/src
 else
-    src=${HOME}/refine/parmetis/src
+    src=${HOME}/refine/egads/src
 fi
 
 tecplot=-t
 metric="-twod side"
 egads="-g square.egads"
 
-function adapt_cycle {
+function adapt_para {
     inproj=$1
     outproj=$2
     sweeps=$3
