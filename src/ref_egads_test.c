@@ -107,6 +107,15 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  if (ref_egads_allows_construction()) { /* revolve enrich3 */
+    REF_GRID ref_grid;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "revolve"), "create");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_geom_enrich3(ref_grid), "enrich3");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   if (ref_egads_allows_construction()) { /* steinmetz */
     REF_GRID ref_grid;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
@@ -118,6 +127,7 @@ int main(int argc, char *argv[]) {
     /* RSS(ref_egads_save(ref_grid_geom(ref_grid), "steinmetz.egads"), "egd");*/
     RSS(ref_grid_free(ref_grid), "free grid");
   }
+
   if (ref_egads_allows_construction()) { /* revolve */
     REF_GRID ref_grid;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
