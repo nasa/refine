@@ -24,10 +24,9 @@ function adapt_cycle {
 	  ${inproj}.solb
 
     mpiexec -np ${cores} \
-	    ${src}/ref_driver \
-	    -i ${inproj}.meshb \
+	    ${src}/refmpi adapt \
+	    ${inproj}.meshb \
 	    -m ${inproj}.solb \
-	    ${egads} \
             -x ${outproj}.meshb \
 	    -s ${sweeps} ${tecplot}
 
@@ -40,12 +39,13 @@ function adapt_cycle {
 }
 
 serveCSM -batch square.csm
-${src}/ref bootstrap square.egads
-mv square-vol.meshb cycle00.meshb
+cp square.egads para.egads
+${src}/ref bootstrap para.egads
+mv para-vol.meshb para00.meshb
 
-adapt_cycle cycle00 cycle01 10 2
-adapt_cycle cycle01 cycle02 10 2
+adapt_para para00 para01 10 2
+adapt_para para01 para02 10 2
 
-cat cycle02.status
-../../check.rb cycle02.status 0.5 1.75
+cat para02.status
+../../check.rb para02.status 0.5 1.75
 

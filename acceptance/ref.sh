@@ -532,7 +532,7 @@ wait
 LOG=${root_dir}/log.accept-facebody-side-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/facebody/side
-( ./accept-facebody-side-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-facebody-side-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 # 2 procs
