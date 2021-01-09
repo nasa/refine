@@ -361,7 +361,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
       body = bodies[0];
     }
   }
-  if (0 == strcmp("revole", solid)) {
+  if (0 == strcmp("revolve", solid)) {
     ego nodes[4], lines[4], edges[4];
     double xyz[3], data[6];
     /* nodes */
@@ -372,7 +372,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
          EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0, NULL,
                          NULL, &nodes[0]),
          "make node");
-    xyz[0] = 0;
+    xyz[0] = 1;
     xyz[1] = 0;
     xyz[2] = 0;
     REIS(EGADS_SUCCESS,
@@ -380,13 +380,13 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
                          NULL, &nodes[1]),
          "make node");
     xyz[0] = 1;
-    xyz[1] = 0;
+    xyz[1] = 1;
     xyz[2] = 0;
     REIS(EGADS_SUCCESS,
          EG_makeTopology((ego)(ref_geom->context), NULL, NODE, 0, xyz, 0, NULL,
                          NULL, &nodes[2]),
          "make node");
-    xyz[0] = 1;
+    xyz[0] = 0;
     xyz[1] = 1;
     xyz[2] = 0;
     REIS(EGADS_SUCCESS,
@@ -405,6 +405,9 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
            EG_getTopology(nodes[1], &ref, &oclass, &mtype, &(data[3]), &nchild,
                           &pchldrn, &psens),
            "node xyz");
+      data[3] -= data[0];
+      data[4] -= data[1];
+      data[5] -= data[2];
       REIS(EGADS_SUCCESS,
            EG_makeGeometry((ego)(ref_geom->context), CURVE, LINE, NULL, NULL,
                            data, &lines[0]),
@@ -418,6 +421,9 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
            EG_getTopology(nodes[2], &ref, &oclass, &mtype, &(data[3]), &nchild,
                           &pchldrn, &psens),
            "node xyz");
+      data[3] -= data[0];
+      data[4] -= data[1];
+      data[5] -= data[2];
       REIS(EGADS_SUCCESS,
            EG_makeGeometry((ego)(ref_geom->context), CURVE, LINE, NULL, NULL,
                            data, &lines[1]),
@@ -431,6 +437,9 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
            EG_getTopology(nodes[3], &ref, &oclass, &mtype, &(data[3]), &nchild,
                           &pchldrn, &psens),
            "node xyz");
+      data[3] -= data[0];
+      data[4] -= data[1];
+      data[5] -= data[2];
       REIS(EGADS_SUCCESS,
            EG_makeGeometry((ego)(ref_geom->context), CURVE, LINE, NULL, NULL,
                            data, &lines[2]),
@@ -441,9 +450,12 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
                           &pchldrn, &psens),
            "node xyz");
       REIS(EGADS_SUCCESS,
-           EG_getTopology(nodes[1], &ref, &oclass, &mtype, &(data[3]), &nchild,
+           EG_getTopology(nodes[0], &ref, &oclass, &mtype, &(data[3]), &nchild,
                           &pchldrn, &psens),
            "node xyz");
+      data[3] -= data[0];
+      data[4] -= data[1];
+      data[5] -= data[2];
       REIS(EGADS_SUCCESS,
            EG_makeGeometry((ego)(ref_geom->context), CURVE, LINE, NULL, NULL,
                            data, &lines[3]),
@@ -472,6 +484,89 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
            EG_makeTopology((ego)(ref_geom->context), lines[0], EDGE, TWONODE,
                            range, 2, objs, NULL, &edges[0]),
            "make edge");
+
+      objs[0] = nodes[1];
+      objs[1] = nodes[2];
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(objs[0], &ref, &oclass, &mtype, xyz, &nchild,
+                          &pchldrn, &psens),
+           "node xyz");
+      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[1], xyz, &range[0], dum),
+           "trange");
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(objs[1], &ref, &oclass, &mtype, xyz, &nchild,
+                          &pchldrn, &psens),
+           "node xyz");
+      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[1], xyz, &range[1], dum),
+           "trange");
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), lines[1], EDGE, TWONODE,
+                           range, 2, objs, NULL, &edges[1]),
+           "make edge");
+
+      objs[0] = nodes[2];
+      objs[1] = nodes[3];
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(objs[0], &ref, &oclass, &mtype, xyz, &nchild,
+                          &pchldrn, &psens),
+           "node xyz");
+      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[2], xyz, &range[0], dum),
+           "trange");
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(objs[1], &ref, &oclass, &mtype, xyz, &nchild,
+                          &pchldrn, &psens),
+           "node xyz");
+      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[2], xyz, &range[1], dum),
+           "trange");
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), lines[2], EDGE, TWONODE,
+                           range, 2, objs, NULL, &edges[2]),
+           "make edge");
+
+      objs[0] = nodes[3];
+      objs[1] = nodes[0];
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(objs[0], &ref, &oclass, &mtype, xyz, &nchild,
+                          &pchldrn, &psens),
+           "node xyz");
+      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[3], xyz, &range[0], dum),
+           "trange");
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(objs[1], &ref, &oclass, &mtype, xyz, &nchild,
+                          &pchldrn, &psens),
+           "node xyz");
+      REIS(EGADS_SUCCESS, EG_invEvaluate(lines[3], xyz, &range[1], dum),
+           "trange");
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), lines[3], EDGE, TWONODE,
+                           range, 2, objs, NULL, &edges[3]),
+           "make edge");
+    }
+    /*loop and face*/
+    {
+      int senses[4] = {1, 1, 1, 1};
+      ego loop, wirebody, model, face;
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, LOOP, CLOSED, NULL,
+                           4, edges, senses, &loop),
+           "make loop");
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, BODY, WIREBODY, NULL,
+                           1, &loop, NULL, &wirebody),
+           "wirebody");
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, MODEL, 0, NULL, 1,
+                           &wirebody, NULL, &model),
+           "modelfy");
+      remove("wirebody.egads");
+      REIS(EGADS_SUCCESS, EG_saveModel(model, "wirebody.egads"), "EG save");
+
+      REIS(EGADS_SUCCESS, EG_makeFace(loop, SREVERSE, NULL, &face), "face");
+
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, BODY, FACEBODY, NULL,
+                           1, &face, NULL, &body),
+           "wirebody");
     }
   }
 #else
