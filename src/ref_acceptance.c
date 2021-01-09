@@ -320,9 +320,10 @@ static REF_STATUS ref_acceptance_g(REF_NODE ref_node, const char *function_name,
     x = ref_node_xyz(ref_node, 0, node);
     y = ref_node_xyz(ref_node, 1, node);
     if (strcmp(function_name, "parabola") == 0) {
-      scalar[0 + 3 * node] = tanh(50 * (x - y * y));
-      scalar[1 + 3 * node] = tanh(50 * (x - y * y));
-      scalar[2 + 3 * node] = tanh(50 * (x - y * y));
+      /* tanh(50 * (x - y * y)) */
+      scalar[0 + 3 * node] = 50 / pow(cosh(50 * (x - y * y)), 2);
+      scalar[1 + 3 * node] = 100 * y / pow(cosh(50 * (x - y * y)), 2);
+      scalar[2 + 3 * node] = 0.0;
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
