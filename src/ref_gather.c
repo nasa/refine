@@ -2774,8 +2774,8 @@ static REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id,
     maxdata = REF_DBL_MIN;
     for (node = 0; node < ref_node_max(ref_node); node++) {
       if (REF_EMPTY != l2c[node] && ref_node_owned(ref_node, node)) {
-        mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, l2c[node]));
-        maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, l2c[node]));
+        mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, node));
+        maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, node));
       }
     }
     tempdata = mindata;
@@ -2856,8 +2856,8 @@ static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
     maxdata = REF_DBL_MIN;
     for (node = 0; node < ref_node_max(ref_node); node++) {
       if (REF_EMPTY != l2c[node] && ref_node_owned(ref_node, node)) {
-        mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, l2c[node]));
-        maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, l2c[node]));
+        mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, node));
+        maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, node));
       }
     }
     tempdata = mindata;
