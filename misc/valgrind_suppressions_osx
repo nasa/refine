@@ -27,6 +27,15 @@
    fun:fprintf
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:printf
+   ...
+}
 
 {
    <insert_a_suppression_name_here>
@@ -133,17 +142,57 @@
    Memcheck:Leak
    match-leak-kinds: definite
    fun:calloc
-   fun:class_createInstance
-   fun:_os_object_alloc_realized
-   fun:_xpc_pipe_create
-   fun:xpc_pipe_create
-   fun:_od_xpc_pipe
-   fun:_od_running
-   fun:ds_user_byuid
-   fun:search_item_bynumber
+   ...
    fun:getpwuid
-   obj:/bin/sh
-   obj:/bin/sh
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   ...
+   fun:getpwuid_r
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:object_getIndexedIvars
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:setenv
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   ...
 }
 
 {
@@ -181,6 +230,24 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    match-leak-kinds: definite
+   fun:calloc
+   fun:objc_msgSend_stret
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:__si_module_static_cache_block_invoke
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
    fun:malloc
    fun:_object_remove_assocations
    fun:objc_destructInstance
@@ -193,6 +260,15 @@
    fun:___notify_lib_init_block_invoke
    fun:_dispatch_client_callout
    fun:dispatch_once_f
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:atexit_register
+   ...
 }
 
 {
@@ -425,6 +501,14 @@
    fun:setenv
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+}
+
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak

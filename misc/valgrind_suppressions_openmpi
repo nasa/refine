@@ -23,6 +23,12 @@
    fun:ompi_mpi_init
 }
 {
+   <insert_s_supression_name_here>
+   Memcheck:Addr16
+   ...
+   fun:_platform_strncpy
+}
+{
    <insert_a_suppression_name_here>
    Memcheck:Value8
    ...
@@ -40,6 +46,13 @@
    writev(vector[...])
    ...
    fun:ompi_mpi_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   writev(vector[...])
+   ...
+   fun:thread_start
 }
 {
    <insert_a_suppression_name_here>
