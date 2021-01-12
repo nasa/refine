@@ -2636,7 +2636,10 @@ static REF_STATUS ref_gather_plt_tri_header(REF_GRID ref_grid, REF_INT id,
   RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, id, &nnode, &ncell,
                                      &l2c),
       "l2c");
-  RAS(nnode > 0 && ncell > 0, "empty zone");
+  if (nnode <= 0 || ncell <= 0) {
+    ref_free(l2c);
+    return REF_SUCCESS;
+  }
 
   RAS(nnode <= REF_INT_MAX, "too many nodes for int");
   numpts = (int)nnode;
@@ -2667,7 +2670,6 @@ static REF_STATUS ref_gather_plt_tri_header(REF_GRID ref_grid, REF_INT id,
   }
 
   ref_free(l2c);
-
   return REF_SUCCESS;
 }
 
@@ -2700,7 +2702,10 @@ static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid,
 
   RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
       "l2c");
-  RAS(nnode > 0 && ncell > 0, "empty zone");
+  if (nnode <= 0 || ncell <= 0) {
+    ref_free(l2c);
+    return REF_SUCCESS;
+  }
 
   RAS(nnode <= REF_INT_MAX, "too many nodes for int");
   numpts = (int)nnode;
@@ -2732,7 +2737,6 @@ static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid,
   }
 
   ref_free(l2c);
-
   return REF_SUCCESS;
 }
 
@@ -2755,7 +2759,10 @@ static REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id,
   RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, id, &nnode, &ncell,
                                      &l2c),
       "l2c");
-  RAS(nnode > 0 && ncell > 0, "empty zone");
+  if (nnode <= 0 || ncell <= 0) {
+    ref_free(l2c);
+    return REF_SUCCESS;
+  }
 
   if (ref_mpi_once(ref_mpi)) {
     REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
@@ -2815,7 +2822,6 @@ static REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id,
       "c2n");
 
   ref_free(l2c);
-
   return REF_SUCCESS;
 }
 
@@ -2837,7 +2843,10 @@ static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
 
   RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
       "l2c");
-  RAS(nnode > 0 && ncell > 0, "empty zone");
+  if (nnode <= 0 || ncell <= 0) {
+    ref_free(l2c);
+    return REF_SUCCESS;
+  }
 
   if (ref_mpi_once(ref_mpi)) {
     REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
@@ -2897,7 +2906,6 @@ static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
       "c2n");
 
   ref_free(l2c);
-
   return REF_SUCCESS;
 }
 
