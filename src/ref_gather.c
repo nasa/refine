@@ -699,7 +699,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     }
     if (NULL == zone_title) {
       fprintf(ref_gather->grid_file,
-              "zone t=\"part\", nodes=" REF_GLOB_FMT
+              "zone t=\"surf\", nodes=" REF_GLOB_FMT
               ", elements=%ld, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
               nnode, ncell, "point", "fetriangle", ref_gather->time);
@@ -790,7 +790,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       if (ref_grid_once(ref_grid)) {
         if (NULL == zone_title) {
           fprintf(ref_gather->grid_file,
-                  "zone t=\"qpart\", nodes=" REF_GLOB_FMT
+                  "zone t=\"qtet\", nodes=" REF_GLOB_FMT
                   ", elements=%ld, datapacking=%s, "
                   "zonetype=%s, solutiontime=%f\n",
                   nnode, ncell, "point", "fetetrahedron", ref_gather->time);
@@ -847,7 +847,7 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
     fprintf(file, "title=\"tecplot refine partition file\"\n");
     fprintf(file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
     fprintf(file,
-            "zone t=\"part\", nodes=" REF_GLOB_FMT
+            "zone t=\"surf\", nodes=" REF_GLOB_FMT
             ", elements=%ld, datapacking=%s, "
             "zonetype=%s\n",
             nnode, ncell, "point", "fetriangle");
