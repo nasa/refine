@@ -2608,9 +2608,8 @@ REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
   return REF_INCREASE_LIMIT;
 }
 
-REF_STATUS ref_gather_plt_tri_header(REF_GRID ref_grid, REF_INT id, FILE *file);
-REF_STATUS ref_gather_plt_tri_header(REF_GRID ref_grid, REF_INT id,
-                                     FILE *file) {
+static REF_STATUS ref_gather_plt_tri_header(REF_GRID ref_grid, REF_INT id,
+                                            FILE *file) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   char zonename[256];
   int ascii[256];
@@ -2647,7 +2646,7 @@ REF_STATUS ref_gather_plt_tri_header(REF_GRID ref_grid, REF_INT id,
 
   sprintf(zonename, "tri%d", id);
   RSS(ref_gather_plt_char_int(zonename, 256, &len, ascii), "a2i");
-  REIS(3, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "title");
+  REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "title");
 
   REIS(1, fwrite(&parentzone, sizeof(int), 1, file), "int");
   REIS(1, fwrite(&strandid, sizeof(int), 1, file), "int");
@@ -2731,10 +2730,9 @@ static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id, REF_INT ldim,
-                                   REF_DBL *scalar, FILE *file);
-REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id, REF_INT ldim,
-                                   REF_DBL *scalar, FILE *file) {
+static REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id,
+                                          REF_INT ldim, REF_DBL *scalar,
+                                          FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   float zonemarker = 299.0;
@@ -2746,9 +2744,7 @@ REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id, REF_INT ldim,
   int connsharing = -1;
   double mindata, maxdata;
   REF_INT node, ixyz, i;
-  REF_BOOL as_brick = REF_FALSE;
 
-  ref_cell = ref_grid_tet(ref_grid);
   RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, id, &nnode, &ncell,
                                      &l2c),
       "l2c");
@@ -2793,8 +2789,8 @@ REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id, REF_INT ldim,
                                 file),
       "block points");
 
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, REF_TRUE, as_brick,
-                          file),
+  RSS(ref_gather_cell_id_tec(ref_node, ref_cell, id, ncell, l2c, REF_TRUE,
+                             file),
       "c2n");
 
   ref_free(l2c);
@@ -2882,6 +2878,7 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   int ascii[1024];
   int i, len, numvar = 3 + ldim;
   float eohmarker = 357.0;
+  REF_INT cell_id, min_faceid, max_faceid;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
@@ -2920,10 +2917,19 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
     REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "var");
   }
 
-  RSS(ref_gather_plt_tet_header(ref_grid, as_brick, file), "plt tet zone");
+  RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+
+  for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
+    RSS(ref_gather_plt_tri_header(ref_grid, cell_id, file), "plt tet header");
+  }
+  RSS(ref_gather_plt_tet_header(ref_grid, as_brick, file), "plt tet header");
 
   REIS(1, fwrite(&eohmarker, sizeof(float), 1, file), "eohmarker");
 
+  for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
+    RSS(ref_gather_plt_tri_zone(ref_grid, cell_id, ldim, scalar, file),
+        "plt tri zone");
+  }
   RSS(ref_gather_plt_tet_zone(ref_grid, ldim, scalar, as_brick, file),
       "plt tet zone");
 
