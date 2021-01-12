@@ -2749,7 +2749,7 @@ static REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id,
   int passive = 0;
   int varsharing = 0;
   int connsharing = -1;
-  double mindata, maxdata;
+  double mindata, maxdata, tempdata;
   REF_INT node, ixyz, i;
 
   RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, id, &nnode, &ncell,
@@ -2778,6 +2778,10 @@ static REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id,
         maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, l2c[node]));
       }
     }
+    tempdata = mindata;
+    RSS(ref_mpi_min(ref_mpi, &tempdata, &mindata, REF_DBL_TYPE), "mpi min");
+    tempdata = maxdata;
+    RSS(ref_mpi_max(ref_mpi, &tempdata, &maxdata, REF_DBL_TYPE), "mpi max");
     if (ref_mpi_once(ref_mpi)) {
       REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
       REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
@@ -2792,6 +2796,10 @@ static REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id,
         maxdata = MAX(maxdata, scalar[i + ldim * node]);
       }
     }
+    tempdata = mindata;
+    RSS(ref_mpi_min(ref_mpi, &tempdata, &mindata, REF_DBL_TYPE), "mpi min");
+    tempdata = maxdata;
+    RSS(ref_mpi_max(ref_mpi, &tempdata, &maxdata, REF_DBL_TYPE), "mpi max");
     if (ref_mpi_once(ref_mpi)) {
       REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
       REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
@@ -2824,10 +2832,9 @@ static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
   int passive = 0;
   int varsharing = 0;
   int connsharing = -1;
-  double mindata, maxdata;
+  double mindata, maxdata, tempdata;
   REF_INT node, ixyz, i;
 
-  ref_cell = ref_grid_tet(ref_grid);
   RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
       "l2c");
   RAS(nnode > 0 && ncell > 0, "empty zone");
@@ -2853,6 +2860,10 @@ static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
         maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, l2c[node]));
       }
     }
+    tempdata = mindata;
+    RSS(ref_mpi_min(ref_mpi, &tempdata, &mindata, REF_DBL_TYPE), "mpi min");
+    tempdata = maxdata;
+    RSS(ref_mpi_max(ref_mpi, &tempdata, &maxdata, REF_DBL_TYPE), "mpi max");
     if (ref_mpi_once(ref_mpi)) {
       REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
       REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
@@ -2867,6 +2878,10 @@ static REF_STATUS ref_gather_plt_tet_zone(REF_GRID ref_grid, REF_INT ldim,
         maxdata = MAX(maxdata, scalar[i + ldim * node]);
       }
     }
+    tempdata = mindata;
+    RSS(ref_mpi_min(ref_mpi, &tempdata, &mindata, REF_DBL_TYPE), "mpi min");
+    tempdata = maxdata;
+    RSS(ref_mpi_max(ref_mpi, &tempdata, &maxdata, REF_DBL_TYPE), "mpi max");
     if (ref_mpi_once(ref_mpi)) {
       REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
       REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
