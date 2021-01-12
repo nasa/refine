@@ -349,7 +349,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) == part) {
         for (node = 0; node < node_per; node++) {
-          globals[node] = l2c[nodes[node]] + 1;
+          globals[node] = l2c[nodes[node]];
         }
         if (binary) {
           if (as_brick) {
@@ -369,12 +369,13 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
           } else {
             for (node = 0; node < node_per; node++) {
               int int_node;
-              int_node = (int)globals[node] - 1; /* tecplot zero-based */
+              int_node = (int)globals[node]; /* binary zero-based */
               REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
             }
           }
         } else {
           for (node = 0; node < node_per; node++) {
+            globals[node]++; /* ascii one-based */
             fprintf(file, " " REF_GLOB_FMT, globals[node]);
           }
           fprintf(file, "\n");
@@ -391,9 +392,6 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
       RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
-        for (node = 0; node < node_per; node++) {
-          c2n[node + node_per * cell]++;
-        }
         if (binary) {
           if (as_brick) {
             int int_node;
@@ -412,13 +410,13 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
           } else {
             for (node = 0; node < node_per; node++) {
               int int_node;
-              int_node = (int)c2n[node + node_per * cell] - 1; /* zero-based */
+              int_node = (int)c2n[node + node_per * cell]; /* bin zero-based */
               REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
             }
           }
         } else {
           for (node = 0; node < node_per; node++) {
-            c2n[node + node_per * cell]++;
+            c2n[node + node_per * cell]++; /* ascii one-based */
             fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
           }
           fprintf(file, "\n");
@@ -460,7 +458,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
 static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
                                          REF_INT cell_id,
                                          REF_LONG ncell_expected, REF_GLOB *l2c,
-                                         FILE *file) {
+                                         REF_BOOL binary, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -479,11 +477,21 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
         if (ref_mpi_rank(ref_mpi) == part) {
           for (node = 0; node < node_per; node++) {
             globals[node] = l2c[nodes[node]];
-            globals[node]++;
-            fprintf(file, " " REF_GLOB_FMT, globals[node]);
+          }
+          if (binary) {
+            for (node = 0; node < node_per; node++) {
+              int int_node;
+              int_node = (int)globals[node]; /* binary zero-based */
+              REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+            }
+          } else {
+            for (node = 0; node < node_per; node++) {
+              globals[node]++; /* ascii one-based */
+              fprintf(file, " " REF_GLOB_FMT, globals[node]);
+            }
+            fprintf(file, "\n");
           }
           ncell_actual++;
-          fprintf(file, "\n");
         }
       }
     }
@@ -496,12 +504,20 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
       RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
-        for (node = 0; node < node_per; node++) {
-          c2n[node + node_per * cell]++;
-          fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
+        if (binary) {
+          for (node = 0; node < node_per; node++) {
+            int int_node;
+            int_node = (int)c2n[node + node_per * cell]; /* bin zero-based */
+            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
+          }
+        } else {
+          for (node = 0; node < node_per; node++) {
+            c2n[node + node_per * cell]++; /* ascii one-based */
+            fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
+          }
+          fprintf(file, "\n");
         }
         ncell_actual++;
-        fprintf(file, "\n");
       }
       ref_free(c2n);
     }
@@ -2452,7 +2468,8 @@ static REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
       }
       RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
           "nodes");
-      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c, file),
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c,
+                                 REF_FALSE, file),
           "t");
     }
     ref_free(l2c);
@@ -2471,7 +2488,8 @@ static REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
       }
       RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
           "nodes");
-      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c, file),
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c,
+                                 REF_FALSE, file),
           "t");
     }
     ref_free(l2c);
@@ -2546,7 +2564,8 @@ REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
       }
       RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
           "nodes");
-      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c, file),
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c,
+                                 REF_FALSE, file),
           "t");
     }
     ref_free(l2c);
@@ -2565,7 +2584,8 @@ REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
       }
       RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
           "nodes");
-      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c, file),
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c,
+                                 REF_FALSE, file),
           "t");
     }
     ref_free(l2c);
