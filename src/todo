@@ -5,8 +5,6 @@ use CGNS winding
 
 understand interp max error reports
 
-sync surf/tri/face zone titles
-
 facelift direct surrogate boundary representation tolerance
   + share via meshb
   + higher order surface

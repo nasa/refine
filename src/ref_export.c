@@ -458,7 +458,7 @@ static REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
         "extract this boundary");
 
     fprintf(file,
-            "zone t=\"surf%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zone t=\"face%d\", nodes=%d, elements=%d, datapacking=%s, "
             "zonetype=%s\n",
             boundary_tag, nnode, nface, "point", "fequadrilateral");
 
@@ -524,7 +524,7 @@ static REF_STATUS ref_export_tec_tr2_zone(REF_GRID ref_grid, FILE *file) {
         "extract this tri");
 
     fprintf(file,
-            "zone t=\"p2tri%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zone t=\"p2face%d\", nodes=%d, elements=%d, datapacking=%s, "
             "zonetype=%s\n",
             boundary_tag, nnode, 4 * ncell, "point", "fetriangle");
 
@@ -583,7 +583,7 @@ static REF_STATUS ref_export_tec_tr3_zone(REF_GRID ref_grid, FILE *file) {
         "extract this tri");
 
     fprintf(file,
-            "zone t=\"p3tri%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zone t=\"p3face%d\", nodes=%d, elements=%d, datapacking=%s, "
             "zonetype=%s\n",
             boundary_tag, nnode, 9 * ncell, "point", "fetriangle");
 
@@ -660,7 +660,7 @@ static REF_STATUS ref_export_tec_twod_zone(REF_GRID ref_grid, FILE *file) {
         "extract this boundary");
 
     fprintf(file,
-            "zone t=\"surf%d\", nodes=%d, elements=%d, datapacking=%s, "
+            "zone t=\"face%d\", nodes=%d, elements=%d, datapacking=%s, "
             "zonetype=%s\n",
             boundary_tag, nnode, nface, "point", "fequadrilateral");
 
@@ -875,7 +875,7 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
 
   fprintf(
       file,
-      "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+      "zone t=\"ellipse\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
       1 * ncell, 1 * ncell, "point", "felineseg");
 
   for (node = 0; node < nnode; node++) {
@@ -977,7 +977,7 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
 
   fprintf(
       file,
-      "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+      "zone t=\"ellipse\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
       3 * ncell, 3 * ncell, "point", "felineseg");
 
   for (node = 0; node < nnode; node++) {
