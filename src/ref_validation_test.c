@@ -38,6 +38,7 @@
 #include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
+#include "ref_part.h"
 #include "ref_sort.h"
 
 static REF_STATUS ref_validation_lb8_ugrid_volume(const char *filename) {
@@ -91,16 +92,105 @@ static REF_STATUS ref_validation_lb8_ugrid_volume(const char *filename) {
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_GRID ref_grid;
-  REF_INT vol_pos = REF_EMPTY;
+  REF_INT pos = REF_EMPTY;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
-  RXS(ref_args_find(argc, argv, "--vol", &vol_pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != vol_pos) {
-    REIS(1, vol_pos, " ref_validation_test --vol grid.lb8.ugrid");
+  RXS(ref_args_find(argc, argv, "--const", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    REF_GRID ref_grid;
+    REF_INT ldim = 4;
+    REF_DBL *counts;
+    REF_INT *total, *four, *three;
+    REF_INT part, hits, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_NODE ref_node;
+    REF_CELL ref_cell;
+    const char *varnames[] = {"degree", "three", "four", "threeratio"};
+
+    REIS(1, pos, " ref_validation_test --const input.meshb");
+    REIS(3, argc, " ref_validation_test --const input.meshb");
+
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[2]);
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
+      ref_mpi_stopwatch_stop(ref_mpi, "part");
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import");
+    }
+    ref_node = ref_grid_node(ref_grid);
+    ref_cell = ref_grid_tet(ref_grid);
+    ref_malloc_init(counts, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 0);
+    ref_malloc_init(total, ref_node_max(ref_grid_node(ref_grid)), REF_INT, 0);
+    ref_malloc_init(four, ref_node_max(ref_grid_node(ref_grid)), REF_INT, 0);
+    ref_malloc_init(three, ref_node_max(ref_grid_node(ref_grid)), REF_INT, 0);
+
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        hits = 0;
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          if (!ref_cell_node_empty(ref_grid_tri(ref_grid), nodes[cell_node]))
+            hits++;
+        }
+        if (4 == hits) {
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            four[nodes[cell_node]] += 1;
+          }
+        }
+        if (3 == hits) {
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            three[nodes[cell_node]] += 1;
+          }
+        }
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          total[nodes[cell_node]] += 1;
+        }
+      }
+    }
+
+    RSS(ref_node_localize_ghost_int(ref_node, total), "total");
+    RSS(ref_node_localize_ghost_int(ref_node, three), "total");
+    RSS(ref_node_localize_ghost_int(ref_node, four), "total");
+
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_owned(ref_node, node)) {
+        counts[0 + ldim * node] = (REF_DBL)total[node];
+        counts[1 + ldim * node] = (REF_DBL)three[node];
+        counts[2 + ldim * node] = (REF_DBL)four[node];
+        if (0 < total[node]) {
+          counts[3 + ldim * node] = (REF_DBL)four[node] / (REF_DBL)total[node];
+        }
+      }
+    }
+
+    RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), counts, ldim),
+        "update ghosts");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "count");
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, counts, varnames,
+                                       "ref_validation_counts.plt"),
+        "plt");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "gather");
+
+    ref_free(four);
+    ref_free(three);
+    ref_free(total);
+    ref_free(counts);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "--vol", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    REIS(1, pos, " ref_validation_test --vol grid.lb8.ugrid");
     REIS(3, argc, " ref_validation_test --vol grid.lb8.ugrid");
     RSS(ref_validation_lb8_ugrid_volume(argv[2]), "ugrid vol");
     RSS(ref_mpi_free(ref_mpi), "free");
@@ -109,6 +199,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc > 1) {
+    REF_GRID ref_grid;
     printf("validating\n");
 
     printf("reading %s\n", argv[1]);
@@ -129,6 +220,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (!ref_mpi_para(ref_mpi)) {
+    REF_GRID ref_grid;
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "twod brick");
     RSS(ref_validation_twod_orientation(ref_grid), "twod tri orientation");
     RSS(ref_grid_free(ref_grid), "free");
