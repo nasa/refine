@@ -92,15 +92,14 @@ static REF_STATUS ref_validation_lb8_ugrid_volume(const char *filename) {
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_GRID ref_grid;
-  REF_INT vol_pos = REF_EMPTY;
+  REF_INT pos = REF_EMPTY;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
-  RXS(ref_args_find(argc, argv, "--vol", &vol_pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != vol_pos) {
-    REIS(1, vol_pos, " ref_validation_test --vol grid.lb8.ugrid");
+  RXS(ref_args_find(argc, argv, "--vol", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    REIS(1, pos, " ref_validation_test --vol grid.lb8.ugrid");
     REIS(3, argc, " ref_validation_test --vol grid.lb8.ugrid");
     RSS(ref_validation_lb8_ugrid_volume(argv[2]), "ugrid vol");
     RSS(ref_mpi_free(ref_mpi), "free");
