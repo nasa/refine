@@ -38,6 +38,7 @@
 #include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
+#include "ref_part.h"
 #include "ref_sort.h"
 
 static REF_STATUS ref_validation_lb8_ugrid_volume(const char *filename) {
@@ -91,11 +92,38 @@ static REF_STATUS ref_validation_lb8_ugrid_volume(const char *filename) {
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_GRID ref_grid;
   REF_INT pos = REF_EMPTY;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
+
+  RXS(ref_args_find(argc, argv, "--const", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    REF_GRID ref_grid;
+    REF_INT ldim = 3;
+    REF_DBL *counts;
+
+    REIS(1, pos, " ref_validation_test --const input.meshb");
+    REIS(3, argc, " ref_validation_test --const input.meshb");
+
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[2]);
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
+      ref_mpi_stopwatch_stop(ref_mpi, "part");
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import");
+    }
+
+    ref_malloc(counts, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    ref_free(counts);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   RXS(ref_args_find(argc, argv, "--vol", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
@@ -108,6 +136,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (argc > 1) {
+    REF_GRID ref_grid;
     printf("validating\n");
 
     printf("reading %s\n", argv[1]);
@@ -128,6 +157,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (!ref_mpi_para(ref_mpi)) {
+    REF_GRID ref_grid;
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "twod brick");
     RSS(ref_validation_twod_orientation(ref_grid), "twod tri orientation");
     RSS(ref_grid_free(ref_grid), "free");
