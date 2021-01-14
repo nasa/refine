@@ -2617,6 +2617,8 @@ REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT edgeid,
   RSS(ref_egads_edge_trange(ref_geom, edgeid, trange), "trange");
 
   nface = 0;
+  faces[0] = REF_EMPTY;
+  faces[1] = REF_EMPTY;
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
          EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
