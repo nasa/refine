@@ -2600,6 +2600,86 @@ REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
 #endif
 }
 
+REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT edgeid,
+                                 REF_DBL *min_angle, REF_DBL *max_angle) {
+#ifdef HAVE_EGADS
+  REF_INT i, n = 11;
+  REF_INT face, edge;
+  REF_INT faces[2], nface;
+  REF_DBL trange[2];
+
+  ego esurf, *eloops;
+  int oclass, mtype, nloop, *senses;
+  double data[18];
+  ego ecurve, *eedges;
+  int iloop, iedge, nedge;
+
+  RSS(ref_egads_edge_trange(ref_geom, edgeid, trange), "trange");
+
+  nface = 0;
+  for (face = 0; face < (ref_geom->nface); face++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
+                        &mtype, data, &nloop, &eloops, &senses),
+         "topo");
+    for (iloop = 0; iloop < nloop; iloop++) {
+      /* loop through all Edges associated with this Loop */
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype, data, &nedge,
+                          &eedges, &senses),
+           "topo");
+      for (iedge = 0; iedge < nedge; iedge++) {
+        edge = EG_indexBodyTopo((ego)(ref_geom->solid), eedges[iedge]) - 1;
+        if (edgeid == edge + 1) {
+          RAB(2 > nface, "edge has more than 2 faces",
+              printf("face ids %d %d %d edge id %d\n", faces[0], faces[1],
+                     face + 1, edge + 1));
+          faces[nface] = face + 1;
+          nface++;
+        }
+      }
+    }
+  }
+  REIS(2, nface, "expected two faces for edge");
+
+  for (i = 0; i < n; i++) {
+    REF_DBL ss, t;
+    REF_DBL uv[2];
+    REF_DBL kr, r[3], ks, s[3];
+    REF_DBL n0[3], n1[3];
+    REF_DBL angle;
+    ss = i / (double)(n - 1);
+    t = ss * trange[1] + (ss - 1.0) * trange[0];
+    RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faces[0], 0, t, uv), "uv0");
+    RSS(ref_egads_face_curvature_at(ref_geom, faces[0], 0, uv, &kr, r, &ks, s),
+        "curve0");
+    ref_math_cross_product(r, s, n0);
+    RSS(ref_math_normalize(n0), "verify");
+    RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faces[1], 0, t, uv), "uv0");
+    RSS(ref_egads_face_curvature_at(ref_geom, faces[1], 0, uv, &kr, r, &ks, s),
+        "curve0");
+    ref_math_cross_product(r, s, n1);
+    RSS(ref_math_normalize(n1), "verify");
+    angle = ref_math_in_degrees(acos(ref_math_dot(n0, n1)));
+    if (0 == i) {
+      *min_angle = angle;
+      *max_angle = angle;
+    } else {
+      *min_angle = MIN(*min_angle, angle);
+      *max_angle = MIN(*max_angle, angle);
+    }
+  }
+  return REF_SUCCESS;
+#else
+  printf("No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeid);
+  *min_angle = 0.0;
+  *max_angle = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
                                   REF_INT faceid, REF_INT sense, REF_DBL t,
                                   REF_DBL *uv) {
