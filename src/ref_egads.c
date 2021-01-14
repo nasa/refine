@@ -3223,6 +3223,68 @@ REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id) {
   return REF_SUCCESS;
 }
 
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
+    defined(HAVE_EGADS_EFFECTIVE)
+static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
+  int nface, i;
+  ego *faces;
+  REF_DICT ref_dict;
+  REF_INT key, flag, minflag, maxflag, n, value;
+  RSS(ref_dict_create(&ref_dict), "create");
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, FACE, &nface, &faces),
+       "EG face topo");
+  for (i = 0; i < nface; i++) {
+    int len, atype;
+    const double *preals;
+    const int *pints;
+    const char *string;
+
+    if (EGADS_SUCCESS == EG_attributeRet(faces[i], "group", &atype, &len,
+                                         &pints, &preals, &string)) {
+      if (ATTRINT == atype) RSS(ref_dict_store(ref_dict, i, pints[0]), "store");
+      if (ATTRREAL == atype) {
+        double dbl = round(preals[0]);
+        RSS(ref_dict_store(ref_dict, i, (REF_INT)dbl), "store");
+      }
+    }
+  }
+  minflag = REF_INT_MAX;
+  maxflag = REF_INT_MIN;
+  each_ref_dict_key_value(ref_dict, i, key, flag) {
+    minflag = MIN(flag, minflag);
+    maxflag = MAX(flag, maxflag);
+  }
+  printf("flag range %d %d\n", minflag, maxflag);
+  for (flag = minflag; flag <= maxflag; flag++) {
+    n = 0;
+    each_ref_dict_key_value(ref_dict, i, key, value) {
+      if (flag == value) {
+        n++;
+      }
+    }
+    printf("flag %d has %d members\n", flag, n);
+    if (n > 0) {
+      ego eface, *group_faces;
+      ref_malloc(group_faces, n, ego);
+      n = 0;
+      each_ref_dict_key_value(ref_dict, i, key, value) {
+        if (flag == value) {
+          group_faces[n] = faces[key];
+          n++;
+        }
+      }
+      REIS(EGADS_SUCCESS, EG_makeEFace(ebody, n, group_faces, &eface),
+           "initEB");
+      ref_free(group_faces);
+    }
+  }
+  EG_free(faces);
+  RSS(ref_dict_free(ref_dict), "free");
+  return REF_SUCCESS;
+}
+
+#endif
+
 REF_STATUS ref_egads_quilt(const char *filename) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
@@ -3283,64 +3345,8 @@ REF_STATUS ref_egads_quilt(const char *filename) {
   angle = 10.0;
   REIS(EGADS_SUCCESS, EG_initEBody(effective[1], angle, &effective[2]),
        "initEB");
-  {
-    int nface, i;
-    ego *faces;
-    REF_DICT ref_dict;
-    REF_INT key, flag, minflag, maxflag, n, value;
-    RSS(ref_dict_create(&ref_dict), "create");
-    REIS(EGADS_SUCCESS,
-         EG_getBodyTopos(effective[0], NULL, FACE, &nface, &faces),
-         "EG face topo");
-    for (i = 0; i < nface; i++) {
-      int len, atype;
-      const double *preals;
-      const int *pints;
-      const char *string;
 
-      if (EGADS_SUCCESS == EG_attributeRet(faces[i], "group", &atype, &len,
-                                           &pints, &preals, &string)) {
-        if (ATTRINT == atype)
-          RSS(ref_dict_store(ref_dict, i, pints[0]), "store");
-        if (ATTRREAL == atype) {
-          double dbl = round(preals[0]);
-          RSS(ref_dict_store(ref_dict, i, (REF_INT)dbl), "store");
-        }
-      }
-    }
-    minflag = REF_INT_MAX;
-    maxflag = REF_INT_MIN;
-    each_ref_dict_key_value(ref_dict, i, key, flag) {
-      minflag = MIN(flag, minflag);
-      maxflag = MAX(flag, maxflag);
-    }
-    printf("flag range %d %d\n", minflag, maxflag);
-    for (flag = minflag; flag <= maxflag; flag++) {
-      n = 0;
-      each_ref_dict_key_value(ref_dict, i, key, value) {
-        if (flag == value) {
-          n++;
-        }
-      }
-      printf("flag %d has %d members\n", flag, n);
-      if (n > 0) {
-        ego eface, *group_faces;
-        ref_malloc(group_faces, n, ego);
-        n = 0;
-        each_ref_dict_key_value(ref_dict, i, key, value) {
-          if (flag == value) {
-            group_faces[n] = faces[key];
-            n++;
-          }
-        }
-        REIS(EGADS_SUCCESS, EG_makeEFace(effective[2], n, group_faces, &eface),
-             "initEB");
-        ref_free(group_faces);
-      }
-    }
-    EG_free(faces);
-    RSS(ref_dict_free(ref_dict), "free");
-  }
+  RSS(ref_egads_quilt_attributes(effective[0], effective[2]), "quilt attr");
 
   REIS(EGADS_SUCCESS, EG_finishEBody(effective[2]), "finEB");
 
