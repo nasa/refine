@@ -332,6 +332,34 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
          EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
          "make solid body");
   }
+  if (0 == strcmp("boxbox", solid)) {
+    int stype = BOX;
+    ego box1, box2;
+    {
+      double data[6] = {0.0, 0.0, 0.0, 1.0, 1.0, 0.5};
+      REIS(EGADS_SUCCESS,
+           EG_makeSolidBody((ego)(ref_geom->context), stype, data, &box1),
+           "make solid body");
+    }
+    {
+      double data[6] = {0.0, 0.0, 0.5, 1.0, 1.0, 0.5};
+      REIS(EGADS_SUCCESS,
+           EG_makeSolidBody((ego)(ref_geom->context), stype, data, &box2),
+           "make solid body");
+    }
+    {
+      ego boxbox, geom, *bodies;
+      int oclass, nego, nbody, *senses;
+      REIS(EGADS_SUCCESS, EG_generalBoolean(box1, box2, FUSION, 0.0, &boxbox),
+           "make solid body");
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(boxbox, &geom, &oclass, &nego, NULL, &nbody, &bodies,
+                          &senses),
+           "EG topo bodies");
+      REIS(1, nbody, "expected 1 body");
+      body = bodies[0];
+    }
+  }
   if (0 == strcmp("steinmetz", solid)) {
     int stype = CYLINDER;
     ego cyl1, cyl2;
