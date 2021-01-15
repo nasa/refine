@@ -66,6 +66,7 @@ struct REF_GEOM_STRUCT {
   REF_BOOL manifold;
   REF_BOOL contex_owned;
   void *context;
+  void *model;
   void *body;
   void *faces;
   void *edges;
@@ -88,7 +89,7 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_cad_data_size(ref_geom) ((ref_geom)->cad_data_size)
 #define ref_geom_facelift(ref_geom) ((ref_geom)->ref_facelift)
 
-#define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->body))
+#define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->model))
 #define ref_geom_meshlinked(ref_geom) (NULL != (void *)((ref_geom)->meshlink))
 
 #define ref_geom_descr(ref_geom, attribute, geom) \

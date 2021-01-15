@@ -91,6 +91,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->contex_owned = REF_TRUE;
   ref_geom->context = NULL;
   RSS(ref_egads_open(ref_geom), "open egads");
+  ref_geom->model = NULL;
   ref_geom->body = NULL;
   ref_geom->faces = NULL;
   ref_geom->edges = NULL;
@@ -188,6 +189,7 @@ REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
   ref_geom_recipient->effective_curvature = ref_geom_donor->effective_curvature;
   ref_geom_recipient->manifold = ref_geom_donor->manifold;
   ref_geom_recipient->context = ref_geom_donor->context;
+  ref_geom_recipient->model = ref_geom_donor->model;
   ref_geom_recipient->body = ref_geom_donor->body;
   ref_geom_recipient->faces = ref_geom_donor->faces;
   ref_geom_recipient->edges = ref_geom_donor->edges;

@@ -246,6 +246,8 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   }
 #endif
 
+  ref_geom->model = (void *)model;
+
   REIS(EGADS_SUCCESS,
        EG_getTopology(model, &geom, &oclass, &nego, NULL, &nbody, &bodies,
                       &senses),
@@ -271,6 +273,9 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   }
 
 #endif
+
+  ref_geom->body = (void *)body;
+
   REIS(EGADS_SUCCESS,
        EG_getTopology(body, &geom, &oclass, &mtype, NULL, &nchild, &children,
                       &senses),
@@ -278,7 +283,6 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   RAB(SOLIDBODY == mtype || FACEBODY == mtype || SHEETBODY == mtype,
       "expected SOLIDBODY or FACEBODY or SHEETBODY",
       { printf("mtype %d\n", mtype); });
-  ref_geom->body = (void *)body;
   ref_geom->manifold = (SOLIDBODY == mtype);
 
   RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
@@ -293,19 +297,9 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 
 REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
-  ego model;
-  ego children[1];
-  RAS(!ref_geom_effective(ref_geom), "implement effective");
-  REIS(EGADS_SUCCESS,
-       EG_copyObject((ego)(ref_geom->body), NULL, &(children[0])), "copy body");
-  REIS(EGADS_SUCCESS,
-       EG_makeTopology((ego)(ref_geom->context), NULL, MODEL, 0, NULL, 1,
-                       children, NULL, &model),
-       "make Topo Model");
   remove(filename); /* ignore failure */
-  REIS(EGADS_SUCCESS, EG_saveModel(model, filename), "EG save");
-  REIS(0, EG_deleteObject(model), "delete temp model");
-
+  REIS(EGADS_SUCCESS, EG_saveModel((ego)(ref_geom->model), filename),
+       "EG save");
 #else
   printf("nothing for %s, No EGADS(full) linked for %s\n", __func__, filename);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -376,7 +370,8 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
                           &senses),
            "EG topo bodies");
       REIS(1, nbody, "expected 1 body");
-      body = bodies[0];
+      REIS(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &body), "copy body");
+      REIS(0, EG_deleteObject(boxbox), "delete temp model");
     }
   }
   if (0 == strcmp("steinmetz", description)) {
@@ -405,7 +400,8 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
                           &senses),
            "EG topo bodies");
       REIS(1, nbody, "expected 1 body");
-      body = bodies[0];
+      REIS(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &body), "copy body");
+      REIS(0, EG_deleteObject(stein), "delete temp model");
     }
   }
   if (0 == strcmp("revolve", description)) {
@@ -621,6 +617,14 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
   RSS(REF_IMPLEMENT, "requires full EGADS, not EGADSlite");
 #endif
   RNB(body, "unknown description", { printf(">%s<\n", description); });
+  {
+    ego model;
+    REIS(EGADS_SUCCESS,
+         EG_makeTopology((ego)(ref_geom->context), NULL, MODEL, 0, NULL, 1,
+                         &body, NULL, &model),
+         "make Topo Model");
+    ref_geom->model = (void *)model;
+  }
   ref_geom->body = (void *)body;
   ref_geom->manifold = REF_TRUE;
 
