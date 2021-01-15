@@ -295,6 +295,7 @@ REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   ego model;
   ego children[1];
+  RAS(!ref_geom_effective(ref_geom), "implement effective");
   REIS(EGADS_SUCCESS,
        EG_copyObject((ego)(ref_geom->body), NULL, &(children[0])), "copy body");
   REIS(EGADS_SUCCESS,
