@@ -1,9 +1,9 @@
 /*
 
 gcc-10  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
--I/Users/mpark/local/pkgs/EGADS/trunk/include -o egads_save \
-egads_save.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
--L/Users/mpark/local/pkgs/EGADS/trunk/lib -legads   -lm \
+-I${HOME}/local/pkgs/EGADS/trunk/include -o egads_save \
+egads_save.c -Wl,-rpath,${HOME}/local/pkgs/EGADS/trunk/lib \
+-L${HOME}/local/pkgs/EGADS/trunk/lib -legads   -lm \
 && ./egads_save
 
 */
