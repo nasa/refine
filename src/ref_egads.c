@@ -81,7 +81,7 @@ REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
 }
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_cache_solid_object(REF_GEOM ref_geom) {
+static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
   ego body = (ego)(ref_geom->body);
   ego *faces, *edges, *nodes;
   int nface, nedge, nnode;
@@ -281,7 +281,7 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   ref_geom->body = (void *)body;
   ref_geom->manifold = (SOLIDBODY == mtype);
 
-  RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
+  RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
 
 #else
   printf("nothing for %s, No EGADS linked for %s\n", __func__, filename);
@@ -604,7 +604,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
   ref_geom->body = (void *)body;
   ref_geom->manifold = REF_TRUE;
 
-  RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
+  RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
 
 #else
   printf("nothing for %s, No EGADS linked for %s\n", __func__, description);
@@ -3443,7 +3443,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
   ref_free(ref_geom->face_min_length);
   ref_free(ref_geom->initial_cell_height);
   ref_free(ref_geom->uv_area_sign);
-  RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
+  RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
 
   return REF_SUCCESS;
 #else
