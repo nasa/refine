@@ -191,7 +191,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free geom/context");
   }
 
-  if (ref_egads_allows_construction()) { /* boxbox quilt save/load */
+  if (ref_egads_allows_construction() &&
+      ref_egads_allows_effective()) { /* boxbox quilt save/load */
     REF_GEOM ref_geom;
     /* char file[] = "ref_egads_test_io_eff_boxbox.egads"; */
 
