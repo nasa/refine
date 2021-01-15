@@ -179,6 +179,17 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
+  if (ref_egads_allows_construction()) { /* boxbox quilt */
+    REF_GEOM ref_geom;
+
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
+    RAS(!ref_geom_effective(ref_geom), "not effective");
+    RSS(ref_egads_quilt(ref_geom), "quilt");
+    RAS(ref_geom_effective(ref_geom), "effective");
+    RSS(ref_geom_free(ref_geom), "free geom/context");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

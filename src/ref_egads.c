@@ -3393,3 +3393,63 @@ REF_STATUS ref_egads_quilt_file(const char *filename) {
   return REF_SUCCESS;
 #endif
 }
+
+REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
+    defined(HAVE_EGADS_EFFECTIVE)
+  ego effective[3];
+  double angle;
+  RAS(!ref_geom_effective(ref_geom), "already effective, quilting twice?");
+
+  effective[0] = (ego)(ref_geom->solid);
+  RNS(effective[0], "EGADS body is NULL. Has the geometry been loaded?");
+
+  /* replace with adaptive robust tess method */
+  {
+    double params[3], diag, box[6];
+    ego geom;
+    int tess_status, nvert;
+    REIS(EGADS_SUCCESS, EG_getBoundingBox(effective[0], box), "EG bbox");
+    diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                (box[1] - box[4]) * (box[1] - box[4]) +
+                (box[2] - box[5]) * (box[2] - box[5]));
+
+    params[0] = 0.025 * diag;
+    params[1] = 0.0075 * diag;
+    params[2] = 20.0;
+
+    REIS(EGADS_SUCCESS, EG_makeTessBody(effective[0], params, &(effective[1])),
+         "EG tess");
+    REIS(EGADS_SUCCESS,
+         EG_statusTessBody(effective[1], &geom, &tess_status, &nvert),
+         "EG tess");
+    REIS(1, tess_status, "tess not closed");
+  }
+
+  angle = 10.0;
+  REIS(EGADS_SUCCESS, EG_initEBody(effective[1], angle, &effective[2]),
+       "initEB");
+
+  /* add quilting here */
+
+  REIS(EGADS_SUCCESS, EG_finishEBody(effective[2]), "finEB");
+
+  ref_geom->solid = (void *)effective[2];
+  ref_geom_effective(ref_geom) = REF_TRUE;
+
+  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
+  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
+  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  ref_free(ref_geom->face_seg_per_rad);
+  ref_free(ref_geom->face_min_length);
+  ref_free(ref_geom->initial_cell_height);
+  ref_free(ref_geom->uv_area_sign);
+  RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
+
+  return REF_SUCCESS;
+#else
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  return REF_SUCCESS;
+#endif
+}
