@@ -33,9 +33,9 @@ egads_save.c -Wl,-rpath,${HOME}/local/pkgs/EGADS/trunk/lib \
     }                                                                  \
   }
 
-int main(void) {
+int save_body(void) {
   ego context;
-  ego box, ebox;
+  ego box;
   ego model;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
@@ -84,6 +84,13 @@ int main(void) {
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
 
   printf("BODY load complete\n");
+  return 0;
+}
+
+int save_ebody(void) {
+  ego context;
+  ego box, ebox;
+  ego model;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -159,5 +166,11 @@ int main(void) {
 
   printf("EBODY load complete\n");
 
+  return 0;
+}
+
+int main(void) {
+  is_equal(0, save_body(), "BODY IO");
+  is_equal(0, save_ebody(), "EBODY IO");
   return 0;
 }
