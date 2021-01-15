@@ -59,5 +59,10 @@
    match-leak-kinds: reachable
    fun:malloc
    fun:_Znwm
-   fun:_ZN20Standard_MMgrFactoryC2Ev
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znam
 }
