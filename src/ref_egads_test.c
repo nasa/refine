@@ -163,6 +163,22 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  if (ref_egads_allows_construction()) { /* steinmetz save/load */
+    REF_GEOM ref_geom;
+    char file[] = "ref_egads_test_io_steinmetz.egads";
+
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
+    RSS(ref_egads_save(ref_geom, file), "save");
+    RSS(ref_geom_free(ref_geom), "free geom/context");
+
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_load(ref_geom, file), "load");
+    RSS(ref_geom_free(ref_geom), "free geom/context");
+
+    REIS(0, remove(file), "test clean up");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
