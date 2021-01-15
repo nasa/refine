@@ -58,8 +58,16 @@ int main(void) {
   is_equal(EGADS_SUCCESS, EG_saveModel(model, "egads_save_box.egads"),
            "EG save");
 
-  EG_deleteObject(model);
+  is_equal(0, EG_deleteObject(model), "clean up temp model");
   model = NULL;
+
+  is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
+
+  printf("BODY save complete\n");
+
+  is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
+  /* Success returns the old output level. (0-silent to 3-debug) */
+  is_true(EG_setOutLevel(context, 2) >= 0, "make verbose");
 
   is_equal(EGADS_SUCCESS,
            EG_loadModel(context, 0, "egads_save_box.egads", &model), "EG load");
@@ -75,7 +83,7 @@ int main(void) {
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
 
-  printf("BODY complete\n");
+  printf("BODY load complete\n");
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -123,8 +131,16 @@ int main(void) {
   is_equal(EGADS_SUCCESS, EG_saveModel(model, "egads_save_ebox.egads"),
            "EG save");
 
-  EG_deleteObject(model);
+  is_equal(0, EG_deleteObject(model), "clean up temp model");
   model = NULL;
+
+  is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
+
+  printf("EBODY save complete\n");
+
+  is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
+  /* Success returns the old output level. (0-silent to 3-debug) */
+  is_true(EG_setOutLevel(context, 2) >= 0, "make verbose");
 
   is_equal(EGADS_SUCCESS,
            EG_loadModel(context, 0, "egads_save_ebox.egads", &model),
@@ -141,7 +157,7 @@ int main(void) {
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
 
-  printf("EBODY complete\n");
+  printf("EBODY load complete\n");
 
   return 0;
 }
