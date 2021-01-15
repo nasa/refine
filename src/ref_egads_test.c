@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  if (ref_egads_allows_construction()) { /* boxbox group */
+  if (ref_egads_allows_construction()) { /* boxbox crease */
     REF_GRID ref_grid;
     REF_INT edgeid;
     REF_DBL min_angle, max_angle;
