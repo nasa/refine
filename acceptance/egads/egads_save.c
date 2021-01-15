@@ -58,6 +58,7 @@ int main(void) {
   is_equal(EGADS_SUCCESS, EG_saveModel(model, "egads_save_box.egads"),
            "EG save");
 
+  EG_deleteObject(model);
   model = NULL;
 
   is_equal(EGADS_SUCCESS,
