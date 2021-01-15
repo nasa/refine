@@ -293,8 +293,18 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 
 REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
+  ego model;
+  ego children[1];
+  REIS(EGADS_SUCCESS,
+       EG_copyObject((ego)(ref_geom->body), NULL, &(children[0])), "copy body");
+  REIS(EGADS_SUCCESS,
+       EG_makeTopology((ego)(ref_geom->context), NULL, MODEL, 0, NULL, 1,
+                       children, NULL, &model),
+       "make Topo Model");
   remove(filename); /* ignore failure */
-  REIS(EGADS_SUCCESS, EG_saveModel((ego)(ref_geom->body), filename), "EG save");
+  REIS(EGADS_SUCCESS, EG_saveModel(model, filename), "EG save");
+  REIS(0, EG_deleteObject(model), "delete temp model");
+
 #else
   printf("nothing for %s, No EGADS(full) linked for %s\n", __func__, filename);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
