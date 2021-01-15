@@ -689,7 +689,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_geom_tec(ref_grid, filename), "geom export");
     ref_mpi_stopwatch_stop(ref_mpi, "export init-geom");
   }
-  
+
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (ref_mpi_once(ref_mpi)) printf("verify manifold\n");
     RSS(ref_validation_boundary_manifold(ref_grid), "manifold");
@@ -2181,7 +2181,7 @@ shutdown:
 
 static REF_STATUS quilt(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (argc < 3) goto shutdown;
-  RSS(ref_egads_quilt(argv[2]), "quilt");
+  RSS(ref_egads_quilt_file(argv[2]), "quilt");
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) node_help(argv[0]);

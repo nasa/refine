@@ -3285,7 +3285,7 @@ static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
 
 #endif
 
-REF_STATUS ref_egads_quilt(const char *filename) {
+REF_STATUS ref_egads_quilt_file(const char *filename) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
   ego context;
