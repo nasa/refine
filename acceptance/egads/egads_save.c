@@ -74,5 +74,37 @@ int main(void) {
   }
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
+
+  printf("BODY complete\n");
+
+  is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
+  /* Success returns the old output level. (0-silent to 3-debug) */
+  is_true(EG_setOutLevel(context, 2) >= 0, "make verbose");
+
+  {
+    int stype = BOX;
+    double data[] = {-0.5, -0.5, -0.5, 1.0, 1.0, 0.5};
+    is_equal(EGADS_SUCCESS, EG_makeSolidBody(context, stype, data, &box),
+             "make solid body");
+  }
+
+  {
+    ego tess, ebox, geom;
+    int tess_status, nvert;
+    double angle;
+    double params[] = {0.1, 0.01, 20.0};
+    is_equal(EGADS_SUCCESS, EG_makeTessBody(box, params, &tess), "EG tess");
+    is_equal(EGADS_SUCCESS,
+             EG_statusTessBody(tess, &geom, &tess_status, &nvert), "EG tess");
+    is_equal(1, tess_status, "tess not closed");
+
+    /* make the effective topology object */
+    angle = 10.0;
+    is_equal(EGADS_SUCCESS, EG_initEBody(tess, angle, &ebox), "initEB");
+    is_equal(EGADS_SUCCESS, EG_finishEBody(ebox), "finEB");
+  }
+
+  is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
+
   return 0;
 }
