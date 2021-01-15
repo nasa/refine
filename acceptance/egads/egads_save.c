@@ -1,6 +1,6 @@
 /*
 
-gcc-10  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
+gcc  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
 -I${HOME}/local/pkgs/EGADS/trunk/include -o egads_save \
 egads_save.c -Wl,-rpath,${HOME}/local/pkgs/EGADS/trunk/lib \
 -L${HOME}/local/pkgs/EGADS/trunk/lib -legads   -lm \
