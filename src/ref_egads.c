@@ -311,6 +311,15 @@ REF_BOOL ref_egads_allows_construction(void) {
 #endif
 }
 
+REF_BOOL ref_egads_allows_effective(void) {
+#if defined(HAVE_EGADS) && defined(HAVE_EGADS_EFFECTIVE) && \
+    !defined(HAVE_EGADS_LITE)
+  return REF_TRUE;
+#else
+  return REF_FALSE;
+#endif
+}
+
 REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
 #if defined(HAVE_EGADS)
   ego body;

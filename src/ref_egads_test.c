@@ -179,7 +179,8 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  if (ref_egads_allows_construction()) { /* boxbox quilt */
+  if (ref_egads_allows_construction() &&
+      ref_egads_allows_effective()) { /* boxbox quilt */
     REF_GEOM ref_geom;
 
     RSS(ref_geom_create(&ref_geom), "create geom");
