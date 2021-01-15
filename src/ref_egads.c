@@ -372,6 +372,8 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
       REIS(1, nbody, "expected 1 body");
       REIS(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &body), "copy body");
       REIS(0, EG_deleteObject(boxbox), "delete temp model");
+      REIS(0, EG_deleteObject(box1), "delete box1");
+      REIS(0, EG_deleteObject(box2), "delete box2");
     }
   }
   if (0 == strcmp("steinmetz", description)) {
@@ -402,6 +404,8 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
       REIS(1, nbody, "expected 1 body");
       REIS(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &body), "copy body");
       REIS(0, EG_deleteObject(stein), "delete temp model");
+      REIS(0, EG_deleteObject(cyl1), "delete cyl1");
+      REIS(0, EG_deleteObject(cyl2), "delete cyl2");
     }
   }
   if (0 == strcmp("revolve", description)) {
