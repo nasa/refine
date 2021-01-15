@@ -311,27 +311,27 @@ REF_BOOL ref_egads_allows_construction(void) {
 #endif
 }
 
-REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
+REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
 #if defined(HAVE_EGADS)
   ego body;
   RAS(ref_egads_allows_construction(), "construction not allowed");
   body = NULL;
 #if !defined(HAVE_EGADS_LITE)
-  if (0 == strcmp("cylinder", solid)) {
+  if (0 == strcmp("cylinder", description)) {
     int stype = CYLINDER;
     double data[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
     REIS(EGADS_SUCCESS,
          EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
          "make solid body");
   }
-  if (0 == strcmp("sphere", solid)) {
+  if (0 == strcmp("sphere", description)) {
     int stype = SPHERE;
     double data[4] = {0.0, 0.0, 0.0, 1.0};
     REIS(EGADS_SUCCESS,
          EG_makeSolidBody((ego)(ref_geom->context), stype, data, &body),
          "make solid body");
   }
-  if (0 == strcmp("boxbox", solid)) {
+  if (0 == strcmp("boxbox", description)) {
     int stype = BOX;
     ego box1, box2;
     {
@@ -359,7 +359,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
       body = bodies[0];
     }
   }
-  if (0 == strcmp("steinmetz", solid)) {
+  if (0 == strcmp("steinmetz", description)) {
     int stype = CYLINDER;
     ego cyl1, cyl2;
     {
@@ -388,7 +388,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
       body = bodies[0];
     }
   }
-  if (0 == strcmp("revolve", solid)) {
+  if (0 == strcmp("revolve", description)) {
     ego nodes[4], curves[4], edges[4];
     { /* nodes */
       double xyz[3];
@@ -600,14 +600,14 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid) {
 #else
   RSS(REF_IMPLEMENT, "requires full EGADS, not EGADSlite");
 #endif
-  RNB(body, "unknown solid", { printf(">%s<\n", solid); });
+  RNB(body, "unknown description", { printf(">%s<\n", description); });
   ref_geom->body = (void *)body;
   ref_geom->manifold = REF_TRUE;
 
   RSS(ref_egads_cache_solid_object(ref_geom), "cache egads objects");
 
 #else
-  printf("nothing for %s, No EGADS linked for %s\n", __func__, solid);
+  printf("nothing for %s, No EGADS linked for %s\n", __func__, description);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
 #endif
   return REF_SUCCESS;
