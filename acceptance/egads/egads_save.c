@@ -35,7 +35,7 @@ egads_save.c -Wl,-rpath,${HOME}/local/pkgs/EGADS/trunk/lib \
 
 int main(void) {
   ego context;
-  ego box;
+  ego box, ebox;
   ego model;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
@@ -89,7 +89,7 @@ int main(void) {
   }
 
   {
-    ego tess, ebox, geom;
+    ego tess, geom;
     int tess_status, nvert;
     double angle;
     double params[] = {0.1, 0.01, 20.0};
@@ -104,7 +104,44 @@ int main(void) {
     is_equal(EGADS_SUCCESS, EG_finishEBody(ebox), "finEB");
   }
 
+  {
+    ego body, *bodies, children[2];
+    int oclass, mtype, nbody, *senses;
+    is_equal(EGADS_SUCCESS,
+             EG_getTopology(ebox, &body, &oclass, &mtype, NULL, &nbody, &bodies,
+                            &senses),
+             "EG topo bodies");
+    children[0] = body;
+    children[1] = ebox;
+
+    is_equal(EGADS_SUCCESS,
+             EG_makeTopology(context, NULL, MODEL, 2, NULL, 1, children, NULL,
+                             &model),
+             "make Topo Model");
+  }
+  remove("egads_save_ebox.egads");
+  is_equal(EGADS_SUCCESS, EG_saveModel(model, "egads_save_ebox.egads"),
+           "EG save");
+
+  EG_deleteObject(model);
+  model = NULL;
+
+  is_equal(EGADS_SUCCESS,
+           EG_loadModel(context, 0, "egads_save_ebox.egads", &model),
+           "EG load");
+  {
+    ego geom, *children;
+    int oclass, mtype, nchild, *senses;
+    is_equal(EGADS_SUCCESS,
+             EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nchild,
+                            &children, &senses),
+             "EG topo bodies");
+    printf("oclass %d mtype %d nchild %d\n", oclass, mtype, nchild);
+  }
+
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
+
+  printf("EBODY complete\n");
 
   return 0;
 }
