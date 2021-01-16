@@ -40,7 +40,8 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename);
 REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename);
 
 REF_BOOL ref_egads_allows_construction(void);
-REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *solid);
+REF_BOOL ref_egads_allows_effective(void);
+REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description);
 
 REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
                           REF_DBL *global_params);
@@ -63,6 +64,8 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
                                        REF_DBL *r, REF_DBL *ks, REF_DBL *s);
 REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
                                  REF_DBL *trange);
+REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT id,
+                                 REF_DBL *min_angle, REF_DBL *max_angle);
 REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
                                   REF_INT faceid, REF_INT sense, REF_DBL t,
                                   REF_DBL *uv);
@@ -83,7 +86,8 @@ REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                                   REF_DBL *h2, REF_DBL *dir2);
 REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id);
 
-REF_STATUS ref_egads_quilt(const char *filename);
+REF_STATUS ref_egads_quilt_file(const char *filename);
+REF_STATUS ref_egads_quilt(REF_GEOM ref_geom);
 
 END_C_DECLORATION
 

@@ -8,6 +8,7 @@ module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
 mpi_path="/usr/local/pkgs-modules/openmpi_1.10.2_intel_2017"
 zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 egads_path="${module_path}/ESP/118/EngSketchPad"
+egads_svn_path="/ump/fldmd/home/mpark/local/pkgs/EGADS/trunk"
 opencascade_path="${module_path}/ESP/118/OpenCASCADE-7.3.1"
 parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
 parmetis_path="/ump/fldmd/home/mpark/local/pkgs/parmetis-4.0.3/build/Linux-x86_64"
@@ -26,10 +27,10 @@ mkdir -p egads
     --prefix=`pwd` \
     --with-mpi=${mpi_path} \
     --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_path} \
+    --with-EGADS=${egads_svn_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CC=icc \
-    CFLAGS='-g -O3 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -fp-stack-check -fstack-security-check' \
+    CFLAGS=' -DHAVE_EGADS_EFFECTIVE -g -O3 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -fp-stack-check -fstack-security-check' \
     ) \
     || exit
 

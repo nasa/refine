@@ -140,6 +140,78 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  if (ref_egads_allows_construction()) { /* boxbox crease */
+    REF_GRID ref_grid;
+    REF_INT edgeid;
+    REF_DBL min_angle, max_angle;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "boxbox"), "create");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    /* RSS(ref_geom_tec(ref_grid, "boxbox.tec"), "geom"); */
+    edgeid = 1;
+    RSS(ref_egads_edge_crease(ref_grid_geom(ref_grid), edgeid, &min_angle,
+                              &max_angle),
+        "crease");
+    RWDS(90.0, min_angle, -1, "min angle");
+    RWDS(90.0, max_angle, -1, "min angle");
+    edgeid = 2;
+    RSS(ref_egads_edge_crease(ref_grid_geom(ref_grid), edgeid, &min_angle,
+                              &max_angle),
+        "crease");
+    RWDS(0.0, min_angle, -1, "min angle");
+    RWDS(0.0, max_angle, -1, "min angle");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  if (ref_egads_allows_construction()) { /* steinmetz save/load */
+    REF_GEOM ref_geom;
+    char file[] = "ref_egads_test_io_steinmetz.egads";
+
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
+    RSS(ref_egads_save(ref_geom, file), "save");
+    RSS(ref_geom_free(ref_geom), "free geom/context");
+
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_load(ref_geom, file), "load");
+    RSS(ref_geom_free(ref_geom), "free geom/context");
+
+    REIS(0, remove(file), "test clean up");
+  }
+
+  if (ref_egads_allows_construction() &&
+      ref_egads_allows_effective()) { /* boxbox quilt */
+    REF_GEOM ref_geom;
+
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "boxbox"), "create");
+    RAS(!ref_geom_effective(ref_geom), "not effective");
+    RSS(ref_egads_quilt(ref_geom), "quilt");
+    RAS(ref_geom_effective(ref_geom), "effective");
+    RSS(ref_geom_free(ref_geom), "free geom/context");
+  }
+
+  if (ref_egads_allows_construction() &&
+      ref_egads_allows_effective()) { /* boxbox quilt save/load */
+    REF_GEOM ref_geom;
+    /* char file[] = "ref_egads_test_io_eff_boxbox.egads"; */
+
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "boxbox"), "create");
+    RAS(!ref_geom_effective(ref_geom), "not effective");
+    RSS(ref_egads_quilt(ref_geom), "quilt");
+    RAS(ref_geom_effective(ref_geom), "effective");
+    /*
+    RSS(ref_egads_save(ref_geom, file), "save");
+    RSS(ref_geom_free(ref_geom), "free geom/context");
+
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_load(ref_geom, file), "load");
+    RAS(ref_geom_effective(ref_geom), "effective");
+    */
+    RSS(ref_geom_free(ref_geom), "free geom/context");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
