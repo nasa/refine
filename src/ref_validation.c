@@ -643,15 +643,53 @@ REF_STATUS ref_validation_repair(REF_GRID ref_grid) {
         each_ref_cell_cell_face(ref_cell, cell_face) {
           REF_INT face_nodes[4];
           REF_BOOL split_face;
+          REF_INT new_cell;
+
           face_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
           face_nodes[1] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
           face_nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
           face_nodes[3] = ref_cell_f2n(ref_cell, 3, cell_face, cell0);
           RSS(ref_sort_same(4, nodes, face_nodes, &split_face), "same");
           if (split_face) {
+            REF_INT tri_face;
+            face_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
+            face_nodes[1] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
+            face_nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
+            face_nodes[3] = face_nodes[0];
+            if (REF_SUCCESS == ref_face_with(ref_face, face_nodes, &tri_face)) {
+              face_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
+              face_nodes[1] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
+              face_nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
+              face_nodes[3] = new_node;
+              RSS(ref_cell_add(ref_grid_tet(ref_grid), face_nodes, &new_cell),
+                  "tet");
+              face_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
+              face_nodes[1] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
+              face_nodes[2] = ref_cell_f2n(ref_cell, 3, cell_face, cell0);
+              face_nodes[3] = new_node;
+              RSS(ref_cell_add(ref_grid_tet(ref_grid), face_nodes, &new_cell),
+                  "tet");
+            }
+            face_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
+            face_nodes[1] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
+            face_nodes[2] = ref_cell_f2n(ref_cell, 3, cell_face, cell0);
+            face_nodes[3] = face_nodes[0];
+            if (REF_SUCCESS == ref_face_with(ref_face, face_nodes, &tri_face)) {
+              face_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
+              face_nodes[1] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
+              face_nodes[2] = ref_cell_f2n(ref_cell, 3, cell_face, cell0);
+              face_nodes[3] = new_node;
+              RSS(ref_cell_add(ref_grid_tet(ref_grid), face_nodes, &new_cell),
+                  "tet");
+              face_nodes[0] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
+              face_nodes[1] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
+              face_nodes[2] = ref_cell_f2n(ref_cell, 3, cell_face, cell0);
+              face_nodes[3] = new_node;
+              RSS(ref_cell_add(ref_grid_tet(ref_grid), face_nodes, &new_cell),
+                  "tet");
+            }
           } else {
             REF_INT pyr_nodes[REF_CELL_MAX_SIZE_PER];
-            REF_INT new_cell;
             pyr_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
             pyr_nodes[1] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
             pyr_nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
