@@ -533,10 +533,8 @@ REF_STATUS ref_validation_repair(REF_GRID ref_grid) {
   REF_INT group, cell, cell_face;
   REF_INT node;
   REF_INT nodes[4];
-  REF_BOOL problem, report;
+  REF_BOOL report;
   REF_STATUS code;
-
-  problem = REF_FALSE;
 
   RSS(ref_face_create(&ref_face, ref_grid), "face");
 
@@ -596,7 +594,6 @@ REF_STATUS ref_validation_repair(REF_GRID ref_grid) {
       report = report || (2 != hits[face]);
     }
     if (report) {
-      problem = REF_TRUE;
       printf(" hits %d\n", hits[face]);
       for (node = 0; node < 4; node++) {
         nodes[node] = ref_face_f2n(ref_face, node, face);
