@@ -340,18 +340,20 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
     if (report) {
       problem = REF_TRUE;
       printf(" hits %d\n", hits[face]);
-      for (node = 0; node < 3; node++) {
+      for (node = 0; node < 4; node++) {
         nodes[node] = ref_face_f2n(ref_face, node, face);
       }
-      printf("face %d nodes %d %d %d global " REF_GLOB_FMT " " REF_GLOB_FMT
-             " " REF_GLOB_FMT "\n",
-             face, nodes[0], nodes[1], nodes[2],
+      printf("face %d nodes %d %d %d %d global " REF_GLOB_FMT " " REF_GLOB_FMT
+             " " REF_GLOB_FMT " " REF_GLOB_FMT "\n",
+             face, nodes[0], nodes[1], nodes[2], nodes[3],
              ref_node_global(ref_grid_node(ref_grid), nodes[0]),
              ref_node_global(ref_grid_node(ref_grid), nodes[1]),
-             ref_node_global(ref_grid_node(ref_grid), nodes[2]));
+             ref_node_global(ref_grid_node(ref_grid), nodes[2]),
+             ref_node_global(ref_grid_node(ref_grid), nodes[3]));
       RSS(ref_node_location(ref_grid_node(ref_grid), nodes[0]), "n0");
       RSS(ref_node_location(ref_grid_node(ref_grid), nodes[1]), "n1");
       RSS(ref_node_location(ref_grid_node(ref_grid), nodes[2]), "n2");
+      RSS(ref_node_location(ref_grid_node(ref_grid), nodes[3]), "n2");
     }
   }
 
