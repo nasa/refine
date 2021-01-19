@@ -37,6 +37,7 @@ int main(void) {
   ego context;
   ego box1, box2;
   ego model;
+  ego body;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -57,6 +58,19 @@ int main(void) {
   {
     is_equal(EGADS_SUCCESS, EG_generalBoolean(box1, box2, FUSION, 0.0, &model),
              "make solid body");
+  }
+  {
+    ego geom, *bodies;
+    int oclass, nego, nbody, *senses;
+    is_equal(EGADS_SUCCESS,
+             EG_getTopology(model, &geom, &oclass, &nego, NULL, &nbody, &bodies,
+                            &senses),
+             "EG topo bodies");
+    is_equal(1, nbody, "expected 1 body");
+    is_equal(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &body), "copy body");
+    is_equal(0, EG_deleteObject(model), "delete temp model");
+    is_equal(0, EG_deleteObject(box1), "delete box1");
+    is_equal(0, EG_deleteObject(box2), "delete box2");
   }
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
