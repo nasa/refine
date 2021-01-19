@@ -91,6 +91,21 @@ int main(void) {
     RSS(ref_sort_same(n, list0, list1, &same), "same");
     RAS(same, "same");
   }
+  { /* same */
+    REF_INT n = 4, list0[4], list1[4];
+    REF_BOOL same;
+    list0[0] = 4;
+    list0[1] = 7;
+    list0[2] = 6;
+    list0[3] = 5;
+
+    list1[0] = 4;
+    list1[1] = 7;
+    list1[2] = 6;
+    list1[3] = 5;
+    RSS(ref_sort_same(n, list0, list1, &same), "same");
+    RAS(same, "same");
+  }
 
   { /* same repeat */
     REF_INT n = 4, list0[4], list1[4];
