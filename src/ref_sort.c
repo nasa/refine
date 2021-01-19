@@ -228,6 +228,30 @@ REF_STATUS ref_sort_unique_int(REF_INT n, REF_INT *original, REF_INT *nunique,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_sort_same(REF_INT n, REF_INT *list0, REF_INT *list1,
+                         REF_BOOL *same) {
+  REF_INT n0, *unique0;
+  REF_INT n1, *unique1;
+  REF_INT i;
+  *same = REF_FALSE;
+  ref_malloc(unique0, n, REF_INT);
+  ref_malloc(unique1, n, REF_INT);
+  RSS(ref_sort_unique_int(n, list0, &n0, unique0), "uniq0");
+  RSS(ref_sort_unique_int(n, list1, &n1, unique1), "uniq1");
+  if (n0 == n1) {
+    *same = REF_TRUE;
+    for (i = 0; i < n0; i++) {
+      if (unique0[i] != unique1[i]) {
+        *same = REF_FALSE;
+        break;
+      }
+    }
+  }
+  ref_free(unique1);
+  ref_free(unique0);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_sort_search_int(REF_INT n, REF_INT *ascending_list,
                                REF_INT target, REF_INT *position) {
   REF_INT lower, upper, mid;

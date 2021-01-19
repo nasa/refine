@@ -76,6 +76,54 @@ int main(void) {
     REIS(3, unique[2], "unique[2]");
   }
 
+  { /* same */
+    REF_INT n = 4, list0[4], list1[4];
+    REF_BOOL same;
+    list0[0] = 0;
+    list0[1] = 1;
+    list0[2] = 2;
+    list0[3] = 3;
+
+    list1[0] = 3;
+    list1[1] = 2;
+    list1[2] = 1;
+    list1[3] = 0;
+    RSS(ref_sort_same(n, list0, list1, &same), "same");
+    RAS(same, "same");
+  }
+
+  { /* same repeat */
+    REF_INT n = 4, list0[4], list1[4];
+    REF_BOOL same;
+    list0[0] = 0;
+    list0[1] = 1;
+    list0[2] = 2;
+    list0[3] = 3;
+
+    list1[0] = 3;
+    list1[1] = 2;
+    list1[2] = 1;
+    list1[3] = 3;
+    RSS(ref_sort_same(n, list0, list1, &same), "same");
+    RAS(!same, "same");
+  }
+
+  { /* same diff */
+    REF_INT n = 4, list0[4], list1[4];
+    REF_BOOL same;
+    list0[0] = 0;
+    list0[1] = 1;
+    list0[2] = 2;
+    list0[3] = 3;
+
+    list1[0] = 3;
+    list1[1] = 2;
+    list1[2] = 1;
+    list1[3] = 5;
+    RSS(ref_sort_same(n, list0, list1, &same), "same");
+    RAS(!same, "same");
+  }
+
   { /* sparse global to local */
     REF_INT n = 7, i;
     REF_GLOB global[7], sorted_global[7];
