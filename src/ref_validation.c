@@ -691,10 +691,10 @@ REF_STATUS ref_validation_repair(REF_GRID ref_grid) {
           } else {
             REF_INT pyr_nodes[REF_CELL_MAX_SIZE_PER];
             pyr_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
-            pyr_nodes[1] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
-            pyr_nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
-            pyr_nodes[3] = ref_cell_f2n(ref_cell, 3, cell_face, cell0);
-            pyr_nodes[4] = new_node;
+            pyr_nodes[3] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
+            pyr_nodes[4] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
+            pyr_nodes[1] = ref_cell_f2n(ref_cell, 3, cell_face, cell0);
+            pyr_nodes[2] = new_node;
             RSS(ref_cell_add(ref_grid_pyr(ref_grid), pyr_nodes, &new_cell),
                 "pyr");
           }
