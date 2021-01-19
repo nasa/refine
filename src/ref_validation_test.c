@@ -198,6 +198,20 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--repair", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    REF_GRID ref_grid;
+    REIS(1, pos, " ref_validation_test --repair grid.ext");
+    REIS(3, argc, " ref_validation_test --repair grid.ext");
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "ugrid vol");
+    RSS(ref_validation_repair(ref_grid), "ugrid vol");
+    RSS(ref_export_by_extension(ref_grid, "fixed.tec"), "ugrid vol");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   if (argc > 1) {
     REF_GRID ref_grid;
     printf("validating\n");

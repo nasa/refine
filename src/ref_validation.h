@@ -47,6 +47,8 @@ REF_STATUS ref_validation_twod_orientation(REF_GRID ref_grid);
 REF_STATUS ref_validation_finite(REF_GRID ref_grid, REF_INT ldim,
                                  REF_DBL *field);
 
+REF_STATUS ref_validation_repair(REF_GRID ref_grid);
+
 END_C_DECLORATION
 
 #endif /* REF_VALIDATION_H */

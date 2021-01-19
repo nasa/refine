@@ -1047,8 +1047,6 @@ REF_STATUS ref_fixture_hanging_hex_pri_grid(REF_GRID *ref_grid_ptr,
   ref_node_xyz(ref_node, 1, node) = 1.0;
   ref_node_xyz(ref_node, 2, node) = 1.0;
 
-  RSS(ref_node_initialize_n_global(ref_node, 8), "init glob");
-
   RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &cell), "add prism");
 
   nodes[0] = 0;
@@ -1170,6 +1168,8 @@ REF_STATUS ref_fixture_hanging_hex_pri_grid(REF_GRID *ref_grid_ptr,
   nodes[2] = 10;
   nodes[3] = 10;
   RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add quad");
+
+  RSS(ref_node_initialize_n_global(ref_node, 12), "init glob");
 
   return REF_SUCCESS;
 }
