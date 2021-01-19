@@ -3419,12 +3419,15 @@ REF_STATUS ref_egads_quilt_file(const char *filename) {
 REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
-  ego effective[3];
+  ego effective[2];
+  ego tess, model;
   double angle;
+  RAS(ref_geom_model_loaded(ref_geom), "load model before quilting");
   RAS(!ref_geom_effective(ref_geom), "already effective, quilting twice?");
 
-  effective[0] = (ego)(ref_geom->body);
-  RNS(effective[0], "EGADS body is NULL. Has the geometry been loaded?");
+  REIS(EGADS_SUCCESS,
+       EG_copyObject((ego)(ref_geom->body), NULL, &(effective[0])),
+       "copy body");
 
   /* replace with adaptive robust tess method */
   {
@@ -3440,23 +3443,29 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
     params[1] = 0.0075 * diag;
     params[2] = 20.0;
 
-    REIS(EGADS_SUCCESS, EG_makeTessBody(effective[0], params, &(effective[1])),
+    REIS(EGADS_SUCCESS, EG_makeTessBody(effective[0], params, &tess),
          "EG tess");
-    REIS(EGADS_SUCCESS,
-         EG_statusTessBody(effective[1], &geom, &tess_status, &nvert),
+    REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
          "EG tess");
     REIS(1, tess_status, "tess not closed");
   }
 
   angle = 10.0;
-  REIS(EGADS_SUCCESS, EG_initEBody(effective[1], angle, &effective[2]),
-       "initEB");
+  REIS(EGADS_SUCCESS, EG_initEBody(tess, angle, &effective[1]), "init xEB");
 
   /* add quilting here */
 
-  REIS(EGADS_SUCCESS, EG_finishEBody(effective[2]), "finEB");
+  REIS(EGADS_SUCCESS, EG_finishEBody(effective[1]), "complete EB");
+  REIS(0, EG_deleteObject(tess), "delete tess copied into ebody");
 
-  ref_geom->body = (void *)effective[2];
+  REIS(0, EG_deleteObject((ego)(ref_geom->model)), "delete body model");
+  REIS(EGADS_SUCCESS,
+       EG_makeTopology((ego)(ref_geom->context), NULL, MODEL, 2, NULL, 1,
+                       effective, NULL, &model),
+       "make Topo Model");
+  ref_geom->model = (void *)model;
+
+  ref_geom->body = (void *)effective[1];
   ref_geom_effective(ref_geom) = REF_TRUE;
 
   if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
