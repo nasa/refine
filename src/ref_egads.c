@@ -608,13 +608,8 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
       data[4] = 0.0;
       data[5] = 0.0;
       REIS(EGADS_SUCCESS, EG_rotate(face, 360.0, data, &body), "revolve");
-
-      /*
-      REIS(EGADS_SUCCESS,
-           EG_makeTopology((ego)(ref_geom->context), NULL, BODY, FACEBODY, NULL,
-                           1, &face, NULL, &body),
-           "facebody");
-      */
+      REIS(0, EG_deleteObject((ego)(ref_geom->context)),
+           "delete construction objects");
     }
   }
 #else
