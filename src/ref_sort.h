@@ -37,6 +37,8 @@ REF_STATUS ref_sort_in_place_glob(REF_INT n, REF_GLOB *sorts);
 
 REF_STATUS ref_sort_unique_int(REF_INT n, REF_INT *original, REF_INT *nunique,
                                REF_INT *unique);
+REF_STATUS ref_sort_same(REF_INT n, REF_INT *list0, REF_INT *list1,
+                         REF_BOOL *same);
 
 REF_STATUS ref_sort_search_int(REF_INT n, REF_INT *ascending_list,
                                REF_INT target, REF_INT *position);

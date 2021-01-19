@@ -43,6 +43,9 @@ REF_STATUS ref_fixture_pri_stack_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
 REF_STATUS ref_fixture_hex_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
+REF_STATUS ref_fixture_hanging_hex_pri_grid(REF_GRID *ref_grid,
+                                            REF_MPI ref_mpi);
+
 REF_STATUS ref_fixture_hex_brick_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_hex_brick_args_grid(REF_GRID *ref_grid, REF_MPI ref_mpi,
                                            REF_DBL x0, REF_DBL x1, REF_DBL y0,

@@ -121,11 +121,11 @@
     brick[0] = nodes[0];            \
     brick[1] = nodes[1];            \
     brick[2] = nodes[2];            \
-    brick[3] = nodes[2];            \
-    brick[4] = nodes[3];            \
+    brick[3] = nodes[3];            \
+    brick[4] = nodes[4];            \
     brick[5] = nodes[4];            \
-    brick[6] = nodes[2];            \
-    brick[7] = nodes[2];            \
+    brick[6] = nodes[4];            \
+    brick[7] = nodes[4];            \
   }
 
 #define TEC_BRICK_PRI(brick, nodes) \
@@ -873,10 +873,10 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
 
   ncell = nnode * n;
 
-  fprintf(
-      file,
-      "zone t=\"ellipse\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-      1 * ncell, 1 * ncell, "point", "felineseg");
+  fprintf(file,
+          "zone t=\"ellipse\", nodes=%d, elements=%d, datapacking=%s, "
+          "zonetype=%s\n",
+          1 * ncell, 1 * ncell, "point", "felineseg");
 
   for (node = 0; node < nnode; node++) {
     RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
@@ -975,10 +975,10 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
 
   ncell = nnode * n;
 
-  fprintf(
-      file,
-      "zone t=\"ellipse\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-      3 * ncell, 3 * ncell, "point", "felineseg");
+  fprintf(file,
+          "zone t=\"ellipse\", nodes=%d, elements=%d, datapacking=%s, "
+          "zonetype=%s\n",
+          3 * ncell, 3 * ncell, "point", "felineseg");
 
   for (node = 0; node < nnode; node++) {
     RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");

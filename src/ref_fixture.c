@@ -951,6 +951,228 @@ REF_STATUS ref_fixture_hex_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
 
   return REF_SUCCESS;
 }
+/*
+                               inode11----------inode10
+                                 /.\               /|
+                                / . \             / |
+                               /  .  \           /  |
+                              /   .   \         /   |
+                             9    .    \       10    6
+                            /     7     \     /     |
+                           /      .      \   /      |
+                          /       .       \ /       |
+                       inode8-8----------inode9     |
+                         |      inode7.....|...5..inode6
+                         |       . \       |       /
+                         |      .   \      |      /
+                         |     .     \     |     /
+                         2    1       \    4    3
+                         |   .         \   |   /
+                         |  .           \  |  /
+                         | .             \ | /
+                         |.               \|/
+                       inode4------0-----inode5
+
+                               inode7-----11-----inode6
+                                 /.                /|
+                                / .               / |
+                               /  .              /  |
+                              /   .             /   |
+                             9    .           10    6
+                            /     7           /     |
+                           /      .          /      |
+                          /       .         /       |
+                       inode4-8----------inode5     |
+                         |      inode3.....|...5..inode2
+                         |       .         |       /
+                         |      .          |      /
+                         |     .           |     /
+                         2    1            4    3
+                         |   .             |   /
+                         |  .              |  /
+                         | .               | /  z y
+                         |.                |/   |/
+                       inode0------0-----inode1 -> x
+
+*/
+
+REF_STATUS ref_fixture_hanging_hex_pri_grid(REF_GRID *ref_grid_ptr,
+                                            REF_MPI ref_mpi) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT nodes[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+  REF_INT cell, node;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_node_add(ref_node, 0, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = 0.0;
+
+  RSS(ref_node_add(ref_node, 1, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = 0.0;
+
+  RSS(ref_node_add(ref_node, 2, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = 0.0;
+
+  RSS(ref_node_add(ref_node, 3, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = 0.0;
+
+  RSS(ref_node_add(ref_node, 4, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = 1.0;
+
+  RSS(ref_node_add(ref_node, 5, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = 1.0;
+
+  RSS(ref_node_add(ref_node, 6, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = 1.0;
+
+  RSS(ref_node_add(ref_node, 7, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = 1.0;
+
+  RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &cell), "add prism");
+
+  nodes[0] = 0;
+  nodes[1] = 1;
+  nodes[2] = 2;
+  nodes[3] = 3;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  /*
+  nodes[0] = 4;
+  nodes[1] = 7;
+  nodes[2] = 6;
+  nodes[3] = 5;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+  */
+
+  nodes[0] = 1;
+  nodes[1] = 5;
+  nodes[2] = 6;
+  nodes[3] = 2;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 0;
+  nodes[1] = 3;
+  nodes[2] = 7;
+  nodes[3] = 4;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 0;
+  nodes[1] = 4;
+  nodes[2] = 5;
+  nodes[3] = 1;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 2;
+  nodes[1] = 6;
+  nodes[2] = 7;
+  nodes[3] = 3;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  RSS(ref_node_add(ref_node, 8, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = 2.0;
+
+  RSS(ref_node_add(ref_node, 9, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = 2.0;
+
+  RSS(ref_node_add(ref_node, 10, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = 2.0;
+
+  RSS(ref_node_add(ref_node, 11, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = 2.0;
+
+  nodes[0] = 4;
+  nodes[1] = 5;
+  nodes[2] = 7;
+  nodes[3] = 8;
+  nodes[4] = 9;
+  nodes[5] = 11;
+  RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 5;
+  nodes[1] = 6;
+  nodes[2] = 7;
+  nodes[3] = 9;
+  nodes[4] = 10;
+  nodes[5] = 11;
+  RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 5;
+  nodes[1] = 9;
+  nodes[2] = 10;
+  nodes[3] = 6;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 4;
+  nodes[1] = 7;
+  nodes[2] = 11;
+  nodes[3] = 8;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 4;
+  nodes[1] = 8;
+  nodes[2] = 9;
+  nodes[3] = 5;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 6;
+  nodes[1] = 10;
+  nodes[2] = 11;
+  nodes[3] = 7;
+  nodes[4] = 10;
+  RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 8;
+  nodes[1] = 11;
+  nodes[2] = 9;
+  nodes[3] = 10;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add quad");
+
+  nodes[0] = 9;
+  nodes[1] = 11;
+  nodes[2] = 10;
+  nodes[3] = 10;
+  RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add quad");
+
+  RSS(ref_node_initialize_n_global(ref_node, 12), "init glob");
+
+  return REF_SUCCESS;
+}
 REF_STATUS ref_fixture_hex_brick_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   REF_INT l = 4, m = 4, n = 4;
 

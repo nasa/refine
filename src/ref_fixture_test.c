@@ -103,6 +103,23 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--hanging", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REIS(3, argc, "required args: --hanging grid.ext");
+    REIS(1, pos, "required args: --hanging grid.ext");
+
+    RSS(ref_fixture_hanging_hex_pri_grid(&ref_grid, ref_mpi), "args");
+    RSS(ref_export_by_extension(ref_grid, argv[2]), "tec");
+
+    RSS(ref_grid_free(ref_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   {
     REF_GRID ref_grid;
 
