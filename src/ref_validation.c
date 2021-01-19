@@ -26,6 +26,7 @@
 #include "ref_face.h"
 #include "ref_malloc.h"
 #include "ref_mpi.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_validation_simplex_node(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -643,8 +644,14 @@ REF_STATUS ref_validation_repair(REF_GRID ref_grid) {
         ref_node_xyz(ref_node, 2, new_node) /=
             (REF_DBL)ref_cell_node_per(ref_cell);
         each_ref_cell_cell_face(ref_cell, cell_face) {
-          REF_BOOL spit_face = REF_FALSE;
-          if (spit_face) {
+          REF_INT face_nodes[4];
+          REF_BOOL split_face;
+          face_nodes[0] = ref_cell_f2n(ref_cell, 0, cell_face, cell0);
+          face_nodes[1] = ref_cell_f2n(ref_cell, 1, cell_face, cell0);
+          face_nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, cell0);
+          face_nodes[3] = ref_cell_f2n(ref_cell, 3, cell_face, cell0);
+          RSS(ref_sort_same(4, nodes, face_nodes, &split_face), "same");
+          if (split_face) {
           } else {
             REF_INT pyr_nodes[REF_CELL_MAX_SIZE_PER];
             REF_INT new_cell;
