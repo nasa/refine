@@ -3407,6 +3407,12 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   } else {
     RSS(ref_gather_plt_tet_header(ref_grid, file), "plt tet header");
   }
+  RSS(ref_gather_plt_brick_header(ref_grid, ref_grid_pyr(ref_grid), file),
+      "plt pyr brick header");
+  RSS(ref_gather_plt_brick_header(ref_grid, ref_grid_pri(ref_grid), file),
+      "plt pri brick header");
+  RSS(ref_gather_plt_brick_header(ref_grid, ref_grid_hex(ref_grid), file),
+      "plt hex brick header");
 
   if (ref_mpi_once(ref_mpi)) {
     REIS(1, fwrite(&eohmarker, sizeof(float), 1, file), "eohmarker");
@@ -3425,6 +3431,15 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   } else {
     RSS(ref_gather_plt_tet_zone(ref_grid, ldim, scalar, file), "plt tet zone");
   }
+  RSS(ref_gather_plt_brick_zone(ref_grid, ref_grid_pyr(ref_grid), ldim, scalar,
+                                file),
+      "plt pyr brick zone");
+  RSS(ref_gather_plt_brick_zone(ref_grid, ref_grid_pri(ref_grid), ldim, scalar,
+                                file),
+      "plt pri brick zone");
+  RSS(ref_gather_plt_brick_zone(ref_grid, ref_grid_hex(ref_grid), ldim, scalar,
+                                file),
+      "plt hex brick zone");
 
   if (ref_mpi_once(ref_mpi)) {
     fclose(file);
