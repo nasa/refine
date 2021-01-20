@@ -35,8 +35,8 @@
 #include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
-#include "ref_sort.h"
 #include "ref_shard.h"
+#include "ref_sort.h"
 #include "ref_validation.h"
 
 int main(int argc, char *argv[]) {

@@ -251,7 +251,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
- if (ref_egads_allows_construction()) { /* revolve (w/ jump) P3 surrogate */
+  if (ref_egads_allows_construction()) { /* revolve (w/ jump) P3 surrogate */
     REF_GRID ref_grid, surrogate;
     REF_FACELIFT ref_facelift;
     REF_DBL gap;
