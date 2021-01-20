@@ -2180,11 +2180,36 @@ shutdown:
 }
 
 static REF_STATUS quilt(REF_MPI ref_mpi, int argc, char *argv[]) {
+  REF_GEOM ref_geom;
+  char *input_egads;
+  size_t end_of_string;
+  char project[1000];
+  char output_egads[1024];
+
   if (argc < 3) goto shutdown;
-  RSS(ref_egads_quilt_file(argv[2]), "quilt");
+  input_egads = argv[2];
+
+  RAS(ref_egads_allows_construction(),
+      "EGADS not linked with OpenCASCADE, required to load model")
+  RAS(ref_egads_allows_effective(), "EGADS does not support Effective Geometry")
+
+  end_of_string = MIN(1023, strlen(input_egads));
+  RAS((7 < end_of_string &&
+       strncmp(&(input_egads[end_of_string - 6]), ".egads", 6) == 0),
+      ".egads extension missing");
+  strncpy(project, input_egads, end_of_string - 6);
+  project[end_of_string - 6] = '\0';
+  sprintf(output_egads, "%s-eff.egads", project);
+
+  RSS(ref_geom_create(&ref_geom), "create geom");
+  RSS(ref_egads_load(ref_geom, input_egads), "load");
+  RSS(ref_egads_quilt(ref_geom), "quilt");
+  RSS(ref_egads_save(ref_geom, output_egads), "save");
+  RSS(ref_geom_free(ref_geom), "free geom/context");
+
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) node_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) quilt_help(argv[0]);
   return REF_FAILURE;
 }
 
