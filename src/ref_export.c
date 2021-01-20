@@ -93,65 +93,6 @@
     (vtk_nodes)[5] = ugrid_nodes[5]; \
   }
 
-/*
-  tecplot "brick"
-      7---6
-     /|  /|
-    4-+-5 |
-    | | | |
-    | 3-+-2
-    |/  |/
-    0---1
- */
-
-#define TEC_BRICK_TET(brick, nodes) \
-  {                                 \
-    brick[0] = nodes[0];            \
-    brick[1] = nodes[1];            \
-    brick[2] = nodes[2];            \
-    brick[3] = nodes[2];            \
-    brick[4] = nodes[3];            \
-    brick[5] = nodes[3];            \
-    brick[6] = nodes[3];            \
-    brick[7] = nodes[3];            \
-  }
-
-#define TEC_BRICK_PYR(brick, nodes) \
-  {                                 \
-    brick[0] = nodes[0];            \
-    brick[1] = nodes[1];            \
-    brick[2] = nodes[2];            \
-    brick[3] = nodes[3];            \
-    brick[4] = nodes[4];            \
-    brick[5] = nodes[4];            \
-    brick[6] = nodes[4];            \
-    brick[7] = nodes[4];            \
-  }
-
-#define TEC_BRICK_PRI(brick, nodes) \
-  {                                 \
-    brick[0] = nodes[0];            \
-    brick[1] = nodes[1];            \
-    brick[2] = nodes[2];            \
-    brick[3] = nodes[2];            \
-    brick[4] = nodes[3];            \
-    brick[5] = nodes[4];            \
-    brick[6] = nodes[5];            \
-    brick[7] = nodes[5];            \
-  }
-
-#define TEC_BRICK_HEX(brick, nodes) \
-  {                                 \
-    brick[0] = nodes[0];            \
-    brick[1] = nodes[1];            \
-    brick[2] = nodes[2];            \
-    brick[3] = nodes[3];            \
-    brick[4] = nodes[4];            \
-    brick[5] = nodes[5];            \
-    brick[6] = nodes[6];            \
-    brick[7] = nodes[7];            \
-  }
-
 static REF_STATUS ref_export_faceid_range(REF_GRID ref_grid,
                                           REF_INT *min_faceid,
                                           REF_INT *max_faceid) {
@@ -756,16 +697,16 @@ static REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         switch (ref_cell_node_per(ref_cell)) {
           case 4:
-            TEC_BRICK_TET(brick, nodes);
+            REF_CELL_TEC_BRICK_TET(brick, nodes);
             break;
           case 5:
-            TEC_BRICK_PYR(brick, nodes);
+            REF_CELL_TEC_BRICK_PYR(brick, nodes);
             break;
           case 6:
-            TEC_BRICK_PRI(brick, nodes);
+            REF_CELL_TEC_BRICK_PRI(brick, nodes);
             break;
           case 8:
-            TEC_BRICK_HEX(brick, nodes);
+            REF_CELL_TEC_BRICK_HEX(brick, nodes);
             break;
           default:
             RSS(REF_IMPLEMENT, "wrong nodes per cell");

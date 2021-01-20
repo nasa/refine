@@ -494,16 +494,16 @@ static REF_STATUS ref_gather_brick_tec(REF_NODE ref_node, REF_CELL ref_cell,
         }
         switch (ref_cell_node_per(ref_cell)) {
           case 4:
-            TEC_BRICK_TET(brick, globals);
+            REF_CELL_TEC_BRICK_TET(brick, globals);
             break;
           case 5:
-            TEC_BRICK_PYR(brick, globals);
+            REF_CELL_TEC_BRICK_PYR(brick, globals);
             break;
           case 6:
-            TEC_BRICK_PRI(brick, globals);
+            REF_CELL_TEC_BRICK_PRI(brick, globals);
             break;
           case 8:
-            TEC_BRICK_HEX(brick, globals);
+            REF_CELL_TEC_BRICK_HEX(brick, globals);
             break;
           default:
             RSS(REF_IMPLEMENT, "wrong nodes per cell");
@@ -536,16 +536,16 @@ static REF_STATUS ref_gather_brick_tec(REF_NODE ref_node, REF_CELL ref_cell,
       for (cell = 0; cell < ncell; cell++) {
         switch (ref_cell_node_per(ref_cell)) {
           case 4:
-            TEC_BRICK_TET(brick, &(c2n[node_per * cell]));
+            REF_CELL_TEC_BRICK_TET(brick, &(c2n[node_per * cell]));
             break;
           case 5:
-            TEC_BRICK_PYR(brick, &(c2n[node_per * cell]));
+            REF_CELL_TEC_BRICK_PYR(brick, &(c2n[node_per * cell]));
             break;
           case 6:
-            TEC_BRICK_PRI(brick, &(c2n[node_per * cell]));
+            REF_CELL_TEC_BRICK_PRI(brick, &(c2n[node_per * cell]));
             break;
           case 8:
-            TEC_BRICK_HEX(brick, &(c2n[node_per * cell]));
+            REF_CELL_TEC_BRICK_HEX(brick, &(c2n[node_per * cell]));
             break;
           default:
             RSS(REF_IMPLEMENT, "wrong nodes per cell");

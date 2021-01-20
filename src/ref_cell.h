@@ -221,6 +221,65 @@ END_C_DECLORATION
 
 #endif /* REF_CELL_H */
 
+/*
+  tecplot "brick"
+      7---6
+     /|  /|
+    4-+-5 |
+    | | | |
+    | 3-+-2
+    |/  |/
+    0---1
+ */
+
+#define REF_CELL_TEC_BRICK_TET(brick, nodes) \
+  {                                          \
+    (brick)[0] = (nodes)[0];                 \
+    (brick)[1] = (nodes)[1];                 \
+    (brick)[2] = (nodes)[2];                 \
+    (brick)[3] = (nodes)[2];                 \
+    (brick)[4] = (nodes)[3];                 \
+    (brick)[5] = (nodes)[3];                 \
+    (brick)[6] = (nodes)[3];                 \
+    (brick)[7] = (nodes)[3];                 \
+  }
+
+#define REF_CELL_TEC_BRICK_PYR(brick, nodes) \
+  {                                          \
+    (brick)[0] = (nodes)[0];                 \
+    (brick)[1] = (nodes)[1];                 \
+    (brick)[2] = (nodes)[2];                 \
+    (brick)[3] = (nodes)[2];                 \
+    (brick)[4] = (nodes)[3];                 \
+    (brick)[5] = (nodes)[5];                 \
+    (brick)[6] = (nodes)[5];                 \
+    (brick)[7] = (nodes)[4];                 \
+  }
+
+#define REF_CELL_TEC_BRICK_PRI(brick, nodes) \
+  {                                          \
+    (brick)[0] = (nodes)[0];                 \
+    (brick)[1] = (nodes)[1];                 \
+    (brick)[2] = (nodes)[2];                 \
+    (brick)[3] = (nodes)[2];                 \
+    (brick)[4] = (nodes)[3];                 \
+    (brick)[5] = (nodes)[4];                 \
+    (brick)[6] = (nodes)[5];                 \
+    (brick)[7] = (nodes)[5];                 \
+  }
+
+#define REF_CELL_TEC_BRICK_HEX(brick, nodes) \
+  {                                          \
+    (brick)[0] = (nodes)[0];                 \
+    (brick)[1] = (nodes)[1];                 \
+    (brick)[2] = (nodes)[2];                 \
+    (brick)[3] = (nodes)[3];                 \
+    (brick)[4] = (nodes)[4];                 \
+    (brick)[5] = (nodes)[5];                 \
+    (brick)[6] = (nodes)[6];                 \
+    (brick)[7] = (nodes)[7];                 \
+  }
+
 /* http://www.simcenter.msstate.edu/docs/solidmesh/ugridconnectivity.html
 in c numbering
 boundary elements right hand normal point into element, see f2n
