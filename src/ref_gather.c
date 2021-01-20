@@ -2679,6 +2679,71 @@ static REF_STATUS ref_gather_plt_tri_header(REF_GRID ref_grid, REF_INT id,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_plt_qua_header(REF_GRID ref_grid, REF_INT id,
+                                            FILE *file) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_CELL ref_cell = ref_grid_qua(ref_grid);
+  char zonename[256];
+  int ascii[256];
+  int len;
+  float zonemarker = 299.0;
+  int parentzone = -1;
+  int strandid = -1;
+  double solutiontime = 0.0;
+  int notused = -1;
+  int zonetype;
+  int datapacking = 0; /*0=Block, point does not work.*/
+  int varloc = 0;      /*0 = Don't specify, all data is located at nodes*/
+  int faceneighbors = 0;
+  int numpts;
+  int numelements;
+  REF_LONG ncell;
+  REF_GLOB nnode, *l2c;
+  int celldim = 0;
+  int aux = 0;
+
+  zonetype = 3; /*3=FEQUADRILATERAL*/
+
+  RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, id, &nnode, &ncell,
+                                     &l2c),
+      "l2c");
+  if (nnode <= 0 || ncell <= 0) {
+    ref_free(l2c);
+    return REF_SUCCESS;
+  }
+
+  RAS(nnode <= REF_INT_MAX, "too many nodes for int");
+  numpts = (int)nnode;
+  RAS(ncell <= REF_INT_MAX, "too many tets for int");
+  numelements = (int)ncell;
+
+  if (ref_mpi_once(ref_mpi)) {
+    REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
+
+    sprintf(zonename, "qua%d", id);
+    RSS(ref_gather_plt_char_int(zonename, 256, &len, ascii), "a2i");
+    REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "title");
+
+    REIS(1, fwrite(&parentzone, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&strandid, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&solutiontime, sizeof(double), 1, file), "double");
+    REIS(1, fwrite(&notused, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&zonetype, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&datapacking, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&varloc, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&faceneighbors, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&numpts, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&numelements, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&celldim, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&celldim, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&celldim, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&aux, sizeof(int), 1, file), "int");
+  }
+
+  ref_free(l2c);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_plt_tet_header(REF_GRID ref_grid,
                                             REF_BOOL as_brick, FILE *file) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
@@ -2752,6 +2817,91 @@ static REF_STATUS ref_gather_plt_tri_zone(REF_GRID ref_grid, REF_INT id,
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  float zonemarker = 299.0;
+  REF_LONG ncell;
+  REF_GLOB nnode, *l2c;
+  int dataformat = 2; /*1=Float, 2=Double*/
+  int passive = 0;
+  int varsharing = 0;
+  int connsharing = -1;
+  double mindata, maxdata, tempdata;
+  REF_INT node, ixyz, i;
+
+  RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, id, &nnode, &ncell,
+                                     &l2c),
+      "l2c");
+  if (nnode <= 0 || ncell <= 0) {
+    ref_free(l2c);
+    return REF_SUCCESS;
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
+
+    for (i = 0; i < 3 + ldim; i++) {
+      REIS(1, fwrite(&dataformat, sizeof(int), 1, file), "int");
+    }
+
+    REIS(1, fwrite(&passive, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&varsharing, sizeof(int), 1, file), "int");
+    REIS(1, fwrite(&connsharing, sizeof(int), 1, file), "int");
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    mindata = REF_DBL_MAX;
+    maxdata = REF_DBL_MIN;
+    for (node = 0; node < ref_node_max(ref_node); node++) {
+      if (REF_EMPTY != l2c[node] && ref_node_owned(ref_node, node)) {
+        mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, node));
+        maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, node));
+      }
+    }
+    tempdata = mindata;
+    RSS(ref_mpi_min(ref_mpi, &tempdata, &mindata, REF_DBL_TYPE), "mpi min");
+    tempdata = maxdata;
+    RSS(ref_mpi_max(ref_mpi, &tempdata, &maxdata, REF_DBL_TYPE), "mpi max");
+    if (ref_mpi_once(ref_mpi)) {
+      REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
+      REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
+    }
+  }
+  for (i = 0; i < ldim; i++) {
+    mindata = REF_DBL_MAX;
+    maxdata = REF_DBL_MIN;
+    for (node = 0; node < ref_node_max(ref_node); node++) {
+      if (REF_EMPTY != l2c[node] && ref_node_owned(ref_node, node)) {
+        mindata = MIN(mindata, scalar[i + ldim * node]);
+        maxdata = MAX(maxdata, scalar[i + ldim * node]);
+      }
+    }
+    tempdata = mindata;
+    RSS(ref_mpi_min(ref_mpi, &tempdata, &mindata, REF_DBL_TYPE), "mpi min");
+    tempdata = maxdata;
+    RSS(ref_mpi_max(ref_mpi, &tempdata, &maxdata, REF_DBL_TYPE), "mpi max");
+    if (ref_mpi_once(ref_mpi)) {
+      REIS(1, fwrite(&mindata, sizeof(double), 1, file), "mindata");
+      REIS(1, fwrite(&maxdata, sizeof(double), 1, file), "maxdata");
+    }
+  }
+
+  RSS(ref_gather_node_tec_block(ref_node, nnode, l2c, ldim, scalar, dataformat,
+                                file),
+      "block points");
+
+  RSS(ref_gather_cell_id_tec(ref_node, ref_cell, id, ncell, l2c, REF_TRUE,
+                             file),
+      "c2n");
+
+  ref_free(l2c);
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_plt_qua_zone(REF_GRID ref_grid, REF_INT id,
+                                          REF_INT ldim, REF_DBL *scalar,
+                                          FILE *file) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_qua(ref_grid);
   float zonemarker = 299.0;
   REF_LONG ncell;
   REF_GLOB nnode, *l2c;
@@ -2972,7 +3122,8 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
   for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
-    RSS(ref_gather_plt_tri_header(ref_grid, cell_id, file), "plt tet header");
+    RSS(ref_gather_plt_tri_header(ref_grid, cell_id, file), "plt tri header");
+    RSS(ref_gather_plt_qua_header(ref_grid, cell_id, file), "plt qua header");
   }
   RSS(ref_gather_plt_tet_header(ref_grid, as_brick, file), "plt tet header");
 
@@ -2983,6 +3134,8 @@ static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
     RSS(ref_gather_plt_tri_zone(ref_grid, cell_id, ldim, scalar, file),
         "plt tri zone");
+    RSS(ref_gather_plt_qua_zone(ref_grid, cell_id, ldim, scalar, file),
+        "plt qua zone");
   }
   RSS(ref_gather_plt_tet_zone(ref_grid, ldim, scalar, as_brick, file),
       "plt tet zone");
