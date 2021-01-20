@@ -251,9 +251,9 @@ END_C_DECLORATION
     (brick)[2] = (nodes)[2];                 \
     (brick)[3] = (nodes)[2];                 \
     (brick)[4] = (nodes)[3];                 \
-    (brick)[5] = (nodes)[5];                 \
-    (brick)[6] = (nodes)[5];                 \
-    (brick)[7] = (nodes)[4];                 \
+    (brick)[5] = (nodes)[4];                 \
+    (brick)[6] = (nodes)[4];                 \
+    (brick)[7] = (nodes)[3];                 \
   }
 
 #define REF_CELL_TEC_BRICK_PRI(brick, nodes) \
