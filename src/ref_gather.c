@@ -2052,6 +2052,12 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
     RSS(ref_gather_tec(ref_grid, filename), "scalar tec");
     return REF_SUCCESS;
   }
+  if (end_of_string > 4 &&
+      (strcmp(&filename[end_of_string - 4], ".plt") == 0)) {
+    RSS(ref_gather_scalar_by_extension(ref_grid, 0, NULL, NULL, filename),
+        "scalar plt");
+    return REF_SUCCESS;
+  }
   if (end_of_string > 10 &&
       strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_FALSE),
