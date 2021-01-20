@@ -8,7 +8,7 @@ understand interp max error reports
 effective egads
   auto detect HAVE_EGADS_EFFECTIVE
   group via quilting papers (crease)
-  ref_egads_test effective load/save
+  + ref_egads_test effective load/save
 
 facelift direct surrogate boundary representation tolerance
   + share via meshb
