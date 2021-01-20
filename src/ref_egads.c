@@ -3453,7 +3453,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
   angle = 10.0;
   REIS(EGADS_SUCCESS, EG_initEBody(tess, angle, &effective[1]), "init xEB");
 
-  /* add quilting here */
+  RSS(ref_egads_quilt_attributes(effective[0], effective[1]), "quilt attr");
 
   REIS(EGADS_SUCCESS, EG_finishEBody(effective[1]), "complete EB");
   REIS(0, EG_deleteObject(tess), "delete tess copied into ebody");
