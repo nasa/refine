@@ -3306,12 +3306,97 @@ static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
 }
 #endif
 
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
+    defined(HAVE_EGADS_EFFECTIVE)
+static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
+                                        double angle, REF_INT *e2f) {
+  int nedge, edge, nface, i;
+  ego *faces;
+  REF_DICT ref_dict;
+  REF_INT key, flag, minflag, maxflag, n, value;
+  REF_BOOL rerun;
+  RSS(ref_dict_create(&ref_dict), "create");
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, EDGE, &nedge, NULL),
+       "EG edge topo");
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, FACE, &nface, &faces),
+       "EG face topo");
+  for (i = 0; i < nface; i++) {
+    RSS(ref_dict_store(ref_dict, i, i), "store");
+  }
+  ref_dict_inspect(ref_dict);
+  rerun = REF_TRUE;
+  while (rerun) {
+    rerun = REF_FALSE;
+    for (edge = 0; edge < nedge; edge++) {
+      REF_INT group0, group1;
+      REF_DBL min_angle, max_angle;
+      if (REF_EMPTY != e2f[0 + 2 * edge] && REF_EMPTY != e2f[1 + 2 * edge]) {
+        printf("%d nface %d faces %d %d\n", edge + 1, nface, e2f[0 + 2 * edge],
+               e2f[1 + 2 * edge]);
+        RSS(ref_dict_value(ref_dict, e2f[0 + 2 * edge] - 1, &group0), "g0");
+        RSS(ref_dict_value(ref_dict, e2f[1 + 2 * edge] - 1, &group1), "g1");
+        if (group0 != group1) {
+          RSS(ref_egads_edge_crease(ref_geom, edge + 1, &min_angle, &max_angle),
+              "crease");
+          if (max_angle < angle) {
+            RSS(ref_dict_store(ref_dict, e2f[0 + 2 * edge] - 1,
+                               MIN(group0, group1)),
+                "store0");
+            RSS(ref_dict_store(ref_dict, e2f[1 + 2 * edge] - 1,
+                               MIN(group0, group1)),
+                "store1");
+            rerun = REF_TRUE;
+          }
+        }
+      }
+    }
+  }
+  ref_dict_inspect(ref_dict);
+
+  minflag = REF_INT_MAX;
+  maxflag = REF_INT_MIN;
+  each_ref_dict_key_value(ref_dict, i, key, flag) {
+    minflag = MIN(flag, minflag);
+    maxflag = MAX(flag, maxflag);
+  }
+  printf("flag range %d %d\n", minflag, maxflag);
+  for (flag = minflag; flag <= maxflag; flag++) {
+    n = 0;
+    each_ref_dict_key_value(ref_dict, i, key, value) {
+      if (flag == value) {
+        n++;
+      }
+    }
+    printf("flag %d has %d members\n", flag, n);
+    if (n > 0) {
+      ego eface, *group_faces;
+      ref_malloc(group_faces, n, ego);
+      n = 0;
+      each_ref_dict_key_value(ref_dict, i, key, value) {
+        if (flag == value) {
+          group_faces[n] = faces[key];
+          n++;
+        }
+      }
+      if (n > 1)
+        REIS(EGADS_SUCCESS, EG_makeEFace(ebody, n, group_faces, &eface),
+             "initEB");
+      ref_free(group_faces);
+    }
+  }
+  EG_free(faces);
+  RSS(ref_dict_free(ref_dict), "free");
+  return REF_SUCCESS;
+}
+#endif
+
 REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
   ego effective[2];
   ego tess, model;
   double angle;
+
   RAS(ref_geom_model_loaded(ref_geom), "load model before quilting");
   RAS(!ref_geom_effective(ref_geom), "already effective, quilting twice?");
 
@@ -3344,6 +3429,14 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
   REIS(EGADS_SUCCESS, EG_initEBody(tess, angle, &effective[1]), "init xEB");
 
   RSS(ref_egads_quilt_attributes(effective[0], effective[1]), "quilt attr");
+
+  {
+    REF_INT *e2f;
+    RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
+    RSS(ref_egads_quilt_angle(ref_geom, effective[0], effective[1], angle, e2f),
+        "quilt attr");
+    ref_free(e2f);
+  }
 
   REIS(EGADS_SUCCESS, EG_finishEBody(effective[1]), "complete EB");
   REIS(0, EG_deleteObject(tess), "delete tess copied into ebody");
