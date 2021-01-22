@@ -799,7 +799,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
 static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
                                             PARM_INT *adjncy, PARM_INT *adjwgt,
-                                            PARM_INT nparts, PARM_INT *part) {
+                                            PARM_INT npart, PARM_INT *part) {
   PARM_INT ncon;
   PARM_INT *vwgt, *vsize, objval;
   PARM_REAL *tpwgts, *ubvec;
@@ -809,8 +809,8 @@ static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
   vsize = NULL;
 
   ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
-  ref_malloc_init(tpwgts, ncon * nparts, PARM_REAL,
-                  (PARM_REAL)1.0 / (PARM_REAL)nparts);
+  ref_malloc_init(tpwgts, ncon * npart, PARM_REAL,
+                  (PARM_REAL)1.0 / (PARM_REAL)npart);
   ref_malloc_init(ubvec, ncon, PARM_REAL, 1.001);
 
   METIS_SetDefaultOptions(options);
@@ -819,8 +819,8 @@ static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
   options[METIS_OPTION_PTYPE] = METIS_PTYPE_RB; /* zero part less likely */
   /* options[METIS_OPTION_DBGLVL] = METIS_DBG_COARSEN; */
   REIS(METIS_OK,
-       METIS_PartGraphKway(&n, &ncon, xadj, adjncy, vwgt, vsize, adjwgt,
-                           &nparts, tpwgts, ubvec, options, &objval, part),
+       METIS_PartGraphKway(&n, &ncon, xadj, adjncy, vwgt, vsize, adjwgt, &npart,
+                           tpwgts, ubvec, options, &objval, part),
        "METIS is not o.k.");
 
   ref_free(ubvec);
@@ -837,7 +837,7 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   REF_INT *count;
   PARM_INT global;
   PARM_INT n, *xadj, *adjncy, *adjwgt, *part;
-  PARM_INT nparts;
+  PARM_INT npart;
   REF_INT i, proc;
   REF_TYPE parm_type;
   RSS(ref_mpi_int_size_type(sizeof(PARM_INT), &parm_type), "calc parm_type");
@@ -870,10 +870,10 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
 
   ref_malloc_init(part, n, PARM_INT, REF_EMPTY);
 
-  nparts = ref_mpi_n(ref_mpi);
+  npart = ref_mpi_n(ref_mpi);
 
   if (ref_mpi_once(ref_mpi)) {
-    RSS(ref_migrate_metis_wrapper(n, xadj, adjncy, adjwgt, nparts, part),
+    RSS(ref_migrate_metis_wrapper(n, xadj, adjncy, adjwgt, npart, part),
         "metis wrap");
   }
 
@@ -911,13 +911,13 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
   PARM_INT wgtflag = 3;
   PARM_INT numflag = 0;
   PARM_INT ncon;
-  PARM_INT nparts;
+  PARM_INT npart;
   PARM_INT edgecut;
   PARM_INT options[] = {1, 0 /* PARMETIS_DBGLVL_PROGRESS */, 42};
   MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
   REF_INT n, proc;
 
-  nparts = ref_mpi_n(ref_mpi);
+  npart = ref_mpi_n(ref_mpi);
   proc = ref_mpi_rank(ref_mpi);
   n = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   ncon = 1;
@@ -928,7 +928,7 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
 
   REIS(METIS_OK,
        ParMETIS_V3_PartKway(vtxdist, xadjdist, adjncydist, vwgt, adjwgtdist,
-                            &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
+                            &wgtflag, &numflag, &ncon, &npart, tpwgts, ubvec,
                             options, &edgecut, partdist, &comm),
        "ParMETIS is not o.k.");
 
@@ -1168,7 +1168,6 @@ static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid,
 #endif
 
 static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
-
   /* synchronize_globals and collect_ghost_age by ref_migrate_to_balance */
 
   if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
