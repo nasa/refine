@@ -643,9 +643,6 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
 
   struct Zoltan_Struct *zz;
 
-  RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
-  RSS(ref_node_collect_ghost_age(ref_node), "collect ghost age");
-
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
   RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
@@ -1080,9 +1077,6 @@ static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid,
   REF_TYPE parm_type;
   RSS(ref_mpi_int_size_type(sizeof(PARM_INT), &parm_type), "calc parm_type");
 
-  RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
-  RSS(ref_node_collect_ghost_age(ref_node), "collect ghost age");
-
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
   RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
@@ -1174,6 +1168,9 @@ static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid,
 #endif
 
 static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
+
+  /* synchronize_globals and collect_ghost_age by ref_migrate_to_balance */
+
   if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
     RSS(ref_migrate_single_part(ref_grid, new_part), "single by nproc");
     return REF_SUCCESS;
