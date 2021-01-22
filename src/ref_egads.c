@@ -3276,7 +3276,7 @@ static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
     minflag = MIN(flag, minflag);
     maxflag = MAX(flag, maxflag);
   }
-  printf("flag range %d %d\n", minflag, maxflag);
+  if (minflag <= maxflag) printf("flag range %d %d\n", minflag, maxflag);
   for (flag = minflag; flag <= maxflag; flag++) {
     n = 0;
     each_ref_dict_key_value(ref_dict, i, key, value) {
@@ -3284,19 +3284,22 @@ static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
         n++;
       }
     }
-    printf("flag %d has %d members\n", flag, n);
     if (n > 0) {
       ego eface, *group_faces;
       ref_malloc(group_faces, n, ego);
+      printf("group %d has %d members", flag, n);
       n = 0;
       each_ref_dict_key_value(ref_dict, i, key, value) {
         if (flag == value) {
+          printf(" %d", key + 1);
           group_faces[n] = faces[key];
           n++;
         }
       }
-      REIS(EGADS_SUCCESS, EG_makeEFace(ebody, n, group_faces, &eface),
-           "initEB");
+      printf("\n");
+      if (n > 1)
+        REIS(EGADS_SUCCESS, EG_makeEFace(ebody, n, group_faces, &eface),
+             "initEB");
       ref_free(group_faces);
     }
   }
@@ -3313,7 +3316,7 @@ static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
   int nedge, edge, nface, i;
   ego *faces;
   REF_DICT ref_dict;
-  REF_INT key, flag, minflag, maxflag, n, value;
+  REF_INT key, flag, minflag, maxflag, n, value, relaxations;
   REF_BOOL rerun;
   RSS(ref_dict_create(&ref_dict), "create");
   REIS(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, EDGE, &nedge, NULL),
@@ -3323,16 +3326,14 @@ static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
   for (i = 0; i < nface; i++) {
     RSS(ref_dict_store(ref_dict, i, i), "store");
   }
-  ref_dict_inspect(ref_dict);
   rerun = REF_TRUE;
+  relaxations = 0;
   while (rerun) {
     rerun = REF_FALSE;
     for (edge = 0; edge < nedge; edge++) {
       REF_INT group0, group1;
       REF_DBL min_angle, max_angle;
       if (REF_EMPTY != e2f[0 + 2 * edge] && REF_EMPTY != e2f[1 + 2 * edge]) {
-        printf("%d nface %d faces %d %d\n", edge + 1, nface, e2f[0 + 2 * edge],
-               e2f[1 + 2 * edge]);
         RSS(ref_dict_value(ref_dict, e2f[0 + 2 * edge] - 1, &group0), "g0");
         RSS(ref_dict_value(ref_dict, e2f[1 + 2 * edge] - 1, &group1), "g1");
         if (group0 != group1) {
@@ -3350,8 +3351,9 @@ static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
         }
       }
     }
+    relaxations++;
+    if (relaxations % 100 == 0) printf("relaxation %d\n", relaxations);
   }
-  ref_dict_inspect(ref_dict);
 
   minflag = REF_INT_MAX;
   maxflag = REF_INT_MIN;
@@ -3359,7 +3361,7 @@ static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
     minflag = MIN(flag, minflag);
     maxflag = MAX(flag, maxflag);
   }
-  printf("flag range %d %d\n", minflag, maxflag);
+  if (minflag <= maxflag) printf("flag range %d %d\n", minflag, maxflag);
   for (flag = minflag; flag <= maxflag; flag++) {
     n = 0;
     each_ref_dict_key_value(ref_dict, i, key, value) {
@@ -3367,17 +3369,19 @@ static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
         n++;
       }
     }
-    printf("flag %d has %d members\n", flag, n);
     if (n > 0) {
       ego eface, *group_faces;
       ref_malloc(group_faces, n, ego);
+      printf("flag %d has %d members", flag, n);
       n = 0;
       each_ref_dict_key_value(ref_dict, i, key, value) {
         if (flag == value) {
+          printf(" %d", key + 1);
           group_faces[n] = faces[key];
           n++;
         }
       }
+      printf("\n");
       if (n > 1)
         REIS(EGADS_SUCCESS, EG_makeEFace(ebody, n, group_faces, &eface),
              "initEB");
