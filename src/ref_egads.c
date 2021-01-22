@@ -3276,7 +3276,7 @@ static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
     minflag = MIN(flag, minflag);
     maxflag = MAX(flag, maxflag);
   }
-  printf("flag range %d %d\n", minflag, maxflag);
+  if (minflag <= maxflag) printf("flag range %d %d\n", minflag, maxflag);
   for (flag = minflag; flag <= maxflag; flag++) {
     n = 0;
     each_ref_dict_key_value(ref_dict, i, key, value) {
@@ -3284,19 +3284,22 @@ static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
         n++;
       }
     }
-    printf("flag %d has %d members\n", flag, n);
     if (n > 0) {
       ego eface, *group_faces;
       ref_malloc(group_faces, n, ego);
+      printf("group %d has %d members", flag, n);
       n = 0;
       each_ref_dict_key_value(ref_dict, i, key, value) {
         if (flag == value) {
+          printf(" %d", key + 1);
           group_faces[n] = faces[key];
           n++;
         }
       }
-      REIS(EGADS_SUCCESS, EG_makeEFace(ebody, n, group_faces, &eface),
-           "initEB");
+      printf("\n");
+      if (n > 1)
+        REIS(EGADS_SUCCESS, EG_makeEFace(ebody, n, group_faces, &eface),
+             "initEB");
       ref_free(group_faces);
     }
   }
@@ -3304,117 +3307,92 @@ static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
   RSS(ref_dict_free(ref_dict), "free");
   return REF_SUCCESS;
 }
-
 #endif
 
-REF_STATUS ref_egads_quilt_file(const char *filename) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
-  ego context;
-  ego model = NULL;
-  ego geom, *bodies;
-  int oclass, mtype, nbody, *senses;
-  ego effective[3];
-  ego effective_model;
-  double params[3], diag, box[6];
-  int tess_status, nvert;
-  double angle;
-  size_t end_of_string;
-  char project[1000];
-  char output[1024];
-
-  end_of_string = MIN(1023, strlen(filename));
-  RAS((7 < end_of_string &&
-       strncmp(&(filename[end_of_string - 6]), ".egads", 6) == 0),
-      ".egads extension missing");
-  strncpy(project, filename, end_of_string - 6);
-  project[end_of_string - 6] = '\0';
-  sprintf(output, "%s-eff.egads", project);
-
-  REIS(EGADS_SUCCESS, EG_open(&context), "EG open");
-  /* Success returns the old output level. (0-silent to 3-debug) */
-  RAS(EG_setOutLevel(context, 2) >= 0, "make verbose");
-
-  REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
-
-  REIS(EGADS_SUCCESS,
-       EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
-                      &senses),
-       "EG topo bodies");
-  printf("oclass %d mtype %d nbody %d\n", oclass, mtype, nbody);
-  REIS(1, nbody, "expected 1 body");
-
-  /* copy the Body so we can use/save it later */
-  REIS(EGADS_SUCCESS, EG_copyObject(bodies[0], NULL, &effective[0]),
-       "EG copy object");
-  EG_deleteObject(model);
-
-  REIS(EGADS_SUCCESS, EG_getBoundingBox(effective[0], box), "EG bounding box");
-  diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-              (box[1] - box[4]) * (box[1] - box[4]) +
-              (box[2] - box[5]) * (box[2] - box[5]));
-
-  params[0] = 0.025 * diag;
-  params[1] = 0.0075 * diag;
-  params[2] = 20.0;
-
-  REIS(EGADS_SUCCESS, EG_makeTessBody(effective[0], params, &(effective[1])),
-       "EG tess");
-  REIS(EGADS_SUCCESS,
-       EG_statusTessBody(effective[1], &geom, &tess_status, &nvert), "EG tess");
-  REIS(1, tess_status, "tess not closed");
-
-  angle = 10.0;
-  REIS(EGADS_SUCCESS, EG_initEBody(effective[1], angle, &effective[2]),
-       "initEB");
-
-  RSS(ref_egads_quilt_attributes(effective[0], effective[2]), "quilt attr");
-
-  REIS(EGADS_SUCCESS, EG_finishEBody(effective[2]), "finEB");
-
-  /* make the model with the body, tessellation and effective topology body
-     notes: 1) mtype = 3 is the total number of objects in the model
-               Body Objects must be first
-            2) nchild = 1 are the number of actual Body Objects */
-  REIS(EGADS_SUCCESS,
-       EG_makeTopology(context, NULL, MODEL, 3, NULL, 1, effective, NULL,
-                       &effective_model),
-       "make Topo Model");
-
-  {
-    int nface, nedge, nnode;
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, NODE, &nnode, NULL),
-         "EG node topo");
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, EDGE, &nedge, NULL),
-         "EG edge topo");
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[0], NULL, FACE, &nface, NULL),
-         "EG face topo");
-    printf("original  nnode %d nedge %d nface %d\n", nnode, nedge, nface);
-    REIS(EGADS_SUCCESS, EG_getBodyTopos(effective[2], NULL, NODE, &nnode, NULL),
-         "EG node topo");
-    REIS(EGADS_SUCCESS,
-         EG_getBodyTopos(effective[2], NULL, EEDGE, &nedge, NULL),
-         "EG edge topo");
-    REIS(EGADS_SUCCESS,
-         EG_getBodyTopos(effective[2], NULL, EFACE, &nface, NULL),
-         "EG face topo");
-    printf("effective nnode %d nedge %d nface %d\n", nnode, nedge, nface);
+static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
+                                        double angle, REF_INT *e2f) {
+  int nedge, edge, nface, i;
+  ego *faces;
+  REF_DICT ref_dict;
+  REF_INT key, flag, minflag, maxflag, n, value, relaxations;
+  REF_BOOL rerun;
+  RSS(ref_dict_create(&ref_dict), "create");
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, EDGE, &nedge, NULL),
+       "EG edge topo");
+  REIS(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, FACE, &nface, &faces),
+       "EG face topo");
+  for (i = 0; i < nface; i++) {
+    RSS(ref_dict_store(ref_dict, i, i), "store");
+  }
+  rerun = REF_TRUE;
+  relaxations = 0;
+  while (rerun) {
+    rerun = REF_FALSE;
+    for (edge = 0; edge < nedge; edge++) {
+      REF_INT group0, group1;
+      REF_DBL min_angle, max_angle;
+      if (REF_EMPTY != e2f[0 + 2 * edge] && REF_EMPTY != e2f[1 + 2 * edge]) {
+        RSS(ref_dict_value(ref_dict, e2f[0 + 2 * edge] - 1, &group0), "g0");
+        RSS(ref_dict_value(ref_dict, e2f[1 + 2 * edge] - 1, &group1), "g1");
+        if (group0 != group1) {
+          RSS(ref_egads_edge_crease(ref_geom, edge + 1, &min_angle, &max_angle),
+              "crease");
+          if (max_angle < angle) {
+            RSS(ref_dict_store(ref_dict, e2f[0 + 2 * edge] - 1,
+                               MIN(group0, group1)),
+                "store0");
+            RSS(ref_dict_store(ref_dict, e2f[1 + 2 * edge] - 1,
+                               MIN(group0, group1)),
+                "store1");
+            rerun = REF_TRUE;
+          }
+        }
+      }
+    }
+    relaxations++;
+    if (relaxations % 100 == 0) printf("relaxation %d\n", relaxations);
   }
 
-  printf("save effective model %s\n", output);
-  remove(output); /* allow failure when does not exist */
-  REIS(EGADS_SUCCESS, EG_saveModel(effective_model, output), "EG save eff");
-  EG_deleteObject(effective_model);
-
-  REIS(EGADS_SUCCESS, EG_close(context), "EG close");
-
+  minflag = REF_INT_MAX;
+  maxflag = REF_INT_MIN;
+  each_ref_dict_key_value(ref_dict, i, key, flag) {
+    minflag = MIN(flag, minflag);
+    maxflag = MAX(flag, maxflag);
+  }
+  if (minflag <= maxflag) printf("flag range %d %d\n", minflag, maxflag);
+  for (flag = minflag; flag <= maxflag; flag++) {
+    n = 0;
+    each_ref_dict_key_value(ref_dict, i, key, value) {
+      if (flag == value) {
+        n++;
+      }
+    }
+    if (n > 0) {
+      ego eface, *group_faces;
+      ref_malloc(group_faces, n, ego);
+      printf("flag %d has %d members", flag, n);
+      n = 0;
+      each_ref_dict_key_value(ref_dict, i, key, value) {
+        if (flag == value) {
+          printf(" %d", key + 1);
+          group_faces[n] = faces[key];
+          n++;
+        }
+      }
+      printf("\n");
+      if (n > 1)
+        REIS(EGADS_SUCCESS, EG_makeEFace(ebody, n, group_faces, &eface),
+             "initEB");
+      ref_free(group_faces);
+    }
+  }
+  EG_free(faces);
+  RSS(ref_dict_free(ref_dict), "free");
   return REF_SUCCESS;
-#else
-  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s for %s\n",
-         __func__, filename);
-  return REF_SUCCESS;
-#endif
 }
+#endif
 
 REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
@@ -3422,6 +3400,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
   ego effective[2];
   ego tess, model;
   double angle;
+
   RAS(ref_geom_model_loaded(ref_geom), "load model before quilting");
   RAS(!ref_geom_effective(ref_geom), "already effective, quilting twice?");
 
@@ -3453,7 +3432,15 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
   angle = 10.0;
   REIS(EGADS_SUCCESS, EG_initEBody(tess, angle, &effective[1]), "init xEB");
 
-  /* add quilting here */
+  RSS(ref_egads_quilt_attributes(effective[0], effective[1]), "quilt attr");
+
+  {
+    REF_INT *e2f;
+    RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
+    RSS(ref_egads_quilt_angle(ref_geom, effective[0], effective[1], angle, e2f),
+        "quilt attr");
+    ref_free(e2f);
+  }
 
   REIS(EGADS_SUCCESS, EG_finishEBody(effective[1]), "complete EB");
   REIS(0, EG_deleteObject(tess), "delete tess copied into ebody");
