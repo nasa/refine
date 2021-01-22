@@ -829,15 +829,12 @@ static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
 
   return REF_SUCCESS;
 }
-static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                           PARM_INT *xadjdist,
-                                           PARM_INT *adjncydist,
-                                           PARM_INT *adjwgtdist,
-                                           PARM_INT *partdist) {
+static REF_STATUS ref_migrate_metis_subset(
+    REF_MPI ref_mpi, PARM_INT npart, PARM_INT *vtxdist, PARM_INT *xadjdist,
+    PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
   REF_INT *count;
   PARM_INT global;
   PARM_INT n, *xadj, *adjncy, *adjwgt, *part;
-  PARM_INT npart;
   REF_INT i, proc;
   REF_TYPE parm_type;
   RSS(ref_mpi_int_size_type(sizeof(PARM_INT), &parm_type), "calc parm_type");
@@ -869,8 +866,6 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_mpi_stopwatch_stop(ref_mpi, "metis gather");
 
   ref_malloc_init(part, n, PARM_INT, REF_EMPTY);
-
-  npart = ref_mpi_n(ref_mpi);
 
   if (ref_mpi_once(ref_mpi)) {
     RSS(ref_migrate_metis_wrapper(n, xadj, adjncy, adjwgt, npart, part),
@@ -904,20 +899,18 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   return REF_SUCCESS;
 }
 static REF_STATUS ref_migrate_parmetis_wrapper(
-    REF_MPI ref_mpi, PARM_INT *vtxdist, PARM_INT *xadjdist,
+    REF_MPI ref_mpi, PARM_INT npart, PARM_INT *vtxdist, PARM_INT *xadjdist,
     PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
   PARM_INT *vwgt;
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT wgtflag = 3;
   PARM_INT numflag = 0;
   PARM_INT ncon;
-  PARM_INT npart;
   PARM_INT edgecut;
   PARM_INT options[] = {1, 0 /* PARMETIS_DBGLVL_PROGRESS */, 42};
   MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
   REF_INT n, proc;
 
-  npart = ref_mpi_n(ref_mpi);
   proc = ref_mpi_rank(ref_mpi);
   n = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   ncon = 1;
@@ -938,8 +931,9 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
   return REF_SUCCESS;
 }
 static REF_STATUS ref_migrate_parmetis_subset(
-    REF_MPI ref_mpi, REF_INT newproc, PARM_INT *vtxdist, PARM_INT *xadjdist,
-    PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
+    REF_MPI ref_mpi, PARM_INT npart, REF_INT newproc, PARM_INT *vtxdist,
+    PARM_INT *xadjdist, PARM_INT *adjncydist, PARM_INT *adjwgtdist,
+    PARM_INT *partdist) {
   REF_INT proc, nold, nnew, i, first;
   REF_INT nsend, nrecv, *send_size, *recv_size;
   PARM_INT ntotal;
@@ -1025,8 +1019,8 @@ static REF_STATUS ref_migrate_parmetis_subset(
   /* split comm and call parmetis */
   RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, newproc), "split comm");
   if (ref_mpi_rank(ref_mpi) < newproc) {
-    RSS(ref_migrate_parmetis_wrapper(split_mpi, vtx, xadj, adjncy, adjwgt,
-                                     part),
+    RSS(ref_migrate_parmetis_wrapper(split_mpi, npart, vtx, xadj, adjncy,
+                                     adjwgt, part),
         "parmetis wrapper");
   }
   RSS(ref_mpi_join_comm(split_mpi), "join comm");
@@ -1060,7 +1054,7 @@ static REF_STATUS ref_migrate_parmetis_subset(
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid,
+static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT npart,
                                             REF_INT *node_part) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1134,12 +1128,13 @@ static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid,
   if (ref_node_n_global(ref_node) < 100000) newpart = 1;
 
   if (1 == newpart) {
-    RSS(ref_migrate_metis_subset(ref_mpi, vtxdist, xadj, adjncy, adjwgt, part),
+    RSS(ref_migrate_metis_subset(ref_mpi, npart, vtxdist, xadj, adjncy, adjwgt,
+                                 part),
         "metis wrapper");
     ref_mpi_stopwatch_stop(ref_mpi, "metis part");
   } else {
-    RSS(ref_migrate_parmetis_subset(ref_mpi, newpart, vtxdist, xadj, adjncy,
-                                    adjwgt, part),
+    RSS(ref_migrate_parmetis_subset(ref_mpi, npart, newpart, vtxdist, xadj,
+                                    adjncy, adjwgt, part),
         "subset");
   }
 
@@ -1168,7 +1163,11 @@ static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid,
 #endif
 
 static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
+  REF_INT npart;
+
   /* synchronize_globals and collect_ghost_age by ref_migrate_to_balance */
+
+  npart = ref_mpi_n(ref_grid_mpi(ref_grid));
 
   if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
     RSS(ref_migrate_single_part(ref_grid, new_part), "single by nproc");
@@ -1190,12 +1189,14 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
 #endif
     case REF_MIGRATE_PARMETIS:
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-      RSS(ref_migrate_parmetis_part(ref_grid, new_part), "parmetis part");
+      RSS(ref_migrate_parmetis_part(ref_grid, npart, new_part),
+          "parmetis part");
       break;
 #endif
     case REF_MIGRATE_RECOMMENDED:
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-      RSS(ref_migrate_parmetis_part(ref_grid, new_part), "parmetis part");
+      RSS(ref_migrate_parmetis_part(ref_grid, npart, new_part),
+          "parmetis part");
       break;
 #endif
 #if !defined(HAVE_PARMETIS) && defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
