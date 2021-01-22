@@ -834,6 +834,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_EDGE ref_edge;
   REF_DBL edge_ratio;
   REF_INT ldim = 4;
+  REF_BOOL metric_area = REF_FALSE;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
@@ -911,7 +912,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     RSS(ref_edge_free(ref_edge), "free edges");
   }
 
-  if (ref_grid_twod(ref_grid)) {
+  if (metric_area && ref_grid_twod(ref_grid)) {
     REF_DBL area;
     REF_INT i, *hits;
     ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
