@@ -247,6 +247,7 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
 }
 
 static REF_STATUS ref_migrate_report_load_balance(REF_GRID ref_grid,
+                                                  REF_INT npart,
                                                   REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
@@ -274,13 +275,12 @@ static REF_STATUS ref_migrate_report_load_balance(REF_GRID ref_grid,
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    printf(
-        "balance %6.3f on %d target %d size min %d max %d\n",
-        (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
-            (REF_DBL)ref_mpi_n(ref_mpi),
-        ref_mpi_n(ref_mpi),
-        (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)ref_mpi_n(ref_mpi)),
-        min_part, max_part);
+    printf("balance %6.3f on %d of %d target %d size min %d max %d\n",
+           (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
+               (REF_DBL)npart,
+           npart, ref_mpi_n(ref_mpi),
+           (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)npart), min_part,
+           max_part);
   }
   ref_free(partition_size);
   return REF_SUCCESS;
@@ -487,8 +487,6 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
   ref_free(locals);
   ref_free(owners);
   ref_free(xyz);
-
-  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "native RCB part");
 
@@ -789,8 +787,6 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
   Zoltan_Destroy(&zz);
 
   RSS(ref_migrate_free(ref_migrate), "free migrate");
-
-  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part update");
 
@@ -1156,8 +1152,6 @@ static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT npart,
   ref_free(vtxdist);
   ref_free(partition_size);
 
-  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
-
   RSS(ref_migrate_free(ref_migrate), "free migrate");
 
   return REF_SUCCESS;
@@ -1237,6 +1231,8 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
       RSS(REF_IMPLEMENT, "ref_migrate_method");
       break;
   }
+
+  RSS(ref_migrate_report_load_balance(ref_grid, npart, new_part), "report bal");
 
   return REF_SUCCESS;
 }
