@@ -1,4 +1,5 @@
 
+
 sync twod oriention with and without EGADS
 flip boundary orientation convention
 use CGNS winding
@@ -228,6 +229,11 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ partitioning
+ + heuristic of MAX(1000,maxage*10) vertex per core
+ + allow npart sperate from ref_mpi_n for all parts
+ + native RCB always chooses widest
 
 + rename blend to facelift
 

@@ -44,5 +44,5 @@ adapt_para para02 para03 10
 adapt_para para03 para04 10
 
 cat para04.status
-../../check.rb para04.status 0.40 1.6
+../../check.rb para04.status 0.40 1.8
 

@@ -1,4 +1,6 @@
 
+- use a subset of cores when mesh is to small for nproc
+- ref_grid_partitioner_full(ref_grid) = REF_TRUE to use all cores
 - ref distance computes wall distance
 - ref visualize translates solution formats
 
