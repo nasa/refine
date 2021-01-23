@@ -1169,7 +1169,7 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
 
   npart = ref_mpi_n(ref_grid_mpi(ref_grid));
 
-  if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+  if (!ref_mpi_para(ref_grid_mpi(ref_grid)) || (2 > npart)) {
     RSS(ref_migrate_single_part(ref_grid, new_part), "single by nproc");
     return REF_SUCCESS;
   }
