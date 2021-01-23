@@ -314,6 +314,7 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   REF_MPI split_mpi;
   REF_INT seed_base = 3;
   REF_DBL ratio_shift, ratio0, ratio1;
+  REF_BOOL cycle_dir = REF_FALSE;
 
   if (0 == npart) return REF_SUCCESS;
 
@@ -406,9 +407,13 @@ static REF_STATUS ref_migrate_native_rcb_direction(
 
   RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, npart0), "split");
 
-  dir += 1;
-  if (dir > 2) dir -= 3;
-  if (twod && dir > 1) dir -= 2; /* twod skips Z */
+  if (cycle_dir) {
+    dir += 1;
+    if (dir > 2) dir -= 3;
+    if (twod && dir > 1) dir -= 2; /* twod skips Z */
+  } else {
+    dir = -1; /* direction computed in next recursion */
+  }
   if (ref_mpi_rank(ref_mpi) < npart0) {
     RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0,
                                          offset0, bal_owners0, bal_locals0,
