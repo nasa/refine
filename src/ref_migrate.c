@@ -269,7 +269,7 @@ static REF_STATUS ref_migrate_report_load_balance(REF_GRID ref_grid,
 
   min_part = INT_MAX;
   max_part = 0;
-  each_ref_mpi_part(ref_mpi, proc) {
+  for (proc = 0; proc < npart; proc++) {
     min_part = MIN(min_part, partition_size[proc]);
     max_part = MAX(max_part, partition_size[proc]);
   }
