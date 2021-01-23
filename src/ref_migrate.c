@@ -1163,28 +1163,9 @@ static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT npart,
 }
 #endif
 
-static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
-  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT npart;
-  REF_INT node, age, max_age;
-  REF_INT node_per_core, heuristic;
-
+static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT npart,
+                                       REF_INT *new_part) {
   /* synchronize_globals and collect_ghost_age by ref_migrate_to_balance */
-
-  /* heuristic to reduce the number of active cores when over decomposed */
-  max_age = 0;
-  each_ref_node_valid_node(ref_node, node) {
-    max_age = MAX(max_age, ref_node_age(ref_node, node));
-  }
-  age = max_age;
-  RSS(ref_mpi_max(ref_mpi, &age, &max_age, REF_INT_TYPE), "mpi max");
-  RSS(ref_mpi_bcast(ref_mpi, &max_age, 1, REF_INT_TYPE), "min");
-  node_per_core = MAX(1000, 10 * max_age);
-  heuristic =
-      MAX(1, (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)node_per_core));
-
-  npart = MIN(ref_mpi_n(ref_mpi), heuristic);
 
   if (!ref_mpi_para(ref_grid_mpi(ref_grid)) || (2 > npart)) {
     RSS(ref_migrate_single_part(ref_grid, new_part), "single by nproc");
@@ -1589,16 +1570,33 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
+  REF_INT npart;
+  REF_INT node, age, max_age;
+  REF_INT node_per_core, heuristic;
   REF_INT *node_part;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
   RSS(ref_node_collect_ghost_age(ref_node), "collect ghost age");
 
+  /* heuristic to reduce the number of active cores when over decomposed */
+  max_age = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    max_age = MAX(max_age, ref_node_age(ref_node, node));
+  }
+  age = max_age;
+  RSS(ref_mpi_max(ref_mpi, &age, &max_age, REF_INT_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &max_age, 1, REF_INT_TYPE), "min");
+  node_per_core = MAX(1000, 10 * max_age);
+  heuristic =
+      MAX(1, (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)node_per_core));
+
+  npart = MIN(ref_mpi_n(ref_mpi), heuristic);
+
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
-  RSS(ref_migrate_new_part(ref_grid, node_part), "new part");
+  RSS(ref_migrate_new_part(ref_grid, npart, node_part), "new part");
 
   RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
 
