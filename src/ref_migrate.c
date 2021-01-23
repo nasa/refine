@@ -446,21 +446,20 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
+static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
                                               REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT node;
   REF_INT i, n;
   REF_DBL *xyz;
-  REF_INT npart, offset;
+  REF_INT offset;
   REF_INT *owners;
   REF_INT *locals;
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     node_part[node] = REF_EMPTY;
 
-  npart = ref_mpi_n(ref_mpi);
   offset = 0;
 
   n = ref_node_n(ref_node);
@@ -1182,7 +1181,8 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
       RSS(ref_migrate_single_part(ref_grid, new_part), "single by method");
       break;
     case REF_MIGRATE_NATIVE_RCB:
-      RSS(ref_migrate_native_rcb_part(ref_grid, new_part), "single by method");
+      RSS(ref_migrate_native_rcb_part(ref_grid, npart, new_part),
+          "single by method");
       break;
     case REF_MIGRATE_ZOLTAN_GRAPH:
     case REF_MIGRATE_ZOLTAN_RCB:
@@ -1207,7 +1207,8 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
       break;
 #endif
 #if !defined(HAVE_PARMETIS) && !defined(HAVE_ZOLTAN)
-      RSS(ref_migrate_native_rcb_part(ref_grid, new_part), "single by method");
+      RSS(ref_migrate_native_rcb_part(ref_grid, npart, new_part),
+          "single by method");
       break;
 #endif
     case REF_MIGRATE_LAST:
