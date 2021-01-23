@@ -51,6 +51,7 @@ struct REF_GRID_STRUCT {
 
   REF_MIGRATE_PARTIONER partitioner;
   REF_INT partitioner_seed;
+  REF_BOOL partitioner_full;
 
   REF_INT meshb_version;
 
@@ -94,6 +95,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 
 #define ref_grid_partitioner(ref_grid) ((ref_grid)->partitioner)
 #define ref_grid_partitioner_seed(ref_grid) ((ref_grid)->partitioner_seed)
+#define ref_grid_partitioner_full(ref_grid) ((ref_grid)->partitioner_seed)
 
 #define ref_grid_meshb_version(ref_grid) ((ref_grid)->meshb_version)
 
