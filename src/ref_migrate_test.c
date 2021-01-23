@@ -322,6 +322,23 @@ int main(int argc, char *argv[]) {
     REIS(2, dir, "expects z");
   }
 
+  { /* tests part with zero n */
+    REF_INT n = 2;
+    REF_DBL xyz[] = {0, 0, 0, 1, 2, 3};
+    REF_INT dir;
+    if (ref_mpi_rank(ref_mpi) > 0) n = 0;
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REIS(2, dir, "expects z");
+  }
+
+  { /* planar example */
+    REF_INT n = 2;
+    REF_DBL xyz[] = {0, 0, 0, 1, 2, 0};
+    REF_INT dir;
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REIS(1, dir, "expects z");
+  }
+
   {
     REF_INT n = 2;
     REF_DBL ratio;
