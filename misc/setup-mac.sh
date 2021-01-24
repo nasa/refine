@@ -35,7 +35,7 @@ mkdir -p egads
     --with-EGADS=${egads_svn_path} \
     --with-OpenCASCADE=${opencascade_path} \
     --with-MeshLink=${meshlink_path} \
-    CFLAGS=" -DHAVE_EGADS_EFFECTIVE ${clangflags}" \
+    CFLAGS="${clangflags}" \
     ) \
     || exit
 

@@ -30,7 +30,7 @@ mkdir -p egads
     --with-EGADS=${egads_svn_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CC=icc \
-    CFLAGS=' -DHAVE_EGADS_EFFECTIVE -g -O3 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -fp-stack-check -fstack-security-check' \
+    CFLAGS='-g -O3 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -fp-stack-check -fstack-security-check' \
     ) \
     || exit
 
