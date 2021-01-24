@@ -326,11 +326,11 @@ REF_BOOL ref_egads_allows_effective(void) {
 }
 
 REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
-#if defined(HAVE_EGADS)
-  ego body;
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
+  ego body = NULL;
+
   RAS(ref_egads_allows_construction(), "construction not allowed");
-  body = NULL;
-#if !defined(HAVE_EGADS_LITE)
+
   if (0 == strcmp("cylinder", description)) {
     int stype = CYLINDER;
     double data[7] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
@@ -612,9 +612,6 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
            "delete construction objects");
     }
   }
-#else
-  RSS(REF_IMPLEMENT, "requires full EGADS, not EGADSlite");
-#endif
   RNB(body, "unknown description", { printf(">%s<\n", description); });
   {
     ego model;
@@ -630,7 +627,8 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
   RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
 
 #else
-  printf("nothing for %s, No EGADS linked for %s\n", __func__, description);
+  printf("nothing for %s, Full EGADS not linked for %s\n", __func__,
+         description);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
 #endif
   return REF_SUCCESS;
