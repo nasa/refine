@@ -7,19 +7,9 @@ use CGNS winding
 understand interp max error reports
 
 effective egads
-  auto detect HAVE_EGADS_EFFECTIVE
   group via quilting papers (crease)
-  + ref_egads_test effective load/save
 
 facelift direct surrogate boundary representation tolerance
-  + share via meshb
-  + higher order surface
-  + enrich at linear parameters, positions via evaluation
-  + parallel replicate surrogate instead of all import
-  + streamline bootstrap, adapt, and loop options
-  + parallel bootstrap friendly enrich
-  + jump
-  + degen
   plot displacement between surrogate and EGADS
   plot interpolated boundary representation tolerance independently
   smooth enrich surface (conform curvature metric?)
@@ -229,6 +219,20 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ effective egads
+  + auto detect HAVE_EGADS_EFFECTIVE
+  + ref_egads_test effective load/save
+
++ facelift direct surrogate boundary representation tolerance
+  + share via meshb
+  + higher order surface
+  + enrich at linear parameters, positions via evaluation
+  + parallel replicate surrogate instead of all import
+  + streamline bootstrap, adapt, and loop options
+  + parallel bootstrap friendly enrich
+  + jump
+  + degen
 
 + partitioning
  + heuristic of MAX(1000,maxage*10) vertex per core

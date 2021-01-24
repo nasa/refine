@@ -318,6 +318,23 @@ then
     AC_MSG_ERROR([lib${egads_lib_root}.{a,so,dylib} not found in $with_egads/lib])
   fi
 
+save_egads_effective_CPPFLAGS="${CPPFLAGS}"
+save_egads_effective_LIBS="${LIBS}"
+CPPFLAGS="${egads_include} ${CPPFLAGS}"
+LIBS="${egads_ldadd} ${LIBS}"
+  AC_LINK_IFELSE([AC_LANG_PROGRAM(
+  [[#include "egads.h"]],
+  [[ego tess = NULL; double angle = 10.0; ego effective;
+    EG_initEBody(tess, angle, &effective);]])],
+               [egads_effective='available'],
+               [egads_effective='missing'])
+CPPFLAGS="${save_egads_effective_CPPFLAGS}"
+LIBS="${save_egads_effective_LIBS}"
+  if test "$egads_effective" == 'available'
+  then
+    AC_DEFINE([HAVE_EGADS_EFFECTIVE],[1],[EGADS implements Effective Geometry])
+  fi
+
   AC_SUBST([egads_include])
   AC_SUBST([egads_ldadd])
 
