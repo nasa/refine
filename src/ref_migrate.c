@@ -918,8 +918,8 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
   n = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   ncon = 1;
   ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
-  ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
-                  (PARM_REAL)1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
+  ref_malloc_init(tpwgts, ncon * npart, PARM_REAL,
+                  (PARM_REAL)1.0 / (PARM_REAL)npart);
   ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
 
   REIS(METIS_OK,
