@@ -1657,6 +1657,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     accept = (REF_SUCCESS == interp_status);
     accept = accept && (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
                         normdev > normdev_orig);
+    accept = accept && (normdev > 0.9 * normdev_orig);
     accept = accept && (min_uv_area > ref_node_min_uv_area(ref_node));
     accept = accept && (uv_min[0] < uv[0]) && (uv[0] < uv_max[0]);
     accept = accept && (uv_min[1] < uv[1]) && (uv[1] < uv_max[1]);
