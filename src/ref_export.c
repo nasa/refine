@@ -1198,10 +1198,10 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   REF_CELL ref_cell;
   REF_INT node;
   REF_INT *o2n, *n2o;
-  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per, cell;
   REF_INT group;
+  REF_INT nnode;
   REF_INT faceid, min_faceid, max_faceid;
 
   ref_node = ref_grid_node(ref_grid);
@@ -1210,99 +1210,153 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
-  fprintf(file, "NDIME= 3\n");
+  if (ref_grid_twod(ref_grid)) {
+    fprintf(file, "NDIME= 2\n");
+  } else {
+    fprintf(file, "NDIME= 3\n");
+  }
 
   RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
   nnode = ref_node_n(ref_node);
-
   fprintf(file, "NPOIN= %d\n", nnode);
 
-  for (node = 0; node < ref_node_n(ref_node); node++)
-    fprintf(file, " %.16e %.16e %.16e\n", ref_node_xyz(ref_node, 0, n2o[node]),
-            ref_node_xyz(ref_node, 1, n2o[node]),
-            ref_node_xyz(ref_node, 2, n2o[node]));
+  if (ref_grid_twod(ref_grid)) {
+    for (node = 0; node < ref_node_n(ref_node); node++)
+      fprintf(file, " %.16e %.16e\n", ref_node_xyz(ref_node, 0, n2o[node]),
+              ref_node_xyz(ref_node, 1, n2o[node]));
+  } else {
+    for (node = 0; node < ref_node_n(ref_node); node++)
+      fprintf(file, " %.16e %.16e %.16e\n",
+              ref_node_xyz(ref_node, 0, n2o[node]),
+              ref_node_xyz(ref_node, 1, n2o[node]),
+              ref_node_xyz(ref_node, 2, n2o[node]));
+  }
 
-  ntet = ref_cell_n(ref_grid_tet(ref_grid));
-  npyr = ref_cell_n(ref_grid_pyr(ref_grid));
-  npri = ref_cell_n(ref_grid_pri(ref_grid));
-  nhex = ref_cell_n(ref_grid_hex(ref_grid));
+  if (ref_grid_twod(ref_grid)) {
+    REF_INT ntri = ref_cell_n(ref_grid_tri(ref_grid));
+    REF_INT nqua = ref_cell_n(ref_grid_qua(ref_grid));
 
-  fprintf(file, "NELEM= %d\n", ntet + npyr + npri + nhex);
-
-  /* uses VTK windings */
-  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
-    node_per = ref_cell_node_per(ref_cell);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      switch (ref_cell_node_per(ref_cell)) {
-        case 4:
-          fprintf(file, "10");
-          break;
-        case 5:
-          fprintf(file, "14");
-          VTK_PYRAMID_ORDER(nodes);
-          break;
-        case 6:
-          fprintf(file, "13");
-          VTK_WEDGE_ORDER(nodes);
-          break;
-        case 8:
-          fprintf(file, "12");
-          break;
-        default:
-          RSS(REF_IMPLEMENT, "wrong nodes per cell");
-          break;
+    fprintf(file, "NELEM= %d\n", ntri + nqua);
+    /* uses VTK windings */
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        switch (ref_cell_type(ref_cell)) {
+          case REF_CELL_TRI:
+            fprintf(file, "5");
+            break;
+          case REF_CELL_QUA:
+            fprintf(file, "9");
+            VTK_PYRAMID_ORDER(nodes);
+            break;
+          case REF_CELL_EDG:
+          case REF_CELL_ED2:
+          case REF_CELL_ED3:
+          case REF_CELL_TR2:
+          case REF_CELL_TR3:
+          case REF_CELL_TET:
+          case REF_CELL_PYR:
+          case REF_CELL_PRI:
+          case REF_CELL_HEX:
+            RSS(REF_IMPLEMENT, "2D SU2 element");
+            break;
+        }
+        for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+          fprintf(file, " %d", o2n[nodes[node]]);
+        fprintf(file, "\n");
       }
-      for (node = 0; node < node_per; node++)
-        fprintf(file, " %d", o2n[nodes[node]]);
-      fprintf(file, "\n");
+    }
+  } else {
+    REF_INT ntet = ref_cell_n(ref_grid_tet(ref_grid));
+    REF_INT npyr = ref_cell_n(ref_grid_pyr(ref_grid));
+    REF_INT npri = ref_cell_n(ref_grid_pri(ref_grid));
+    REF_INT nhex = ref_cell_n(ref_grid_hex(ref_grid));
+
+    fprintf(file, "NELEM= %d\n", ntet + npyr + npri + nhex);
+    /* uses VTK windings */
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        switch (ref_cell_type(ref_cell)) {
+          case REF_CELL_TET:
+            fprintf(file, "10");
+            break;
+          case REF_CELL_PYR:
+            fprintf(file, "14");
+            VTK_PYRAMID_ORDER(nodes);
+            break;
+          case REF_CELL_PRI:
+            fprintf(file, "13");
+            VTK_WEDGE_ORDER(nodes);
+            break;
+          case REF_CELL_HEX:
+            fprintf(file, "12");
+            break;
+          case REF_CELL_EDG:
+          case REF_CELL_ED2:
+          case REF_CELL_ED3:
+          case REF_CELL_TRI:
+          case REF_CELL_TR2:
+          case REF_CELL_TR3:
+          case REF_CELL_QUA:
+            RSS(REF_IMPLEMENT, "3D SU2 element");
+            break;
+        }
+        for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+          fprintf(file, " %d", o2n[nodes[node]]);
+        fprintf(file, "\n");
+      }
     }
   }
 
-  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
-  fprintf(file, "NMARK= %d\n", max_faceid - min_faceid + 1);
+  if (ref_grid_twod(ref_grid)) {
+  } else {
+    REF_INT ntri;
+    REF_INT nqua;
+    RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+    fprintf(file, "NMARK= %d\n", max_faceid - min_faceid + 1);
 
-  for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
-    ref_cell = ref_grid_tri(ref_grid);
-    node_per = ref_cell_node_per(ref_cell);
-    ntri = 0;
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (nodes[node_per] == faceid) {
-        ntri++;
+    for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
+      ref_cell = ref_grid_tri(ref_grid);
+      node_per = ref_cell_node_per(ref_cell);
+      ntri = 0;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (nodes[node_per] == faceid) {
+          ntri++;
+        }
       }
-    }
 
-    ref_cell = ref_grid_qua(ref_grid);
-    node_per = ref_cell_node_per(ref_cell);
-    nqua = 0;
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (nodes[node_per] == faceid) {
-        nqua++;
+      ref_cell = ref_grid_qua(ref_grid);
+      node_per = ref_cell_node_per(ref_cell);
+      nqua = 0;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (nodes[node_per] == faceid) {
+          nqua++;
+        }
       }
-    }
 
-    fprintf(file, "MARKER_TAG= %d\n", faceid);
-    fprintf(file, "MARKER_ELEMS= %d\n", ntri + nqua);
+      fprintf(file, "MARKER_TAG= %d\n", faceid);
+      fprintf(file, "MARKER_ELEMS= %d\n", ntri + nqua);
 
-    ref_cell = ref_grid_tri(ref_grid);
-    node_per = ref_cell_node_per(ref_cell);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (nodes[node_per] == faceid) {
-        fprintf(file, "5");
-        for (node = 0; node < node_per; node++)
-          fprintf(file, " %d", o2n[nodes[node]]);
-        fprintf(file, "\n");
+      ref_cell = ref_grid_tri(ref_grid);
+      node_per = ref_cell_node_per(ref_cell);
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (nodes[node_per] == faceid) {
+          fprintf(file, "5");
+          for (node = 0; node < node_per; node++)
+            fprintf(file, " %d", o2n[nodes[node]]);
+          fprintf(file, "\n");
+        }
       }
-    }
 
-    ref_cell = ref_grid_qua(ref_grid);
-    node_per = ref_cell_node_per(ref_cell);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (nodes[node_per] == faceid) {
-        fprintf(file, "9");
-        for (node = 0; node < node_per; node++)
-          fprintf(file, " %d", o2n[nodes[node]]);
-        fprintf(file, "\n");
+      ref_cell = ref_grid_qua(ref_grid);
+      node_per = ref_cell_node_per(ref_cell);
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (nodes[node_per] == faceid) {
+          fprintf(file, "9");
+          for (node = 0; node < node_per; node++)
+            fprintf(file, " %d", o2n[nodes[node]]);
+          fprintf(file, "\n");
+        }
       }
     }
   }
