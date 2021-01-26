@@ -199,6 +199,7 @@ int main(int argc, char *argv[]) {
          ref_cell_n(ref_grid_tet(import_grid)), "tet count");
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
   }
 
   { /* export import .meshb tet brick, version 2 */
