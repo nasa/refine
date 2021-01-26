@@ -105,14 +105,30 @@ static REF_STATUS ref_export_faceid_range(REF_GRID ref_grid,
 
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_id_index(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_id_index(ref_cell)]);
   }
 
   ref_cell = ref_grid_qua(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_id_index(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_id_index(ref_cell)]);
+  }
+
+  return REF_SUCCESS;
+}
+static REF_STATUS ref_export_cell_id_range(REF_CELL ref_cell,
+                                           REF_INT *min_faceid,
+                                           REF_INT *max_faceid) {
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_faceid = REF_INT_MAX;
+  *max_faceid = REF_INT_MIN;
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_id_index(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_id_index(ref_cell)]);
   }
 
   return REF_SUCCESS;
@@ -1202,7 +1218,6 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   REF_INT node_per, cell;
   REF_INT group;
   REF_INT nnode;
-  REF_INT faceid, min_faceid, max_faceid;
 
   ref_node = ref_grid_node(ref_grid);
 
@@ -1239,7 +1254,7 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
 
     fprintf(file, "NELEM= %d\n", ntri + nqua);
     /* uses VTK windings */
-    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_grid_2d_ref_cell(ref_grid, group, ref_cell) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         switch (ref_cell_type(ref_cell)) {
           case REF_CELL_TRI:
@@ -1309,7 +1324,39 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   }
 
   if (ref_grid_twod(ref_grid)) {
+    REF_INT faceid, min_faceid, max_faceid;
+    REF_INT nedg;
+    RSS(ref_export_cell_id_range(ref_grid_edg(ref_grid), &min_faceid,
+                                 &max_faceid),
+        "range");
+    fprintf(file, "NMARK= %d\n", max_faceid - min_faceid + 1);
+
+    for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
+      ref_cell = ref_grid_edg(ref_grid);
+      node_per = ref_cell_node_per(ref_cell);
+      nedg = 0;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (nodes[node_per] == faceid) {
+          nedg++;
+        }
+      }
+      fprintf(file, "MARKER_TAG= %d\n", faceid);
+      fprintf(file, "MARKER_ELEMS= %d\n", nedg);
+
+      ref_cell = ref_grid_edg(ref_grid);
+      node_per = ref_cell_node_per(ref_cell);
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (nodes[node_per] == faceid) {
+          fprintf(file, "3");
+          for (node = 0; node < node_per; node++)
+            fprintf(file, " %d", o2n[nodes[node]]);
+          fprintf(file, "\n");
+        }
+      }
+    }
+
   } else {
+    REF_INT faceid, min_faceid, max_faceid;
     REF_INT ntri;
     REF_INT nqua;
     RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");

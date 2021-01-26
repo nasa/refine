@@ -164,6 +164,25 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
+  { /* export import twod .su2 brick */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test-2d.su2";
+    RSS(ref_fixture_twod_brick_grid(&export_grid, ref_mpi, 4), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_edg(export_grid)),
+         ref_cell_n(ref_grid_edg(import_grid)), "edg count");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
   { /* export import .su2 tet brick */
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.su2";
