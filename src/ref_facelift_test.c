@@ -186,6 +186,36 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--eval", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_INT faceid;
+    REF_DBL uv[2], xyz[3];
+    /*                             0        1           2           3    4 5 */
+    REIS(7, argc, "required args: --eval surrogate.ext geom.egads faceid u v");
+    REIS(1, pos, "required args: --eval surrogate.ext geom.egads faceid u v");
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", argv[pos + 2]);
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[pos + 2]), "load egads");
+    ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+    printf("import facelift %s\n", argv[pos + 1]);
+    RSS(ref_facelift_surrogate(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "facelift loaded");
+    faceid = atoi(argv[pos + 3]);
+    uv[0] = atof(argv[pos + 4]);
+    uv[1] = atof(argv[pos + 5]);
+    RSS(ref_facelift_eval_at(ref_geom_facelift(ref_grid_geom(ref_grid)),
+                             REF_GEOM_FACE, faceid, uv, xyz, NULL),
+        "facelift eval wrapper");
+    ref_mpi_stopwatch_stop(ref_mpi, "facelift eval");
+    printf("faceid %d uv %.15e %.15e\n", faceid, uv[0], uv[1]);
+    printf("xyz %.15e %.15e %.15e\n", xyz[0], xyz[1], xyz[2]);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   {
     REF_FACELIFT ref_facelift;
     REF_GRID freeable_ref_grid;

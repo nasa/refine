@@ -311,6 +311,7 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
   REF_DBL uv_orig[2];
   REF_DBL uv[2];
   REF_DBL q0, q;
+  REF_DBL min_uv_area;
   REF_DBL xyz[3], dxyz_duv[15], dq_dxyz[3], dq_duv[2], dq_duv0[2], dq_duv1[2];
   REF_DBL slope, beta, num, denom;
   REF_DBL step1, step2, step3, q1, q2, q3;
@@ -357,6 +358,14 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
   q = q0;
   for (tries = 0; tries < 30 && q < target_q; tries++) {
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv), "set uv");
+    RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area),
+        "min area");
+    if (min_uv_area <=
+        ref_node_min_uv_area(ref_node)) { /* protects constrain */
+      uv[0] = uv_orig[0];
+      uv[1] = uv_orig[1];
+      break;
+    }
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
     RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &q, dq_dxyz), "qual");
     RSS(ref_egads_eval(ref_geom, geom, xyz, dxyz_duv), "eval face");
