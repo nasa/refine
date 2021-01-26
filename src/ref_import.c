@@ -886,22 +886,6 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-/*
-                           2
-                        ./   \
-                     .  / nt2 \
-                  .    /       \
-               .      /nt0  nt1 \
-            .        0-ne0---ne1-1  y=1 second plane, face 1
-         5       .           .
-       /   \  .           .
-      /  t1 \          .
-     /   .   \      .
-    / t0   t2 \  .
-   3--e0----e1-4   y=0 first plane, face 2
-
- */
-
 static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                  const char *filename) {
   REF_GRID ref_grid;
