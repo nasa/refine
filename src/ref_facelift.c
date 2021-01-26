@@ -530,6 +530,7 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
   REF_INT item, candidate, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL current_bary[3], best_bary, min_bary;
   REF_INT best_candidate;
+  REF_BOOL verbose = REF_FALSE;
 
   *cell = REF_EMPTY;
   bary[0] = 0.0;
@@ -582,6 +583,7 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
     parampad[2] = 0.0;
 
     RSS(ref_search_touching(ref_search, ref_list, parampad, fuzz), "touching");
+    if (verbose) printf("n touch %d\n", ref_list_n(ref_list));
     if (0 >= ref_list_n(ref_list)) {
       RSS(ref_list_free(ref_list), "free list");
       return REF_SUCCESS;
@@ -594,6 +596,9 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
       nodes[3] = nodes[ref_cell_id_index(ref_cell)]; /* expects P1 */
       RSS(ref_geom_bary3(ref_geom, nodes, param, current_bary), "bary");
       min_bary = MIN(MIN(current_bary[0], current_bary[1]), current_bary[2]);
+      if (verbose)
+        printf("bary %e %e %e\n", current_bary[0], current_bary[1],
+               current_bary[2]);
       if (REF_EMPTY == best_candidate || min_bary > best_bary) {
         best_candidate = candidate;
         best_bary = min_bary;
@@ -606,6 +611,8 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
     RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
     nodes[3] = nodes[ref_cell_id_index(ref_cell)]; /* expects P1 */
     RSS(ref_geom_bary3(ref_geom, nodes, param, bary), "bary");
+
+    if (verbose) printf("best %e %e %e\n", bary[0], bary[1], bary[2]);
 
     RSS(ref_list_free(ref_list), "free list");
   }
