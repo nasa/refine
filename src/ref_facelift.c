@@ -700,7 +700,12 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
     REF_CELL ref_cell = NULL;
     RSS(ref_facelift_enclosing(ref_facelift, type, id, params, &cell, bary),
         "enclose");
-    RUS(REF_EMPTY, cell, "no enclosing found");
+    RUB(REF_EMPTY, cell, "no enclosing found", {
+      if (REF_GEOM_EDGE == type)
+        printf("edgeid %d parms %.15e\n", id, params[0]);
+      if (REF_GEOM_FACE == type)
+        printf("faceid %d parms %.15e %.15e\n", id, params[0], params[1]);
+    });
     if (REF_GEOM_EDGE == type) {
       ref_cell = ref_facelift_edg(ref_facelift);
       RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
