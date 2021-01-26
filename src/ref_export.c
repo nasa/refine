@@ -1262,7 +1262,6 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
             break;
           case REF_CELL_QUA:
             fprintf(file, "9");
-            VTK_PYRAMID_ORDER(nodes);
             break;
           case REF_CELL_EDG:
           case REF_CELL_ED2:
