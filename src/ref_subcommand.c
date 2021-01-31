@@ -264,7 +264,8 @@ static void visualize_help(const char *name) {
 }
 
 static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
-                                  REF_DBL spalding_yplus, REF_DBL complexity) {
+                                  REF_DBL spalding_yplus, REF_DBL complexity,
+                                  int argc, char *argv[]) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL *metric;
   REF_DBL *distance, *uplus, yplus;
@@ -291,7 +292,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "set complexity");
-
+  RSS(ref_metric_parse(metric, ref_grid, argc, argv), "parse metric");
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
   ref_free(uplus);
   ref_free(distance);
@@ -504,7 +505,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   if (curvature_metric) {
     if (spalding_yplus > 0.0) {
-      RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
+      RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
+                          argc, argv),
           "spalding");
     } else {
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
@@ -544,7 +546,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
     if (curvature_metric) {
       if (spalding_yplus > 0.0) {
-        RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
+        RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
+                            argc, argv),
             "spalding");
       } else {
         RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
