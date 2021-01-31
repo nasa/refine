@@ -34,6 +34,7 @@
 #include "ref_iso.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 #include "ref_meshlink.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
@@ -1340,6 +1341,148 @@ static REF_STATUS fixed_point_metric(
   return REF_SUCCESS;
 }
 
+static REF_STATUS extract_displaced_xyz(REF_NODE ref_node, REF_INT *ldim,
+                                        REF_DBL **initial_field,
+                                        REF_DBL **displaced) {
+  REF_INT i, node;
+
+  ref_malloc(*displaced, 3 * ref_node_max(ref_node), REF_DBL);
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 3; i++) {
+      (*displaced)[i + 3 * node] = (*initial_field)[i + (*ldim) * node];
+    }
+  }
+  (*ldim) -= 3;
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < (*ldim); i++) {
+      (*initial_field)[i + (*ldim) * node] =
+          (*initial_field)[i + 3 + ((*ldim) + 3) * node];
+    }
+  }
+  ref_realloc(*initial_field, (*ldim) * ref_node_max(ref_node), REF_DBL);
+  return REF_SUCCESS;
+}
+
+static REF_STATUS moving_fixed_point_metric(
+    REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
+    REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
+    const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
+    REF_DBL gradation, REF_DBL complexity) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *hess, *scalar;
+  REF_DBL *jac, *x, *grad, *this_metric, *xyz, det;
+  REF_INT timestep, total_timesteps;
+  char solb_filename[1024];
+  REF_DBL inv_total;
+  REF_INT im, node;
+  REF_INT fixed_point_ldim;
+  REF_DBL *displaced;
+  REF_INT i, j;
+
+  ref_malloc(hess, 6 * ref_node_max(ref_node), REF_DBL);
+  ref_malloc(this_metric, 6 * ref_node_max(ref_node), REF_DBL);
+  ref_malloc(jac, 9 * ref_node_max(ref_node), REF_DBL);
+  ref_malloc(x, ref_node_max(ref_node), REF_DBL);
+  ref_malloc(grad, 3 * ref_node_max(ref_node), REF_DBL);
+  ref_malloc(xyz, 3 * ref_node_max(ref_node), REF_DBL);
+
+  total_timesteps = 0;
+  for (timestep = first_timestep; timestep <= last_timestep;
+       timestep += timestep_increment) {
+    snprintf(solb_filename, 1024, "%s%s%d.solb", in_project, solb_middle,
+             timestep);
+    if (ref_mpi_once(ref_mpi))
+      printf("read and hess recon for %s\n", solb_filename);
+    RSS(ref_part_scalar(ref_node, &fixed_point_ldim, &scalar, solb_filename),
+        "unable to load scalar");
+    REIS(4, fixed_point_ldim, "expected x,y,z and one scalar");
+    RSS(extract_displaced_xyz(ref_node, &fixed_point_ldim, &scalar, &displaced),
+        "disp");
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_node_valid_node(ref_node, node) {
+        displaced[1 + 3 * node] = displaced[2 + 3 * node];
+        displaced[2 + 3 * node] = 0.0;
+      }
+    }
+    for (j = 0; j < 3; j++) {
+      each_ref_node_valid_node(ref_node, node) {
+        x[node] = displaced[j + 3 * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, x, grad, reconstruction), "recon x");
+      if (ref_grid_twod(ref_grid)) {
+        each_ref_node_valid_node(ref_node, node) { grad[2 + 3 * node] = 1.0; }
+      }
+      each_ref_node_valid_node(ref_node, node) {
+        for (i = 0; i < 3; i++) {
+          jac[i + 3 * j + 9 * node] = grad[i + 3 * node];
+        }
+      }
+    }
+
+    each_ref_node_valid_node(ref_node, node) {
+      for (i = 0; i < 3; i++) {
+        xyz[i + 3 * node] = ref_node_xyz(ref_node, i, node);
+        ref_node_xyz(ref_node, i, node) = displaced[i + 3 * node];
+      }
+    }
+    RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+    RSS(ref_recon_roundoff_limit(hess, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    each_ref_node_valid_node(ref_node, node) {
+      for (i = 0; i < 3; i++) {
+        ref_node_xyz(ref_node, i, node) = xyz[i + 3 * node];
+      }
+    }
+
+    each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_matrix_jac_m_jact(&(jac[9 * node]), &(hess[6 * node]),
+                                &(this_metric[6 * node])),
+          "J M J^t");
+
+      RSS(ref_matrix_det_gen(3, &(jac[9 * node]), &det), "gen det");
+      for (i = 0; i < 6; i++) {
+        this_metric[i + 6 * node] *= pow(ABS(det), 1.0 / (REF_DBL)p);
+      }
+    }
+
+    total_timesteps++;
+    each_ref_node_valid_node(ref_node, node) {
+      for (im = 0; im < 6; im++) {
+        metric[im + 6 * node] += this_metric[im + 6 * node];
+      }
+    }
+
+    ref_free(displaced);
+    ref_free(scalar);
+  }
+  free(xyz);
+  free(grad);
+  free(x);
+  free(jac);
+  free(this_metric);
+  free(hess);
+  ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
+
+  RAS(0 < total_timesteps, "expected one or more timesteps");
+  inv_total = 1.0 / (REF_DBL)total_timesteps;
+  each_ref_node_valid_node(ref_node, node) {
+    for (im = 0; im < 6; im++) {
+      metric[im + 6 * node] *= inv_total;
+    }
+  }
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+      "local lp norm scaling");
+  ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         complexity),
+      "gradation at complexity");
+  ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+  return REF_SUCCESS;
+}
+
 static REF_STATUS remove_initial_field_adjoint(REF_NODE ref_node, REF_INT *ldim,
                                                REF_DBL **initial_field) {
   REF_INT i, node;
@@ -1393,28 +1536,6 @@ static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
     }
   }
 
-  return REF_SUCCESS;
-}
-
-static REF_STATUS extract_displaced_xyz(REF_NODE ref_node, REF_INT *ldim,
-                                        REF_DBL **initial_field,
-                                        REF_DBL **displaced) {
-  REF_INT i, node;
-
-  ref_malloc(*displaced, 3 * ref_node_max(ref_node), REF_DBL);
-  each_ref_node_valid_node(ref_node, node) {
-    for (i = 0; i < 3; i++) {
-      (*displaced)[i + 3 * node] = (*initial_field)[i + (*ldim) * node];
-    }
-  }
-  (*ldim) -= 3;
-  each_ref_node_valid_node(ref_node, node) {
-    for (i = 0; i < (*ldim); i++) {
-      (*initial_field)[i + (*ldim) * node] =
-          (*initial_field)[i + 3 + ((*ldim) + 3) * node];
-    }
-  }
-  ref_realloc(*initial_field, (*ldim) * ref_node_max(ref_node), REF_DBL);
   return REF_SUCCESS;
 }
 
@@ -1750,6 +1871,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos + 4 < argc) {
     REF_INT first_timestep, last_timestep, timestep_increment;
     const char *solb_middle;
+    REF_INT deforming_pos;
     multiscale_metric = REF_FALSE;
     solb_middle = argv[pos + 1];
     first_timestep = atoi(argv[pos + 2]);
@@ -1761,10 +1883,20 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
              timestep_increment, last_timestep);
     }
-    RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
-                           timestep_increment, in_project, solb_middle,
-                           reconstruction, p, gradation, complexity),
-        "fixed point");
+    RXS(ref_args_find(argc, argv, "--deforming", &deforming_pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY == deforming_pos) {
+      RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
+                             timestep_increment, in_project, solb_middle,
+                             reconstruction, p, gradation, complexity),
+          "fixed point");
+    } else {
+      RSS(moving_fixed_point_metric(metric, ref_grid, first_timestep,
+                                    last_timestep, timestep_increment,
+                                    in_project, solb_middle, reconstruction, p,
+                                    gradation, complexity),
+          "fixed point");
+    }
   }
   if (multiscale_metric) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);

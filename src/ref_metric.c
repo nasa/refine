@@ -1842,14 +1842,12 @@ REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
     for (i = 0; i < 3; i++) {
       xyz[i + 3 * node] = ref_node_xyz(ref_node, i, node);
       ref_node_xyz(ref_node, i, node) = displaced[i + 3 * node];
-      ;
     }
   }
   RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "recon");
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
     for (i = 0; i < 3; i++) {
       ref_node_xyz(ref_node, i, node) = xyz[i + 3 * node];
-      ;
     }
   }
   ref_free(xyz);
