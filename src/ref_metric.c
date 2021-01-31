@@ -2749,8 +2749,8 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
         RAS(strncmp(args[pos], "ceil", 4) == 0 ||
                 strncmp(args[pos], "floor", 5) == 0,
             "ceil or floor is missing\n"
-            "  --uniform box {ceil,floor} h0 decay_distance xmin ymin zmin "
-            "xmax ymax zmax");
+            "  --uniform cyl {ceil,floor} h0 decay_distance x1 y1 z1 "
+            "x2 y2 z2 r1 r2");
         ceil = (strncmp(args[pos], "ceil", 4) == 0);
         pos++;
         h0 = atof(args[pos]);

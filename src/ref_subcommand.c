@@ -69,6 +69,18 @@ static void usage(const char *name) {
   printf("\n");
   printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
+
+static void option_uniform_help(void) {
+  printf(
+      "  --uniform box {ceil,floor} h0 decay_distance xmin ymin zmin "
+      "xmax ymax zmax\n");
+  printf(
+      "  --uniform cyl {ceil,floor} h0 decay_distance x1 y1 z1 "
+      "x2 y2 z2 r1 r2\n");
+  printf("      decay_distance is negative to increase h with distance.\n");
+  printf("      decay_distance is positive to decrease h with distance.\n");
+}
+
 static void adapt_help(const char *name) {
   printf("usage: \n %s adapt input_mesh.extension [<options>]\n", name);
   printf("  -x  output_mesh.extension\n");
@@ -80,6 +92,7 @@ static void adapt_help(const char *name) {
   printf("      construct a multiscale metric to control interpolation\n");
   printf("      error in u+ of Spalding's Law. Requires boundary conditions\n");
   printf("      via the --fun3d-mapbc or --viscous-tags options.\n");
+  option_uniform_help();
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --partitioner selects domain decomposition method.\n");
@@ -162,7 +175,6 @@ static void loop_help(const char *name) {
   printf("   --gradation <gradation> (default -1)\n");
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
-  printf("   --buffer coarsens the metric approaching the x max boundary.\n");
   printf("   --partitioner <id> selects domain decomposition method.\n");
   printf("       2: ParMETIS graph partitioning.\n");
   printf("       3: Zoltan graph partitioning.\n");
@@ -189,6 +201,8 @@ static void loop_help(const char *name) {
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --deforming mesh flow solve, include xyz in *_volume.solb.\n");
+  printf("  --buffer coarsens the metric approaching the x max boundary.\n");
+  option_uniform_help();
 
   printf("\n");
 }
@@ -205,6 +219,7 @@ static void multiscale_help(const char *name) {
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
   printf("   --buffer coarsens the metric approaching the x max boundary.\n");
+  option_uniform_help();
   printf("   --hessian expects hessian.* in place of scalar.{solb,snap}.\n");
   printf("   --pcd <project.pcd> exports isotropic spacing.\n");
   printf("\n");
@@ -249,7 +264,8 @@ static void visualize_help(const char *name) {
 }
 
 static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
-                                  REF_DBL spalding_yplus, REF_DBL complexity) {
+                                  REF_DBL spalding_yplus, REF_DBL complexity,
+                                  int argc, char *argv[]) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL *metric;
   REF_DBL *distance, *uplus, yplus;
@@ -276,7 +292,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "set complexity");
-
+  RSS(ref_metric_parse(metric, ref_grid, argc, argv), "parse metric");
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
   ref_free(uplus);
   ref_free(distance);
@@ -489,7 +505,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   if (curvature_metric) {
     if (spalding_yplus > 0.0) {
-      RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
+      RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
+                          argc, argv),
           "spalding");
     } else {
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
@@ -529,7 +546,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
     if (curvature_metric) {
       if (spalding_yplus > 0.0) {
-        RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
+        RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
+                            argc, argv),
             "spalding");
       } else {
         RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
