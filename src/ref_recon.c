@@ -43,6 +43,7 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
   REF_BOOL div_by_zero;
   REF_DBL cell_vol, cell_grad[3];
   REF_DBL *vol;
+  REF_STATUS vol_status, grad_status;
 
   ref_malloc_init(vol, ref_node_max(ref_node), REF_DBL, 0.0);
 
@@ -51,27 +52,37 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
 
   if (ref_grid_twod(ref_grid)) {
     each_ref_cell_valid_cell_with_nodes(ref_grid_tri(ref_grid), cell, nodes) {
-      RSS(ref_node_tri_area(ref_node, nodes, &cell_vol), "vol");
-      RSS(ref_node_tri_grad_nodes(ref_node, nodes, scalar, cell_grad), "vol");
-      for (cell_node = 0; cell_node < 3; cell_node++)
-        for (i = 0; i < 3; i++)
-          grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
-      for (cell_node = 0; cell_node < 3; cell_node++)
-        vol[nodes[cell_node]] += cell_vol;
+      vol_status = ref_node_tri_area(ref_node, nodes, &cell_vol);
+      grad_status = ref_node_tri_grad_nodes(ref_node, nodes, scalar, cell_grad);
+      if (REF_SUCCESS == vol_status && REF_SUCCESS == grad_status) {
+        for (cell_node = 0; cell_node < 3; cell_node++)
+          for (i = 0; i < 3; i++)
+            grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
+        for (cell_node = 0; cell_node < 3; cell_node++)
+          vol[nodes[cell_node]] += cell_vol;
+      } else {
+        printf("%s: %d: %s: vol status %d grad status %d\n", __FILE__, __LINE__,
+               __func__, vol_status, grad_status);
+      }
     }
   } else {
     each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         switch (ref_cell_node_per(ref_cell)) {
           case 4:
-            RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-            RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, cell_grad),
-                "grad");
-            for (cell_node = 0; cell_node < 4; cell_node++)
-              for (i = 0; i < 3; i++)
-                grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
-            for (cell_node = 0; cell_node < 4; cell_node++)
-              vol[nodes[cell_node]] += cell_vol;
+            vol_status = ref_node_tet_vol(ref_node, nodes, &cell_vol);
+            grad_status =
+                ref_node_tet_grad_nodes(ref_node, nodes, scalar, cell_grad);
+            if (REF_SUCCESS == vol_status && REF_SUCCESS == grad_status) {
+              for (cell_node = 0; cell_node < 4; cell_node++)
+                for (i = 0; i < 3; i++)
+                  grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
+              for (cell_node = 0; cell_node < 4; cell_node++)
+                vol[nodes[cell_node]] += cell_vol;
+            } else {
+              printf("%s: %d: %s: vol status %d grad status %d\n", __FILE__,
+                     __LINE__, __func__, vol_status, grad_status);
+            }
             break;
           case 6:
             tri_nodes[0] = nodes[0];
