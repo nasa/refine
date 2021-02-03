@@ -152,6 +152,8 @@ REF_STATUS ref_node_collect_ghost_age(REF_NODE ref_node);
 
 REF_STATUS ref_node_local(REF_NODE ref_node, REF_GLOB global, REF_INT *node);
 
+REF_STATUS ref_node_stable_compact(REF_NODE ref_node, REF_INT **o2n,
+                                   REF_INT **n2o);
 REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n, REF_INT **n2o);
 
 REF_STATUS ref_node_ghost_real(REF_NODE ref_node);

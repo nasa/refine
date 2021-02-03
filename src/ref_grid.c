@@ -109,6 +109,29 @@ REF_STATUS ref_grid_cache_background(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_stable_pack(REF_GRID ref_grid) {
+  REF_INT group;
+  REF_INT *o2n, *n2o;
+  REF_CELL ref_cell;
+
+  RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync globals");
+
+  RSS(ref_node_stable_compact(ref_grid_node(ref_grid), &o2n, &n2o),
+      "pack node");
+  RSS(ref_node_pack(ref_grid_node(ref_grid), o2n, n2o), "pack node");
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    RSS(ref_cell_pack(ref_cell, o2n), "pack cell");
+  }
+
+  RSS(ref_geom_pack(ref_grid_geom(ref_grid), o2n), "pack geom");
+  RSS(ref_interp_pack(ref_grid_interp(ref_grid), n2o), "pack interp");
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   REF_INT group;
   REF_INT *o2n, *n2o;
