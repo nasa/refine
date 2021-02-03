@@ -245,7 +245,8 @@ static void translate_help(const char *name) {
          name);
   printf("\n");
   printf("  options:\n");
-  printf("   --extrude a dim=2 meshb to single layer of prisms.\n");
+  printf("   --extrude a 2D mesh to single layer of prisms.\n");
+  printf("       extrusion added implicitly for ugrid output files\n");
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
   printf("\n");
 }
@@ -2417,6 +2418,8 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_file;
   REF_GRID ref_grid = NULL;
   REF_INT pos;
+  REF_BOOL extrude = REF_FALSE;
+  size_t end_of_string;
 
   if (argc < 4) goto shutdown;
   in_file = argv[2];
@@ -2437,6 +2440,17 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--extrude", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
+    extrude = REF_TRUE;
+  }
+
+  end_of_string = strlen(out_file);
+  if (ref_grid_twod(ref_grid) && (end_of_string >= 6) &&
+      (strncmp(&out_file[end_of_string - 6], ".ugrid", 6)) == 0) {
+    extrude = REF_TRUE;
+    if (ref_mpi_once(ref_mpi))
+      printf("  --extrude implicitly added to ugrid output of 2D input.\n");
+  }
+  if (extrude) {
     REF_GRID twod_grid = ref_grid;
     if (ref_mpi_once(ref_mpi)) printf("extrude prisms\n");
     RSS(ref_grid_extrude_twod(&ref_grid, twod_grid), "extrude");
