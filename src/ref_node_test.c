@@ -202,6 +202,32 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
+  { /* stable compact nodes */
+    REF_INT node;
+    REF_NODE ref_node;
+    REF_INT *o2n, *n2o;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+
+    RSS(ref_node_add(ref_node, 1, &node), "add");
+    RSS(ref_node_add(ref_node, 3, &node), "add");
+    RSS(ref_node_add(ref_node, 2, &node), "add");
+    RSS(ref_node_remove(ref_node, 1), "remove");
+
+    RSS(ref_node_stable_compact(ref_node, &o2n, &n2o), "compact");
+
+    REIS(0, o2n[0], "o2n");
+    REIS(REF_EMPTY, o2n[1], "o2n");
+    REIS(1, o2n[2], "o2n");
+
+    REIS(0, n2o[0], "n2o");
+    REIS(2, n2o[1], "n2o");
+
+    ref_free(n2o);
+    ref_free(o2n);
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
   { /* compact local nodes first */
     REF_INT node;
     REF_NODE ref_node;
