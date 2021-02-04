@@ -2004,7 +2004,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    sprintf(filename, "%s-final-metric.solb", in_project);
+    sprintf(filename, "%s-final-metric.solb", out_project);
     if (ref_mpi_once(ref_mpi)) printf("export metric to %s\n", filename);
     RSS(ref_gather_metric(ref_grid, filename), "export metric");
     ref_mpi_stopwatch_stop(ref_mpi, "export metric");
