@@ -1973,15 +1973,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(initial_field);
   ref_mpi_stopwatch_stop(ref_mpi, "cache background metric and field");
 
-  RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    sprintf(filename, "%s-metric.solb", in_project);
-    if (ref_mpi_once(ref_mpi)) printf("export metric to %s\n", filename);
-    RSS(ref_gather_metric(ref_grid, filename), "export metric");
-    ref_mpi_stopwatch_stop(ref_mpi, "export metric");
-  }
-
   RSS(ref_migrate_to_balance(ref_grid), "balance");
   RSS(ref_grid_pack(ref_grid), "pack");
   ref_mpi_stopwatch_stop(ref_mpi, "pack");
@@ -2009,6 +2000,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_geom_verify_param(ref_grid), "final params");
   ref_mpi_stopwatch_stop(ref_mpi, "verify final params");
+
+  RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    sprintf(filename, "%s-final-metric.solb", in_project);
+    if (ref_mpi_once(ref_mpi)) printf("export metric to %s\n", filename);
+    RSS(ref_gather_metric(ref_grid, filename), "export metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "export metric");
+  }
 
   sprintf(filename, "%s.meshb", out_project);
   if (ref_mpi_once(ref_mpi))
