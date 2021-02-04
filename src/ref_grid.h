@@ -169,6 +169,8 @@ REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes);
 
 REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid);
 
+REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_LONG *ncell);
+
 END_C_DECLORATION
 
 #endif /* REF_GRID_H */

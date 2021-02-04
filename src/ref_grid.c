@@ -1112,3 +1112,13 @@ REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid) {
   ref_mpi_stopwatch_stop(ref_mpi, "sync nodes");
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_LONG *ncell) {
+  REF_INT group;
+  REF_CELL ref_cell;
+  *ncell = 0;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    (*ncell) += ref_cell_n(ref_cell);
+  }
+  return REF_SUCCESS;
+}
