@@ -547,6 +547,7 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
   REF_INT item, cell_node;
   REF_INT node;
   REF_DBL quality, quality0, quality1;
+  REF_DBL volume0, volume1;
   REF_DBL min_existing_quality;
 
   *allowed = REF_FALSE;
@@ -565,6 +566,7 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
       if (node0 == nodes[node]) nodes[node] = new_node;
     }
     RSS(ref_node_tet_quality(ref_node, nodes, &quality0), "q0");
+    RSS(ref_node_tet_vol(ref_node, nodes, &volume0), "vol0");
 
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (new_node == nodes[node]) nodes[node] = node0;
@@ -573,13 +575,16 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
       if (node1 == nodes[node]) nodes[node] = new_node;
     }
     RSS(ref_node_tet_quality(ref_node, nodes, &quality1), "q1");
+    RSS(ref_node_tet_vol(ref_node, nodes, &volume1), "vol1");
 
     if (quality0 < ref_grid_adapt(ref_grid, split_quality_absolute) ||
         quality1 < ref_grid_adapt(ref_grid, split_quality_absolute) ||
         quality0 < ref_grid_adapt(ref_grid, split_quality_relative) *
                        min_existing_quality ||
         quality1 < ref_grid_adapt(ref_grid, split_quality_relative) *
-                       min_existing_quality) {
+                       min_existing_quality ||
+        volume0 < ref_node_min_volume(ref_node) ||
+        volume1 < ref_node_min_volume(ref_node)) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;
     }
@@ -789,6 +794,7 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
   REF_INT node;
   REF_DBL quality, quality0, quality1;
   REF_DBL min_existing_quality;
+  REF_DBL area0, area1;
 
   *allowed = REF_FALSE;
 
@@ -807,19 +813,23 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (node0 == nodes[node]) nodes[node] = new_node;
     RSS(ref_node_tri_quality(ref_node, nodes, &quality0), "q0");
+    RSS(ref_node_tri_area(ref_node, nodes, &area0), "area0");
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (new_node == nodes[node]) nodes[node] = node0;
 
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (node1 == nodes[node]) nodes[node] = new_node;
     RSS(ref_node_tri_quality(ref_node, nodes, &quality1), "q1");
+    RSS(ref_node_tri_area(ref_node, nodes, &area1), "area1");
 
     if (quality0 < ref_grid_adapt(ref_grid, split_quality_absolute) ||
         quality1 < ref_grid_adapt(ref_grid, split_quality_absolute) ||
         quality0 < ref_grid_adapt(ref_grid, split_quality_relative) *
                        min_existing_quality ||
         quality1 < ref_grid_adapt(ref_grid, split_quality_relative) *
-                       min_existing_quality)
+                       min_existing_quality ||
+        area0 < ref_node_min_volume(ref_node) ||
+        area1 < ref_node_min_volume(ref_node))
       return REF_SUCCESS;
   }
 

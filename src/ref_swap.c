@@ -504,7 +504,7 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT node2, node3;
   REF_BOOL cell0_support, cell1_support;
   REF_DBL normdev0, normdev1, normdev2, normdev3;
-  REF_DBL sign_uv_area, uv_area2, uv_area3;
+  REF_DBL sign_uv_area, uv_area2, uv_area3, area2, area3;
   REF_BOOL normdev_allowed, uv_area_allowed;
   REF_BOOL supported;
   REF_DBL normal0[3], normal1[3], normal2[3], normal3[3], dot;
@@ -570,6 +570,7 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   if (REF_SUCCESS != ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev2))
     return REF_SUCCESS;
   RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area2), "uv area");
+  RSS(ref_node_tri_area(ref_node, nodes, &area2), "area2");
   nodes[0] = node1;
   nodes[1] = node2;
   nodes[2] = node3;
@@ -579,12 +580,17 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   if (REF_SUCCESS != ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev3))
     return REF_SUCCESS;
   RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area3), "uv area");
+  RSS(ref_node_tri_area(ref_node, nodes, &area3), "area2");
 
   normdev_allowed =
       ((MIN(normdev2, normdev3) > MIN(normdev0, normdev1)) ||
        ((MIN(normdev2, normdev3) > 0.9 * MIN(normdev0, normdev1)) &&
         (normdev2 > ref_grid_adapt(ref_grid, post_min_normdev) &&
          normdev3 > ref_grid_adapt(ref_grid, post_min_normdev))));
+
+  normdev_allowed = normdev_allowed &&
+                    (area2 > ref_node_min_volume(ref_node)) &&
+                    (area3 > ref_node_min_volume(ref_node));
 
   /* skip uv checks for meshlink */
   if (ref_geom_meshlinked(ref_geom)) {

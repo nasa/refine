@@ -1234,7 +1234,7 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
   REF_INT node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL normdev;
-  REF_DBL sign_uv_area, uv_area;
+  REF_DBL sign_uv_area, uv_area, area;
 
   node = ref_cavity_seg_node(ref_cavity);
 
@@ -1249,8 +1249,11 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
     *conforming = REF_FALSE;
     return REF_SUCCESS;
   }
-
   if (normdev <= ref_cavity_min_normdev(ref_cavity)) return REF_SUCCESS;
+
+  /* for twod, should not hurt 3D */
+  RSS(ref_node_tri_area(ref_node, nodes, &area), "vol");
+  if (area <= ref_node_min_volume(ref_node)) return REF_SUCCESS;
 
   if (ref_geom_meshlinked(ref_geom)) {
     *conforming = REF_TRUE;

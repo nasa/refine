@@ -760,7 +760,7 @@ REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
-  REF_DBL quality;
+  REF_DBL quality, area;
   REF_BOOL will_be_collapsed;
 
   *allowed = REF_FALSE;
@@ -783,6 +783,10 @@ REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
     RSS(ref_node_tri_quality(ref_node, nodes, &quality), "qual");
     if (quality < ref_grid_adapt(ref_grid, collapse_quality_absolute))
       return REF_SUCCESS;
+
+    /* for twod, should not hurt 3D */
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "vol");
+    if (area <= ref_node_min_volume(ref_node)) return REF_SUCCESS;
   }
 
   *allowed = REF_TRUE;
