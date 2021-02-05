@@ -1112,3 +1112,65 @@ REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid) {
   ref_mpi_stopwatch_stop(ref_mpi, "sync nodes");
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_INT *ncell) {
+  REF_INT group;
+  REF_CELL ref_cell;
+  *ncell = 0;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    (*ncell) += ref_cell_n(ref_cell);
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_grid_contiguous_group_cell(REF_GRID ref_grid,
+                                          REF_INT contiguous_cell,
+                                          REF_INT *cell_group, REF_INT *cell) {
+  REF_CELL ref_cell;
+  REF_INT group;
+  if (contiguous_cell < 0) {
+    *cell_group = REF_EMPTY;
+    *cell = REF_EMPTY;
+    return REF_NOT_FOUND;
+  }
+  *cell = contiguous_cell;
+  *cell_group = REF_EMPTY;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    if (0 < ref_cell_n(ref_cell) && 0 <= *cell &&
+        *cell < ref_cell_n(ref_cell)) {
+      *cell_group = group;
+      break;
+    }
+    (*cell) -= ref_cell_n(ref_cell);
+  }
+  if (REF_EMPTY == *cell_group) {
+    *cell = REF_EMPTY;
+    return REF_NOT_FOUND;
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_grid_contiguous_cell_global(REF_GRID ref_grid,
+                                           REF_LONG *global) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT group, ncell, cell;
+  REF_CELL ref_cell;
+  REF_LONG *cell_global, global_ncell, offset;
+  ncell = 0;
+  offset = 0;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    RSS(ref_cell_global(ref_cell, ref_node, &cell_global), "cell global");
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      if (cell >= ref_cell_n(ref_cell)) {
+        ref_free(cell_global);
+        RSS(REF_FAILURE, "pack grid before calling");
+      }
+      global[ncell] = cell_global[cell] + offset;
+      ncell++;
+    }
+    ref_free(cell_global);
+    RSS(ref_cell_ncell(ref_cell, ref_node, &global_ncell), "global ncell");
+    offset += global_ncell;
+  }
+  return REF_SUCCESS;
+}

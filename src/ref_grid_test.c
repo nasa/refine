@@ -387,6 +387,129 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(twod_grid), "cleanup");
   }
 
+  if (!ref_mpi_para(ref_mpi)) { /* count total local cell */
+    REF_GRID ref_grid;
+    REF_INT ncell;
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_grid_ncell(ref_grid, &ncell), "total cells");
+    REIS(3, ncell, "ncell");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* map contiguous cell index tet */
+    REF_GRID ref_grid;
+    REF_INT contiguous_cell, cell_group, cell;
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+
+    contiguous_cell = REF_EMPTY;
+    REIS(REF_NOT_FOUND,
+         ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                        &cell),
+         "map to ref_cell");
+    REIS(REF_EMPTY, cell_group, "cell_group");
+    REIS(REF_EMPTY, cell, "cell");
+
+    contiguous_cell = 0;
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
+    REIS(REF_CELL_EDG, cell_group, "cell_group");
+    REIS(0, cell, "cell");
+
+    contiguous_cell = 1;
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
+    REIS(REF_CELL_TRI, cell_group, "cell_group");
+    REIS(0, cell, "cell");
+
+    contiguous_cell = 2;
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
+    REIS(REF_CELL_TET, cell_group, "cell_group");
+    REIS(0, cell, "cell");
+
+    contiguous_cell = 3;
+    REIS(REF_NOT_FOUND,
+         ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                        &cell),
+         "map to ref_cell");
+    REIS(REF_EMPTY, cell_group, "cell_group");
+    REIS(REF_EMPTY, cell, "cell");
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* map contiguous cell index tri2 */
+    REF_GRID ref_grid;
+    REF_INT contiguous_cell, cell_group, cell;
+    RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "set up tet");
+
+    contiguous_cell = 0;
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
+    REIS(REF_CELL_EDG, cell_group, "cell_group");
+    REIS(0, cell, "cell");
+
+    contiguous_cell = 1;
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
+    REIS(REF_CELL_EDG, cell_group, "cell_group");
+    REIS(1, cell, "cell");
+
+    contiguous_cell = 2;
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
+    REIS(REF_CELL_TRI, cell_group, "cell_group");
+    REIS(0, cell, "cell");
+
+    contiguous_cell = 3;
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
+    REIS(REF_CELL_TRI, cell_group, "cell_group");
+    REIS(1, cell, "cell");
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* contiguous cell global tet */
+    REF_GRID ref_grid;
+    REF_INT ncell;
+    REF_LONG *global;
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_grid_ncell(ref_grid, &ncell), "total cells");
+    REIS(3, ncell, "ref_fixture_tet_grid changed");
+    ref_malloc(global, ncell, REF_LONG);
+    RSS(ref_grid_contiguous_cell_global(ref_grid, global), "global");
+    REIS(0, global[0], "global[0]");
+    REIS(1, global[1], "global[1]");
+    REIS(2, global[2], "global[2]");
+    ref_free(global);
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* contiguous cell global tri2 */
+    REF_GRID ref_grid;
+    REF_INT ncell;
+    REF_LONG *global;
+    RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_grid_ncell(ref_grid, &ncell), "total cells");
+    REIS(4, ncell, "ref_fixture_tri2_grid changed");
+    ref_malloc(global, ncell, REF_LONG);
+    RSS(ref_grid_contiguous_cell_global(ref_grid, global), "global");
+    REIS(0, global[0], "global[0]");
+    REIS(1, global[1], "global[1]");
+    REIS(2, global[2], "global[2]");
+    REIS(3, global[3], "global[3]");
+    ref_free(global);
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
