@@ -53,11 +53,24 @@ int main(int argc, char *argv[]) {
   /* bcast */
   {
     REF_INT bc;
-
     bc = REF_EMPTY;
     if (ref_mpi_once(ref_mpi)) bc = 5;
     RSS(ref_mpi_bcast(ref_mpi, &bc, 1, REF_INT_TYPE), "bcast");
     REIS(5, bc, "bc wrong");
+  }
+
+  { /* deep copy bcast */
+    REF_MPI deep_copy;
+    RSS(ref_mpi_deep_copy(&deep_copy, ref_mpi), "deep copy");
+    {
+      REF_INT bc;
+      bc = REF_EMPTY;
+      if (ref_mpi_once(deep_copy)) bc = 5;
+      RSS(ref_mpi_bcast(deep_copy, &bc, 1, REF_INT_TYPE), "bcast");
+      REIS(5, bc, "bc wrong");
+    }
+    ref_mpi_stopwatch_stop(deep_copy, "deep copy bcast");
+    RSS(ref_mpi_free(deep_copy), "mpi free");
   }
 
   /* alltoall */
