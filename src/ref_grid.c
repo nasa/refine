@@ -1149,3 +1149,28 @@ REF_STATUS ref_grid_contiguous_group_cell(REF_GRID ref_grid,
   }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_contiguous_cell_global(REF_GRID ref_grid,
+                                           REF_LONG *global) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT group, ncell, cell;
+  REF_CELL ref_cell;
+  REF_LONG *cell_global, global_ncell, offset;
+  ncell = 0;
+  offset = 0;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    RSS(ref_cell_global(ref_cell, ref_node, &cell_global), "cell global");
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      if (cell >= ref_cell_n(ref_cell)) {
+        ref_free(cell_global);
+        RSS(REF_FAILURE, "pack grid before calling");
+      }
+      global[ncell] = cell_global[cell] + offset;
+      ncell++;
+    }
+    ref_free(cell_global);
+    RSS(ref_cell_ncell(ref_cell, ref_node, &global_ncell), "global ncell");
+    offset += global_ncell;
+  }
+  return REF_SUCCESS;
+}
