@@ -1113,7 +1113,7 @@ REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_LONG *ncell) {
+REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_INT *ncell) {
   REF_INT group;
   REF_CELL ref_cell;
   *ncell = 0;

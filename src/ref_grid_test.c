@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
 
   if (!ref_mpi_para(ref_mpi)) { /* count total local cell */
     REF_GRID ref_grid;
-    REF_LONG ncell;
+    REF_INT ncell;
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     RSS(ref_grid_ncell(ref_grid, &ncell), "total cells");
     REIS(3, ncell, "ncell");

@@ -169,7 +169,7 @@ REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes);
 
 REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid);
 
-REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_LONG *ncell);
+REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_INT *ncell);
 REF_STATUS ref_grid_contiguous_group_cell(REF_GRID ref_grid,
                                           REF_INT contiguous_cell,
                                           REF_INT *cell_group, REF_INT *cell);
