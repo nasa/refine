@@ -1122,3 +1122,27 @@ REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_LONG *ncell) {
   }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_contiguous_group_cell(REF_GRID ref_grid, REF_INT contiguous_cell, REF_INT *cell_group, REF_INT *cell){
+  REF_CELL ref_cell;
+  REF_INT group;
+  if(contiguous_cell<0) {
+    *cell_group = REF_EMPTY;
+    *cell = REF_EMPTY;
+    return REF_NOT_FOUND;
+  }
+  *cell = contiguous_cell;
+  *cell_group = REF_EMPTY;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    if(0 <= *cell && *cell < ref_cell_n(ref_cell)) {
+      *cell_group = group;
+      break;
+    }
+    (*cell) -= ref_cell_n(ref_cell);
+  }
+  if(REF_EMPTY == *cell_group) {
+    *cell = REF_EMPTY;
+    return REF_NOT_FOUND;
+  }
+  return REF_SUCCESS;
+}
