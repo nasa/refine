@@ -413,7 +413,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
                                        &cell),
         "map to ref_cell");
-    REIS(REF_CELL_TRI, cell_group, "cell_group");
+    REIS(REF_CELL_EDG, cell_group, "cell_group");
     REIS(0, cell, "cell");
 
     contiguous_cell = 1;
@@ -421,7 +421,7 @@ int main(int argc, char *argv[]) {
                                        &cell),
         "map to ref_cell");
     REIS(REF_CELL_TRI, cell_group, "cell_group");
-    REIS(1, cell, "cell");
+    REIS(0, cell, "cell");
 
     contiguous_cell = 2;
     RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,

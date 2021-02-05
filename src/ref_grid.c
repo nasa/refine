@@ -1136,7 +1136,8 @@ REF_STATUS ref_grid_contiguous_group_cell(REF_GRID ref_grid,
   *cell = contiguous_cell;
   *cell_group = REF_EMPTY;
   each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
-    if (0 <= *cell && *cell < ref_cell_n(ref_cell)) {
+    if (0 < ref_cell_n(ref_cell) && 0 <= *cell &&
+        *cell < ref_cell_n(ref_cell)) {
       *cell_group = group;
       break;
     }
