@@ -402,27 +402,39 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
 
     contiguous_cell = REF_EMPTY;
-    REIS(REF_NOT_FOUND, ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,  &cell), "map to ref_cell");
+    REIS(REF_NOT_FOUND,
+         ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                        &cell),
+         "map to ref_cell");
     REIS(REF_EMPTY, cell_group, "cell_group");
     REIS(REF_EMPTY, cell, "cell");
 
     contiguous_cell = 0;
-    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,  &cell), "map to ref_cell");
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
     REIS(REF_CELL_TRI, cell_group, "cell_group");
     REIS(0, cell, "cell");
 
     contiguous_cell = 1;
-    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,  &cell), "map to ref_cell");
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
     REIS(REF_CELL_TRI, cell_group, "cell_group");
     REIS(1, cell, "cell");
 
     contiguous_cell = 2;
-    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,  &cell), "map to ref_cell");
+    RSS(ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                       &cell),
+        "map to ref_cell");
     REIS(REF_CELL_TET, cell_group, "cell_group");
     REIS(0, cell, "cell");
 
     contiguous_cell = 3;
-    REIS(REF_NOT_FOUND, ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,  &cell), "map to ref_cell");
+    REIS(REF_NOT_FOUND,
+         ref_grid_contiguous_group_cell(ref_grid, contiguous_cell, &cell_group,
+                                        &cell),
+         "map to ref_cell");
     REIS(REF_EMPTY, cell_group, "cell_group");
     REIS(REF_EMPTY, cell, "cell");
 
