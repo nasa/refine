@@ -85,8 +85,10 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
 #ifdef HAVE_MPI
   {
     int running;
-    ref_malloc(ref_mpi->comm, 1, MPI_Comm);
-    RNS(memcpy(ref_mpi->comm, comm_ptr, sizeof(MPI_Comm)), "copy comm");
+    if (NULL != comm_ptr) {
+      ref_malloc(ref_mpi->comm, 1, MPI_Comm);
+      RNS(memcpy(ref_mpi->comm, comm_ptr, sizeof(MPI_Comm)), "copy comm");
+    }
     REIS(MPI_SUCCESS, MPI_Initialized(&running), "running?");
     if (running) {
       MPI_Comm_size(ref_mpi_comm(ref_mpi), &(ref_mpi->n));
@@ -179,7 +181,7 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
 
   ref_mpi->comm = NULL;
 #ifdef HAVE_MPI
-  {
+  if (NULL != original->comm) {
     ref_malloc(ref_mpi->comm, 1, MPI_Comm);
     RNS(memcpy(ref_mpi->comm, original->comm, sizeof(MPI_Comm)), "copy comm");
   }
