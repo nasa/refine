@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #ifdef HAVE_CONFIG_H
@@ -85,7 +86,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
   {
     int running;
     ref_malloc(ref_mpi->comm, 1, MPI_Comm);
-    ref_mpi_comm(ref_mpi) = *((MPI_Comm *)(comm_ptr));
+    RNS(memcpy(ref_mpi->comm, comm_ptr, sizeof(MPI_Comm)), "copy comm");
     REIS(MPI_SUCCESS, MPI_Initialized(&running), "running?");
     if (running) {
       MPI_Comm_size(ref_mpi_comm(ref_mpi), &(ref_mpi->n));
