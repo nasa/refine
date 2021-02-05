@@ -177,6 +177,14 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
   ref_mpi->id = original->id;
   ref_mpi->n = original->n;
 
+  ref_mpi->comm = NULL;
+#ifdef HAVE_MPI
+  {
+    ref_malloc(ref_mpi->comm, 1, MPI_Comm);
+    RNS(memcpy(ref_mpi->comm, original->comm, sizeof(MPI_Comm)), "copy comm");
+  }
+#endif
+
   ref_mpi->first_time = original->first_time;
   ref_mpi->start_time = original->start_time;
 
