@@ -42,9 +42,9 @@ REF_STATUS ref_split_edge_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 REF_STATUS ref_split_edge_density(REF_GRID ref_grid, REF_INT node0,
                                   REF_INT node1, REF_INT new_node,
                                   REF_BOOL *allowed);
-REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_INT new_node,
-                                         REF_BOOL *allowed);
+REF_STATUS ref_split_edge_tri_conformity(REF_BOOL verbose, REF_GRID ref_grid,
+                                         REF_INT node0, REF_INT node1,
+                                         REF_INT new_node, REF_BOOL *allowed);
 
 REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
                                       REF_INT node1, REF_INT new_node,

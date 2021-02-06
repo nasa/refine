@@ -230,8 +230,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "edge tet ratio");
     if (transcript && !allowed_ratio) printf("ratio poor\n");
 
-    RSS(ref_split_edge_tri_conformity(ref_grid, node0, node1, new_node,
-                                      &allowed_tri_conformity),
+    RSS(ref_split_edge_tri_conformity(transcript, ref_grid, node0, node1,
+                                      new_node, &allowed_tri_conformity),
         "edge tri qual");
     if (transcript && !allowed_tri_conformity) printf("tri conformity poor\n");
 
@@ -745,9 +745,9 @@ REF_STATUS ref_split_edge_density(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_INT new_node,
-                                         REF_BOOL *allowed) {
+REF_STATUS ref_split_edge_tri_conformity(REF_BOOL verbose, REF_GRID ref_grid,
+                                         REF_INT node0, REF_INT node1,
+                                         REF_INT new_node, REF_BOOL *allowed) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -756,7 +756,6 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
   REF_INT node;
   REF_DBL sign_uv_area, uv_area0, uv_area1, uv_area;
   REF_DBL normdev, normdev0, normdev1;
-  REF_BOOL verbose = REF_FALSE;
 
   *allowed = REF_FALSE;
 
