@@ -39,6 +39,38 @@
 
 #define MAX_CELL_SPLIT (100)
 
+static REF_STATUS ref_split_edge_ratio_post_report(REF_GRID ref_grid,
+                                                   REF_INT node0, REF_INT node1,
+                                                   REF_INT new_node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT i, nnode, max_node = 500;
+  REF_INT node_list[500];
+  REF_DBL ratio;
+  REF_DBL r0, r1;
+
+  RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
+  RSS(ref_node_ratio(ref_node, node0, new_node, &r0), "ratio0");
+  RSS(ref_node_ratio(ref_node, node0, new_node, &r1), "ratio1");
+  printf("orig ratio %f split %f %f\n", ratio, r0, r1);
+
+  if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+  } else {
+    ref_cell = ref_grid_tet(ref_grid);
+  }
+
+  RSS(ref_cell_node_list_around(ref_cell, new_node, max_node, &nnode,
+                                node_list),
+      "around");
+  for (i = 0; i < nnode; i++) {
+    RSS(ref_node_ratio(ref_node, new_node, node_list[i], &ratio), "ratio");
+    printf("new ratio %f\n", ratio);
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -307,6 +339,9 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     }
     RSS(status, "tet edge split");
 
+    if (transcript)
+      RSS(ref_split_edge_ratio_post_report(ref_grid, node0, node1, new_node),
+          "report ratio");
     ref_node_age(ref_node, node0) = 0;
     ref_node_age(ref_node, node1) = 0;
 
