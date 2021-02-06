@@ -754,7 +754,7 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell_node;
   REF_INT node;
-  REF_DBL sign_uv_area, uv_area0, uv_area1;
+  REF_DBL sign_uv_area, uv_area0, uv_area1, uv_area;
   REF_DBL normdev, normdev0, normdev1;
   REF_BOOL verbose = REF_FALSE;
 
@@ -792,6 +792,9 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
       RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+      RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+      uv_area *= sign_uv_area;
 
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node0 == nodes[node]) nodes[node] = new_node;
@@ -812,7 +815,7 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
           ref_node_min_uv_area(ref_node) > uv_area1) {
         *allowed = REF_FALSE;
         if (verbose) {
-          printf("area %e %e\n", uv_area0, uv_area1);
+          printf("area orig %e new %e %e\n", uv_area, uv_area0, uv_area1);
           ref_node_location(ref_node, node0);
           ref_node_location(ref_node, node1);
         }
