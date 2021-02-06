@@ -791,7 +791,6 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
       RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
-      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
 
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node0 == nodes[node]) nodes[node] = new_node;
