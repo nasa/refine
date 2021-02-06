@@ -1253,7 +1253,12 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
 
   /* for twod, should not hurt 3D */
   RSS(ref_node_tri_area(ref_node, nodes, &area), "vol");
-  if (area <= ref_node_min_volume(ref_node)) return REF_SUCCESS;
+  if (area <= ref_node_min_volume(ref_node)) {
+    if (ref_cavity_debug(ref_cavity))
+      printf("cav confrom area %e lim %e\n", area,
+             ref_node_min_volume(ref_node));
+    return REF_SUCCESS;
+  }
 
   if (ref_geom_meshlinked(ref_geom)) {
     *conforming = REF_TRUE;
