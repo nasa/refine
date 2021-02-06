@@ -755,6 +755,7 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
   REF_INT node;
   REF_DBL sign_uv_area, uv_area0, uv_area1;
   REF_DBL normdev, normdev0, normdev1;
+  REF_BOOL verbose = REF_FALSE;
 
   *allowed = REF_FALSE;
 
@@ -779,6 +780,7 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
            normdev0 < ref_grid_adapt(ref_grid, post_min_normdev)) ||
           (normdev1 <= normdev &&
            normdev1 < ref_grid_adapt(ref_grid, post_min_normdev))) {
+        if (verbose) printf("nd %f %f %f\n", normdev, normdev0, normdev1);
         *allowed = REF_FALSE;
         return REF_SUCCESS;
       }
@@ -809,6 +811,11 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
       if (ref_node_min_uv_area(ref_node) > uv_area0 ||
           ref_node_min_uv_area(ref_node) > uv_area1) {
         *allowed = REF_FALSE;
+        if (verbose) {
+          printf("area %e %e\n", uv_area0, uv_area1);
+          ref_node_location(ref_node, node0);
+          ref_node_location(ref_node, node1);
+        }
         return REF_SUCCESS;
       }
     }
