@@ -810,8 +810,8 @@ REF_STATUS ref_split_edge_tri_conformity(REF_BOOL verbose, REF_GRID ref_grid,
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
       uv_area1 *= sign_uv_area;
 
-      if (ref_node_min_uv_area(ref_node) > uv_area0 ||
-          ref_node_min_uv_area(ref_node) > uv_area1) {
+      if (ref_node_min_uv_area(ref_node) >= uv_area0 ||
+          ref_node_min_uv_area(ref_node) >= uv_area1) {
         *allowed = REF_FALSE;
         if (verbose) {
           printf("area orig %e new %e %e\n", uv_area, uv_area0, uv_area1);
