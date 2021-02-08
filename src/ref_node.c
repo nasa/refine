@@ -73,7 +73,7 @@ REF_STATUS ref_node_create(REF_NODE *ref_node_ptr, REF_MPI ref_mpi) {
   ref_node->new_n_global = REF_EMPTY;
 
   ref_node->min_volume = 1.0e-15;
-  ref_node->min_uv_area = 0.0;
+  ref_node->min_uv_area = 1.0e-200;
   /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
   ref_node->same_normal_tol = 1.0 - 1.0e-8;
 
