@@ -3001,8 +3001,8 @@ REF_STATUS ref_egads_invert(REF_GEOM ref_geom, REF_INT type, REF_INT id,
     drs[0] = ref_math_dot(r, error);
     drs[1] = ref_math_dot(s, error);
     if (verbose)
-      printf(" r %e s %e err %e\n", drs[0], drs[1],
-             sqrt(ref_math_dot(error, error)));
+      printf(" r %e s %e err %e on %d\n", drs[0], drs[1],
+             sqrt(ref_math_dot(error, error)), i);
     duv[0] = duvdrs[0] * drs[0] + duvdrs[2] * drs[1];
     duv[1] = duvdrs[1] * drs[0] + duvdrs[3] * drs[1];
     uv[0] = uv[0] - duv[0];

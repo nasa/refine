@@ -60,6 +60,28 @@ REF_STATUS ref_collapse_diagnostics(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_collapse_post_uv_area(REF_GRID ref_grid, REF_INT node);
+REF_STATUS ref_collapse_post_uv_area(REF_GRID ref_grid, REF_INT node) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL sign_uv_area, uv_area, area;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "vol");
+    RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+    RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+    uv_area *= sign_uv_area;
+    if (uv_area < 1.0e-20) {
+      printf("area %e uv area %e bool %d\n", area, uv_area,
+             uv_area < ref_node_min_uv_area(ref_node));
+      return REF_FAILURE;
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_collapse_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1001,7 +1023,7 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
     RSS(ref_geom_uv_area(ref_geom, nodes, &orig_uv_area), "uv area");
     RSS(ref_geom_uv_area(ref_geom, new_nodes, &new_uv_area), "uv area");
     /* allow if improvement */
-    if ((sign_uv_area * new_uv_area < ref_node_min_uv_area(ref_node)) &&
+    if ((sign_uv_area * new_uv_area <= ref_node_min_uv_area(ref_node)) &&
         (sign_uv_area * new_uv_area < sign_uv_area * orig_uv_area)) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;

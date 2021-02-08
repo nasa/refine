@@ -81,8 +81,8 @@ REF_STATUS ref_matrix_det_m2(REF_DBL *m, REF_DBL *det) {
 REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
   printf("eig");
   printf("%24.15e", ref_matrix_eig(d, 0));
-  printf("%24.15e", ref_matrix_eig(d, 0));
-  printf("%24.15e", ref_matrix_eig(d, 0));
+  printf("%24.15e", ref_matrix_eig(d, 1));
+  printf("%24.15e", ref_matrix_eig(d, 2));
   printf("\n");
   printf("valx");
   printf("%24.15e", ref_matrix_vec(d, 0, 0));

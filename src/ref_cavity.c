@@ -1253,7 +1253,12 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
 
   /* for twod, should not hurt 3D */
   RSS(ref_node_tri_area(ref_node, nodes, &area), "vol");
-  if (area <= ref_node_min_volume(ref_node)) return REF_SUCCESS;
+  if (area <= ref_node_min_volume(ref_node)) {
+    if (ref_cavity_debug(ref_cavity))
+      printf("cav confrom area %e lim %e\n", area,
+             ref_node_min_volume(ref_node));
+    return REF_SUCCESS;
+  }
 
   if (ref_geom_meshlinked(ref_geom)) {
     *conforming = REF_TRUE;
@@ -1850,6 +1855,24 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
   if (ref_cavity_debug(ref_cavity))
     printf(" min %12.8f <- %12.8f diff %12.8f n %d <- %d\n", *min_add, *min_del,
            *min_add - *min_del, n_add, n_del);
+
+  if (ref_cavity_debug(ref_cavity)) {
+    REF_INT seg;
+    REF_DBL r0, r1;
+    each_ref_cavity_valid_seg(ref_cavity, seg) {
+      /* skip a seg attached to node */
+      if (node == ref_cavity_s2n(ref_cavity, 0, seg) ||
+          node == ref_cavity_s2n(ref_cavity, 1, seg))
+        continue;
+      RSS(ref_node_ratio(ref_node, ref_cavity_seg_node(ref_cavity),
+                         ref_cavity_s2n(ref_cavity, 0, seg), &r0),
+          "ratio");
+      RSS(ref_node_ratio(ref_node, ref_cavity_seg_node(ref_cavity),
+                         ref_cavity_s2n(ref_cavity, 1, seg), &r1),
+          "ratio");
+      printf("+ ratio %f %f\n", r0, r1);
+    }
+  }
 
   return REF_SUCCESS;
 }

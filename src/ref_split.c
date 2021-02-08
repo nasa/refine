@@ -39,6 +39,38 @@
 
 #define MAX_CELL_SPLIT (100)
 
+static REF_STATUS ref_split_edge_ratio_post_report(REF_GRID ref_grid,
+                                                   REF_INT node0, REF_INT node1,
+                                                   REF_INT new_node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT i, nnode, max_node = 500;
+  REF_INT node_list[500];
+  REF_DBL ratio;
+  REF_DBL r0, r1;
+
+  RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
+  RSS(ref_node_ratio(ref_node, node0, new_node, &r0), "ratio0");
+  RSS(ref_node_ratio(ref_node, node0, new_node, &r1), "ratio1");
+  printf("orig ratio %f split %f %f\n", ratio, r0, r1);
+
+  if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+  } else {
+    ref_cell = ref_grid_tet(ref_grid);
+  }
+
+  RSS(ref_cell_node_list_around(ref_cell, new_node, max_node, &nnode,
+                                node_list),
+      "around");
+  for (i = 0; i < nnode; i++) {
+    RSS(ref_node_ratio(ref_node, new_node, node_list[i], &ratio), "ratio");
+    printf("new ratio %f\n", ratio);
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -138,6 +170,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       }
     }
     weight_node1 = MIN(0.95, MAX(0.05, weight_node1));
+    if (transcript) printf("weight_node1 %f\n", weight_node1);
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
@@ -197,8 +230,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "edge tet ratio");
     if (transcript && !allowed_ratio) printf("ratio poor\n");
 
-    RSS(ref_split_edge_tri_conformity(ref_grid, node0, node1, new_node,
-                                      &allowed_tri_conformity),
+    RSS(ref_split_edge_tri_conformity(transcript, ref_grid, node0, node1,
+                                      new_node, &allowed_tri_conformity),
         "edge tri qual");
     if (transcript && !allowed_tri_conformity) printf("tri conformity poor\n");
 
@@ -307,6 +340,9 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     }
     RSS(status, "tet edge split");
 
+    if (transcript)
+      RSS(ref_split_edge_ratio_post_report(ref_grid, node0, node1, new_node),
+          "report ratio");
     ref_node_age(ref_node, node0) = 0;
     ref_node_age(ref_node, node1) = 0;
 
@@ -709,16 +745,16 @@ REF_STATUS ref_split_edge_density(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_INT new_node,
-                                         REF_BOOL *allowed) {
+REF_STATUS ref_split_edge_tri_conformity(REF_BOOL verbose, REF_GRID ref_grid,
+                                         REF_INT node0, REF_INT node1,
+                                         REF_INT new_node, REF_BOOL *allowed) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell_node;
   REF_INT node;
-  REF_DBL sign_uv_area, uv_area0, uv_area1;
+  REF_DBL sign_uv_area, uv_area0, uv_area1, uv_area;
   REF_DBL normdev, normdev0, normdev1;
 
   *allowed = REF_FALSE;
@@ -744,6 +780,7 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
            normdev0 < ref_grid_adapt(ref_grid, post_min_normdev)) ||
           (normdev1 <= normdev &&
            normdev1 < ref_grid_adapt(ref_grid, post_min_normdev))) {
+        if (verbose) printf("nd %f %f %f\n", normdev, normdev0, normdev1);
         *allowed = REF_FALSE;
         return REF_SUCCESS;
       }
@@ -754,7 +791,9 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
       RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
-      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
+      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+      RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+      uv_area *= sign_uv_area;
 
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node0 == nodes[node]) nodes[node] = new_node;
@@ -771,9 +810,14 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
       uv_area1 *= sign_uv_area;
 
-      if (ref_node_min_uv_area(ref_node) > uv_area0 ||
-          ref_node_min_uv_area(ref_node) > uv_area1) {
+      if (ref_node_min_uv_area(ref_node) >= uv_area0 ||
+          ref_node_min_uv_area(ref_node) >= uv_area1) {
         *allowed = REF_FALSE;
+        if (verbose) {
+          printf("area orig %e new %e %e\n", uv_area, uv_area0, uv_area1);
+          ref_node_location(ref_node, node0);
+          ref_node_location(ref_node, node1);
+        }
         return REF_SUCCESS;
       }
     }

@@ -901,6 +901,68 @@ static REF_STATUS ref_geom_add_constrain_inside_midnode(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_between_face_area(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_INT new_node,
+                                      const char *msg) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT nodes2[REF_CELL_MAX_SIZE_PER];
+  REF_INT nodes3[REF_CELL_MAX_SIZE_PER];
+  REF_INT type, id, node;
+  REF_INT ncell, cells[2];
+  REF_DBL uv_area2, uv_area3, uv_area_sign;
+  REF_DBL uv_area20, uv_area21;
+  REF_DBL uv_area30, uv_area31;
+
+  type = REF_GEOM_FACE;
+  RSS(ref_geom_unique_id(ref_geom, new_node, type, &id), "unique face id");
+
+  RSS(ref_geom_uv_area_sign(ref_grid, id, &uv_area_sign), "uv area sign");
+
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
+  REIS(2, ncell, "expected two tri for box2 nodes");
+  RSS(ref_cell_nodes(ref_cell, cells[0], nodes2), "cell nodes");
+  RSS(ref_cell_nodes(ref_cell, cells[1], nodes3), "cell nodes");
+
+  RSS(ref_geom_uv_area(ref_geom, nodes2, &uv_area2), "uv area 2");
+  uv_area2 *= uv_area_sign;
+  RSS(ref_geom_uv_area(ref_geom, nodes3, &uv_area3), "uv area 3");
+  uv_area3 *= uv_area_sign;
+
+  for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    if (node0 == nodes2[node]) nodes2[node] = new_node;
+  RSS(ref_geom_uv_area(ref_geom, nodes2, &uv_area20), "uv area 2 node 0");
+  uv_area20 *= uv_area_sign;
+  for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    if (new_node == nodes2[node]) nodes2[node] = node0;
+  for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    if (node1 == nodes2[node]) nodes2[node] = new_node;
+  RSS(ref_geom_uv_area(ref_geom, nodes2, &uv_area21), "uv area 2 node 1");
+  uv_area21 *= uv_area_sign;
+  for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    if (new_node == nodes2[node]) nodes2[node] = node1;
+
+  for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    if (node0 == nodes3[node]) nodes3[node] = new_node;
+  RSS(ref_geom_uv_area(ref_geom, nodes3, &uv_area30), "uv area 3 node 0");
+  uv_area30 *= uv_area_sign;
+  for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    if (new_node == nodes3[node]) nodes3[node] = node0;
+  for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    if (node1 == nodes3[node]) nodes3[node] = new_node;
+  RSS(ref_geom_uv_area(ref_geom, nodes3, &uv_area31), "uv area 3 node 1");
+  uv_area31 *= uv_area_sign;
+  for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    if (new_node == nodes3[node]) nodes3[node] = node1;
+
+  if (uv_area2 < 1e-20 || uv_area3 < 1e-20 || uv_area20 < 0 || uv_area21 < 0 ||
+      uv_area30 < 0 || uv_area31 < 0) {
+    printf("%s orig uv area %e %e new %e %e %e %e\n", msg, uv_area2, uv_area3,
+           uv_area20, uv_area21, uv_area30, uv_area31);
+  }
+
+  return REF_SUCCESS;
+}
 static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
                                                      REF_INT node0,
                                                      REF_INT node1,
