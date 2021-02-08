@@ -1560,6 +1560,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_BOOL multiscale_metric;
   REF_DICT ref_dict_bcs = NULL;
   REF_INT pos;
+  REF_INT fixed_point_pos, deforming_pos;
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
   const char *lb8_ugrid = "lb8.ugrid";
@@ -1761,9 +1762,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("flip initial_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, initial_field), "flip");
   }
-  RXS(ref_args_find(argc, argv, "--deforming", &pos), REF_NOT_FOUND,
+
+  RXS(ref_args_find(argc, argv, "--fixed-point", &fixed_point_pos),
+      REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--deforming", &deforming_pos), REF_NOT_FOUND,
       "arg search");
-  if (REF_EMPTY != pos) {
+  if (REF_EMPTY != deforming_pos && REF_EMPTY == fixed_point_pos) {
     if (ref_mpi_once(ref_mpi)) printf("extract xyz displacement\n");
     RSS(extract_displaced_xyz(ref_grid_node(ref_grid), &ldim, &initial_field,
                               &displaced),
@@ -1872,7 +1876,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos + 4 < argc) {
     REF_INT first_timestep, last_timestep, timestep_increment;
     const char *solb_middle;
-    REF_INT deforming_pos;
     multiscale_metric = REF_FALSE;
     solb_middle = argv[pos + 1];
     first_timestep = atoi(argv[pos + 2]);
