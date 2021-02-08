@@ -1023,7 +1023,7 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
     RSS(ref_geom_uv_area(ref_geom, nodes, &orig_uv_area), "uv area");
     RSS(ref_geom_uv_area(ref_geom, new_nodes, &new_uv_area), "uv area");
     /* allow if improvement */
-    if ((sign_uv_area * new_uv_area < ref_node_min_uv_area(ref_node)) &&
+    if ((sign_uv_area * new_uv_area <= ref_node_min_uv_area(ref_node)) &&
         (sign_uv_area * new_uv_area < sign_uv_area * orig_uv_area)) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;
