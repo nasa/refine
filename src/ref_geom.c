@@ -958,33 +958,61 @@ REF_STATUS ref_geom_between_face_area(REF_GRID ref_grid, REF_INT node0,
   if (uv_area2 <= 1e-20 || uv_area3 <= 1e-20 || uv_area20 <= 0 ||
       uv_area21 <= 0 || uv_area30 <= 0 || uv_area31 <= 0) {
     REF_DBL uv[2];
+    REF_DBL u0 = 0.0, v0 = 0.0;
     REF_INT sense;
     printf("%s orig uv area %e %e new %e %e %e %e\n", msg, uv_area2, uv_area3,
            uv_area20, uv_area21, uv_area30, uv_area31);
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node0 == nodes2[node]) nodes2[node] = new_node;
+    RSS(ref_geom_cell_tuv(ref_geom, nodes2[0], nodes2, type, uv, &sense),
+        "cell uv0");
+    printf("20uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
+    RSS(ref_geom_cell_tuv(ref_geom, nodes2[1], nodes2, type, uv, &sense),
+        "cell uv0");
+    printf("20uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
+    RSS(ref_geom_cell_tuv(ref_geom, nodes2[2], nodes2, type, uv, &sense),
+        "cell uv0");
+    printf("20uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (new_node == nodes2[node]) nodes2[node] = node0;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node1 == nodes2[node]) nodes2[node] = new_node;
+    RSS(ref_geom_cell_tuv(ref_geom, nodes2[0], nodes2, type, uv, &sense),
+        "cell uv0");
+    printf("21uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
+    RSS(ref_geom_cell_tuv(ref_geom, nodes2[1], nodes2, type, uv, &sense),
+        "cell uv0");
+    printf("21uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
+    RSS(ref_geom_cell_tuv(ref_geom, nodes2[2], nodes2, type, uv, &sense),
+        "cell uv0");
+    printf("21uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (new_node == nodes2[node]) nodes2[node] = node1;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (node0 == nodes3[node]) nodes3[node] = new_node;
     RSS(ref_geom_cell_tuv(ref_geom, nodes3[0], nodes3, type, uv, &sense),
         "cell uv0");
-    printf("30uv %.18e %.18e\n", uv[0], uv[1]);
+    printf("30uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
     RSS(ref_geom_cell_tuv(ref_geom, nodes3[1], nodes3, type, uv, &sense),
         "cell uv0");
-    printf("30uv %.18e %.18e\n", uv[0], uv[1]);
+    printf("30uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
     RSS(ref_geom_cell_tuv(ref_geom, nodes3[2], nodes3, type, uv, &sense),
         "cell uv0");
-    printf("30uv %.18e %.18e\n", uv[0], uv[1]);
+    printf("30uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (new_node == nodes3[node]) nodes3[node] = node0;
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (node1 == nodes3[node]) nodes3[node] = new_node;
     RSS(ref_geom_cell_tuv(ref_geom, nodes3[0], nodes3, type, uv, &sense),
         "cell uv0");
-    printf("31uv %.18e %.18e\n", uv[0], uv[1]);
+    printf("31uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
     RSS(ref_geom_cell_tuv(ref_geom, nodes3[1], nodes3, type, uv, &sense),
         "cell uv0");
-    printf("31uv %.18e %.18e\n", uv[0], uv[1]);
+    printf("31uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
     RSS(ref_geom_cell_tuv(ref_geom, nodes3[2], nodes3, type, uv, &sense),
         "cell uv0");
-    printf("31uv %.18e %.18e\n", uv[0], uv[1]);
+    printf("31uv %.18e %.18e\n", uv[0] - u0, uv[1] - v0);
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (new_node == nodes3[node]) nodes3[node] = node1;
   }
