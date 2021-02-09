@@ -1046,7 +1046,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free");
   }
 
- { /* uv area right */
+  { /* uv area right */
     REF_GEOM ref_geom;
     REF_INT node, type, id, nodes[4];
     REF_DBL params[2];
