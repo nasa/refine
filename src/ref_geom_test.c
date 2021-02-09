@@ -1011,7 +1011,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free");
   }
 
-  { /* uv area */
+  { /* uv area sliver */
     REF_GEOM ref_geom;
     REF_INT node, type, id, nodes[4];
     REF_DBL params[2];
@@ -1042,6 +1042,40 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
     /* good to 2e-18 Apple clang 11*/
     RWDS(-6.121006e-11, uv_area, 1e-16, "area");
+
+    RSS(ref_geom_free(ref_geom), "free");
+  }
+
+ { /* uv area right */
+    REF_GEOM ref_geom;
+    REF_INT node, type, id, nodes[4];
+    REF_DBL params[2];
+    REF_DBL uv_area;
+    RSS(ref_geom_create(&ref_geom), "create");
+    type = REF_GEOM_FACE;
+    id = 5;
+    nodes[3] = id;
+
+    node = 0;
+    nodes[0] = node;
+    params[0] = 0.0;
+    params[1] = 0.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add face");
+
+    node = 1;
+    nodes[1] = node;
+    params[0] = 1.0;
+    params[1] = 0.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add face");
+
+    node = 2;
+    nodes[2] = node;
+    params[0] = 0.0;
+    params[1] = 1.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add face");
+
+    RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+    RWDS(0.5, uv_area, -1.0, "area");
 
     RSS(ref_geom_free(ref_geom), "free");
   }
