@@ -1040,7 +1040,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_add(ref_geom, node, type, id, params), "add face");
 
     RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
-    printf("area %e\n", uv_area);
+    /* good to 2e-18 Apple clang 11*/
+    RWDS(-6.121006e-11, uv_area, 1e-16, "area");
 
     RSS(ref_geom_free(ref_geom), "free");
   }
