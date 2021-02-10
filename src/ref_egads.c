@@ -3403,6 +3403,8 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
   ego tess, model;
   double angle;
   REF_BOOL quilt_on_angle = REF_FALSE;
+  REF_DBL *global_params = NULL;
+  REF_INT auto_tparams = REF_EGADS_RECOMMENDED_TPARAM;
 
   RAS(ref_geom_model_loaded(ref_geom), "load model before quilting");
   RAS(!ref_geom_effective(ref_geom), "already effective, quilting twice?");
@@ -3411,26 +3413,18 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
        EG_copyObject((ego)(ref_geom->body), NULL, &(effective[0])),
        "copy body");
 
-  /* replace with adaptive robust tess method */
-  {
-    double params[3], diag, box[6];
-    ego geom;
-    int tess_status, nvert;
-    REIS(EGADS_SUCCESS, EG_getBoundingBox(effective[0], box), "EG bbox");
-    diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-                (box[1] - box[4]) * (box[1] - box[4]) +
-                (box[2] - box[5]) * (box[2] - box[5]));
-
-    params[0] = 0.025 * diag;
-    params[1] = 0.0075 * diag;
-    params[2] = 20.0;
-
-    REIS(EGADS_SUCCESS, EG_makeTessBody(effective[0], params, &tess),
-         "EG tess");
-    REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
-         "EG tess");
-    REIS(1, tess_status, "tess not closed");
-  }
+  /* need to use copy to build tess so they match */
+  ref_geom->body = effective[0];
+  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
+  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
+  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  ref_free(ref_geom->face_seg_per_rad);
+  ref_free(ref_geom->face_min_length);
+  ref_free(ref_geom->initial_cell_height);
+  ref_free(ref_geom->uv_area_sign);
+  RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
+  RSS(ref_egads_tess_create(ref_geom, &tess, auto_tparams, global_params),
+      "create tess object");
 
   angle = 10.0;
   REIS(EGADS_SUCCESS, EG_initEBody(tess, angle, &effective[1]), "init xEB");
