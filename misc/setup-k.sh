@@ -9,6 +9,7 @@ zoltan_path="${module_path}/Zoltan/3.82-mpt-2.19-intel_2018.3.222"
 parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.19-intel_2018.3.222"
 gcc_parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.17r14-gcc_6.2.0"
 egads_path="${module_path}/ESP/119-beta.2020.09.29.1106/EngSketchPad"
+egads_svn_path="/u/mpark/local/pkgs/EGADS/trunk"
 occ_path="${module_path}/ESP/119-beta.2020.09.29.1106/OpenCASCADE-7.3.1"
 meshlink_path="/u/mpark/local/pkgs/MeshLink"
 
@@ -22,7 +23,7 @@ mkdir -p egads
     ../configure \
     --prefix=`pwd` \
     --with-MeshLink=${meshlink_path} \
-    --with-EGADS=${egads_path} \
+    --with-EGADS=${egads_svn_path} \
     --with-OpenCASCADE=${occ_path} \
     --with-mpi=${mpi_path} \
     --with-parmetis=${parmetis_path} \
