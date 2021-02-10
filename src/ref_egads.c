@@ -1580,6 +1580,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
     RSS(ref_egads_adjust_tparams_dup_edge(ref_geom, *tess, edge_tp_augment,
                                           seg_per_diag),
         "adjust dup edge params");
+    rebuild = REF_FALSE;
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
                                             edge_tp_augment, &rebuild),
@@ -1587,11 +1588,13 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 
     RSS(ref_list_inspect(face_locked), "show");
 
-    if (rebuild)
+    if (rebuild) {
       printf(
           "rebuild EGADS tessellation after missing face .tParams adjustment, "
           "try %d\n",
           tries);
+      REIS(0, EG_deleteObject(*tess), "delete previous try at tess");
+    }
   }
 
   for (face = 0; face < (ref_geom->nface); face++) {
@@ -1611,6 +1614,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
   while (rebuild) {
     tries++;
     RAS(tries < 5, "exhausted tries");
+    REIS(0, EG_deleteObject(*tess), "delete previous try at tess");
     REIS(EGADS_SUCCESS, EG_makeTessBody(body, params, tess), "EG tess");
     REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
          "EG tess");
