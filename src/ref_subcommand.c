@@ -622,7 +622,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT pos;
   REF_INT facelift_pos = REF_EMPTY;
   REF_INT auto_tparams_pos = REF_EMPTY;
-  REF_INT auto_tparams = REF_EGADS_SINGLE_EDGE_TPARAM;
+  REF_INT auto_tparams = REF_EGADS_RECOMMENDED_TPARAM;
   const char *mesher = "tetgen";
   const char *mesher_options = NULL;
   REF_INT passes = 15;
