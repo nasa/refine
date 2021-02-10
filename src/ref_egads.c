@@ -3398,6 +3398,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
   ego effective[2];
   ego tess, model;
   double angle;
+  REF_BOOL quilt_on_angle = REF_FALSE;
 
   RAS(ref_geom_model_loaded(ref_geom), "load model before quilting");
   RAS(!ref_geom_effective(ref_geom), "already effective, quilting twice?");
@@ -3432,7 +3433,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
 
   RSS(ref_egads_quilt_attributes(effective[0], effective[1]), "quilt attr");
 
-  {
+  if (quilt_on_angle) {
     REF_INT *e2f;
     RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
     RSS(ref_egads_quilt_angle(ref_geom, effective[0], effective[1], angle, e2f),
