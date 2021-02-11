@@ -354,12 +354,17 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (NULL != in_egads) {
       if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
       RSS(ref_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
+      if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
+        printf("EBody Effective Body loaded\n");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
         if (ref_mpi_once(ref_mpi))
           printf("load egadslite from .meshb byte stream\n");
         RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+        if (ref_mpi_once(ref_mpi) &&
+            ref_geom_effective(ref_grid_geom(ref_grid)))
+          printf("EBody Effective Body loaded\n");
         ref_mpi_stopwatch_stop(ref_mpi, "load egads");
       } else {
         if (ref_mpi_once(ref_mpi))
@@ -646,6 +651,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("loading %s.egads\n", project);
   }
   RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
+  if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
+    printf("EBody Effective Body loaded\n");
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
   RXS(ref_args_find(argc, argv, "--auto-tparams", &pos), REF_NOT_FOUND,
@@ -1708,12 +1715,17 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (REF_EMPTY != pos && pos < argc - 1) {
       if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", argv[pos + 1]);
       RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[pos + 1]), "load egads");
+      if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
+        printf("EBody Effective Body loaded\n");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
         if (ref_mpi_once(ref_mpi))
           printf("load egadslite from .meshb byte stream\n");
         RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+        if (ref_mpi_once(ref_mpi) &&
+            ref_geom_effective(ref_grid_geom(ref_grid)))
+          printf("EBody Effective Body loaded\n");
         ref_mpi_stopwatch_stop(ref_mpi, "load egadslite cad data");
       } else {
         if (ref_mpi_once(ref_mpi))
@@ -2388,6 +2400,8 @@ static REF_STATUS quilt(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_geom_create(&ref_geom), "create geom");
   RSS(ref_egads_load(ref_geom, input_egads), "load");
+  if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
+    printf("EBody Effective Body loaded\n");
   RSS(ref_egads_quilt(ref_geom, auto_tparams, global_params), "quilt");
   RSS(ref_egads_save(ref_geom, output_egads), "save");
   RSS(ref_geom_free(ref_geom), "free geom/context");
