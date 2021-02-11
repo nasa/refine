@@ -3396,15 +3396,14 @@ static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
 }
 #endif
 
-REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
+REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
+                           REF_DBL *global_params) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
   ego effective[2];
   ego tess, model;
   double angle;
   REF_BOOL quilt_on_angle = REF_FALSE;
-  REF_DBL *global_params = NULL;
-  REF_INT auto_tparams = REF_EGADS_RECOMMENDED_TPARAM;
 
   RAS(ref_geom_model_loaded(ref_geom), "load model before quilting");
   RAS(!ref_geom_effective(ref_geom), "already effective, quilting twice?");
@@ -3465,6 +3464,8 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
 #else
   printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(auto_tparams);
+  SUPRESS_UNUSED_COMPILER_WARNING(global_params);
   return REF_SUCCESS;
 #endif
 }

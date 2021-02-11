@@ -87,7 +87,8 @@ REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                                   REF_DBL *h2, REF_DBL *dir2);
 REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id);
 
-REF_STATUS ref_egads_quilt(REF_GEOM ref_geom);
+REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
+                           REF_DBL *global_params);
 
 END_C_DECLORATION
 
