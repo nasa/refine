@@ -77,7 +77,8 @@ int main(int argc, char *argv[]) {
     int nface, iface;
     ego face;
     double diag, box[6];
-    is_equal(EGADS_SUCCESS, EG_getBodyTopos(ebody, NULL, EFACE, &nface, &faces),
+
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(ebody, NULL, FACE, &nface, &faces),
              "EG face topo");
     iface = 16;
     face = faces[iface - 1];
@@ -87,6 +88,19 @@ int main(int argc, char *argv[]) {
                 (box[2] - box[5]) * (box[2] - box[5]));
     printf("face %d diagoal %e\n", iface, diag);
     printf("face %d bbox %e %e %e %e %e %e\n", iface, box[0], box[1], box[2],
+           box[3], box[4], box[5]);
+    EG_free(faces);
+
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(ebody, NULL, EFACE, &nface, &faces),
+             "EG face topo");
+    iface = 16;
+    face = faces[iface - 1];
+    is_equal(EGADS_SUCCESS, EG_getBoundingBox(face, box), "EG bounding box");
+    diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                (box[1] - box[4]) * (box[1] - box[4]) +
+                (box[2] - box[5]) * (box[2] - box[5]));
+    printf("eface %d diagoal %e\n", iface, diag);
+    printf("eface %d bbox %e %e %e %e %e %e\n", iface, box[0], box[1], box[2],
            box[3], box[4], box[5]);
     EG_free(faces);
 
