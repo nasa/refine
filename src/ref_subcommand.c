@@ -2400,7 +2400,7 @@ static REF_STATUS quilt(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_geom_create(&ref_geom), "create geom");
   RSS(ref_egads_load(ref_geom, input_egads), "load");
-  if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
+  if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_geom))
     printf("EBody Effective Body loaded\n");
   RSS(ref_egads_quilt(ref_geom, auto_tparams, global_params), "quilt");
   RSS(ref_egads_save(ref_geom, output_egads), "save");
