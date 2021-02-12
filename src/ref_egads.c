@@ -2724,8 +2724,12 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
 
   REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
        "eval edge face uv", {
-         printf("faceid %d edgeid %d sense %d t %f\n", faceid, edgeid, sense,
+         REF_DBL trange[2];
+         printf("faceid %d edgeid %d sense %d t %.18e\n", faceid, edgeid, sense,
                 t);
+         printf("ref_egads_edge_trange status %d\n",
+                ref_egads_edge_trange(ref_geom, edgeid, trange));
+         printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0], trange[1]);
        });
 
   return REF_SUCCESS;
