@@ -78,7 +78,7 @@ echo "===================================================================="
 # due to the $BUILDLOG file being created
 set -x
 touch $output
-tail -f --pid $pid $output
+tail -n+0 -f --pid $pid $output
 
 # Capture test-suite error code, turn of exit-on-error
 set +e
