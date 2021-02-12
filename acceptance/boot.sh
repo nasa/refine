@@ -3,14 +3,12 @@
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-set +x # echo commands off for module
-
 # Setup bash module environment
-. /usr/local/pkgs/modules/init/bash
+set +x # echo commands off for module
+source /usr/local/pkgs/modules/init/bash
 module purge
 source acceptance/boot-modules.sh
 module list
-
 set -x # echo commands
 
 log=`pwd`/../log-build.txt

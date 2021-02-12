@@ -11,8 +11,6 @@ module load geolab_64 AFLR3/16.28.5
 
 module load valgrind_3.13.0
 
-module list
-
 export parmetis_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
 export zoltan_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 

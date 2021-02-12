@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-set -x # echo commands
-
 set -e # exit on first error
 set -u # Treat unset variables as error
 
 # Setup bash module environment
-. /usr/local/pkgs/modules/init/bash
-
+set +x # echo commands off for module
+source /usr/local/pkgs/modules/init/bash
 module purge
 source acceptance/pro-modules.sh
+module list
+set -x # echo commands
 
 root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine

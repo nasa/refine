@@ -29,7 +29,7 @@ cd ${build_directory_root} && \
     cd refine && \
       pwd && \
       ${checkout_cmd} && \
-    ./acceptance/ref-qsub.sh
+    ./acceptance/k-qsub.sh ref
 EOF
 
 scp -o LogLevel=error fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .

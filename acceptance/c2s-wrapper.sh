@@ -31,7 +31,7 @@ cd ${build_directory_root} && \
     cd refine && \
       pwd && \
       ${checkout_cmd} && \
-      ./acceptance/c2s-qsub.sh
+      ./acceptance/k-qsub.sh c2s
 EOF
 
 scp -o LogLevel=error fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log-\* .
