@@ -1,14 +1,9 @@
 /*
 
-gcc-10  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
--I/Users/mpark/local/pkgs/EngSketchPad/include -o egads_get_edge_uv-beta \
-egads_get_edge_uv.c -Wl,-rpath,/Users/mpark/local/pkgs/EngSketchPad/lib \
--L/Users/mpark/local/pkgs/EngSketchPad/lib -legads   -lm
-
-gcc-10  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
--I/Users/mpark/local/pkgs/EGADS/trunk/include -o egads_get_edge_uv-svn \
-egads_get_edge_uv.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
--L/Users/mpark/local/pkgs/EGADS/trunk/lib -legads   -lm
+gcc  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
+-I${HOME}/local/pkgs/EGADS/trunk/include -o egads_get_edge_uv \
+egads_get_edge_uv.c -Wl,-rpath,${HOME}/local/pkgs/EGADS/trunk/lib \
+-L${HOME}/local/pkgs/EGADS/trunk/lib -legads   -lm
 
 */
 
@@ -39,10 +34,9 @@ egads_get_edge_uv.c -Wl,-rpath,/Users/mpark/local/pkgs/EGADS/trunk/lib \
 
 int main(void) {
   ego context;
-  ego model = NULL;
-  ego geom, *bodies, *children;
-  int oclass, mtype, nbody, *senses, nchild;
-  ego solid;
+  ego body = NULL;
+  ego geom, *bodies;
+  int oclass, mtype, nbody, *senses, nchild, nego;
   int nface;
   ego *faces;
   int faceid;
@@ -58,38 +52,66 @@ int main(void) {
   /* Success returns the old output level. (0-silent to 3-debug) */
   is_true(EG_setOutLevel(context, 3) >= 0, "make verbose");
 
-  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, "c40f.egads", &model),
+  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, "c40f-eff.egads", &body),
            "EG load");
 
   is_equal(EGADS_SUCCESS,
-           EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
+           EG_getTopology(body, &geom, &oclass, &nego, NULL, &nbody, &bodies,
                           &senses),
            "EG topo bodies");
   is_equal(1, nbody, "expected 1 body");
-  solid = bodies[0];
-  is_equal(EGADS_SUCCESS,
-           EG_getTopology(solid, &geom, &oclass, &mtype, NULL, &nchild,
-                          &children, &senses),
-           "EG topo body type");
-  is_equal(SOLIDBODY, mtype, "expected SOLIDBODY");
+  body = bodies[0];
 
-  is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, FACE, &nface, &faces),
+  {
+    int ibody;
+    int bodyclass, bodytype;
+    ego owner, prev, next;
+    for (ibody = 0; ibody < nego; ibody++) {
+      is_equal(EGADS_SUCCESS,
+               EG_getInfo(bodies[ibody], &bodyclass, &bodytype, &owner, &prev,
+                          &next),
+               "info");
+      if (EBODY == bodyclass) {
+        body = bodies[ibody];
+        printf("ego %d is an EBODY\n", ibody);
+      }
+    }
+  }
+
+  is_equal(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, EFACE, &nface, &faces),
            "EG face topo");
-  is_equal(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges),
+  is_equal(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, EEDGE, &nedge, &edges),
            "EG edge topo");
 
   printf("nface %d nedge %d\n", nface, nedge);
 
-  faceid = 168;
-  edgeid = 723;
+  faceid = 13;
+  edgeid = 45;
 
   edge_ego = edges[edgeid - 1];
   face_ego = faces[faceid - 1];
-  t = 287.984998;
   sense = 0;
 
-  is_equal(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
-           "eval edge face uv");
-
+  {
+    ego ref;
+    double trange[2];
+    ego *pchldrn;
+    int *psens;
+    is_equal(EGADS_SUCCESS,
+             EG_getTopology(edge_ego, &ref, &oclass, &mtype, trange, &nchild,
+                            &pchldrn, &psens),
+             "EG topo edge");
+    printf("edge %d mtype %d (5 is DEGENERATE)\n", edgeid, mtype);
+    t = trange[0];
+    is_equal(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
+             "eval edge face uv");
+    printf("edge %d t %.18e face %d uv %.18e %.18e\n", edgeid, t, faceid, uv[0],
+           uv[1]);
+    t = trange[1];
+    is_equal(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
+             "eval edge face uv");
+    printf("edge %d t %.18e face %d uv %.18e %.18e\n", edgeid, t, faceid, uv[0],
+           uv[1]);
+  }
   return 0;
 }

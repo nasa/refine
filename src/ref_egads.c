@@ -267,7 +267,6 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
       if (EBODY == bodyclass) {
         body = bodies[ibody];
         ref_geom_effective(ref_geom) = REF_TRUE;
-        printf("EBODY extracted from model\n");
       }
     }
   }
@@ -1580,6 +1579,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
     RSS(ref_egads_adjust_tparams_dup_edge(ref_geom, *tess, edge_tp_augment,
                                           seg_per_diag),
         "adjust dup edge params");
+    rebuild = REF_FALSE;
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
                                             edge_tp_augment, &rebuild),
@@ -1587,11 +1587,13 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 
     RSS(ref_list_inspect(face_locked), "show");
 
-    if (rebuild)
+    if (rebuild) {
       printf(
           "rebuild EGADS tessellation after missing face .tParams adjustment, "
           "try %d\n",
           tries);
+      REIS(0, EG_deleteObject(*tess), "delete previous try at tess");
+    }
   }
 
   for (face = 0; face < (ref_geom->nface); face++) {
@@ -1609,13 +1611,6 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
   rebuild = REF_TRUE;
   tries = 0;
   while (rebuild) {
-    tries++;
-    RAS(tries < 5, "exhausted tries");
-    REIS(EGADS_SUCCESS, EG_makeTessBody(body, params, tess), "EG tess");
-    REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
-         "EG tess");
-    REIS(1, tess_status, "tess not closed");
-
     RSS(ref_egads_adjust_tparams_single_edge(ref_geom, *tess, edge_tp_augment,
                                              auto_tparams, face_locked),
         "adjust single edge params");
@@ -1623,16 +1618,25 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
                                        edge_tp_augment, auto_tparams,
                                        face_locked),
         "adjust chord params");
+    rebuild = REF_FALSE;
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
                                             edge_tp_augment, &rebuild),
         "update auto tparams");
 
-    if (rebuild)
+    if (rebuild) {
+      tries++;
+      RAS(tries < 5, "exhausted tries");
       printf(
-          "rebuild EGADS tessellation after chord .tParams adjustment, try "
-          "%d\n",
+          "rebuild EGADS tessellation after chord .tParams adjustment, "
+          "try %d\n",
           tries);
+      REIS(0, EG_deleteObject(*tess), "delete previous try at tess");
+      REIS(EGADS_SUCCESS, EG_makeTessBody(body, params, tess), "EG tess");
+      REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
+           "EG tess");
+      REIS(1, tess_status, "tess not closed");
+    }
   }
 
   RSS(ref_list_free(face_locked), "free face list");
@@ -2721,8 +2725,12 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
 
   REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
        "eval edge face uv", {
-         printf("faceid %d edgeid %d sense %d t %f\n", faceid, edgeid, sense,
+         REF_DBL trange[2];
+         printf("faceid %d edgeid %d sense %d t %.18e\n", faceid, edgeid, sense,
                 t);
+         printf("ref_egads_edge_trange status %d\n",
+                ref_egads_edge_trange(ref_geom, edgeid, trange));
+         printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0], trange[1]);
        });
 
   return REF_SUCCESS;
@@ -3392,12 +3400,14 @@ static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
 }
 #endif
 
-REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
+REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
+                           REF_DBL *global_params) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
   ego effective[2];
   ego tess, model;
   double angle;
+  REF_BOOL quilt_on_angle = REF_FALSE;
 
   RAS(ref_geom_model_loaded(ref_geom), "load model before quilting");
   RAS(!ref_geom_effective(ref_geom), "already effective, quilting twice?");
@@ -3406,33 +3416,25 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
        EG_copyObject((ego)(ref_geom->body), NULL, &(effective[0])),
        "copy body");
 
-  /* replace with adaptive robust tess method */
-  {
-    double params[3], diag, box[6];
-    ego geom;
-    int tess_status, nvert;
-    REIS(EGADS_SUCCESS, EG_getBoundingBox(effective[0], box), "EG bbox");
-    diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-                (box[1] - box[4]) * (box[1] - box[4]) +
-                (box[2] - box[5]) * (box[2] - box[5]));
-
-    params[0] = 0.025 * diag;
-    params[1] = 0.0075 * diag;
-    params[2] = 20.0;
-
-    REIS(EGADS_SUCCESS, EG_makeTessBody(effective[0], params, &tess),
-         "EG tess");
-    REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
-         "EG tess");
-    REIS(1, tess_status, "tess not closed");
-  }
+  /* need to use copy to build tess so they match */
+  ref_geom->body = effective[0];
+  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
+  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
+  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  ref_free(ref_geom->face_seg_per_rad);
+  ref_free(ref_geom->face_min_length);
+  ref_free(ref_geom->initial_cell_height);
+  ref_free(ref_geom->uv_area_sign);
+  RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
+  RSS(ref_egads_tess_create(ref_geom, &tess, auto_tparams, global_params),
+      "create tess object");
 
   angle = 10.0;
   REIS(EGADS_SUCCESS, EG_initEBody(tess, angle, &effective[1]), "init xEB");
 
   RSS(ref_egads_quilt_attributes(effective[0], effective[1]), "quilt attr");
 
-  {
+  if (quilt_on_angle) {
     REF_INT *e2f;
     RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
     RSS(ref_egads_quilt_angle(ref_geom, effective[0], effective[1], angle, e2f),
@@ -3466,6 +3468,8 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom) {
 #else
   printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(auto_tparams);
+  SUPRESS_UNUSED_COMPILER_WARNING(global_params);
   return REF_SUCCESS;
 #endif
 }

@@ -182,11 +182,13 @@ int main(int argc, char *argv[]) {
   if (ref_egads_allows_construction() &&
       ref_egads_allows_effective()) { /* boxbox quilt */
     REF_GEOM ref_geom;
+    REF_DBL *global_params = NULL;
+    REF_INT auto_tparams = REF_EGADS_RECOMMENDED_TPARAM;
 
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "boxbox"), "create");
     RAS(!ref_geom_effective(ref_geom), "not effective");
-    RSS(ref_egads_quilt(ref_geom), "quilt");
+    RSS(ref_egads_quilt(ref_geom, auto_tparams, global_params), "quilt");
     RAS(ref_geom_effective(ref_geom), "effective");
     RSS(ref_geom_free(ref_geom), "free geom/context");
   }
@@ -195,11 +197,13 @@ int main(int argc, char *argv[]) {
       ref_egads_allows_effective()) { /* boxbox quilt save/load */
     REF_GEOM ref_geom;
     char file[] = "ref_egads_test_io_eff_boxbox.egads";
+    REF_DBL *global_params = NULL;
+    REF_INT auto_tparams = REF_EGADS_RECOMMENDED_TPARAM;
 
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "boxbox"), "create");
     RAS(!ref_geom_effective(ref_geom), "not effective");
-    RSS(ref_egads_quilt(ref_geom), "quilt");
+    RSS(ref_egads_quilt(ref_geom, auto_tparams, global_params), "quilt");
     RAS(ref_geom_effective(ref_geom), "effective");
     RSS(ref_egads_save(ref_geom, file), "save");
     RSS(ref_geom_free(ref_geom), "free geom/context");

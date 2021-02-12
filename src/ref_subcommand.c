@@ -82,6 +82,11 @@ static void option_uniform_help(void) {
   printf("      decay_distance is positive to decrease h with distance.\n");
 }
 
+static void option_auto_tprarms_help(void) {
+  printf("  --auto-tparams {or combination of options} adjust .tParams\n");
+  printf("        1:single edge, 2:chord violation, 4:face width (-1:all)\n");
+}
+
 static void adapt_help(const char *name) {
   printf("usage: \n %s adapt input_mesh.extension [<options>]\n", name);
   printf("  -x  output_mesh.extension\n");
@@ -109,8 +114,7 @@ static void bootstrap_help(const char *name) {
   printf("        in files ref_gather_movie.tec and ref_gather_histo.tec\n");
   printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("  --mesher-options \"<options>\" quoted mesher options.\n");
-  printf("  --auto-tparams {or combination of options} adjust .tParams\n");
-  printf("        1:single edge, 2:chord violation, 4:face width (-1:all)\n");
+  option_auto_tprarms_help();
   printf("\n");
 }
 static void distance_help(const char *name) {
@@ -233,6 +237,7 @@ static void node_help(const char *name) {
 static void quilt_help(const char *name) {
   printf("usage: \n %s quilt original.egads\n", name);
   printf("  originaleff.egads is output EGADS model with EBODY\n");
+  option_auto_tprarms_help();
   printf("\n");
 }
 static void surface_help(const char *name) {
@@ -349,12 +354,17 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (NULL != in_egads) {
       if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
       RSS(ref_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
+      if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
+        printf("EBody Effective Body loaded\n");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
         if (ref_mpi_once(ref_mpi))
           printf("load egadslite from .meshb byte stream\n");
         RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+        if (ref_mpi_once(ref_mpi) &&
+            ref_geom_effective(ref_grid_geom(ref_grid)))
+          printf("EBody Effective Body loaded\n");
         ref_mpi_stopwatch_stop(ref_mpi, "load egads");
       } else {
         if (ref_mpi_once(ref_mpi))
@@ -619,15 +629,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_GRID ref_grid = NULL;
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
-  REF_INT pos;
   REF_INT facelift_pos = REF_EMPTY;
-  REF_INT auto_tparams_pos = REF_EMPTY;
-  REF_INT auto_tparams = REF_EGADS_SINGLE_EDGE_TPARAM;
+  REF_INT pos = REF_EMPTY;
+  REF_INT auto_tparams = REF_EGADS_RECOMMENDED_TPARAM;
   const char *mesher = "tetgen";
   const char *mesher_options = NULL;
   REF_INT passes = 15;
   REF_INT self_intersections;
-  REF_INT global_pos = REF_EMPTY;
   REF_DBL *global_params = NULL;
 
   if (argc < 3) goto shutdown;
@@ -641,15 +649,16 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
   if (ref_mpi_once(ref_mpi)) {
     printf("loading %s.egads\n", project);
-    RSS(ref_egads_out_level(ref_grid_geom(ref_grid), 2), "standard info");
   }
   RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
+  if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
+    printf("EBody Effective Body loaded\n");
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
-  RXS(ref_args_find(argc, argv, "--auto-tparams", &auto_tparams_pos),
-      REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != auto_tparams_pos && auto_tparams_pos < argc - 1) {
-    auto_tparams = atoi(argv[auto_tparams_pos + 1]);
+  RXS(ref_args_find(argc, argv, "--auto-tparams", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    auto_tparams = atoi(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi))
       printf("--auto-tparams %d requested\n", auto_tparams);
     if (auto_tparams < 0) {
@@ -659,13 +668,12 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  RXS(ref_args_find(argc, argv, "--global", &global_pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != global_pos && global_pos < argc - 3) {
+  RXS(ref_args_find(argc, argv, "--global", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 3) {
     ref_malloc(global_params, 3, REF_DBL);
-    global_params[0] = atof(argv[global_pos + 1]);
-    global_params[1] = atof(argv[global_pos + 2]);
-    global_params[2] = atof(argv[global_pos + 3]);
+    global_params[0] = atof(argv[pos + 1]);
+    global_params[1] = atof(argv[pos + 2]);
+    global_params[2] = atof(argv[pos + 3]);
     if (ref_mpi_once(ref_mpi))
       printf("initial tessellation, global param %f %f %f\n", global_params[0],
              global_params[1], global_params[2]);
@@ -674,6 +682,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   RSS(ref_egads_tess(ref_grid, auto_tparams, global_params), "tess egads");
   ref_free(global_params);
+  global_params = NULL;
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init-surf.tec", project);
   if (ref_mpi_once(ref_mpi))
@@ -1706,12 +1715,17 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (REF_EMPTY != pos && pos < argc - 1) {
       if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", argv[pos + 1]);
       RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[pos + 1]), "load egads");
+      if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
+        printf("EBody Effective Body loaded\n");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
         if (ref_mpi_once(ref_mpi))
           printf("load egadslite from .meshb byte stream\n");
         RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+        if (ref_mpi_once(ref_mpi) &&
+            ref_geom_effective(ref_grid_geom(ref_grid)))
+          printf("EBody Effective Body loaded\n");
         ref_mpi_stopwatch_stop(ref_mpi, "load egadslite cad data");
       } else {
         if (ref_mpi_once(ref_mpi))
@@ -2339,6 +2353,9 @@ static REF_STATUS quilt(REF_MPI ref_mpi, int argc, char *argv[]) {
   size_t end_of_string;
   char project[1000];
   char output_egads[1024];
+  REF_INT pos;
+  REF_DBL *global_params = NULL;
+  REF_INT auto_tparams = REF_EGADS_RECOMMENDED_TPARAM;
 
   if (argc < 3) goto shutdown;
   input_egads = argv[2];
@@ -2355,11 +2372,42 @@ static REF_STATUS quilt(REF_MPI ref_mpi, int argc, char *argv[]) {
   project[end_of_string - 6] = '\0';
   sprintf(output_egads, "%s-eff.egads", project);
 
+  RXS(ref_args_find(argc, argv, "--global", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 3) {
+    ref_malloc(global_params, 3, REF_DBL);
+    global_params[0] = atof(argv[pos + 1]);
+    global_params[1] = atof(argv[pos + 2]);
+    global_params[2] = atof(argv[pos + 3]);
+    if (ref_mpi_once(ref_mpi))
+      printf("initial tessellation, global param %f %f %f\n", global_params[0],
+             global_params[1], global_params[2]);
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("initial tessellation, default param\n");
+  }
+
+  RXS(ref_args_find(argc, argv, "--auto-tparams", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    auto_tparams = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi))
+      printf("--auto-tparams %d requested\n", auto_tparams);
+    if (auto_tparams < 0) {
+      auto_tparams = REF_EGADS_ALL_TPARAM;
+      if (ref_mpi_once(ref_mpi))
+        printf("--auto-tparams %d set to all\n", auto_tparams);
+    }
+  }
+
   RSS(ref_geom_create(&ref_geom), "create geom");
   RSS(ref_egads_load(ref_geom, input_egads), "load");
-  RSS(ref_egads_quilt(ref_geom), "quilt");
+  if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_geom))
+    printf("EBody Effective Body loaded\n");
+  RSS(ref_egads_quilt(ref_geom, auto_tparams, global_params), "quilt");
   RSS(ref_egads_save(ref_geom, output_egads), "save");
   RSS(ref_geom_free(ref_geom), "free geom/context");
+
+  ref_free(global_params);
+  global_params = NULL;
 
   return REF_SUCCESS;
 shutdown:
