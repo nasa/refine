@@ -74,7 +74,7 @@ EOF
 done
 
 echo "===================================================================="
-echo "     ------>  Running ${testname} on K queue: ${k_queue}"
+echo "     ------>  Running ${testname} on K queue: ${queue}"
 echo "===================================================================="
 
 # This is where the winning PBS job starts,
