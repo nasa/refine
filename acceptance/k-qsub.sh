@@ -58,7 +58,7 @@ EOF
     printf "Trying K queue: $queue"
 
     rm -rf ${output}
-    (qsub -V -Wblock=true ${testcase}.pbs > pbs_id 2>&1) &
+    (qsub -V -Wblock=true ${testname}.pbs > pbs_id 2>&1) &
     pid=$!
 
     sleep 20
@@ -74,7 +74,7 @@ EOF
 done
 
 echo "===================================================================="
-echo "     ------>  Running ${testcase} on K queue: ${k_queue}"
+echo "     ------>  Running ${testname} on K queue: ${k_queue}"
 echo "===================================================================="
 
 # This is where the winning PBS job starts,
