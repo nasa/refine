@@ -2,8 +2,6 @@
 module load intel_2018.3.222
 module load mpt-2.19
 
-module list
-
 export mpi_path="/opt/hpe/hpc/mpt/mpt-2.19"
 
 export module_path="/u/shared/fun3d/fun3d_users/modules"

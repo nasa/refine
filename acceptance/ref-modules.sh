@@ -13,8 +13,6 @@ module load ESP/119-beta.2020.09.29.1106
 
 module load valgrind_3.13.0
 
-module list
-
 export module_path="/u/shared/fun3d/fun3d_users/modules"
 
 export mpi_path="/usr/local/pkgs-modules/openmpi_2.1.1_intel_2017"
