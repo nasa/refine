@@ -1611,14 +1611,6 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
   rebuild = REF_TRUE;
   tries = 0;
   while (rebuild) {
-    tries++;
-    RAS(tries < 5, "exhausted tries");
-    REIS(0, EG_deleteObject(*tess), "delete previous try at tess");
-    REIS(EGADS_SUCCESS, EG_makeTessBody(body, params, tess), "EG tess");
-    REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
-         "EG tess");
-    REIS(1, tess_status, "tess not closed");
-
     RSS(ref_egads_adjust_tparams_single_edge(ref_geom, *tess, edge_tp_augment,
                                              auto_tparams, face_locked),
         "adjust single edge params");
@@ -1626,16 +1618,25 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
                                        edge_tp_augment, auto_tparams,
                                        face_locked),
         "adjust chord params");
+    rebuild = REF_FALSE;
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
                                             edge_tp_augment, &rebuild),
         "update auto tparams");
 
-    if (rebuild)
+    if (rebuild) {
+      tries++;
+      RAS(tries < 5, "exhausted tries");
       printf(
-          "rebuild EGADS tessellation after chord .tParams adjustment, try "
-          "%d\n",
+          "rebuild EGADS tessellation after chord .tParams adjustment, "
+          "try %d\n",
           tries);
+      REIS(0, EG_deleteObject(*tess), "delete previous try at tess");
+      REIS(EGADS_SUCCESS, EG_makeTessBody(body, params, tess), "EG tess");
+      REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
+           "EG tess");
+      REIS(1, tess_status, "tess not closed");
+    }
   }
 
   RSS(ref_list_free(face_locked), "free face list");
