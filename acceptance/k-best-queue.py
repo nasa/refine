@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+print('K3-debug')
+exit()
+
 from subprocess import check_output
 import re
 
