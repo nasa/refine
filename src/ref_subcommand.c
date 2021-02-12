@@ -287,7 +287,8 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
     RAS(ref_math_divisible(distance[node], spalding_yplus),
-        "wall distance not divisible by y+=1");
+        "\nare viscous boundarys set with --viscous-tags or --fun3d-mapbc?"
+        "\nwall distance not divisible by y+=1");
     yplus = distance[node] / spalding_yplus;
     RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
   }
@@ -470,7 +471,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     const char *tags;
     tags = argv[pos + 1];
     if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
-    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
     RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
         "unable to parse viscous tags");
     if (ref_mpi_once(ref_mpi))
@@ -479,8 +479,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
       "metric arg search");
-  if (REF_EMPTY != pos && pos < argc - 3) {
-    if (NULL == ref_dict_bcs) {
+  if (REF_EMPTY != pos && pos < argc - 2) {
+    if (0 == ref_dict_n(ref_dict_bcs)) {
       if (ref_mpi_once(ref_mpi))
         printf(
             "\nset viscous boundaries via --fun3d-mapbc or --viscous-tags "
