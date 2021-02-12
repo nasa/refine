@@ -287,7 +287,8 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
     RAS(ref_math_divisible(distance[node], spalding_yplus),
-        "wall distance not divisible by y+=1");
+        "\nare viscous boundarys set with --viscous-tags or --fun3d-mapbc?"
+        "\nwall distance not divisible by y+=1");
     yplus = distance[node] / spalding_yplus;
     RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
   }
