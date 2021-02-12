@@ -479,8 +479,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
       "metric arg search");
-  if (REF_EMPTY != pos && pos < argc - 3) {
-    if (NULL == ref_dict_bcs) {
+  if (REF_EMPTY != pos && pos < argc - 2) {
+    if (0 == ref_dict_n(ref_dict_bcs)) {
       if (ref_mpi_once(ref_mpi))
         printf(
             "\nset viscous boundaries via --fun3d-mapbc or --viscous-tags "
