@@ -101,7 +101,7 @@ int main(void) {
              EG_getTopology(edge_ego, &ref, &oclass, &mtype, trange, &nchild,
                             &pchldrn, &psens),
              "EG topo edge");
-
+    printf("edge %d mtype %d (5 is DEGENERATE)\n", edgeid, mtype);
     t = trange[0];
     is_equal(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
              "eval edge face uv");
