@@ -10,9 +10,6 @@ pwd # echo path
 
 testname=$1
 
-# Use this script to find quickest-to-start queue when K is backed up
-queue=$(./acceptance/k-best-queue.py)
-
 # Get the best queue to submit to
 queues="K4-debug K3-debug K3a-debug K2-debug K2a-fun3d"
 for queue in $queues; do
