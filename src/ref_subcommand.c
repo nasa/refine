@@ -470,7 +470,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     const char *tags;
     tags = argv[pos + 1];
     if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
-    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
     RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
         "unable to parse viscous tags");
     if (ref_mpi_once(ref_mpi))
