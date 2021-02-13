@@ -638,6 +638,12 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT self_intersections;
   REF_DBL *global_params = NULL;
 
+  if (!ref_egads_allows_construction()) {
+    if (ref_mpi_once(ref_mpi))
+      printf("bootstrap requires EGADS(full) use ref or refmpifull\n");
+    goto shutdown;
+  }
+
   if (argc < 3) goto shutdown;
   end_of_string = MIN(1023, strlen(argv[2]));
   if (7 > end_of_string ||
