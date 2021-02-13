@@ -2592,9 +2592,13 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
 
   if (ref_geom_effective(ref_geom)) {
     /* EFFECTIVE */
-    printf("ref_geom_feedback does not support Effective EGADS\n");
+    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+      printf("ref_geom_feedback does not support Effective EGADS\n");
     return REF_SUCCESS;
   }
+
+  REIS(REF_MIGRATE_SINGLE, ref_grid_partitioner(ref_grid),
+       "parallel implementation is incomplete");
 
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
