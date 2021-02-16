@@ -569,12 +569,11 @@ int main(int argc, char *argv[]) {
     params[0] = 5.0;
     RSS(ref_geom_add(ref_geom, node, type, id, params), "add edge");
     REIS(2, ref_geom_n(ref_geom), "items");
+
     node = 4;
-    type = REF_GEOM_EDGE;
-    id = 2;
-    params[0] = 5.0;
     RSS(ref_geom_remove_all(ref_geom, node), "ok with nothing there");
     REIS(2, ref_geom_n(ref_geom), "items");
+
     node = 2;
     RSS(ref_geom_remove_all(ref_geom, node), "remove all at node");
     REIS(0, ref_geom_n(ref_geom), "items");
