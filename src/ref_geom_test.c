@@ -580,6 +580,37 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free");
   }
 
+  { /* add and remove geom */
+    REF_GEOM ref_geom;
+    REF_INT node, type, id, geom;
+    REF_DBL params[2];
+    RSS(ref_geom_create(&ref_geom), "create");
+    node = 2;
+    type = REF_GEOM_FACE;
+    id = 5;
+    params[0] = 11.0;
+    params[1] = 21.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add face");
+    node = 2;
+    type = REF_GEOM_EDGE;
+    id = 2;
+    params[0] = 5.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add edge");
+    REIS(2, ref_geom_n(ref_geom), "items");
+
+    RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
+    RSS(ref_geom_remove(ref_geom, geom), "remove");
+    REIS(1, ref_geom_n(ref_geom), "items");
+
+    REIS(REF_INVALID, ref_geom_remove(ref_geom, -1), "items");
+    REIS(REF_INVALID, ref_geom_remove(ref_geom, ref_geom_max(ref_geom)),
+         "items");
+    REIS(REF_INVALID, ref_geom_remove(ref_geom, ref_geom_max(ref_geom) - 1),
+         "items");
+
+    RSS(ref_geom_free(ref_geom), "free");
+  }
+
   { /* reuse without reallocation */
     REF_GEOM ref_geom;
     REF_INT node, type, id;
