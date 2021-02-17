@@ -1,5 +1,4 @@
 
-
 sync twod oriention with and without EGADS
 flip boundary orientation convention
 use CGNS winding
@@ -34,6 +33,8 @@ curved higher order meshing
   cavity
 
 ref_geom ref_egads
+ ref_geom_verify_topo tattle should report cells
+ ref_geom_tec_para_shard robust to tec errors
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
  volume fill: merge import grid, remove specialized readers
  unfreeze edges for AFLR volume
