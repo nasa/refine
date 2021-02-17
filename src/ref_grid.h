@@ -124,6 +124,14 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
        (group) < REF_CELL_N_TYPE;                                \
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
+#define each_ref_grid_face_ref_cell(ref_grid, group, ref_cell)                 \
+  for ((group) = 3, (ref_cell) = ref_grid_cell(ref_grid, group); (group) <= 5; \
+       (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
+
+#define each_ref_grid_edge_ref_cell(ref_grid, group, ref_cell)                 \
+  for ((group) = 0, (ref_cell) = ref_grid_cell(ref_grid, group); (group) <= 2; \
+       (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
+
 REF_STATUS ref_grid_inspect(REF_GRID ref_grid);
 REF_STATUS ref_grid_tattle(REF_GRID ref_grid, REF_INT node);
 
