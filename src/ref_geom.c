@@ -535,6 +535,24 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_remove(REF_GEOM ref_geom, REF_INT geom) {
+  REF_ADJ ref_adj = ref_geom_adj(ref_geom);
+  REF_INT node;
+
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
+  if (REF_EMPTY == ref_geom_type(ref_geom, geom)) return REF_INVALID;
+
+  node = ref_geom_node(ref_geom, geom);
+  RSS(ref_adj_remove(ref_adj, node, geom), "unregister geom");
+
+  ref_geom_type(ref_geom, geom) = REF_EMPTY;
+  ref_geom_id(ref_geom, geom) = ref_geom_blank(ref_geom);
+  ref_geom_blank(ref_geom) = geom;
+  ref_geom_n(ref_geom)--;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node) {
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
   REF_INT item, geom;
@@ -542,14 +560,59 @@ REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node) {
   item = ref_adj_first(ref_adj, node);
   while (ref_adj_valid(item)) {
     geom = ref_adj_item_ref(ref_adj, item);
-    RSS(ref_adj_remove(ref_adj, node, geom), "unregister geom");
 
-    ref_geom_type(ref_geom, geom) = REF_EMPTY;
-    ref_geom_id(ref_geom, geom) = ref_geom_blank(ref_geom);
-    ref_geom_blank(ref_geom) = geom;
-    ref_geom_n(ref_geom)--;
+    RSS(ref_geom_remove(ref_geom, geom), "remove");
 
     item = ref_adj_first(ref_adj, node);
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_remove_without_cell(REF_GRID ref_grid, REF_INT node) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_ADJ ref_adj = ref_geom_adj(ref_geom);
+  REF_CELL ref_cell;
+  REF_INT type, item, geom, group;
+  REF_BOOL supported_by_cell;
+
+  item = ref_adj_first(ref_adj, node);
+  while (ref_adj_valid(item)) {
+    geom = ref_adj_item_ref(ref_adj, item);
+    type = ref_geom_type(ref_geom, geom);
+    switch (type) {
+      case REF_GEOM_NODE:
+        item = ref_adj_item_next(ref_adj, item);
+        break;
+      case REF_GEOM_EDGE:
+        supported_by_cell = REF_FALSE;
+        each_ref_grid_edge_ref_cell(ref_grid, group, ref_cell) {
+          supported_by_cell =
+              (supported_by_cell || !ref_cell_node_empty(ref_cell, node));
+        }
+        if (supported_by_cell) {
+          item = ref_adj_item_next(ref_adj, item);
+        } else {
+          RSS(ref_geom_remove(ref_geom, geom), "remove");
+          item = ref_adj_first(ref_adj, node);
+        }
+        break;
+      case REF_GEOM_FACE:
+        supported_by_cell = REF_FALSE;
+        each_ref_grid_edge_ref_cell(ref_grid, group, ref_cell) {
+          supported_by_cell =
+              (supported_by_cell || !ref_cell_node_empty(ref_cell, node));
+        }
+        if (supported_by_cell) {
+          item = ref_adj_item_next(ref_adj, item);
+        } else {
+          RSS(ref_geom_remove(ref_geom, geom), "remove");
+          item = ref_adj_first(ref_adj, node);
+        }
+        break;
+      default:
+        RSS(REF_IMPLEMENT, "can't to geom type yet");
+    }
   }
 
   return REF_SUCCESS;

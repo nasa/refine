@@ -203,7 +203,9 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
                                    REF_DBL *param);
 
+REF_STATUS ref_geom_remove(REF_GEOM ref_geom, REF_INT geom);
 REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node);
+REF_STATUS ref_geom_remove_without_cell(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_geom_is_a(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                          REF_BOOL *it_is);

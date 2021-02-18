@@ -569,16 +569,84 @@ int main(int argc, char *argv[]) {
     params[0] = 5.0;
     RSS(ref_geom_add(ref_geom, node, type, id, params), "add edge");
     REIS(2, ref_geom_n(ref_geom), "items");
+
     node = 4;
-    type = REF_GEOM_EDGE;
-    id = 2;
-    params[0] = 5.0;
     RSS(ref_geom_remove_all(ref_geom, node), "ok with nothing there");
     REIS(2, ref_geom_n(ref_geom), "items");
+
     node = 2;
     RSS(ref_geom_remove_all(ref_geom, node), "remove all at node");
     REIS(0, ref_geom_n(ref_geom), "items");
     RSS(ref_geom_free(ref_geom), "free");
+  }
+
+  { /* add and remove geom */
+    REF_GEOM ref_geom;
+    REF_INT node, type, id, geom;
+    REF_DBL params[2];
+    RSS(ref_geom_create(&ref_geom), "create");
+    node = 2;
+    type = REF_GEOM_FACE;
+    id = 5;
+    params[0] = 11.0;
+    params[1] = 21.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add face");
+    node = 2;
+    type = REF_GEOM_EDGE;
+    id = 2;
+    params[0] = 5.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add edge");
+    REIS(2, ref_geom_n(ref_geom), "items");
+
+    RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
+    RSS(ref_geom_remove(ref_geom, geom), "remove");
+    REIS(1, ref_geom_n(ref_geom), "items");
+
+    REIS(REF_INVALID, ref_geom_remove(ref_geom, -1), "items");
+    REIS(REF_INVALID, ref_geom_remove(ref_geom, ref_geom_max(ref_geom)),
+         "items");
+    REIS(REF_INVALID, ref_geom_remove(ref_geom, ref_geom_max(ref_geom) - 1),
+         "items");
+
+    RSS(ref_geom_free(ref_geom), "free");
+  }
+
+  { /* add and remove geom without element */
+    REF_GRID ref_grid;
+    REF_GEOM ref_geom;
+    REF_INT node, type, id, geom;
+    REF_DBL params[2];
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+    ref_geom = ref_grid_geom(ref_grid);
+
+    node = 2;
+    type = REF_GEOM_FACE;
+    id = 5;
+    params[0] = 11.0;
+    params[1] = 21.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add face");
+    nodes[0] = node;
+    nodes[1] = node + 1;
+    nodes[2] = node + 2;
+    nodes[3] = id;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
+
+    node = 10;
+    type = REF_GEOM_EDGE;
+    id = 2;
+    params[0] = 5.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "add edge");
+
+    REIS(2, ref_geom_n(ref_geom), "items");
+    RSS(ref_geom_remove_without_cell(ref_grid, node), "remove");
+    REIS(1, ref_geom_n(ref_geom), "items");
+
+    REIS(REF_NOT_FOUND, ref_geom_find(ref_geom, node, type, id, &geom),
+         "not found");
+
+    RSS(ref_grid_free(ref_grid), "free");
   }
 
   { /* reuse without reallocation */
