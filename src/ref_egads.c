@@ -635,7 +635,15 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
     ref_geom->model = (void *)model;
   }
   ref_geom->body = (void *)body;
-  ref_geom->manifold = REF_TRUE;
+  {
+    ego geom, *children;
+    int oclass, mtype, *senses, nchild;
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(body, &geom, &oclass, &mtype, NULL, &nchild, &children,
+                        &senses),
+         "EG topo body type");
+    ref_geom->manifold = (SOLIDBODY == mtype);
+  }
 
   RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
 
