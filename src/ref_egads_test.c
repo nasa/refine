@@ -212,6 +212,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_load(ref_geom, file), "load");
     RAS(ref_geom_effective(ref_geom), "effective");
     RSS(ref_geom_free(ref_geom), "free geom/context");
+
+    REIS(0, remove(file), "test clean up");
   }
 
   if (ref_egads_allows_construction()) { /* single cylinder */
