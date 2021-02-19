@@ -3473,3 +3473,59 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
   return REF_SUCCESS;
 #endif
 }
+
+REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                   const char *name, const char *value) {
+#ifdef HAVE_EGADS
+#ifdef HAVE_EGADS_LITE
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  SUPRESS_UNUSED_COMPILER_WARNING(name);
+  SUPRESS_UNUSED_COMPILER_WARNING(value);
+  RSS(REF_IMPLEMENT, "full EGADS required to add attribute");
+#else
+  {
+    ego object = NULL;
+    int ignored_len = -1;
+    switch (type) {
+      case (REF_GEOM_NODE):
+        RNS(ref_geom->nodes, "nodes not loaded");
+        if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+        object = ((ego *)(ref_geom->nodes))[id - 1];
+        break;
+      case (REF_GEOM_EDGE):
+        RNS(ref_geom->edges, "edges not loaded");
+        if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+        object = ((ego *)(ref_geom->edges))[id - 1];
+        break;
+      case (REF_GEOM_FACE):
+        RNS(ref_geom->faces, "faces not loaded");
+        if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+        object = ((ego *)(ref_geom->faces))[id - 1];
+        break;
+      case (REF_GEOM_SOLID):
+        RNS(ref_geom->body, "body not loaded");
+        object = (ego)(ref_geom->body);
+        break;
+      default:
+        RSS(REF_FAILURE, "unknown type");
+    }
+
+    REIS(EGADS_SUCCESS,
+         EG_attributeAdd(object, name, ATTRSTRING, ignored_len, NULL, NULL,
+                         value),
+         "add attribute");
+  }
+#endif
+  return REF_SUCCESS;
+#else
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  SUPRESS_UNUSED_COMPILER_WARNING(name);
+  SUPRESS_UNUSED_COMPILER_WARNING(value);
+  return REF_SUCCESS;
+#endif
+}
