@@ -3645,9 +3645,17 @@ REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
     }
   } else {
     REF_INT edge_id;
+    const char *attribute = NULL;
+    for (edge_id = 1; edge_id <= ref_geom->nedge; edge_id++) {
+      if (REF_SUCCESS != ref_egads_get_attribute(ref_geom, REF_GEOM_EDGE,
+                                                 edge_id, "bc_name",
+                                                 &attribute)) {
+        printf("bc_name not set for edge %d\n", edge_id);
+        return REF_NOT_FOUND;
+      }
+    }
     fprintf(file, "%d\n", 2 + ref_geom->nedge);
     for (edge_id = 1; edge_id <= ref_geom->nedge; edge_id++) {
-      const char *attribute = NULL;
       char *bc_name;
       REF_SIZE len, i;
       RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_EDGE, edge_id, "bc_name",

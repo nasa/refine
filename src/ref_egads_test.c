@@ -312,12 +312,20 @@ int main(int argc, char *argv[]) {
     const char mapbc[] = "ref_egads_test_sqaure.mapbc";
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "square"), "create");
+
+    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc),
+         "can't mapbc without attributes");
+
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 1, "bc_name",
                                 "1000_side1"),
         "add");
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 2, "bc_name",
                                 "2000_side2"),
         "add");
+
+    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc),
+         "can't mapbc without all attributes");
+
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 3, "bc_name",
                                 "3000_side3"),
         "add");
