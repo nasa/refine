@@ -92,6 +92,8 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
 
 REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                                    const char *name, const char *value);
+REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                   const char *name, const char **value);
 
 END_C_DECLORATION
 

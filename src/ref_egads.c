@@ -3529,3 +3529,53 @@ REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 #endif
 }
+
+REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                   const char *name, const char **value) {
+#ifdef HAVE_EGADS
+  ego object = NULL;
+  int attribute_type, len;
+  const int *ints;
+  const double *reals;
+
+  switch (type) {
+    case (REF_GEOM_NODE):
+      RNS(ref_geom->nodes, "nodes not loaded");
+      if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+      object = ((ego *)(ref_geom->nodes))[id - 1];
+      break;
+    case (REF_GEOM_EDGE):
+      RNS(ref_geom->edges, "edges not loaded");
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      object = ((ego *)(ref_geom->edges))[id - 1];
+      break;
+    case (REF_GEOM_FACE):
+      RNS(ref_geom->faces, "faces not loaded");
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      object = ((ego *)(ref_geom->faces))[id - 1];
+      break;
+    case (REF_GEOM_SOLID):
+      RNS(ref_geom->body, "body not loaded");
+      object = (ego)(ref_geom->body);
+      break;
+    default:
+      RSS(REF_FAILURE, "unknown type");
+  }
+
+  REIS(EGADS_SUCCESS,
+       EG_attributeRet(object, name, &attribute_type, &len, &ints, &reals,
+                       value),
+       "get/return attribute");
+  REIS(ATTRSTRING, attribute_type, "expected string");
+
+  return REF_SUCCESS;
+#else
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  SUPRESS_UNUSED_COMPILER_WARNING(name);
+  SUPRESS_UNUSED_COMPILER_WARNING(value);
+  return REF_SUCCESS;
+#endif
+}

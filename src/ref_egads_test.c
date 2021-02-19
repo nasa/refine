@@ -216,10 +216,16 @@ int main(int argc, char *argv[]) {
 
   if (ref_egads_allows_construction()) { /* single cylinder */
     REF_GEOM ref_geom;
+    const char *value;
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "cylinder"), "create");
-    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 1, "alpha", "bravo"),
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 1, "alphabravo",
+                                "charlie"),
         "add");
+    RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, 1, "alphabravo",
+                                &value),
+        "get");
+    REIS(0, strncmp("charlie", value, 7), "different");
     RSS(ref_geom_free(ref_geom), "free geom");
   }
 
