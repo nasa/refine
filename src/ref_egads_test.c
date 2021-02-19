@@ -216,7 +216,8 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  if (ref_egads_allows_construction()) { /* single cylinder */
+  /* single cylinder, read/write attribute */
+  if (ref_egads_allows_construction()) {
     REF_GEOM ref_geom;
     const char *value;
     RSS(ref_geom_create(&ref_geom), "create geom");
