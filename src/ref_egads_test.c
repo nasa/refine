@@ -298,6 +298,60 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(mapbc), "test clean up");
   }
 
+  /* single square, extract mapbc */
+  if (ref_egads_allows_construction()) {
+    REF_GEOM ref_geom;
+    const char mapbc[] = "ref_egads_test_sqaure.mapbc";
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "square"), "create");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 1, "bc_name",
+                                "1000_side1"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 2, "bc_name",
+                                "2000_side2"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 3, "bc_name",
+                                "3000_side3"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 4, "bc_name",
+                                "4000_side4"),
+        "add");
+    RSS(ref_egads_extract_mapbc(ref_geom, mapbc), "write mapbc");
+    RSS(ref_geom_free(ref_geom), "free geom");
+
+    {
+      FILE *file;
+      REF_INT n;
+      char line[1024];
+      file = fopen(mapbc, "r");
+      if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
+      RNS(file, "unable to open file");
+      REIS(1, fscanf(file, "%d\n", &n), "read number of bcs");
+      REIS(6, n, "number of bcs");
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("1 1000 side1", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("2 2000 side2", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("3 3000 side3", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("4 4000 side4", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("5 6662 symmetry-y-min", line, 21), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("6 6662 symmetry-y-max", line, 21), "different",
+           { printf(">%s<\n", line); });
+      fclose(file);
+    }
+
+    REIS(0, remove(mapbc), "test clean up");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
