@@ -128,15 +128,33 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  if (ref_egads_allows_construction()) { /* square */
+    REF_GRID ref_grid;
+    REF_BOOL write_temps = REF_FALSE;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "square"), "create");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_geom_verify_param(ref_grid), "egads params");
+    if (write_temps) {
+      RSS(ref_geom_tec(ref_grid, "square.tec"), "geom");
+      RSS(ref_export_by_extension(ref_grid, "square.meshb"), "meshb");
+      RSS(ref_egads_save(ref_grid_geom(ref_grid), "square.egads"), "egd");
+    }
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   if (ref_egads_allows_construction()) { /* revolve */
     REF_GRID ref_grid;
+    REF_BOOL write_temps = REF_FALSE;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
     RSS(ref_egads_construct(ref_grid_geom(ref_grid), "revolve"), "create");
     RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
     RSS(ref_geom_verify_param(ref_grid), "egads params");
-    /* RSS(ref_geom_tec(ref_grid, "revolve.tec"), "geom"); */
-    /* RSS(ref_export_by_extension(ref_grid, "revolve.meshb"), "meshb"); */
-    /* RSS(ref_egads_save(ref_grid_geom(ref_grid), "revolve.egads"), "egd"); */
+    if (write_temps) {
+      RSS(ref_geom_tec(ref_grid, "revolve.tec"), "geom");
+      RSS(ref_export_by_extension(ref_grid, "revolve.meshb"), "meshb");
+      RSS(ref_egads_save(ref_grid_geom(ref_grid), "revolve.egads"), "egd");
+    }
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
@@ -212,6 +230,142 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_load(ref_geom, file), "load");
     RAS(ref_geom_effective(ref_geom), "effective");
     RSS(ref_geom_free(ref_geom), "free geom/context");
+
+    REIS(0, remove(file), "test clean up");
+  }
+
+  /* single cylinder, read/write attribute */
+  if (ref_egads_allows_construction()) {
+    REF_GEOM ref_geom;
+    const char *value;
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "cylinder"), "create");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 1, "alphabravo",
+                                "charlie"),
+        "add");
+    RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, 1, "alphabravo",
+                                &value),
+        "get");
+    REIS(0, strncmp("charlie", value, 7), "different");
+    RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
+  /* single cylinder, extract mapbc */
+  if (ref_egads_allows_construction()) {
+    REF_GEOM ref_geom;
+    const char mapbc[] = "ref_egads_test_cylinder.mapbc";
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "cylinder"), "create");
+
+    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc),
+         "can't mapbc without attributes");
+
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 1, "bc_name",
+                                "1000_side1"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 2, "bc_name",
+                                "2000_side2"),
+        "add");
+
+    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc),
+         "can't mapbc without all attributes");
+
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 3, "bc_name",
+                                "3000_side3"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 4, "bc_name",
+                                "4000_side4"),
+        "add");
+    RSS(ref_egads_extract_mapbc(ref_geom, mapbc), "write mapbc");
+    RSS(ref_geom_free(ref_geom), "free geom");
+
+    {
+      FILE *file;
+      REF_INT n;
+      char line[1024];
+      file = fopen(mapbc, "r");
+      if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
+      RNS(file, "unable to open file");
+      REIS(1, fscanf(file, "%d\n", &n), "read number of bcs");
+      REIS(4, n, "number of bcs");
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("1 1000 side1", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("2 2000 side2", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("3 3000 side3", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("4 4000 side4", line, 12), "different",
+           { printf(">%s<\n", line); });
+      fclose(file);
+    }
+
+    REIS(0, remove(mapbc), "test clean up");
+  }
+
+  /* single square, extract mapbc */
+  if (ref_egads_allows_construction()) {
+    REF_GEOM ref_geom;
+    const char mapbc[] = "ref_egads_test_sqaure.mapbc";
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "square"), "create");
+
+    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc),
+         "can't mapbc without attributes");
+
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 1, "bc_name",
+                                "1000_side1"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 2, "bc_name",
+                                "2000_side2"),
+        "add");
+
+    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc),
+         "can't mapbc without all attributes");
+
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 3, "bc_name",
+                                "3000_side3"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 4, "bc_name",
+                                "4000_side4"),
+        "add");
+    RSS(ref_egads_extract_mapbc(ref_geom, mapbc), "write mapbc");
+    RSS(ref_geom_free(ref_geom), "free geom");
+
+    {
+      FILE *file;
+      REF_INT n;
+      char line[1024];
+      file = fopen(mapbc, "r");
+      if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
+      RNS(file, "unable to open file");
+      REIS(1, fscanf(file, "%d\n", &n), "read number of bcs");
+      REIS(6, n, "number of bcs");
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("1 1000 side1", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("2 2000 side2", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("3 3000 side3", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("4 4000 side4", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("5 6662 symmetry-y-min", line, 21), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("6 6662 symmetry-y-max", line, 21), "different",
+           { printf(">%s<\n", line); });
+      fclose(file);
+    }
+
+    REIS(0, remove(mapbc), "test clean up");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");

@@ -407,7 +407,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
       REIS(0, EG_deleteObject(cyl2), "delete cyl2");
     }
   }
-  if (0 == strcmp("revolve", description)) {
+  if (0 == strcmp("square", description)) {
     ego nodes[4], curves[4], edges[4];
     { /* nodes */
       double xyz[3];
@@ -591,25 +591,39 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
            "make edge");
     }
 
-    { /* loop, face, and revolve*/
+    { /* loop and face */
       int senses[4] = {1, 1, 1, 1};
       ego loop, face;
-      double data[6];
       REIS(EGADS_SUCCESS,
            EG_makeTopology((ego)(ref_geom->context), NULL, LOOP, CLOSED, NULL,
                            4, edges, senses, &loop),
            "make loop");
       REIS(EGADS_SUCCESS, EG_makeFace(loop, SREVERSE, NULL, &face), "face");
-      data[0] = 0.0;
-      data[1] = 0.0;
-      data[2] = 0.0;
-      data[3] = 1.0;
-      data[4] = 0.0;
-      data[5] = 0.0;
-      REIS(EGADS_SUCCESS, EG_rotate(face, 360.0, data, &body), "revolve");
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, BODY, FACEBODY, NULL,
+                           1, &face, NULL, &body),
+           "facebody");
       REIS(0, EG_deleteObject((ego)(ref_geom->context)),
            "delete construction objects");
     }
+  }
+  if (0 == strcmp("revolve", description)) {
+    ego face;
+    double data[6];
+    RSS(ref_egads_construct(ref_geom, "square"), "create");
+    REIS(EGADS_SUCCESS, EG_copyObject((ego)(ref_geom->body), NULL, &face),
+         "copy body");
+    REIS(0, EG_deleteObject((ego)(ref_geom->model)), "delete body model");
+
+    data[0] = 0.0;
+    data[1] = 0.0;
+    data[2] = 0.0;
+    data[3] = 1.0;
+    data[4] = 0.0;
+    data[5] = 0.0;
+    REIS(EGADS_SUCCESS, EG_rotate(face, 360.0, data, &body), "revolve");
+    REIS(0, EG_deleteObject((ego)(ref_geom->context)),
+         "delete construction objects");
   }
   RNB(body, "unknown description", { printf(">%s<\n", description); });
   {
@@ -621,7 +635,15 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
     ref_geom->model = (void *)model;
   }
   ref_geom->body = (void *)body;
-  ref_geom->manifold = REF_TRUE;
+  {
+    ego geom, *children;
+    int oclass, mtype, *senses, nchild;
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(body, &geom, &oclass, &mtype, NULL, &nchild, &children,
+                        &senses),
+         "EG topo body type");
+    ref_geom->manifold = (SOLIDBODY == mtype);
+  }
 
   RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
 
@@ -3472,4 +3494,193 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
   SUPRESS_UNUSED_COMPILER_WARNING(global_params);
   return REF_SUCCESS;
 #endif
+}
+
+REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                   const char *name, const char *value) {
+#ifdef HAVE_EGADS
+#ifdef HAVE_EGADS_LITE
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  SUPRESS_UNUSED_COMPILER_WARNING(name);
+  SUPRESS_UNUSED_COMPILER_WARNING(value);
+  RSS(REF_IMPLEMENT, "full EGADS required to add attribute");
+#else
+  {
+    ego object = NULL;
+    int ignored_len = -1;
+    switch (type) {
+      case (REF_GEOM_NODE):
+        RNS(ref_geom->nodes, "nodes not loaded");
+        if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+        object = ((ego *)(ref_geom->nodes))[id - 1];
+        break;
+      case (REF_GEOM_EDGE):
+        RNS(ref_geom->edges, "edges not loaded");
+        if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+        object = ((ego *)(ref_geom->edges))[id - 1];
+        break;
+      case (REF_GEOM_FACE):
+        RNS(ref_geom->faces, "faces not loaded");
+        if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+        object = ((ego *)(ref_geom->faces))[id - 1];
+        break;
+      case (REF_GEOM_SOLID):
+        RNS(ref_geom->body, "body not loaded");
+        object = (ego)(ref_geom->body);
+        break;
+      default:
+        RSS(REF_FAILURE, "unknown type");
+    }
+
+    REIS(EGADS_SUCCESS,
+         EG_attributeAdd(object, name, ATTRSTRING, ignored_len, NULL, NULL,
+                         value),
+         "add attribute");
+  }
+#endif
+  return REF_SUCCESS;
+#else
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  SUPRESS_UNUSED_COMPILER_WARNING(name);
+  SUPRESS_UNUSED_COMPILER_WARNING(value);
+  return REF_SUCCESS;
+#endif
+}
+
+REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                   const char *name, const char **value) {
+#ifdef HAVE_EGADS
+  ego object = NULL;
+  int attribute_type, len;
+  const int *ints;
+  const double *reals;
+  int egads_status;
+
+  *value = NULL;
+
+  switch (type) {
+    case (REF_GEOM_NODE):
+      RNS(ref_geom->nodes, "nodes not loaded");
+      if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+      object = ((ego *)(ref_geom->nodes))[id - 1];
+      break;
+    case (REF_GEOM_EDGE):
+      RNS(ref_geom->edges, "edges not loaded");
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      object = ((ego *)(ref_geom->edges))[id - 1];
+      break;
+    case (REF_GEOM_FACE):
+      RNS(ref_geom->faces, "faces not loaded");
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      object = ((ego *)(ref_geom->faces))[id - 1];
+      break;
+    case (REF_GEOM_SOLID):
+      RNS(ref_geom->body, "body not loaded");
+      object = (ego)(ref_geom->body);
+      break;
+    default:
+      RSS(REF_FAILURE, "unknown type");
+  }
+
+  egads_status = EG_attributeRet(object, name, &attribute_type, &len, &ints,
+                                 &reals, value);
+  if (EGADS_NOTFOUND == egads_status) return REF_NOT_FOUND;
+  REIS(EGADS_SUCCESS, egads_status, "get/return attribute");
+  REIS(ATTRSTRING, attribute_type, "expected string");
+
+  return REF_SUCCESS;
+#else
+  *value = NULL;
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  SUPRESS_UNUSED_COMPILER_WARNING(name);
+  return REF_SUCCESS;
+#endif
+}
+
+REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
+  FILE *file;
+  file = fopen(mapbc, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
+  RNS(file, "unable to open file");
+
+  if (ref_geom->manifold) {
+    REF_INT face_id;
+    const char *attribute = NULL;
+    for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
+      if (REF_SUCCESS != ref_egads_get_attribute(ref_geom, REF_GEOM_FACE,
+                                                 face_id, "bc_name",
+                                                 &attribute)) {
+        printf("bc_name not set for face %d\n", face_id);
+        return REF_NOT_FOUND;
+      }
+    }
+    fprintf(file, "%d\n", ref_geom->nface);
+    for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
+      char *bc_name;
+      REF_SIZE len, i;
+      RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, face_id, "bc_name",
+                                  &attribute),
+          "get");
+      RNS(attribute, "attribute NULL");
+      len = strlen(attribute);
+      RAS(10000 > len, "attribute more than 10000 bytes");
+      ref_malloc(bc_name, (REF_LONG)(len + 1), char);
+      strcpy(bc_name, attribute);
+      for (i = 0; i < len; i++) {
+        if ('_' == bc_name[i]) {
+          bc_name[i] = ' ';
+          break;
+        }
+      }
+      fprintf(file, "%d %s\n", face_id, bc_name);
+      ref_free(bc_name);
+    }
+  } else {
+    REF_INT edge_id;
+    const char *attribute = NULL;
+    for (edge_id = 1; edge_id <= ref_geom->nedge; edge_id++) {
+      if (REF_SUCCESS != ref_egads_get_attribute(ref_geom, REF_GEOM_EDGE,
+                                                 edge_id, "bc_name",
+                                                 &attribute)) {
+        printf("bc_name not set for edge %d\n", edge_id);
+        return REF_NOT_FOUND;
+      }
+    }
+    fprintf(file, "%d\n", 2 + ref_geom->nedge);
+    for (edge_id = 1; edge_id <= ref_geom->nedge; edge_id++) {
+      char *bc_name;
+      REF_SIZE len, i;
+      RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_EDGE, edge_id, "bc_name",
+                                  &attribute),
+          "get");
+      RNS(attribute, "attribute NULL");
+      len = strlen(attribute);
+      RAS(10000 > len, "attribute more than 10000 bytes");
+      ref_malloc(bc_name, (REF_LONG)(len + 1), char);
+      strcpy(bc_name, attribute);
+      for (i = 0; i < len; i++) {
+        if ('_' == bc_name[i]) {
+          bc_name[i] = ' ';
+          break;
+        }
+      }
+      fprintf(file, "%d %s\n", edge_id, bc_name);
+      ref_free(bc_name);
+    }
+    edge_id = ref_geom->nedge + 1;
+    fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-min");
+    edge_id = ref_geom->nedge + 2;
+    fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-max");
+  }
+  fclose(file);
+
+  return REF_SUCCESS;
 }
