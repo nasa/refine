@@ -3559,6 +3559,9 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   int attribute_type, len;
   const int *ints;
   const double *reals;
+  int egads_status;
+
+  *value = NULL;
 
   switch (type) {
     case (REF_GEOM_NODE):
@@ -3584,20 +3587,20 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
       RSS(REF_FAILURE, "unknown type");
   }
 
-  REIS(EGADS_SUCCESS,
-       EG_attributeRet(object, name, &attribute_type, &len, &ints, &reals,
-                       value),
-       "get/return attribute");
+  egads_status = EG_attributeRet(object, name, &attribute_type, &len, &ints,
+                                 &reals, value);
+  if (EGADS_NOTFOUND == egads_status) return REF_NOT_FOUND;
+  REIS(EGADS_SUCCESS, egads_status, "get/return attribute");
   REIS(ATTRSTRING, attribute_type, "expected string");
 
   return REF_SUCCESS;
 #else
+  *value = NULL;
   printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
   SUPRESS_UNUSED_COMPILER_WARNING(id);
   SUPRESS_UNUSED_COMPILER_WARNING(name);
-  SUPRESS_UNUSED_COMPILER_WARNING(value);
   return REF_SUCCESS;
 #endif
 }
