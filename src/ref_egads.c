@@ -3597,6 +3597,7 @@ REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
         "get");
     RNS(attribute, "attribute NULL");
     len = strlen(attribute);
+    RAS(10000 > len, "attribute more than 10000 bytes");
     ref_malloc(bc_name, (REF_LONG)(len + 1), char);
     strcpy(bc_name, attribute);
     for (i = 0; i < len; i++) {
