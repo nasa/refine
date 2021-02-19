@@ -94,6 +94,7 @@ REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                                    const char *name, const char *value);
 REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                                    const char *name, const char **value);
+REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc);
 
 END_C_DECLORATION
 

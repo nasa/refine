@@ -3579,3 +3579,15 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 #endif
 }
+
+REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
+  FILE *file;
+  file = fopen(mapbc, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "%d\n", ref_geom->nface);
+  fclose(file);
+
+  return REF_SUCCESS;
+}

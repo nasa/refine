@@ -232,6 +232,41 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free geom");
   }
 
+  /* single cylinder, extract mapbc */
+  if (ref_egads_allows_construction()) {
+    REF_GEOM ref_geom;
+    const char mapbc[] = "ref_egads_test_cylinder.mapbc";
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "cylinder"), "create");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 1, "bc_name",
+                                "1000_side1"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 2, "bc_name",
+                                "2000_side2"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 3, "bc_name",
+                                "3000_side3"),
+        "add");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 4, "bc_name",
+                                "4000_side4"),
+        "add");
+    RSS(ref_egads_extract_mapbc(ref_geom, mapbc), "write mapbc");
+    RSS(ref_geom_free(ref_geom), "free geom");
+
+    {
+      FILE *file;
+      REF_INT n;
+      file = fopen(mapbc, "r");
+      if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
+      RNS(file, "unable to open file");
+      REIS(1, fscanf(file, "%d", &n), "read number of bcs");
+      REIS(4, n, "number of bcs");
+      fclose(file);
+    }
+
+    REIS(0, remove(mapbc), "test clean up");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
