@@ -3582,11 +3582,33 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
 REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
   FILE *file;
+  REF_INT face_id;
   file = fopen(mapbc, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
   RNS(file, "unable to open file");
 
   fprintf(file, "%d\n", ref_geom->nface);
+  for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
+    const char *attribute;
+    char *bc_name;
+    REF_SIZE len;
+    REF_INT i;
+    RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, face_id, "bc_name",
+                                &attribute),
+        "get");
+    len = strlen(attribute);
+    ref_malloc(bc_name, len + 1, char);
+    strncpy(bc_name, attribute, len + 1);
+    for (i = 0; i < (REF_INT)len; i++) {
+      if ('_' == bc_name[i]) {
+        bc_name[i] = ' ';
+        break;
+      }
+    }
+    fprintf(file, "%d %s\n", face_id, bc_name);
+    ref_free(bc_name);
+  }
+
   fclose(file);
 
   return REF_SUCCESS;

@@ -256,11 +256,24 @@ int main(int argc, char *argv[]) {
     {
       FILE *file;
       REF_INT n;
+      char line[1024];
       file = fopen(mapbc, "r");
       if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
       RNS(file, "unable to open file");
-      REIS(1, fscanf(file, "%d", &n), "read number of bcs");
+      REIS(1, fscanf(file, "%d\n", &n), "read number of bcs");
       REIS(4, n, "number of bcs");
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("1 1000 side1", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("2 2000 side2", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("3 3000 side3", line, 12), "different",
+           { printf(">%s<\n", line); });
+      RAS(line == fgets(line, 1024, file), "read line")
+      REIB(0, strncmp("4 4000 side4", line, 12), "different",
+           { printf(">%s<\n", line); });
       fclose(file);
     }
 
