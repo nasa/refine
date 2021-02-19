@@ -669,6 +669,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf("%s extracted\n", filename);
     } else {
       printf("one or more 'bc_name' attributes not set, mapbc not written\n");
+      printf(
+          " All faces (or edges for 2D) should have bc_name attributes "
+          "like so:\n");
+      printf("         select face # all faces\n");
+      printf("         attribute bc_name $4000_wall\n");
+      printf("         select face 5\n");
+      printf("         attribute bc_name $5000_farfield\n");
     }
   }
 
