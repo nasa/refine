@@ -128,6 +128,21 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  if (ref_egads_allows_construction()) { /* square */
+    REF_GRID ref_grid;
+    REF_BOOL write_temps = REF_FALSE;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
+    RSS(ref_egads_construct(ref_grid_geom(ref_grid), "square"), "create");
+    RSS(ref_egads_tess(ref_grid, 0, NULL), "tess");
+    RSS(ref_geom_verify_param(ref_grid), "egads params");
+    if (write_temps) {
+      RSS(ref_geom_tec(ref_grid, "square.tec"), "geom");
+      RSS(ref_export_by_extension(ref_grid, "square.meshb"), "meshb");
+      RSS(ref_egads_save(ref_grid_geom(ref_grid), "square.egads"), "egd");
+    }
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   if (ref_egads_allows_construction()) { /* revolve */
     REF_GRID ref_grid;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create grid");
