@@ -214,6 +214,15 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free geom/context");
   }
 
+  if (ref_egads_allows_construction()) { /* single cylinder */
+    REF_GEOM ref_geom;
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "cylinder"), "create");
+    RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 1, "alpha", "bravo"),
+        "add");
+    RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
