@@ -3613,9 +3613,17 @@ REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
 
   if (ref_geom->manifold) {
     REF_INT face_id;
+    const char *attribute = NULL;
+    for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
+      if (REF_SUCCESS != ref_egads_get_attribute(ref_geom, REF_GEOM_FACE,
+                                                 face_id, "bc_name",
+                                                 &attribute)) {
+        printf("bc_name not set for face %d\n", face_id);
+        return REF_NOT_FOUND;
+      }
+    }
     fprintf(file, "%d\n", ref_geom->nface);
     for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
-      const char *attribute = NULL;
       char *bc_name;
       REF_SIZE len, i;
       RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, face_id, "bc_name",
