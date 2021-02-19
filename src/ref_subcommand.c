@@ -661,6 +661,17 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("EBody Effective Body loaded\n");
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
+  if (ref_mpi_once(ref_mpi)) {
+    sprintf(filename, "%s-vol.mapbc", project);
+    printf("extracting %s from 'bc_name' attributes\n", filename);
+    if (REF_SUCCESS ==
+        ref_egads_extract_mapbc(ref_grid_geom(ref_grid), filename)) {
+      printf("%s extracted\n", filename);
+    } else {
+      printf("one or more 'bc_name' attributes not set, mapbc not written\n");
+    }
+  }
+
   RXS(ref_args_find(argc, argv, "--auto-tparams", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
