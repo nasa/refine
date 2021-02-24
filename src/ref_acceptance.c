@@ -336,7 +336,11 @@ static REF_STATUS ref_acceptance_g(REF_NODE ref_node, const char *function_name,
 static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
                                    REF_INT *ldim, REF_DBL **scalar) {
   REF_INT node;
+
   *ldim = 5;
+  if (strcmp(function_name, "sst") == 0) {
+    *ldim = 7;
+  }
   ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
 
   each_ref_node_valid_node(ref_node, node) {
@@ -372,6 +376,9 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
                                         primitive),
           "ringleb");
       for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+    } else if (strcmp(function_name, "sst") == 0) {
+      REF_INT i;
+      for (i = 0; i < 7; i++) (*scalar)[i + (*ldim) * node] = (REF_DBL)(i + 1);
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
