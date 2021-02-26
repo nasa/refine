@@ -594,6 +594,14 @@ REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_tattle_about(REF_CELL ref_cell, REF_INT node) {
+  REF_INT item, cell;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_tattle(ref_cell, cell), "tattle");
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell) {
   REF_INT node, cell;
   REF_INT orig, chunk;

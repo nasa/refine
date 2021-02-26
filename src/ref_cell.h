@@ -142,6 +142,7 @@ REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword);
 
 REF_STATUS ref_cell_inspect(REF_CELL ref_cell);
 REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell);
+REF_STATUS ref_cell_tattle_about(REF_CELL ref_cell, REF_INT node);
 
 REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell);
 
