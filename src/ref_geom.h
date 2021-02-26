@@ -256,6 +256,7 @@ REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_geom_max_gap(REF_GRID ref_grid, REF_DBL *max_gap);
 REF_STATUS ref_geom_verify_param(REF_GRID ref_grid);
 REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid);
+REF_STATUS ref_geom_report_topo_at(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable);
 

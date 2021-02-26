@@ -2094,6 +2094,50 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_report_topo_at(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT geom_item, geom;
+  REF_INT cell_item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT have_match;
+
+  each_ref_geom_having_node(ref_geom, node, geom_item, geom) {
+    if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
+      have_match = REF_FALSE;
+      ref_cell = ref_grid_edg(ref_grid);
+      each_ref_cell_having_node(ref_cell, node, cell_item, cell) {
+        RSS(ref_cell_nodes(ref_cell, cell, nodes), "edg nodes");
+        if (ref_geom_id(ref_geom, geom) == nodes[ref_cell_id_index(ref_cell)]) {
+          have_match = REF_TRUE;
+        }
+      }
+      if (!have_match) {
+        RSS(ref_node_location(ref_node, node), "loc");
+        RSS(ref_geom_tattle(ref_geom, node), "geom tatt");
+        RSS(ref_cell_tattle_about(ref_cell, node), "cell tatt");
+      }
+    }
+    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
+      have_match = REF_FALSE;
+      ref_cell = ref_grid_tri(ref_grid);
+      each_ref_cell_having_node(ref_cell, node, cell_item, cell) {
+        RSS(ref_cell_nodes(ref_cell, cell, nodes), "tri nodes");
+        if (ref_geom_id(ref_geom, geom) == nodes[ref_cell_id_index(ref_cell)]) {
+          have_match = REF_TRUE;
+        }
+      }
+      if (!have_match) {
+        RSS(ref_node_location(ref_node, node), "loc");
+        RSS(ref_geom_tattle(ref_geom, node), "geom tatt");
+        RSS(ref_cell_tattle_about(ref_cell, node), "cell tatt");
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
                                   const char *options) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
