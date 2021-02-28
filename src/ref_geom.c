@@ -1971,21 +1971,13 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
       }
       if (geom_edge) {
         if (no_edge && ref_node_owned(ref_node, node)) {
-          RSS(ref_node_location(ref_node, node), "loc");
-          RSS(ref_geom_tattle(ref_geom, node), "tatt");
-          ref_cell = ref_grid_edg(ref_grid);
-          each_ref_cell_having_node(ref_cell, node, item, cell) {
-            printf("edge %d %d %d\n", ref_cell_c2n(ref_cell, 0, cell),
-                   ref_cell_c2n(ref_cell, 1, cell),
-                   ref_cell_c2n(ref_cell, 2, cell));
-          }
+          RSS(ref_grid_tattle(ref_grid, node), "tattle");
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("geom edge missing edge");
         }
         if (no_face && ref_node_owned(ref_node, node)) {
-          RSS(ref_node_location(ref_node, node), "loc");
-          RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          RSS(ref_grid_tattle(ref_grid, node), "tattle");
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("geom edge missing tri or qua");
@@ -1994,8 +1986,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
       if (geom_face) {
         if (no_face && ref_node_owned(ref_node, node)) {
           printf("no face for geom\n");
-          RSS(ref_node_location(ref_node, node), "loc");
-          RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          RSS(ref_grid_tattle(ref_grid, node), "tattle");
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("geom face missing tri or qua");
@@ -2004,8 +1995,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
       if (!no_edge) {
         if (!geom_edge) {
           printf("no geom for edge\n");
-          RSS(ref_node_location(ref_node, node), "loc");
-          RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          RSS(ref_grid_tattle(ref_grid, node), "tattle");
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("geom edge missing for edg");
@@ -2014,8 +2004,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
       if (!no_face) {
         if (!geom_face && !ref_geom_meshlinked(ref_geom)) {
           printf("no geom for face\n");
-          RSS(ref_node_location(ref_node, node), "loc");
-          RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          RSS(ref_grid_tattle(ref_grid, node), "tattle");
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("geom face missing tri or qua");
@@ -2033,8 +2022,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
         if (!found_one || found_too_many) {
           if (!found_one) printf("none found\n");
           if (found_too_many) printf("found too many\n");
-          RSS(ref_node_location(ref_node, node), "loc");
-          RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          RSS(ref_grid_tattle(ref_grid, node), "tatt");
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("multiple geom edge away from geom node");
@@ -2053,8 +2041,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
         if (!found_one || found_too_many) {
           if (!found_one) printf("none found\n");
           if (found_too_many) printf("found too many\n");
-          RSS(ref_node_location(ref_node, node), "loc");
-          RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          RSS(ref_grid_tattle(ref_grid, node), "tattle");
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("multiple geom face away from geom edge");
@@ -2082,10 +2069,8 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
              ref_cell_c2n(ref_cell, 0, cell_list[1]),
              ref_cell_c2n(ref_cell, 1, cell_list[1]),
              ref_cell_c2n(ref_cell, 2, cell_list[1]));
-      RSS(ref_node_location(ref_node, ref_cell_c2n(ref_cell, 0, cell)), "loc");
-      RSS(ref_node_location(ref_node, ref_cell_c2n(ref_cell, 1, cell)), "loc");
-      RSS(ref_geom_tattle(ref_geom, ref_cell_c2n(ref_cell, 0, cell)), "tatt");
-      RSS(ref_geom_tattle(ref_geom, ref_cell_c2n(ref_cell, 1, cell)), "tatt");
+      RSS(ref_grid_tattle(ref_grid, ref_cell_c2n(ref_cell, 0, cell)), "tattle");
+      RSS(ref_grid_tattle(ref_grid, ref_cell_c2n(ref_cell, 1, cell)), "tattle");
       RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"), "geom tec");
     }
     REIS(1, ncell, "expect only one edge cell for two nodes");
