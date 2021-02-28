@@ -599,7 +599,7 @@ REF_STATUS ref_geom_remove_without_cell(REF_GRID ref_grid, REF_INT node) {
         break;
       case REF_GEOM_FACE:
         supported_by_cell = REF_FALSE;
-        each_ref_grid_edge_ref_cell(ref_grid, group, ref_cell) {
+        each_ref_grid_face_ref_cell(ref_grid, group, ref_cell) {
           supported_by_cell =
               (supported_by_cell || !ref_cell_node_empty(ref_cell, node));
         }
