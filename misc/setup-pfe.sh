@@ -7,8 +7,8 @@ set -x
 module_path="/swbuild/fun3d/shared/fun3d_users/modules"
 zoltan_path="${module_path}/Zoltan/3.82_mpt-2.17r13_ifort-2018.3.222"
 parmetis_path="${module_path}/ParMETIS/4.0.3_mpt-2.17r13_ifort-2018.3.222"
-egads_path="${module_path}/ESP/118/EngSketchPad"
-opencascade_path="${module_path}/ESP/118/OpenCASCADE-7.3.1"
+egads_path="${module_path}/ESP/119-beta.2020.10.27.0909/EngSketchPad"
+occ_path="${module_path}/ESP/119-beta.2020.10.27.0909/OpenCASCADE-7.3.1"
 
 mpi_path="/nasa/hpe/mpt/2.17r13"
 
