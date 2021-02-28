@@ -2670,7 +2670,8 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_grid_free(iso_grid);
     ref_free(scalar);
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("write solution %s\n", out_sol);
+    if (ref_mpi_once(ref_mpi))
+      printf("write %d ldim solution %s\n", ldim, out_sol);
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, out_sol),
         "gather");
     ref_mpi_stopwatch_stop(ref_mpi, "write solution");
