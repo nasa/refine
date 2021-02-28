@@ -230,10 +230,10 @@ REF_STATUS ref_node_inspect(REF_NODE ref_node) {
 REF_STATUS ref_node_location(REF_NODE ref_node, REF_INT node) {
   printf("ref_node %d", node);
   if (ref_node_valid(ref_node, node)) {
-    printf(" part %d mine %d (%.15e,%.15e,%.15e)\n",
+    printf(" part %d mine %d glob " REF_GLOB_FMT " (%.15e,%.15e,%.15e)\n",
            ref_node_part(ref_node, node), ref_mpi_rank(ref_node_mpi(ref_node)),
-           ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-           ref_node_xyz(ref_node, 2, node));
+           ref_node_global(ref_node, node), ref_node_xyz(ref_node, 0, node),
+           ref_node_xyz(ref_node, 1, node), ref_node_xyz(ref_node, 2, node));
 
   } else {
     printf(" invalid\n");

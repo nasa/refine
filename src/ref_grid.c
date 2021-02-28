@@ -214,16 +214,14 @@ REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_grid_tattle(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
-  REF_INT item, cell;
-
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_having_node(ref_cell, node, item, cell) {
-    RSS(ref_cell_tattle(ref_cell, cell), "cell tat");
-  }
-  ref_cell = ref_grid_tet(ref_grid);
-  each_ref_cell_having_node(ref_cell, node, item, cell) {
-    RSS(ref_cell_tattle(ref_cell, cell), "cell tat");
+  REF_INT group;
+  RSS(ref_node_location(ref_node, node), "loc");
+  RSS(ref_geom_tattle(ref_geom, node), "geom tatt");
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    RSS(ref_cell_tattle_about(ref_cell, node), "cell tatt");
   }
   return REF_SUCCESS;
 }

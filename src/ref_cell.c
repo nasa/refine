@@ -586,11 +586,19 @@ REF_STATUS ref_cell_inspect(REF_CELL ref_cell) {
 
 REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell) {
   REF_INT node;
-  printf("cell %d:", cell);
+  printf("cell %d %d:", ref_cell_type(ref_cell), cell);
   for (node = 0; node < ref_cell_size_per(ref_cell); node++) {
     printf(" %d", ref_cell_c2n(ref_cell, node, cell));
   }
   printf("\n");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_tattle_about(REF_CELL ref_cell, REF_INT node) {
+  REF_INT item, cell;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_tattle(ref_cell, cell), "tattle");
+  }
   return REF_SUCCESS;
 }
 
