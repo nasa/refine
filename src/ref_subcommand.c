@@ -1133,7 +1133,7 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *persist_solb;
   REF_GRID donor_grid = NULL;
   REF_GRID receipt_grid = NULL;
-  REF_INT ldim;
+  REF_INT ldim, persist_ldim;
   REF_DBL *donor_solution, *receipt_solution;
   REF_INTERP ref_interp;
   REF_INT pos;
@@ -1187,10 +1187,12 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
     persist_solb = argv[pos + 2];
     if (ref_mpi_once(ref_mpi))
       printf("part persist solution %s\n", persist_solb);
-    RSS(ref_part_scalar(ref_grid_node(receipt_grid), &ldim, &receipt_solution,
-                        persist_solb),
+    RSS(ref_part_scalar(ref_grid_node(receipt_grid), &persist_ldim,
+                        &receipt_solution, persist_solb),
         "part solution");
     ref_mpi_stopwatch_stop(ref_mpi, "persist part solution");
+    REIS(ldim, persist_ldim, "persist leading dimension different than donor");
+
     if (ref_mpi_once(ref_mpi)) printf("update solution on faceid %d\n", faceid);
     RSS(ref_interp_create(&ref_interp, donor_grid, receipt_grid),
         "make interp");
