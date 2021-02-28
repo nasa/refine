@@ -2648,6 +2648,36 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
+  RXS(ref_args_find(argc, argv, "--overfun", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_DBL *overflow;
+    REF_INT node, i, ldim_overflow;
+    ldim_overflow = ldim;
+    ref_malloc(overflow, ldim_overflow * ref_node_max(ref_grid_node(ref_grid)),
+               REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < ldim_overflow; i++) {
+        overflow[i + ldim_overflow * node] = field[i + ldim_overflow * node];
+      }
+    }
+    ldim = ldim_overflow - 1;
+    ref_free(field);
+    ref_malloc(field, (ldim)*ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho;
+      rho = overflow[0 + ldim_overflow * node];
+      field[0 + ldim * node] = overflow[0 + ldim_overflow * node];
+      for (i = 1; i < 5; i++) {
+        field[i + ldim * node] = overflow[i + ldim_overflow * node] / rho;
+      }
+      for (i = 5; i < ldim; i++) {
+        field[i + ldim * node] = overflow[(i + 1) + ldim_overflow * node];
+      }
+    }
+    ref_free(overflow);
+  }
+
   RXS(ref_args_find(argc, argv, "--iso", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 2) {
     REF_DBL *scalar;
