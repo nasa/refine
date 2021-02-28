@@ -1133,7 +1133,7 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *persist_solb;
   REF_GRID donor_grid = NULL;
   REF_GRID receipt_grid = NULL;
-  REF_INT ldim;
+  REF_INT ldim, persist_ldim;
   REF_DBL *donor_solution, *receipt_solution;
   REF_INTERP ref_interp;
   REF_INT pos;
@@ -1187,10 +1187,12 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
     persist_solb = argv[pos + 2];
     if (ref_mpi_once(ref_mpi))
       printf("part persist solution %s\n", persist_solb);
-    RSS(ref_part_scalar(ref_grid_node(receipt_grid), &ldim, &receipt_solution,
-                        persist_solb),
+    RSS(ref_part_scalar(ref_grid_node(receipt_grid), &persist_ldim,
+                        &receipt_solution, persist_solb),
         "part solution");
     ref_mpi_stopwatch_stop(ref_mpi, "persist part solution");
+    REIS(ldim, persist_ldim, "persist leading dimension different than donor");
+
     if (ref_mpi_once(ref_mpi)) printf("update solution on faceid %d\n", faceid);
     RSS(ref_interp_create(&ref_interp, donor_grid, receipt_grid),
         "make interp");
@@ -2646,6 +2648,36 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
+  RXS(ref_args_find(argc, argv, "--overfun", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_DBL *overflow;
+    REF_INT node, i, ldim_overflow;
+    ldim_overflow = ldim;
+    ref_malloc(overflow, ldim_overflow * ref_node_max(ref_grid_node(ref_grid)),
+               REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < ldim_overflow; i++) {
+        overflow[i + ldim_overflow * node] = field[i + ldim_overflow * node];
+      }
+    }
+    ldim = ldim_overflow - 1;
+    ref_free(field);
+    ref_malloc(field, (ldim)*ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho;
+      rho = overflow[0 + ldim_overflow * node];
+      field[0 + ldim * node] = overflow[0 + ldim_overflow * node];
+      for (i = 1; i < 5; i++) {
+        field[i + ldim * node] = overflow[i + ldim_overflow * node] / rho;
+      }
+      for (i = 5; i < ldim; i++) {
+        field[i + ldim * node] = overflow[(i + 1) + ldim_overflow * node];
+      }
+    }
+    ref_free(overflow);
+  }
+
   RXS(ref_args_find(argc, argv, "--iso", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 2) {
     REF_DBL *scalar;
@@ -2668,7 +2700,8 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_grid_free(iso_grid);
     ref_free(scalar);
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("write solution %s\n", out_sol);
+    if (ref_mpi_once(ref_mpi))
+      printf("write %d ldim solution %s\n", ldim, out_sol);
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, out_sol),
         "gather");
     ref_mpi_stopwatch_stop(ref_mpi, "write solution");
