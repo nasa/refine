@@ -966,12 +966,8 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
     const char *mapbc;
     mapbc = argv[pos + 1];
     if (ref_mpi_once(ref_mpi)) {
-      REF_INT i;
-      for (i = 0; i < 10; i++)
-        printf(" use --fun3d-mapbc, --fun3d no longer supported \n");
       distance_help(argv[0]);
-      for (i = 0; i < 10; i++)
-        printf(" use --fun3d-mapbc, --fun3d no longer supported \n");
+      printf(" use --fun3d-mapbc, --fun3d no longer supported \n");
       printf("reading fun3d bc map %s\n", mapbc);
       RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
           "unable to read fun3d formatted mapbc");
