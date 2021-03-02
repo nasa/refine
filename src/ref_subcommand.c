@@ -2665,12 +2665,23 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_free(field);
     ref_malloc(field, (ldim)*ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL rho;
+      REF_DBL rho, u, v, w, e_0, gamma, e_i, p;
+
       rho = overflow[0 + ldim_overflow * node];
-      field[0 + ldim * node] = overflow[0 + ldim_overflow * node];
-      for (i = 1; i < 5; i++) {
-        field[i + ldim * node] = overflow[i + ldim_overflow * node] / rho;
-      }
+      u = overflow[1 + ldim_overflow * node] / rho;
+      v = overflow[2 + ldim_overflow * node] / rho;
+      w = overflow[3 + ldim_overflow * node] / rho;
+      e_0 = overflow[4 + ldim_overflow * node] / rho;
+      gamma = overflow[5 + ldim_overflow * node];
+      e_i = e_0 - 0.5 * (u * u + v * v + w * w);
+      p = (gamma - 1.0) * rho * e_i;
+
+      field[0 + ldim * node] = rho;
+      field[1 + ldim * node] = u;
+      field[2 + ldim * node] = v;
+      field[3 + ldim * node] = w;
+      field[4 + ldim * node] = p;
+
       for (i = 5; i < ldim; i++) {
         field[i + ldim * node] = overflow[(i + 1) + ldim_overflow * node];
       }
