@@ -23,8 +23,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main(void) {
+#include "ref_mpi.h"
+
+int main(int argc, char *argv[]) {
+  REF_MPI ref_mpi;
   REF_DICT ref_dict;
+
+  RSS(ref_mpi_start(argc, argv), "start");
+  RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
   {
     REIS(REF_NULL, ref_dict_free(NULL), "dont free NULL");
@@ -172,6 +178,33 @@ int main(void) {
     RSS(ref_dict_free(deep_copy), "free");
     RSS(ref_dict_free(ref_dict), "free");
   }
+
+  { /* bcast */
+    REF_INT key, value;
+    RSS(ref_dict_create(&ref_dict), "create");
+    if (ref_mpi_once(ref_mpi)) {
+      key = 5;
+      value = 7;
+      RSS(ref_dict_store(ref_dict, key, value), "store");
+      key = 14;
+      value = 2;
+      RSS(ref_dict_store(ref_dict, key, value), "store");
+    }
+
+    RSS(ref_dict_bcast(ref_dict, ref_mpi), "bcast");
+
+    key = 5;
+    RSS(ref_dict_value(ref_dict, key, &value), "retrieve");
+    REIS(7, value, "get value");
+    key = 14;
+    RSS(ref_dict_value(ref_dict, key, &value), "retrieve");
+    REIS(2, value, "get value");
+
+    RSS(ref_dict_free(ref_dict), "free");
+  }
+
+  RSS(ref_mpi_free(ref_mpi), "mpi free");
+  RSS(ref_mpi_stop(), "stop");
 
   return 0;
 }

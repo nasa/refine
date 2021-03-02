@@ -460,9 +460,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *mapbc;
     mapbc = argv[pos + 1];
-    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
-    RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
-        "unable to read fun3d formatted mapbc");
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading fun3d bc map %s\n", mapbc);
+      RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+          "unable to read fun3d formatted mapbc");
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
   RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
@@ -470,11 +473,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *tags;
     tags = argv[pos + 1];
-    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
-    RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
-        "unable to parse viscous tags");
-    if (ref_mpi_once(ref_mpi))
+    if (ref_mpi_once(ref_mpi)) {
+      printf("parsing viscous tags\n");
+      RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+          "unable to parse viscous tags");
       printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
   RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
@@ -931,7 +936,7 @@ shutdown:
 
 static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_GRID ref_grid;
-  REF_DICT ref_dict;
+  REF_DICT ref_dict_bcs;
   REF_DBL *distance;
   char *in_mesh = NULL;
   char *out_file = NULL;
@@ -940,16 +945,19 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
   in_mesh = argv[2];
   out_file = argv[3];
 
-  RSS(ref_dict_create(&ref_dict), "create");
+  RSS(ref_dict_create(&ref_dict_bcs), "create");
 
   RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *mapbc;
     mapbc = argv[pos + 1];
-    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
-    RSS(ref_phys_read_mapbc(ref_dict, mapbc),
-        "unable to read fun3d formatted mapbc");
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading fun3d bc map %s\n", mapbc);
+      RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+          "unable to read fun3d formatted mapbc");
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
   /* delete this block when f3d uses --fun3d-mapbc */
@@ -957,9 +965,14 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *mapbc;
     mapbc = argv[pos + 1];
-    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
-    RSS(ref_phys_read_mapbc(ref_dict, mapbc),
-        "unable to read fun3d formatted mapbc");
+    if (ref_mpi_once(ref_mpi)) {
+      distance_help(argv[0]);
+      printf(" use --fun3d-mapbc, --fun3d no longer supported \n");
+      printf("reading fun3d bc map %s\n", mapbc);
+      RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+          "unable to read fun3d formatted mapbc");
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
   RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
@@ -967,14 +980,16 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *tags;
     tags = argv[pos + 1];
-    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
-    RSS(ref_dict_create(&ref_dict), "make dict");
-    RSS(ref_phys_parse_tags(ref_dict, tags), "unable to parse viscous tags");
-    if (ref_mpi_once(ref_mpi))
-      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict));
+    if (ref_mpi_once(ref_mpi)) {
+      printf("parsing viscous tags\n");
+      RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+          "unable to parse viscous tags");
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
-  if (0 == ref_dict_n(ref_dict)) {
+  if (0 == ref_dict_n(ref_dict_bcs)) {
     if (ref_mpi_once(ref_mpi))
       printf(
           "\nno solid walls specified\n"
@@ -994,7 +1009,7 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   -1.0);
-  RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
+  RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "store");
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
 
   if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
@@ -1003,7 +1018,7 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "gather");
 
   ref_free(distance);
-  ref_dict_free(ref_dict);
+  ref_dict_free(ref_dict_bcs);
   ref_grid_free(ref_grid);
 
   return REF_SUCCESS;
@@ -1682,9 +1697,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *mapbc;
     mapbc = argv[pos + 1];
-    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
-    RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
-        "unable to read fun3d formatted mapbc");
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading fun3d bc map %s\n", mapbc);
+      RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+          "unable to read fun3d formatted mapbc");
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
   RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
@@ -1692,12 +1710,13 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *tags;
     tags = argv[pos + 1];
-    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
-    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
-    RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
-        "unable to parse viscous tags");
-    if (ref_mpi_once(ref_mpi))
+    if (ref_mpi_once(ref_mpi)) {
+      printf("parsing viscous tags\n");
+      RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+          "unable to parse viscous tags");
       printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
   sprintf(filename, "%s.meshb", in_project);

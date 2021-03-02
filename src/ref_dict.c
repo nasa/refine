@@ -196,3 +196,34 @@ REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_dict_bcast(REF_DICT ref_dict, REF_MPI ref_mpi) {
+  REF_INT n;
+  REF_INT *keys, *values;
+  REF_INT i, index, key, value;
+
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+
+  if (ref_mpi_once(ref_mpi)) {
+    n = ref_dict_n(ref_dict);
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &n, 1, REF_INT_TYPE), "bcast n");
+  ref_malloc(keys, n, REF_INT);
+  ref_malloc(values, n, REF_INT);
+  if (ref_mpi_once(ref_mpi)) {
+    each_ref_dict_key_value(ref_dict, index, key, value) {
+      keys[index] = key;
+      values[index] = value;
+    }
+  }
+  RSS(ref_mpi_bcast(ref_mpi, keys, n, REF_INT_TYPE), "bcast keys");
+  RSS(ref_mpi_bcast(ref_mpi, values, n, REF_INT_TYPE), "bcast values");
+  if (!ref_mpi_once(ref_mpi)) {
+    for (i = 0; i < n; i++) {
+      RSS(ref_dict_store(ref_dict, keys[i], values[i]), "store");
+    }
+  }
+  ref_free(values);
+  ref_free(keys);
+  return REF_SUCCESS;
+}
