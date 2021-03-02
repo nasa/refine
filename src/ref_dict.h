@@ -20,6 +20,7 @@
 #define REF_DICT_H
 
 #include "ref_defs.h"
+#include "ref_mpi.h"
 
 BEGIN_C_DECLORATION
 typedef struct REF_DICT_STRUCT REF_DICT_STRUCT;
@@ -79,6 +80,9 @@ REF_BOOL ref_dict_has_value(REF_DICT ref_dict, REF_INT value);
 
 REF_STATUS ref_dict_inspect(REF_DICT ref_dict);
 REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict);
+
+REF_STATUS ref_dict_bcast(REF_DICT ref_dict, REF_MPI ref_mpi);
+
 END_C_DECLORATION
 
 #endif /* REF_DICT_H */

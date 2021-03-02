@@ -148,6 +148,7 @@ trap "cat $LOG" EXIT
 cd ${zoltan_dir}/src
 echo para-unit > $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_dict_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_interp_test >> $LOG 2>&1
@@ -162,6 +163,7 @@ mpiexec -np 2 ./ref_recon_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_search_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_subdiv_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_agents_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_dict_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_interp_test >> $LOG 2>&1
