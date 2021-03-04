@@ -1,7 +1,6 @@
 # Description
 
-`refine` is a 3D mesh adaptation framework implemented in
-the C language.
+`refine` is a 3D mesh adaptation tool implemented in the C language.
 
 # Quick Start Compile from Git Repo and Basic Usage
 
@@ -44,7 +43,7 @@ See the INSTALL file for further autoconf build instructions.
 
 ## Usage
 
-The installed `bin`-directory will include the `ref` executable.
+The installed `bin` directory will include the `ref` executable.
 Invoking `ref` with no arguments will list available subcommands.
 Help on a particular subcommand is available via a `-h`, i.e.,
 `ref adapt -h`. If MPI is provided, `refmpi` will allow for parallel
@@ -112,4 +111,21 @@ or
 mpiexec ... refmpi interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
 ```
 where the output is `receptor-field.solb`.
+
+# Description
+
+`refine` is a 2D and 3D mesh adaptation tool implemented in the C
+language.  Mesh adaptation mechanics are provided where the primary
+target is linear and curved simplex (triangle and tetrahedra)
+meshes. A limited capability to store, modify, and insert
+mixed-element types is also provided. Typical use is via an executable
+that interacts with files, and linking to a library form is also
+available. Mesh adaptation metrics can be computed by reconstructing
+gradients and Hessians from a field. Visualization files and multiple
+mesh formats can be exported. Solutions can be interpolated between
+meshes. The distance to lower-dimensional elements can be computed.
+Interfaces are available to multiple geometry sources and an internal
+surrogate geometry source. Parallel execution is supported with
+partitioning and load balancing. Solution fields are provided to
+verify the mesh adaptation process.
 
