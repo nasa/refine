@@ -43,7 +43,7 @@ See the INSTALL file for further autoconf build instructions.
 
 ## Usage
 
-The installed `bin`-directory will include the `ref` executable.
+The installed `bin` directory will include the `ref` executable.
 Invoking `ref` with no arguments will list available subcommands.
 Help on a particular subcommand is available via a `-h`, i.e.,
 `ref adapt -h`. If MPI is provided, `refmpi` will allow for parallel
