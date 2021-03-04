@@ -118,14 +118,14 @@ where the output is `receptor-field.solb`.
 language.  Mesh adaptation mechanics are provided where the primary
 target is linear and curved simplex (triangle and tetrahedra)
 meshes. A limited capability to store, modify, and insert
-mixed-element types is also provided.  Mesh adaptation metrics can be
-computed by reconstructing gradients and Hessians from a
-field. Visualization files and multiple mesh formats can be
-exported. Solutions can be interpolated between meshes. The distance
-to lower-dimensional elements can be computed.  Typical use is via an
-executable that interacts with files, and linking to a library form is
-also available.  Interfaces are available to multiple geometry sources
-and an internal surrogate geometry source. Parallel execution is
-supported with partitioning and load balancing. Solution fields are
-provided to verify the mesh adaptation process.
+mixed-element types is also provided. Typical use is via an executable
+that interacts with files, and linking to a library form is also
+available. Mesh adaptation metrics can be computed by reconstructing
+gradients and Hessians from a field. Visualization files and multiple
+mesh formats can be exported. Solutions can be interpolated between
+meshes. The distance to lower-dimensional elements can be computed.
+Interfaces are available to multiple geometry sources and an internal
+surrogate geometry source. Parallel execution is supported with
+partitioning and load balancing. Solution fields are provided to
+verify the mesh adaptation process.
 
