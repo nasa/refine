@@ -1,7 +1,6 @@
 # Description
 
-`refine` is a 3D mesh adaptation framework implemented in
-the C language.
+`refine` is a 3D mesh adaptation tool implemented in the C language.
 
 # Quick Start Compile from Git Repo and Basic Usage
 
