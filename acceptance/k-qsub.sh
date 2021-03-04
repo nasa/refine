@@ -20,6 +20,9 @@ for queue in $queues; do
     elif [[ "$queue" == "K3-"* ]]; then
 	nprocs=16
 	walltime=50
+    elif [[ "$queue" == "K3a-"* ]]; then
+	nprocs=16
+	walltime=50
     elif [[ "$queue" == "K2-"* ]]; then
 	nprocs=12
 	walltime=50
