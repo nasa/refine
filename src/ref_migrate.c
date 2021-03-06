@@ -1561,6 +1561,11 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
             "remove");
         RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm geom");
       }
+    } else {
+      /* not sure why this is needed,
+       * geom on a ghost that was removed from local? */
+      RSS(ref_geom_remove_without_cell(ref_grid, node),
+          "rm local geom without cell support");
     }
   }
   RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild");
