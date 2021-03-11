@@ -1,7 +1,6 @@
+#!/usr/bin/env bash
 
-module purge
-module load gcc/10.2
-module load mpi-hpe/mpt.2.23
+set -x
 
 ./bootstrap
 
