@@ -63,6 +63,8 @@ S2S
  tutorials
 
 split public/private ref_defs.h
+AX_APPEND_FLAG([-DHAVE_REF_CONFIG_H], [AM_CPPFLAGS])
+AC_CONFIG_HEADER([ref_config.h])
 namespace ABS, MIN, MAX
 
 ref_mpi allmin allmax
