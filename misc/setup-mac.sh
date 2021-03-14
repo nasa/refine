@@ -6,11 +6,13 @@ set -x
 
 ./bootstrap
 
-clangflags='-g -O2  -Werror -Wall -Wextra -Wpedantic -Weverything -Wno-unused-macros -Wno-unreachable-code-return -Wno-padded -Wno-covered-switch-default -Wno-reserved-id-macro -Wno-documentation-unknown-command'
+clangflags='-g -O2  -Werror -Wall -Wextra -Wpedantic -Weverything -Wno-unused-macros -Wno-unreachable-code-return -Wno-padded -Wno-covered-switch-default -Wno-reserved-id-macro -Wno-documentation-unknown-command -Wno-poison-system-directories'
 # -Wno-padded ref_mpi struct
 # -Wno-covered-switch-default allow default on ENUM case
 # -Wno-reserved-id-macro egads.h uses reserved macro names
 # -Wdocumentation-unknown-command meshlink Types.h
+# -Wno-poison-system-directories '/usr/local/include'
+#    is unsafe for cross-compilation and I'm not cross-compiling
 
 gcc9flags='-g -O2 -Werror -pedantic-errors -Wall -Wextra -Wunused -Wuninitialized -Wconversion'
 
