@@ -905,6 +905,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       }
       ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
     } else {
+      if (ref_mpi_once(ref_mpi))
       printf("mesher '%s' not implemented\n", mesher);
       goto shutdown;
     }
@@ -913,7 +914,16 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_split_edge_geometry(ref_grid), "split geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
   } else {
-    ref_grid_twod(ref_grid) = REF_TRUE; /* assume flat facebody */
+    REF_BOOL flat;
+    RSS(ref_egads_twod_flat_z(ref_grid_geom(ref_grid), &flat), "flatness");
+    ref_grid_twod(ref_grid) = flat;
+    if (ref_mpi_once(ref_mpi)) {
+      if(ref_grid_twod(ref_grid)){
+	printf(" 2D mode inferred from model flatness\n");
+      }else{
+	printf(" model curved, assume 3D surface\n");
+      }
+    }
   }
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
 
