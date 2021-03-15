@@ -42,23 +42,22 @@ int main(void) {
   /* Success returns the old output level. (0-silent to 3-debug) */
   is_true(EG_setOutLevel(context, 2) >= 0, "make verbose");
 
-    is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, "face30.egads", &model), "EG load");
+  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, "face30.egads", &model),
+           "EG load");
 
-    /* entry point NOT in egads.h */
-    int EG_exportModel(ego mobject, size_t * nbytes, char *stream[]);
+  /* entry point NOT in egads.h */
+  int EG_exportModel(ego mobject, size_t * nbytes, char *stream[]);
 
-    is_equal(EGADS_SUCCESS, EG_exportModel(model, &cad_data_size, &cad_data),
-	     "EG stream");
-    {
-      FILE *file;
-      file = fopen("face30-export.bin", "w");
-      if (NULL == (void *)file) printf("unable to open file\n");
-    is_equal(cad_data_size,
-         fwrite(cad_data, sizeof(char),
-                cad_data_size, file),
-         "write egadslite data");
+  is_equal(EGADS_SUCCESS, EG_exportModel(model, &cad_data_size, &cad_data),
+           "EG stream");
+  {
+    FILE *file;
+    file = fopen("face30-export.bin", "w");
+    if (NULL == (void *)file) printf("unable to open file\n");
+    is_equal(cad_data_size, fwrite(cad_data, sizeof(char), cad_data_size, file),
+             "write egadslite data");
     fclose(file);
-    }
+  }
   {
     ego geom, *children, body, *faces;
     int oclass, mtype, nchild, *senses;
@@ -68,12 +67,12 @@ int main(void) {
                             &children, &senses),
              "EG topo bodies");
     printf("oclass %d mtype %d nchild %d\n", oclass, mtype, nchild);
-is_equal(1, nchild, "expected 1 body");
- body = children[0];
-     is_equal(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, FACE, &nface, &faces),
+    is_equal(1, nchild, "expected 1 body");
+    body = children[0];
+    is_equal(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, FACE, &nface, &faces),
              "EG face topo");
     printf("effective nface %d\n", nface);
- EG_free(faces);
+    EG_free(faces);
   }
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
