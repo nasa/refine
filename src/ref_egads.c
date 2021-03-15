@@ -2267,6 +2267,30 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
 #endif
 }
 
+REF_STATUS ref_egads_twod_flat_z(REF_GEOM ref_geom, REF_BOOL *flat) {
+#ifdef HAVE_EGADS
+  ego object;
+  double box[6];
+  REF_DBL diag, dz, flat_tol = 1.0e5;
+
+  object = (ego)(ref_geom->body);
+  RNS(object, "EGADS body object is NULL. Has the geometry been loaded?");
+
+  REIS(EGADS_SUCCESS, EG_getBoundingBox(object, box), "EG bounding box");
+  diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+              (box[1] - box[4]) * (box[1] - box[4]));
+  dz = sqrt((box[2] - box[5]) * (box[2] - box[5]));
+  *flat = (diag > flat_tol * dz);
+
+#else
+  printf("returning REF_FALSE from %s, No EGADS\n", __func__);
+  *flat = REF_FALSE;
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+#endif
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
 #ifdef HAVE_EGADS
   ego object;
