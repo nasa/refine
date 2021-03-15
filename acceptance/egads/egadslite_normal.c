@@ -1,10 +1,10 @@
 /*
 
 gcc  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
--I${HOME}/local/pkgs/EGADS/trunk/include -o egads_normal \
-egads_normal.c -Wl,-rpath,${HOME}/local/pkgs/EGADS/trunk/lib \
--L${HOME}/local/pkgs/EGADS/trunk/lib -legads -lm \
-&& ./egads_normal
+-I${HOME}/local/pkgs/EGADS/trunk/include -o egadslite_normal \
+egadslite_normal.c -Wl,-rpath,${HOME}/local/pkgs/EGADS/trunk/lib \
+-L${HOME}/local/pkgs/EGADS/trunk/lib -legadslite -lm \
+&& ./egadslite_normal
 
 */
 
@@ -43,23 +43,22 @@ int main(void) {
   /* Success returns the old output level. (0-silent to 3-debug) */
   is_true(EG_setOutLevel(context, 2) >= 0, "make verbose");
 
-  is_equal(EGADS_SUCCESS, EG_loadModel(context, 0, "face30.egads", &model),
-           "EG load");
-
   /* entry point NOT in egads.h */
-  int EG_exportModel(ego mobject, size_t * nbytes, char *stream[]);
-
-  is_equal(EGADS_SUCCESS, EG_exportModel(model, &cad_data_size, &cad_data),
-           "EG stream");
+  int EG_importModel(egObject * context, const size_t nbytes,
+                     const char stream[], egObject **model);
   {
     FILE *file;
-    file = fopen("face30-export.bin", "w");
+    file = fopen("face30-export.bin", "r");
     if (NULL == (void *)file) printf("unable to open file\n");
-    is_equal(1, fwrite(&cad_data_size, sizeof(size_t), 1, file),
-             "write egadslite data size");
-    is_equal(cad_data_size, fwrite(cad_data, sizeof(char), cad_data_size, file),
-             "write egadslite data");
+    is_equal(1, fread(&cad_data_size, sizeof(size_t), 1, file), "size_t");
+    cad_data = (char *)malloc(cad_data_size * sizeof(char));
+    is_equal(cad_data_size, fread(cad_data, sizeof(char), cad_data_size, file),
+             "read egadslite data");
     fclose(file);
+    is_equal(EGADS_SUCCESS,
+             EG_importModel(context, cad_data_size, cad_data, &model),
+             "import");
+    free(cad_data);
   }
   {
     ego geom, *children, body, *faces;
