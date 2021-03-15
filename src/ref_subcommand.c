@@ -906,7 +906,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
     } else {
       if (ref_mpi_once(ref_mpi))
-      printf("mesher '%s' not implemented\n", mesher);
+        printf("mesher '%s' not implemented\n", mesher);
       goto shutdown;
     }
     ref_grid_surf(ref_grid) = REF_FALSE; /* needed until vol mesher para */
@@ -918,10 +918,10 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_egads_twod_flat_z(ref_grid_geom(ref_grid), &flat), "flatness");
     ref_grid_twod(ref_grid) = flat;
     if (ref_mpi_once(ref_mpi)) {
-      if(ref_grid_twod(ref_grid)){
-	printf(" 2D mode inferred from model flatness\n");
-      }else{
-	printf(" model curved, assume 3D surface\n");
+      if (ref_grid_twod(ref_grid)) {
+        printf(" 2D mode inferred from model flatness\n");
+      } else {
+        printf(" model curved, assume 3D surface\n");
       }
     }
   }
@@ -1286,10 +1286,12 @@ static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT node;
   REF_DBL gamma = 1.4;
+  REF_BOOL recognized = REF_FALSE;
 
   RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
   if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
   if (strcmp(interpolant, "incomp") == 0) {
+    recognized = REF_TRUE;
     RAS(4 <= ldim,
         "expected 4 or more variables per vertex for incompressible");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -1327,20 +1329,40 @@ static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
                u, v, w, press, temp);
       });
       if (strcmp(interpolant, "mach") == 0) {
+        recognized = REF_TRUE;
         scalar[node] = sqrt(mach2);
       } else if (strcmp(interpolant, "htot") == 0) {
+        recognized = REF_TRUE;
         scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
       } else if (strcmp(interpolant, "pressure") == 0) {
+        recognized = REF_TRUE;
         scalar[node] = press;
       } else if (strcmp(interpolant, "density") == 0) {
+        recognized = REF_TRUE;
         scalar[node] = rho;
       } else if (strcmp(interpolant, "temperature") == 0) {
+        recognized = REF_TRUE;
         scalar[node] = temp;
-      } else {
-        RSS(REF_INVALID, "unknown scalar interpolant");
       }
     }
-    ref_mpi_stopwatch_stop(ref_mpi, "compute compressible scalar");
+    if (recognized)
+      ref_mpi_stopwatch_stop(ref_mpi, "compute compressible scalar");
+  }
+
+  if (!recognized) {
+    REF_INT solb_ldim;
+    REF_DBL *solb_scalar;
+    if (ref_mpi_once(ref_mpi))
+      printf("--interpolant %s unknown, attempting to open as solb\n",
+             interpolant);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &solb_ldim, &solb_scalar,
+                        interpolant),
+        "unable to load interpolant scalar");
+    REIS(1, solb_ldim, "expected one interpolant scalar");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = solb_scalar[node];
+    }
+    ref_free(solb_scalar);
   }
 
   return REF_SUCCESS;
