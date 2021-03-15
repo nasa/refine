@@ -61,7 +61,8 @@ int main(void) {
   {
     ego geom, *children, body, *faces;
     int oclass, mtype, nchild, *senses;
-    int nface;
+    int nface, i;
+    double params[2], eval[18];
     is_equal(EGADS_SUCCESS,
              EG_getTopology(model, &geom, &oclass, &mtype, NULL, &nchild,
                             &children, &senses),
@@ -72,6 +73,12 @@ int main(void) {
     is_equal(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, FACE, &nface, &faces),
              "EG face topo");
     printf("effective nface %d\n", nface);
+    params[0] = 0.666908;
+    params[1] = 0.977339;
+    is_equal(EGADS_SUCCESS, EG_evaluate(faces[0], params, eval), "eval");
+    for (i = 0; i < 18; i++) {
+      printf("%d %f\n", i, eval[i]);
+    }
     EG_free(faces);
   }
 
