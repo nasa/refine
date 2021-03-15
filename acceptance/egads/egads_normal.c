@@ -54,6 +54,8 @@ int main(void) {
     FILE *file;
     file = fopen("face30-export.bin", "w");
     if (NULL == (void *)file) printf("unable to open file\n");
+    is_equal(1, fwrite(&cad_data_size, sizeof(size_t), 1, file),
+             "write egadslite data size");
     is_equal(cad_data_size, fwrite(cad_data, sizeof(char), cad_data_size, file),
              "write egadslite data");
     fclose(file);
