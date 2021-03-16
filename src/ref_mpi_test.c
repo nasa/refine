@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
   {
     REF_INT part;
     REF_INT magic = 42;
-    REF_INT n = 692083;
+    REF_INT n = 17;
     REF_INT *a, *b;
     REF_INT *a_size, *b_size;
     REF_INT i;
