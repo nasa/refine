@@ -92,6 +92,8 @@ int main(int argc, char *argv[]) {
 
     ref_free(b_size);
     ref_free(a_size);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "alltoall");
   }
 
   /* alltoallv */
@@ -127,6 +129,8 @@ int main(int argc, char *argv[]) {
     ref_free(a);
     ref_free(b_size);
     ref_free(a_size);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "alltoallv");
   }
 
   /* allconcat */
@@ -160,6 +164,8 @@ int main(int argc, char *argv[]) {
     ref_free(together);
     ref_free(source);
     ref_free(separate);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "alltoall");
   }
 
   /* allminwho, one per rank */
@@ -205,6 +211,8 @@ int main(int argc, char *argv[]) {
 
     ref_free(who);
     ref_free(val);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "allwho");
   }
 
   /* blindsend int with 0,0 */
@@ -286,6 +294,8 @@ int main(int argc, char *argv[]) {
     ref_free(recv);
     ref_free(send);
     ref_free(proc);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "blind send");
   }
 
   /* split */
@@ -508,6 +518,8 @@ int main(int argc, char *argv[]) {
     }
     ref_free(balanced);
     ref_free(items);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "balance");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
