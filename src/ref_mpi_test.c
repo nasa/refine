@@ -92,6 +92,45 @@ int main(int argc, char *argv[]) {
 
     ref_free(b_size);
     ref_free(a_size);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "alltoall");
+  }
+
+  /* alltoallv */
+  if (ref_mpi_para(ref_mpi)) {
+    REF_INT part;
+    REF_INT magic = 42;
+    REF_INT n = 17;
+    REF_INT *a, *b;
+    REF_INT *a_size, *b_size;
+    REF_INT i;
+
+    ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, n);
+    ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, n);
+    ref_malloc_init(a, n * ref_mpi_n(ref_mpi), REF_INT, magic);
+    ref_malloc_init(b, n * ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
+
+    RSS(ref_mpi_alltoallv(ref_mpi, a, a_size, b, b_size, 1, REF_INT_TYPE),
+        "alltoall sizes");
+
+    each_ref_mpi_part(ref_mpi, part) {
+      REIS(n, a_size[part], "a_size changed");
+    }
+    each_ref_mpi_part(ref_mpi, part) {
+      REIS(n, b_size[part], "b_size changed");
+    }
+
+    for (i = 0; i < n * ref_mpi_n(ref_mpi); i++) {
+      REIS(magic, a[part], "b wrong");
+      REIS(magic, b[part], "b wrong");
+    }
+
+    ref_free(b);
+    ref_free(a);
+    ref_free(b_size);
+    ref_free(a_size);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "alltoallv");
   }
 
   /* allconcat */
@@ -125,6 +164,8 @@ int main(int argc, char *argv[]) {
     ref_free(together);
     ref_free(source);
     ref_free(separate);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "allconcat");
   }
 
   /* allminwho, one per rank */
@@ -170,6 +211,8 @@ int main(int argc, char *argv[]) {
 
     ref_free(who);
     ref_free(val);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "allwho");
   }
 
   /* blindsend int with 0,0 */
@@ -251,6 +294,8 @@ int main(int argc, char *argv[]) {
     ref_free(recv);
     ref_free(send);
     ref_free(proc);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "blind send");
   }
 
   /* split */
@@ -473,6 +518,8 @@ int main(int argc, char *argv[]) {
     }
     ref_free(balanced);
     ref_free(items);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "balance");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
