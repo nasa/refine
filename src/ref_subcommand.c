@@ -1307,7 +1307,12 @@ static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
       scalar[node] = sqrt(u2);
     }
     ref_mpi_stopwatch_stop(ref_mpi, "compute incompressible scalar");
-  } else {
+  }
+  if ((strcmp(interpolant, "mach") == 0) ||
+      (strcmp(interpolant, "htot") == 0) ||
+      (strcmp(interpolant, "pressure") == 0) ||
+      (strcmp(interpolant, "density") == 0) ||
+      (strcmp(interpolant, "temperature") == 0)) {
     RAS(5 <= ldim, "expected 5 or more variables per vertex for compressible");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL rho, u, v, w, press, temp, u2, mach2;
