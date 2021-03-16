@@ -190,9 +190,12 @@ static void loop_help(const char *name) {
   printf("       <first_timestep> <timestep_increment> <last_timestep>\n");
   printf("       where <input_project_name><middle-string>N.solb are\n");
   printf("       scalar fields and N is the timestep index.\n");
-  printf("   --interpolant <type> multiscale scalar field.\n");
-  printf("       mach (default), incomp (incompressible vel magnitude),\n");
-  printf("       htot, pressure, density, temperature.\n");
+  printf("   --interpolant <type or file.solb> multiscale scalar field.\n");
+  printf(
+      "       Type is mach (default), "
+      "incomp (incompressible vel magnitude),\n");
+  printf("       htot, pressure, density, or temperature.\n");
+  printf("       Read from file.solb, if not a recognized type.\n");
   printf("   --export-metric writes <input_project_name>-metric.solb.\n");
   printf("   --opt-goal metric of Loseille et al. AIAA 2007--4186.\n");
   printf("        Include flow and adjoint information in volume.solb.\n");
