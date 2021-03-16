@@ -1356,8 +1356,7 @@ static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
     REF_INT solb_ldim;
     REF_DBL *solb_scalar;
     if (ref_mpi_once(ref_mpi))
-      printf("--interpolant %s unknown, attempting to open as solb\n",
-             interpolant);
+      printf("opening %s as solb multiscale interpolant\n", interpolant);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &solb_ldim, &solb_scalar,
                         interpolant),
         "unable to load interpolant scalar");
