@@ -1366,6 +1366,7 @@ static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
       scalar[node] = solb_scalar[node];
     }
     ref_free(solb_scalar);
+    ref_mpi_stopwatch_stop(ref_mpi, "read interpolant from file");
   }
 
   return REF_SUCCESS;
