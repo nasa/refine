@@ -44,10 +44,10 @@ mv ringleb-vol.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01 1000
 adapt_cycle cycle01 cycle02 1000
-adapt_cycle cycle02 cycle03 2000
-adapt_cycle cycle03 cycle04 2000
-adapt_cycle cycle04 cycle05 4000
-adapt_cycle cycle05 cycle06 4000
+adapt_cycle cycle02 cycle03 1000
+adapt_cycle cycle03 cycle04 1000
+adapt_cycle cycle04 cycle05 1000
+adapt_cycle cycle05 cycle06 1000
 
 ../../check.rb cycle05-loop.txt 0.2 2.0
 
