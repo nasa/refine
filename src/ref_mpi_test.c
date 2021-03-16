@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
   }
 
   /* alltoallv */
-  {
+  if (ref_mpi_para(ref_mpi)) {
     REF_INT part;
     REF_INT magic = 42;
     REF_INT n = 17;
@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
     ref_free(source);
     ref_free(separate);
 
-    ref_mpi_stopwatch_stop(ref_mpi, "alltoall");
+    ref_mpi_stopwatch_stop(ref_mpi, "allconcat");
   }
 
   /* allminwho, one per rank */
