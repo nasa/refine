@@ -329,6 +329,12 @@ cd ${source_dir}/acceptance/facebody/ringleb-opt-goal
 ( ./accept-facebody-ringleb-opt-goal.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-facebody-ringleb-solb-interp
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/facebody/ringleb-solb-interp
+( ./accept-facebody-ringleb-solb-interp.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-3d-linear
