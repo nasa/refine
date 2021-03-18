@@ -493,10 +493,12 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
   REF_INT *recv_size_n;
   REF_INT part;
 
-  if (ref_mpi_native_alltoallv(ref_mpi))
+  if (ref_mpi_native_alltoallv(ref_mpi)) {
     RSS(ref_mpi_alltoallv_native(ref_mpi, send, send_size, recv, recv_size, n,
                                  type),
         "ref_mpi_alltoallv_native");
+    return REF_SUCCESS;
+  }
 
   ref_type_mpi_type(type, datatype);
 
