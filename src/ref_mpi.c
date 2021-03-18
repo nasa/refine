@@ -80,6 +80,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
   ref_mpi->first_time = ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC);
   ref_mpi->start_time = ref_mpi->first_time;
 
+  ref_mpi->native_alltoallv = REF_TRUE;
   ref_mpi->debug = REF_FALSE;
 
 #ifdef HAVE_MPI
@@ -191,6 +192,7 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
   ref_mpi->start_time = original->start_time;
 
   ref_mpi->debug = original->debug;
+  ref_mpi->native_alltoallv = original->native_alltoallv;
 
   return REF_SUCCESS;
 }
@@ -490,6 +492,11 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
   REF_INT *send_size_n;
   REF_INT *recv_size_n;
   REF_INT part;
+
+  if (ref_mpi_native_alltoallv(ref_mpi))
+    RSS(ref_mpi_alltoallv_native(ref_mpi, send, send_size, recv, recv_size, n,
+                                 type),
+        "ref_mpi_alltoallv_native");
 
   ref_type_mpi_type(type, datatype);
 
