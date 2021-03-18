@@ -945,6 +945,7 @@ static REF_STATUS ref_migrate_parmetis_subset(
   PARM_INT *deg, *newdeg;
   REF_MPI split_mpi;
   REF_TYPE parm_type;
+  REF_BOOL debug = REF_FALSE;
   RSS(ref_mpi_int_size_type(sizeof(PARM_INT), &parm_type), "calc parm_type");
 
   ntotal = vtxdist[ref_mpi_n(ref_mpi)];
@@ -966,6 +967,7 @@ static REF_STATUS ref_migrate_parmetis_subset(
   nold = (REF_INT)(vtxdist[1 + ref_mpi_rank(ref_mpi)] -
                    vtxdist[ref_mpi_rank(ref_mpi)]);
   nnew = (REF_INT)(vtx[1 + ref_mpi_rank(ref_mpi)] - vtx[ref_mpi_rank(ref_mpi)]);
+  if (debug) printf("%d: nold %d nnew %d\n", ref_mpi_rank(ref_mpi), nold, nnew);
   ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
   ref_malloc_init(xadj, nnew + 1, PARM_INT, 0);
   ref_malloc_init(deg, nold, PARM_INT, 0);
