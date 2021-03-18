@@ -7,7 +7,7 @@ set -x
 module_path="/swbuild/fun3d/shared/fun3d_users/modules"
 egads_path="${module_path}/ESP/119-beta.2021.03.05.1211/EngSketchPad"
 occ_path="${module_path}/ESP/119-beta.2021.03.05.1211/OpenCASCADE-7.3.1"
-parmetis_path="/nasa/parmetis/4.0.3-sles12"
+parmetis_path="/swbuild/fun3d/shared/fun3d_users/sles15/test_modules/ParMETIS-64/4.0.3_mpt-2.23_ifort-2018.3.222"
 
 mpi_path="/nasa/hpe/mpt/2.23_sles15_patch11654"
 
@@ -21,6 +21,7 @@ mkdir -p rome
     --with-OpenCASCADE=${occ_path} \
     --with-mpi=${mpi_path} \
     --with-parmetis=${parmetis_path} \
+    --with-metis=${parmetis_path} \
     CFLAGS="${gcc_flags}" \
     ) \
     || exit
