@@ -86,6 +86,10 @@ REF_STATUS ref_mpi_recv(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
 
 REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
                             REF_TYPE type);
+REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
+                                    REF_INT *send_size, void *recv,
+                                    REF_INT *recv_size, REF_INT n,
+                                    REF_TYPE type);
 REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
                              void *recv, REF_INT *recv_size, REF_INT n,
                              REF_TYPE type);
