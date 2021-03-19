@@ -370,19 +370,42 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "cleanup");
   }
 
-  if (!ref_mpi_para(ref_mpi) && !ref_mpi_once(ref_mpi)) { /* INOP extrude */
-    REF_GRID twod_grid, ref_grid, tet_grid;
+  if (!ref_mpi_para(ref_mpi)) {
+    REF_GRID twod_grid, ref_grid;
+    REF_BOOL twod_brick_wound_correctly = REF_FALSE;
     RSS(ref_fixture_twod_brick_grid(&twod_grid, ref_mpi, 4), "2d");
-    RSS(ref_grid_extrude_twod(&ref_grid, twod_grid), "extrude");
+    RSS(ref_grid_extrude_twod(&ref_grid, twod_grid, 2), "extrude");
 
     RSS(ref_validation_all(ref_grid), "pri val");
 
-    RSS(ref_grid_deep_copy(&tet_grid, ref_grid), "deep copy");
-    RSS(ref_shard_prism_into_tet(tet_grid, 0, REF_EMPTY), "shard to tet");
+    if (twod_brick_wound_correctly) {
+      REF_GRID tet_grid;
+      RSS(ref_grid_deep_copy(&tet_grid, ref_grid), "deep copy");
+      RSS(ref_shard_prism_into_tet(tet_grid, 0, REF_EMPTY), "shard to tet");
+      RSS(ref_validation_all(ref_grid), "pri val");
+      RSS(ref_grid_free(tet_grid), "cleanup");
+    }
 
-    RSS(ref_validation_all(tet_grid), "tet val unit_z");
+    RSS(ref_grid_free(ref_grid), "cleanup");
+    RSS(ref_grid_free(twod_grid), "cleanup");
+  }
 
-    RSS(ref_grid_free(tet_grid), "cleanup");
+  if (!ref_mpi_para(ref_mpi)) {
+    REF_GRID twod_grid, ref_grid;
+    REF_BOOL twod_brick_wound_correctly = REF_FALSE;
+    RSS(ref_fixture_twod_brick_grid(&twod_grid, ref_mpi, 4), "2d");
+    RSS(ref_grid_extrude_twod(&ref_grid, twod_grid, 5), "extrude");
+
+    RSS(ref_validation_all(ref_grid), "pri val");
+
+    if (twod_brick_wound_correctly) {
+      REF_GRID tet_grid;
+      RSS(ref_grid_deep_copy(&tet_grid, ref_grid), "deep copy");
+      RSS(ref_shard_prism_into_tet(tet_grid, 0, REF_EMPTY), "shard to tet");
+      RSS(ref_validation_all(ref_grid), "pri val");
+      RSS(ref_grid_free(tet_grid), "cleanup");
+    }
+
     RSS(ref_grid_free(ref_grid), "cleanup");
     RSS(ref_grid_free(twod_grid), "cleanup");
   }

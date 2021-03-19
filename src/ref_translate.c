@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(argv[pos], "--extrude") == 0) {
       REF_GRID twod_grid = ref_grid;
-      RSS(ref_grid_extrude_twod(&ref_grid, twod_grid), "extrude");
+      RSS(ref_grid_extrude_twod(&ref_grid, twod_grid, 2), "extrude");
       RSS(ref_grid_free(twod_grid), "free");
     }
     pos++;

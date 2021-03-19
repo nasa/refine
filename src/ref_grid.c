@@ -908,43 +908,40 @@ REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tet,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
+REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid,
+                                 REF_INT n_planes) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_NODE twod_node = ref_grid_node(twod_grid);
-  REF_INT node, new_node;
-  REF_INT offset;
+  REF_INT plane, node, new_node;
+  REF_INT offset, offset0, offset1;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell;
   REF_INT max_faceid, faceid1, faceid2;
+  REF_GLOB global_offset;
+  REF_DBL y;
   *extruded_grid = NULL;
   RAS(ref_grid_twod(twod_grid), "require twod grid input");
   RSS(ref_grid_create(extruded_grid, ref_grid_mpi(twod_grid)), "create grid");
   ref_grid = *extruded_grid;
   ref_node = ref_grid_node(ref_grid);
 
-  each_ref_node_valid_node(twod_node, node) {
-    RSS(ref_node_add(ref_node, ref_node_global(twod_node, node), &new_node),
-        "add node in plane");
-    ref_node_part(ref_node, new_node) = ref_node_part(twod_node, node);
-    ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(twod_node, 0, node);
-    ref_node_xyz(ref_node, 1, new_node) = 0.0;
-    ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(twod_node, 1, node);
+  global_offset = 0;
+  for (plane = 0; plane < n_planes; plane++) {
+    y = (REF_DBL)plane / (REF_DBL)(n_planes - 1);
+    each_ref_node_valid_node(twod_node, node) {
+      RSS(ref_node_add(ref_node,
+                       ref_node_global(twod_node, node) + global_offset,
+                       &new_node),
+          "add node in plane");
+      ref_node_part(ref_node, new_node) = ref_node_part(twod_node, node);
+      ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(twod_node, 0, node);
+      ref_node_xyz(ref_node, 1, new_node) = y;
+      ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(twod_node, 1, node);
+    }
+    global_offset += ref_node_n_global(twod_node);
   }
-  offset = ref_node_n(ref_node);
-  each_ref_node_valid_node(twod_node, node) {
-    RSS(ref_node_add(
-            ref_node,
-            ref_node_n_global(twod_node) + ref_node_global(twod_node, node),
-            &new_node),
-        "add node out of plane");
-    ref_node_part(ref_node, new_node) = ref_node_part(twod_node, node);
-    ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(twod_node, 0, node);
-    ref_node_xyz(ref_node, 1, new_node) = 1.0;
-    ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(twod_node, 1, node);
-  }
-  RSS(ref_node_initialize_n_global(ref_node, 2 * ref_node_n_global(twod_node)),
-      "init glob");
+  RSS(ref_node_initialize_n_global(ref_node, global_offset), "init glob");
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(twod_grid), cell, nodes) {
     /* use triangle to orient edge correctly */
@@ -974,12 +971,17 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
       node0 = tri_nodes[2];
       node1 = tri_nodes[0];
     }
-    new_nodes[0] = node1;
-    new_nodes[1] = node0;
-    new_nodes[2] = node0 + offset;
-    new_nodes[3] = node1 + offset;
-    new_nodes[4] = nodes[2];
-    RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell), "boundary");
+    for (plane = 0; plane < n_planes - 1; plane++) {
+      offset0 = (0 + plane) * ref_node_n(twod_node);
+      offset1 = (1 + plane) * ref_node_n(twod_node);
+      new_nodes[0] = node1 + offset0;
+      new_nodes[1] = node0 + offset0;
+      new_nodes[2] = node0 + offset1;
+      new_nodes[3] = node1 + offset1;
+      new_nodes[4] = nodes[2];
+      RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell),
+          "boundary");
+    }
   }
 
   /* find two unused faceids for the symmetry planes */
@@ -995,6 +997,7 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   faceid1 = max_faceid + 1;
   faceid2 = max_faceid + 2;
 
+  offset = (n_planes - 1) * ref_node_n(twod_node);
   each_ref_cell_valid_cell_with_nodes(ref_grid_tri(twod_grid), cell, nodes) {
     new_nodes[0] = nodes[0];
     new_nodes[1] = nodes[1];
@@ -1006,15 +1009,21 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
     new_nodes[2] = nodes[1] + offset;
     new_nodes[3] = faceid2;
     RSS(ref_cell_add(ref_grid_tri(ref_grid), new_nodes, &new_cell), "boundary");
-    new_nodes[0] = nodes[0];
-    new_nodes[1] = nodes[1];
-    new_nodes[2] = nodes[2];
-    new_nodes[3] = nodes[0] + offset;
-    new_nodes[4] = nodes[1] + offset;
-    new_nodes[5] = nodes[2] + offset;
-    RSS(ref_cell_add(ref_grid_pri(ref_grid), new_nodes, &new_cell), "boundary");
+    for (plane = 0; plane < n_planes - 1; plane++) {
+      offset0 = (0 + plane) * ref_node_n(twod_node);
+      offset1 = (1 + plane) * ref_node_n(twod_node);
+      new_nodes[0] = nodes[0] + offset0;
+      new_nodes[1] = nodes[1] + offset0;
+      new_nodes[2] = nodes[2] + offset0;
+      new_nodes[3] = nodes[0] + offset1;
+      new_nodes[4] = nodes[1] + offset1;
+      new_nodes[5] = nodes[2] + offset1;
+      RSS(ref_cell_add(ref_grid_pri(ref_grid), new_nodes, &new_cell),
+          "interior");
+    }
   }
 
+  offset = (n_planes - 1) * ref_node_n(twod_node);
   each_ref_cell_valid_cell_with_nodes(ref_grid_qua(twod_grid), cell, nodes) {
     new_nodes[0] = nodes[3];
     new_nodes[1] = nodes[2];
@@ -1028,15 +1037,20 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
     new_nodes[3] = nodes[3] + offset;
     new_nodes[4] = faceid2;
     RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell), "boundary");
-    new_nodes[0] = nodes[0] + offset;
-    new_nodes[1] = nodes[1] + offset;
-    new_nodes[2] = nodes[2] + offset;
-    new_nodes[3] = nodes[3] + offset;
-    new_nodes[4] = nodes[0];
-    new_nodes[5] = nodes[1];
-    new_nodes[6] = nodes[2];
-    new_nodes[7] = nodes[3];
-    RSS(ref_cell_add(ref_grid_hex(ref_grid), new_nodes, &new_cell), "boundary");
+    for (plane = 0; plane < n_planes - 1; plane++) {
+      offset0 = (0 + plane) * ref_node_n(twod_node);
+      offset1 = (1 + plane) * ref_node_n(twod_node);
+      new_nodes[0] = nodes[0] + offset1;
+      new_nodes[1] = nodes[1] + offset1;
+      new_nodes[2] = nodes[2] + offset1;
+      new_nodes[3] = nodes[3] + offset1;
+      new_nodes[4] = nodes[0] + offset0;
+      new_nodes[5] = nodes[1] + offset0;
+      new_nodes[6] = nodes[2] + offset0;
+      new_nodes[7] = nodes[3] + offset0;
+      RSS(ref_cell_add(ref_grid_hex(ref_grid), new_nodes, &new_cell),
+          "boundary");
+    }
   }
 
   return REF_SUCCESS;
