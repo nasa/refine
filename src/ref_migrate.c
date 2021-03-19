@@ -1010,8 +1010,8 @@ static REF_STATUS ref_migrate_parmetis_subset(
   }
   if (debug && nold > 0 && nnew > 0) {
     printf("%d: deg[0] %d deg[nold-1] %d newdeg[0] %d newdeg[nnew-1] %d\n",
-           ref_mpi_rank(ref_mpi), deg[0], deg[nold - 1], newdeg[0],
-           newdeg[nnew - 1]);
+           ref_mpi_rank(ref_mpi), (REF_INT)deg[0], (REF_INT)deg[nold - 1],
+           (REF_INT)newdeg[0], (REF_INT)newdeg[nnew - 1]);
   }
   ref_free(newdeg);
   ref_free(deg);
