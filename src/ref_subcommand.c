@@ -255,6 +255,7 @@ static void translate_help(const char *name) {
   printf("  options:\n");
   printf("   --extrude a 2D mesh to single layer of prisms.\n");
   printf("       extrusion added implicitly for ugrid output files\n");
+  printf("   --planes <N> extrude a 2D mesh to N layers of prisms.\n");
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
   printf("\n");
 }
@@ -2593,6 +2594,30 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_grid_free(twod_grid), "free");
   }
 
+  RXS(ref_args_find(argc, argv, "--planes", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && extrude) {
+    if (ref_mpi_once(ref_mpi)) printf("--extrude and --planes exclusive\n");
+    goto shutdown;
+  }
+  if (REF_EMPTY != pos) {
+    REF_GRID twod_grid = ref_grid;
+    REF_INT n_planes;
+    if (pos + 1 >= argc) {
+      if (ref_mpi_once(ref_mpi)) printf("--planes missing N\n");
+      goto shutdown;
+    }
+    n_planes = atoi(argv[pos + 1]);
+    if (n_planes < 2) {
+      if (ref_mpi_once(ref_mpi))
+        printf("--planes %d must be 2 or more\n", n_planes);
+      goto shutdown;
+    }
+    if (ref_mpi_once(ref_mpi))
+      printf("extrude %d layers of prisms\n", n_planes);
+    RSS(ref_grid_extrude_twod(&ref_grid, twod_grid, n_planes), "extrude");
+    RSS(ref_grid_free(twod_grid), "free");
+  }
+
   RXS(ref_args_find(argc, argv, "--zero-y-face", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
@@ -2600,7 +2625,10 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_CELL ref_cell;
     REF_NODE ref_node = ref_grid_node(ref_grid);
     REF_INT faceid, group, cell, node, nodes[REF_CELL_MAX_SIZE_PER];
-    if (pos + 1 >= argc) goto shutdown;
+    if (pos + 1 >= argc) {
+      if (ref_mpi_once(ref_mpi)) printf("--zero-y-face missing faceid\n");
+      goto shutdown;
+    }
     faceid = atoi(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi)) printf("zero y of face %d\n", faceid);
     deviation = 0.0;
