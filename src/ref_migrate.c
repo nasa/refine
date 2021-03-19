@@ -985,6 +985,18 @@ static REF_STATUS ref_migrate_parmetis_subset(
     n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
     recv_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
+  if (debug) {
+    for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+      if (send_size[proc] > 0)
+        printf("%d: send %d to %d\n", ref_mpi_rank(ref_mpi), send_size[proc],
+               proc);
+    }
+    for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+      if (recv_size[proc] > 0)
+        printf("%d: recv %d from %d\n", ref_mpi_rank(ref_mpi), recv_size[proc],
+               proc);
+    }
+  }
   RSS(ref_mpi_alltoallv(ref_mpi, deg, send_size, newdeg, recv_size, 1,
                         REF_INT_TYPE),
       "alltoallv degree");
