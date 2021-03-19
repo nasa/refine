@@ -942,7 +942,7 @@ static REF_STATUS ref_migrate_parmetis_subset(
   PARM_INT ntotal;
   PARM_INT n0, n1;
   PARM_INT *vtx, *xadj, *adjncy, *adjwgt, *part;
-  PARM_INT *deg, *newdeg;
+  REF_INT *deg, *newdeg;
   REF_MPI split_mpi;
   REF_TYPE parm_type;
   REF_BOOL debug = REF_FALSE;
@@ -970,8 +970,8 @@ static REF_STATUS ref_migrate_parmetis_subset(
   if (debug) printf("%d: nold %d nnew %d\n", ref_mpi_rank(ref_mpi), nold, nnew);
   ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
   ref_malloc_init(xadj, nnew + 1, PARM_INT, 0);
-  ref_malloc_init(deg, nold, PARM_INT, 0);
-  ref_malloc_init(newdeg, nnew, PARM_INT, 0);
+  ref_malloc_init(deg, nold, REF_INT, 0);
+  ref_malloc_init(newdeg, nnew, REF_INT, 0);
   for (i = 0; i < nold; i++) {
     deg[i] = (REF_INT)(xadjdist[i + 1] - xadjdist[i]);
   }
@@ -1002,7 +1002,7 @@ static REF_STATUS ref_migrate_parmetis_subset(
       "alltoallv degree");
   xadj[0] = 0;
   for (i = 0; i < nnew; i++) {
-    xadj[i + 1] = xadj[i] + newdeg[i];
+    xadj[i + 1] = xadj[i] + (PARM_INT)(newdeg[i]);
   }
   if (debug) {
     printf("%d: xadjdist[nold] %d xadj[nnew] %d\n", ref_mpi_rank(ref_mpi),
