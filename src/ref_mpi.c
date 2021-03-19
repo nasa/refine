@@ -80,6 +80,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
   ref_mpi->first_time = ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC);
   ref_mpi->start_time = ref_mpi->first_time;
 
+  ref_mpi->native_alltoallv = REF_FALSE;
   ref_mpi->debug = REF_FALSE;
 
 #ifdef HAVE_MPI
@@ -191,6 +192,7 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
   ref_mpi->start_time = original->start_time;
 
   ref_mpi->debug = original->debug;
+  ref_mpi->native_alltoallv = original->native_alltoallv;
 
   return REF_SUCCESS;
 }
@@ -399,6 +401,87 @@ REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
+                                    REF_INT *send_size, void *recv,
+                                    REF_INT *recv_size, REF_INT n,
+                                    REF_TYPE type) {
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+  MPI_Request *request;
+  REF_INT tag, part, offset, nreq;
+  ref_malloc(request, 2 * ref_mpi_n(ref_mpi), MPI_Request);
+  ref_type_mpi_type(type, datatype);
+
+  nreq = 0;
+
+  offset = 0;
+  each_ref_mpi_part(ref_mpi, part) {
+    if (0 < recv_size[part]) {
+      tag = ref_mpi_n(ref_mpi) * ref_mpi_rank(ref_mpi) + part;
+      switch (type) {
+        case REF_INT_TYPE:
+          MPI_Irecv(&(((REF_INT *)recv)[offset]), n * recv_size[part], datatype,
+                    part, tag, ref_mpi_comm(ref_mpi), &(request[nreq]));
+          break;
+        case REF_LONG_TYPE:
+          MPI_Irecv(&(((REF_LONG *)recv)[offset]), n * recv_size[part],
+                    datatype, part, tag, ref_mpi_comm(ref_mpi),
+                    &(request[nreq]));
+          break;
+        case REF_DBL_TYPE:
+          MPI_Irecv(&(((REF_DBL *)recv)[offset]), n * recv_size[part], datatype,
+                    part, tag, ref_mpi_comm(ref_mpi), &(request[nreq]));
+          break;
+        default:
+          RSS(REF_IMPLEMENT, "data type");
+      }
+      nreq++;
+    }
+    offset += n * recv_size[part];
+  }
+
+  offset = 0;
+  each_ref_mpi_part(ref_mpi, part) {
+    if (0 < send_size[part]) {
+      tag = ref_mpi_n(ref_mpi) * part + ref_mpi_rank(ref_mpi);
+      switch (type) {
+        case REF_INT_TYPE:
+          MPI_Isend(&(((REF_INT *)send)[offset]), n * send_size[part], datatype,
+                    part, tag, ref_mpi_comm(ref_mpi), &(request[nreq]));
+          break;
+        case REF_LONG_TYPE:
+          MPI_Isend(&(((REF_LONG *)send)[offset]), n * send_size[part],
+                    datatype, part, tag, ref_mpi_comm(ref_mpi),
+                    &(request[nreq]));
+          break;
+        case REF_DBL_TYPE:
+          MPI_Isend(&(((REF_DBL *)send)[offset]), n * send_size[part], datatype,
+                    part, tag, ref_mpi_comm(ref_mpi), &(request[nreq]));
+          break;
+        default:
+          RSS(REF_IMPLEMENT, "data type");
+      }
+      nreq++;
+    }
+    offset += n * send_size[part];
+  }
+
+  if (0 < nreq) MPI_Waitall(nreq, request, MPI_STATUSES_IGNORE);
+
+  ref_free(request);
+  return REF_SUCCESS;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
+  SUPRESS_UNUSED_COMPILER_WARNING(send);
+  SUPRESS_UNUSED_COMPILER_WARNING(send_size);
+  SUPRESS_UNUSED_COMPILER_WARNING(recv);
+  SUPRESS_UNUSED_COMPILER_WARNING(recv_size);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
                              void *recv, REF_INT *recv_size, REF_INT n,
                              REF_TYPE type) {
@@ -409,6 +492,13 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
   REF_INT *send_size_n;
   REF_INT *recv_size_n;
   REF_INT part;
+
+  if (ref_mpi_native_alltoallv(ref_mpi)) {
+    RSS(ref_mpi_alltoallv_native(ref_mpi, send, send_size, recv, recv_size, n,
+                                 type),
+        "ref_mpi_alltoallv_native");
+    return REF_SUCCESS;
+  }
 
   ref_type_mpi_type(type, datatype);
 

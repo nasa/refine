@@ -942,9 +942,10 @@ static REF_STATUS ref_migrate_parmetis_subset(
   PARM_INT ntotal;
   PARM_INT n0, n1;
   PARM_INT *vtx, *xadj, *adjncy, *adjwgt, *part;
-  PARM_INT *deg, *newdeg;
+  REF_INT *deg, *newdeg;
   REF_MPI split_mpi;
   REF_TYPE parm_type;
+  REF_BOOL debug = REF_FALSE;
   RSS(ref_mpi_int_size_type(sizeof(PARM_INT), &parm_type), "calc parm_type");
 
   ntotal = vtxdist[ref_mpi_n(ref_mpi)];
@@ -966,10 +967,11 @@ static REF_STATUS ref_migrate_parmetis_subset(
   nold = (REF_INT)(vtxdist[1 + ref_mpi_rank(ref_mpi)] -
                    vtxdist[ref_mpi_rank(ref_mpi)]);
   nnew = (REF_INT)(vtx[1 + ref_mpi_rank(ref_mpi)] - vtx[ref_mpi_rank(ref_mpi)]);
+  if (debug) printf("%d: nold %d nnew %d\n", ref_mpi_rank(ref_mpi), nold, nnew);
   ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
   ref_malloc_init(xadj, nnew + 1, PARM_INT, 0);
-  ref_malloc_init(deg, nold, PARM_INT, 0);
-  ref_malloc_init(newdeg, nnew, PARM_INT, 0);
+  ref_malloc_init(deg, nold, REF_INT, 0);
+  ref_malloc_init(newdeg, nnew, REF_INT, 0);
   for (i = 0; i < nold; i++) {
     deg[i] = (REF_INT)(xadjdist[i + 1] - xadjdist[i]);
   }
@@ -983,12 +985,33 @@ static REF_STATUS ref_migrate_parmetis_subset(
     n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
     recv_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
+  if (debug) {
+    for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+      if (send_size[proc] > 0)
+        printf("%d: send %d to %d\n", ref_mpi_rank(ref_mpi), send_size[proc],
+               proc);
+    }
+    for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+      if (recv_size[proc] > 0)
+        printf("%d: recv %d from %d\n", ref_mpi_rank(ref_mpi), recv_size[proc],
+               proc);
+    }
+  }
   RSS(ref_mpi_alltoallv(ref_mpi, deg, send_size, newdeg, recv_size, 1,
                         REF_INT_TYPE),
       "alltoallv degree");
   xadj[0] = 0;
   for (i = 0; i < nnew; i++) {
-    xadj[i + 1] = xadj[i] + newdeg[i];
+    xadj[i + 1] = xadj[i] + (PARM_INT)(newdeg[i]);
+  }
+  if (debug) {
+    printf("%d: xadjdist[nold] %d xadj[nnew] %d\n", ref_mpi_rank(ref_mpi),
+           (REF_INT)xadjdist[nold], (REF_INT)xadj[nnew]);
+  }
+  if (debug && nold > 0 && nnew > 0) {
+    printf("%d: deg[0] %d deg[nold-1] %d newdeg[0] %d newdeg[nnew-1] %d\n",
+           ref_mpi_rank(ref_mpi), (REF_INT)deg[0], (REF_INT)deg[nold - 1],
+           (REF_INT)newdeg[0], (REF_INT)newdeg[nnew - 1]);
   }
   ref_free(newdeg);
   ref_free(deg);
@@ -1004,6 +1027,18 @@ static REF_STATUS ref_migrate_parmetis_subset(
   }
   RSS(ref_mpi_alltoall(ref_mpi, send_size, recv_size, REF_INT_TYPE),
       "alltoall sizes");
+  if (debug) {
+    for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+      if (send_size[proc] > 0)
+        printf("%d: deg send %d to %d\n", ref_mpi_rank(ref_mpi),
+               send_size[proc], proc);
+    }
+    for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+      if (recv_size[proc] > 0)
+        printf("%d: deg recv %d from %d\n", ref_mpi_rank(ref_mpi),
+               recv_size[proc], proc);
+    }
+  }
   nrecv = 0;
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     nrecv += recv_size[proc];
