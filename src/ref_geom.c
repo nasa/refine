@@ -2146,6 +2146,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
 
   printf("  The 'S' argument can be added to tetgen\n");
   printf("    to limit the number of inserted nodes and run time.\n");
+  printf("    see 'ref boostrap -h' for '--mesher-options' description.\n");
 
   if (NULL == options) {
     snprintf(command, 1024,
