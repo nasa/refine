@@ -1248,7 +1248,7 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_GRID extruded_grid;
     REF_DBL *extruded_solution = NULL;
     if (ref_mpi_once(ref_mpi)) printf("extrude receptor solution\n");
-    RSS(ref_grid_extrude_twod(&extruded_grid, receipt_grid), "extrude");
+    RSS(ref_grid_extrude_twod(&extruded_grid, receipt_grid, 2), "extrude");
     ref_malloc(extruded_solution,
                ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
     RSS(ref_grid_extrude_field(receipt_grid, ldim, receipt_solution,
@@ -2122,7 +2122,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   sprintf(filename, "%s.%s", out_project, mesh_extension);
   if (ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
-    RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid), "extrude");
+    RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
     if (ref_mpi_once(ref_mpi))
       printf("gather extruded " REF_GLOB_FMT " nodes to %s\n",
              ref_node_n_global(ref_grid_node(extruded_grid)), filename);
@@ -2589,7 +2589,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (extrude) {
     REF_GRID twod_grid = ref_grid;
     if (ref_mpi_once(ref_mpi)) printf("extrude prisms\n");
-    RSS(ref_grid_extrude_twod(&ref_grid, twod_grid), "extrude");
+    RSS(ref_grid_extrude_twod(&ref_grid, twod_grid, 2), "extrude");
     RSS(ref_grid_free(twod_grid), "free");
   }
 
