@@ -346,6 +346,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
 
   RXS(ref_args_find(argc, argv, "--meshlink", &pos), REF_NOT_FOUND,
       "arg search");
@@ -1020,6 +1023,9 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
 
   ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   -1.0);
@@ -1185,6 +1191,9 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_import_by_extension(&donor_grid, ref_mpi, donor_meshb), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "donor import");
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(donor_grid)));
 
   if (ref_mpi_once(ref_mpi)) printf("part solution %s\n", donor_solb);
   RSS(ref_part_scalar(ref_grid_node(donor_grid), &ldim, &donor_solution,
@@ -1202,6 +1211,9 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
         "import");
     ref_mpi_stopwatch_stop(ref_mpi, "receptor import");
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(receipt_grid)));
 
   if (ref_mpi_once(ref_mpi)) {
     printf("%d leading dim from " REF_GLOB_FMT " donor nodes to " REF_GLOB_FMT
@@ -1764,6 +1776,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
   RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
   ref_mpi_stopwatch_stop(ref_mpi, "part");
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
 
   RXS(ref_args_find(argc, argv, "--partitioner", &pos), REF_NOT_FOUND,
       "arg search");
@@ -2323,6 +2338,9 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
@@ -2528,6 +2546,9 @@ static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
 
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
@@ -2573,6 +2594,9 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
 
   RXS(ref_args_find(argc, argv, "--extrude", &pos), REF_NOT_FOUND,
       "arg search");
@@ -2696,6 +2720,9 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
 
   if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
   RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, in_sol),
