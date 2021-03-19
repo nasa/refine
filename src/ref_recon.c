@@ -935,33 +935,35 @@ REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid, REF_DBL *recon,
 REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT i, node;
+  REF_INT node, node0, node1, cell, cell_edge;
   REF_DBL radius, dist;
   REF_DBL round_off_jitter = 1.0e-12;
   REF_DBL eig_floor;
-  REF_INT nnode, node_list[REF_RECON_MAX_DEGREE],
-      max_node = REF_RECON_MAX_DEGREE;
   REF_DBL diag_system[12];
 
   if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid))
     ref_cell = ref_grid_tri(ref_grid);
 
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode, node_list),
-        "first halo of nodes");
-    radius = 0.0;
-    for (i = 0; i < nnode; i++) {
-      dist = sqrt(pow(ref_node_xyz(ref_node, 0, node_list[i]) -
-                          ref_node_xyz(ref_node, 0, node),
-                      2) +
-                  pow(ref_node_xyz(ref_node, 1, node_list[i]) -
-                          ref_node_xyz(ref_node, 1, node),
-                      2) +
-                  pow(ref_node_xyz(ref_node, 2, node_list[i]) -
-                          ref_node_xyz(ref_node, 2, node),
-                      2));
-      if (i == 0) radius = dist;
-      radius = MIN(radius, dist);
+    radius = -1.0;
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+        node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+        node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+        if (node0 == node || node1 == node) {
+          dist = sqrt(pow(ref_node_xyz(ref_node, 0, node1) -
+                              ref_node_xyz(ref_node, 0, node0),
+                          2) +
+                      pow(ref_node_xyz(ref_node, 1, node1) -
+                              ref_node_xyz(ref_node, 1, node0),
+                          2) +
+                      pow(ref_node_xyz(ref_node, 2, node1) -
+                              ref_node_xyz(ref_node, 2, node0),
+                          2));
+          if (radius < 0.0) radius = dist;
+          radius = MIN(radius, dist);
+        }
+      }
     }
     /* 2nd order central finite difference */
     RAS(ref_math_divisible((4 * round_off_jitter), (radius * radius)),
