@@ -1018,6 +1018,18 @@ static REF_STATUS ref_migrate_parmetis_subset(
   }
   RSS(ref_mpi_alltoall(ref_mpi, send_size, recv_size, REF_INT_TYPE),
       "alltoall sizes");
+  if (debug) {
+    for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+      if (send_size[proc] > 0)
+        printf("%d: deg send %d to %d\n", ref_mpi_rank(ref_mpi),
+               send_size[proc], proc);
+    }
+    for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+      if (recv_size[proc] > 0)
+        printf("%d: deg recv %d from %d\n", ref_mpi_rank(ref_mpi),
+               recv_size[proc], proc);
+    }
+  }
   nrecv = 0;
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     nrecv += recv_size[proc];
