@@ -1868,7 +1868,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   } else {
     sprintf(filename, "%s_volume.plt", in_project);
     if (ref_mpi_once(ref_mpi)) printf("reconstruct scalar %s\n", filename);
-    RSS(ref_interp_plt(ref_grid, filename, &ldim, &initial_field),
+    RSS(ref_part_scalar_plt(ref_grid, filename, &ldim, &initial_field),
         "part scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
   }
