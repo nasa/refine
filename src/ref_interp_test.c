@@ -108,7 +108,6 @@ int main(int argc, char *argv[]) {
   REF_INT entropyadj_pos = REF_EMPTY;
   REF_INT heat_pos = REF_EMPTY;
   REF_INT gamma_pos = REF_EMPTY;
-  REF_INT plt_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -143,43 +142,6 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--gamma", &gamma_pos), REF_NOT_FOUND,
       "arg search");
-  RXS(ref_args_find(argc, argv, "--plt", &plt_pos), REF_NOT_FOUND,
-      "arg search");
-
-  if (REF_EMPTY != plt_pos) {
-    REF_GRID ref_grid;
-    REF_DBL *scalar;
-    REF_INT ldim;
-    REIS(1, plt_pos,
-         "required args: --plt grid.ext usm3d-solution.plt "
-         "stitched-soln.solb\n");
-    if (5 > argc) {
-      printf(
-          "required args: --plt grid.ext usm3d-solution.plt "
-          "stitched-soln.solb\n");
-      return REF_FAILURE;
-    }
-    RSS(ref_mpi_stopwatch_start(ref_mpi), "sw start");
-
-    if (ref_mpi_once(ref_mpi)) printf("read grid %s\n", argv[2]);
-    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
-    RSS(ref_mpi_stopwatch_stop(ref_mpi, "read grid"), "sw start");
-
-    if (ref_mpi_once(ref_mpi)) printf("read/stitch plt %s\n", argv[3]);
-    RSS(ref_interp_plt(ref_grid, argv[3], &ldim, &scalar), "plt zone");
-    ref_mpi_stopwatch_stop(ref_mpi, "read/stitch zones");
-
-    if (ref_mpi_once(ref_mpi)) printf("write/gather stitched %s\n", argv[4]);
-    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[4]),
-        "write/gather stitched");
-    ref_mpi_stopwatch_stop(ref_mpi, "write stitched");
-
-    ref_free(scalar);
-    RSS(ref_grid_free(ref_grid), "grid free");
-    RSS(ref_mpi_free(ref_mpi), "mpi free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
 
   if (REF_EMPTY != pair_pos) {
     REF_GRID from, to;
