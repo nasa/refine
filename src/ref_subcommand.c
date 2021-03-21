@@ -1196,8 +1196,7 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
            ref_node_n_global(ref_grid_node(donor_grid)));
 
   if (ref_mpi_once(ref_mpi)) printf("part solution %s\n", donor_solb);
-  RSS(ref_part_scalar(ref_grid_node(donor_grid), &ldim, &donor_solution,
-                      donor_solb),
+  RSS(ref_part_scalar(donor_grid, &ldim, &donor_solution, donor_solb),
       "part solution");
   ref_mpi_stopwatch_stop(ref_mpi, "donor part solution");
 
@@ -1228,8 +1227,8 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
     persist_solb = argv[pos + 2];
     if (ref_mpi_once(ref_mpi))
       printf("part persist solution %s\n", persist_solb);
-    RSS(ref_part_scalar(ref_grid_node(receipt_grid), &persist_ldim,
-                        &receipt_solution, persist_solb),
+    RSS(ref_part_scalar(receipt_grid, &persist_ldim, &receipt_solution,
+                        persist_solb),
         "part solution");
     ref_mpi_stopwatch_stop(ref_mpi, "persist part solution");
     REIS(ldim, persist_ldim, "persist leading dimension different than donor");
@@ -1375,8 +1374,7 @@ static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
     REF_DBL *solb_scalar;
     if (ref_mpi_once(ref_mpi))
       printf("opening %s as solb multiscale interpolant\n", interpolant);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &solb_ldim, &solb_scalar,
-                        interpolant),
+    RSS(ref_part_scalar(ref_grid, &solb_ldim, &solb_scalar, interpolant),
         "unable to load interpolant scalar");
     REIS(1, solb_ldim, "expected one interpolant scalar");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -1410,8 +1408,7 @@ static REF_STATUS fixed_point_metric(
              timestep);
     if (ref_mpi_once(ref_mpi))
       printf("read and hess recon for %s\n", solb_filename);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &fixed_point_ldim, &scalar,
-                        solb_filename),
+    RSS(ref_part_scalar(ref_grid, &fixed_point_ldim, &scalar, solb_filename),
         "unable to load scalar");
     REIS(1, fixed_point_ldim, "expected one scalar");
     RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
@@ -1498,7 +1495,7 @@ static REF_STATUS moving_fixed_point_metric(
              timestep);
     if (ref_mpi_once(ref_mpi))
       printf("read and hess recon for %s\n", solb_filename);
-    RSS(ref_part_scalar(ref_node, &fixed_point_ldim, &scalar, solb_filename),
+    RSS(ref_part_scalar(ref_grid, &fixed_point_ldim, &scalar, solb_filename),
         "unable to load scalar");
     REIS(4, fixed_point_ldim, "expected x,y,z and one scalar");
     RSS(extract_displaced_xyz(ref_node, &fixed_point_ldim, &scalar, &displaced),
@@ -1861,8 +1858,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY == pos) {
     sprintf(filename, "%s_volume.solb", in_project);
     if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &initial_field,
-                        filename),
+    RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
         "part scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
   } else {
@@ -2362,8 +2358,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric from hessian");
   } else {
     if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, in_scalar),
-        "part scalar");
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, in_scalar), "part scalar");
     REIS(1, ldim, "expected one scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
@@ -2725,8 +2720,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
            ref_node_n_global(ref_grid_node(ref_grid)));
 
   if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
-  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, in_sol),
-      "scalar");
+  RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
   if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
   ref_mpi_stopwatch_stop(ref_mpi, "read solution");
 
@@ -2739,9 +2733,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_INT node, i;
     in_diff = argv[pos + 1];
     if (ref_mpi_once(ref_mpi)) printf("read diff solution %s\n", in_diff);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &diff_ldim, &diff_field,
-                        in_diff),
-        "diff");
+    RSS(ref_part_scalar(ref_grid, &diff_ldim, &diff_field, in_diff), "diff");
     ref_mpi_stopwatch_stop(ref_mpi, "read diff solution");
     REIS(ldim, diff_ldim, "difference field must have same leading dimension");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {

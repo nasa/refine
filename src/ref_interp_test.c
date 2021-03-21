@@ -207,21 +207,21 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("coarse %s %s\n", argv[2], argv[3]);
     RSS(ref_part_by_extension(&grid3, ref_mpi, argv[2]),
         "part coarse_grid in position 2");
-    RSS(ref_part_scalar(ref_grid_node(grid3), &dim, &solution3, argv[3]),
+    RSS(ref_part_scalar(grid3, &dim, &solution3, argv[3]),
         "unable to load coarse_solution in position 3");
     ldim = dim;
 
     if (ref_mpi_once(ref_mpi)) printf("medium %s %s\n", argv[4], argv[5]);
     RSS(ref_part_by_extension(&grid2, ref_mpi, argv[4]),
         "part medium_grid in position 4");
-    RSS(ref_part_scalar(ref_grid_node(grid2), &dim, &solution2, argv[5]),
+    RSS(ref_part_scalar(grid2, &dim, &solution2, argv[5]),
         "unable to load medium_solution in position 5");
     REIS(ldim, dim, "expected same ldim");
 
     if (ref_mpi_once(ref_mpi)) printf("fine %s %s\n", argv[6], argv[7]);
     RSS(ref_part_by_extension(&grid1, ref_mpi, argv[6]),
         "part fine_grid in position 6");
-    RSS(ref_part_scalar(ref_grid_node(grid1), &dim, &solution1, argv[7]),
+    RSS(ref_part_scalar(grid1, &dim, &solution1, argv[7]),
         "unable to load fine_solution in position 7");
     REIS(ldim, dim, "expected same ldim");
 
@@ -320,15 +320,13 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&truth_grid, ref_mpi, argv[2]),
         "part truth grid in position 2");
-    RSS(ref_part_scalar(ref_grid_node(truth_grid), &ldim, &truth_scalar,
-                        argv[3]),
+    RSS(ref_part_scalar(truth_grid, &ldim, &truth_scalar, argv[3]),
         "unable to load scalar in position 3");
     REIS(1, ldim, "expected one truth scalar");
 
     RSS(ref_part_by_extension(&candidate_grid, ref_mpi, argv[4]),
         "part candidate grid in position 4");
-    RSS(ref_part_scalar(ref_grid_node(candidate_grid), &ldim, &candidate_scalar,
-                        argv[5]),
+    RSS(ref_part_scalar(candidate_grid, &ldim, &candidate_scalar, argv[5]),
         "unable to load scalar in position 5");
     REIS(1, ldim, "expected one truth scalar");
 
@@ -389,8 +387,7 @@ int main(int argc, char *argv[]) {
         "read/part donor grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "read donor grid");
     if (ref_mpi_once(ref_mpi)) printf("read/part donor solution %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(donor_grid), &ldim, &donor_solution,
-                        argv[3]),
+    RSS(ref_part_scalar(donor_grid, &ldim, &donor_solution, argv[3]),
         "read/part donor solution in position 3");
     ref_mpi_stopwatch_stop(ref_mpi, "read donor solution");
     if (ref_mpi_once(ref_mpi)) printf("read/part target grid %s\n", argv[4]);
@@ -399,8 +396,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read target grid");
     if (ref_mpi_once(ref_mpi))
       printf("read/part target solution %s\n", argv[5]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &target_ldim, &solution,
-                        argv[5]),
+    RSS(ref_part_scalar(ref_grid, &target_ldim, &solution, argv[5]),
         "read/part target solution in position 5");
     ref_mpi_stopwatch_stop(ref_mpi, "read target solution");
 
@@ -456,7 +452,7 @@ int main(int argc, char *argv[]) {
         "read/part old grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "read old grid");
     if (ref_mpi_once(ref_mpi)) printf("read/part old subset %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(old_grid), &ldim, &old_subset, argv[3]),
+    RSS(ref_part_scalar(old_grid, &ldim, &old_subset, argv[3]),
         "read/part old scalar subset in position 3");
     ref_mpi_stopwatch_stop(ref_mpi, "read old subset");
     if (ref_mpi_once(ref_mpi)) printf("read/part new grid %s\n", argv[4]);
@@ -519,7 +515,7 @@ int main(int argc, char *argv[]) {
         "read/part old grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "read old grid");
     if (ref_mpi_once(ref_mpi)) printf("read/part old subset %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(old_grid), &ldim, &old_subset, argv[3]),
+    RSS(ref_part_scalar(old_grid, &ldim, &old_subset, argv[3]),
         "read/part old scalar subset in position 3");
     ref_mpi_stopwatch_stop(ref_mpi, "read old subset");
     if (ref_mpi_once(ref_mpi)) printf("read/part new grid %s\n", argv[4]);
@@ -581,7 +577,7 @@ int main(int argc, char *argv[]) {
         "read/part old grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "read old grid");
     if (ref_mpi_once(ref_mpi)) printf("read/part old field %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(old_grid), &ldim, &old_field, argv[3]),
+    RSS(ref_part_scalar(old_grid, &ldim, &old_field, argv[3]),
         "read/part old scalar field in position 3");
     ref_mpi_stopwatch_stop(ref_mpi, "read old field");
     if (ref_mpi_once(ref_mpi)) printf("read/part new grid %s\n", argv[4]);
@@ -645,7 +641,7 @@ int main(int argc, char *argv[]) {
 
     sprintf(filename, "%s_volume.solb", project);
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", filename);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &solution, filename),
+    RSS(ref_part_scalar(ref_grid, &ldim, &solution, filename),
         "unable to load field in position 3");
     ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
@@ -712,7 +708,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "part grid");
 
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
         "unable to load field in position 3");
     ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
@@ -756,7 +752,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "part grid in position 2");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
         "unable to load field in position 3");
 
     ref_malloc(cust, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -798,7 +794,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "part grid in position 2");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
         "unable to load field in position 3");
 
     ref_malloc(entropy, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -836,7 +832,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "part grid in position 2");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
         "unable to load field in position 3");
 
     RAS(5 == ldim || 6 == ldim,
@@ -891,7 +887,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "part grid in position 2");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
         "unable to load field in position 3");
     faceid = atoi(argv[4]);
 

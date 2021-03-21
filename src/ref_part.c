@@ -2212,8 +2212,9 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
+REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
                            const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   size_t end_of_string;
 
   end_of_string = strlen(filename);

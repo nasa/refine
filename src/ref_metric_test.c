@@ -264,13 +264,13 @@ int main(int argc, char *argv[]) {
     }
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
     REIS(1, ldim, "expected one scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
 
     if (ref_mpi_once(ref_mpi)) printf("reading weight %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &wdim, &weight, argv[4]),
+    RSS(ref_part_scalar(ref_grid, &wdim, &weight, argv[4]),
         "unable to load weight in position 4");
     REIS(1, wdim, "expected one weight");
 
@@ -353,7 +353,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
     REIS(1, ldim, "expected one scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
@@ -420,7 +420,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &grad, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &grad, argv[3]),
         "unable to load scalar in position 3");
     REIS(3, ldim, "expected one gradent terms");
     ref_mpi_stopwatch_stop(ref_mpi, "read grad");
@@ -484,13 +484,13 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
     if (ref_mpi_once(ref_mpi)) printf("reading displaced %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &displaced, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &displaced, argv[3]),
         "unable to load displaced in position 3");
     REIS(3, ldim, "expected 3 [x,y,z]");
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[4]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[4]),
         "unable to load scalar in position 4");
     REIS(1, ldim, "expected 1 scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
@@ -562,7 +562,7 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi))
       printf("reading field with scalars %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
         "unable to load scalar in position 3");
     RAS(ldim > 0, "expected at least one scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
@@ -666,7 +666,7 @@ int main(int argc, char *argv[]) {
       snprintf(solb, 1024, "%s%d.solb", argv[3], timestep);
       if (ref_mpi_once(ref_mpi))
         printf("reading and reconstructing hessian for  %s\n", solb);
-      RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
+      RSS(ref_part_scalar(ref_grid, &ldim, &scalar, solb),
           "unable to load scalar in position 3");
       REIS(1, ldim, "expected one scalar");
       RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
@@ -762,7 +762,7 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
 
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
     REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
 
@@ -842,7 +842,7 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
     REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
 
@@ -922,12 +922,12 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
     REIS(1, ldim, "expected one scalar");
 
     if (ref_mpi_once(ref_mpi)) printf("reading weight %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &weight, argv[4]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &weight, argv[4]),
         "unable to load scalar in position 4");
     REIS(1, ldim, "expected one weight");
 
@@ -1049,7 +1049,7 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
 
     if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &prim_dual, argv[3]),
         "unable to load scalar in position 3");
     RAS(10 == ldim || 12 == ldim,
         "expected rho,u,v,w,p,5*adj "
@@ -1119,7 +1119,7 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
 
     if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &prim_dual, argv[3]),
         "unable to load scalar in position 3");
     RAS(10 == ldim || 12 == ldim,
         "expected rho,u,v,w,p,5*adj "
@@ -1186,7 +1186,7 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
 
     if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &prim_dual, argv[3]),
         "unable to load scalar in position 3");
     RAS(10 == ldim || 12 == ldim,
         "expected rho,u,v,w,p,5*adj "
@@ -1267,7 +1267,7 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
 
     if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &prim_dual, argv[3]),
         "unable to load scalar in position 3");
     RAS(10 == ldim || 12 == ldim,
         "expected rho,u,v,w,p,5*adj "
@@ -1584,13 +1584,13 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
     if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_node, &ldim, &dist, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &dist, argv[3]),
         "unable to load distance in position 3");
     if (ref_mpi_once(ref_mpi)) printf("distance ldim %d\n", ldim);
     ref_mpi_stopwatch_stop(ref_mpi, "read dist");
     REIS(1, ldim, "expect [distance]");
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_node, &ldim, &field, argv[4]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[4]),
         "unable to load solution in position 4");
     if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
     ref_mpi_stopwatch_stop(ref_mpi, "read vol");

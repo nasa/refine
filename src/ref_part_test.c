@@ -483,8 +483,7 @@ int main(int argc, char *argv[]) {
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
-        "part solb");
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, solb), "part solb");
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");
@@ -510,8 +509,7 @@ int main(int argc, char *argv[]) {
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
-        "part solb");
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, solb), "part solb");
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");
@@ -537,8 +535,7 @@ int main(int argc, char *argv[]) {
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
-        "part solb");
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, solb), "part solb");
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");

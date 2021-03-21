@@ -136,11 +136,9 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_start(ref_mpi);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim0, &field0, argv[3]),
-        "field");
+    RSS(ref_part_scalar(ref_grid, &ldim0, &field0, argv[3]), "field");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read field0");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim1, &field1, argv[4]),
-        "field");
+    RSS(ref_part_scalar(ref_grid, &ldim1, &field1, argv[4]), "field");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read field1");
     REIS(ldim0, ldim1, "ldim does not match");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -228,7 +226,7 @@ int main(int argc, char *argv[]) {
 
     filename = argv[3];
     if (ref_mpi_once(ref_mpi)) printf("part whole solution %s\n", filename);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &solution, filename),
+    RSS(ref_part_scalar(ref_grid, &ldim, &solution, filename),
         "part whole solution");
     ref_mpi_stopwatch_stop(ref_mpi, "part whole solution");
 
@@ -365,8 +363,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_start(ref_mpi);
     RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read grid");
-    RSS(ref_part_scalar(ref_grid_node(import_grid), &ldim, &field, argv[2]),
-        "field");
+    RSS(ref_part_scalar(import_grid, &ldim, &field, argv[2]), "field");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read field");
     RSS(ref_gather_scalar_by_extension(import_grid, ldim, field, NULL, argv[3]),
         "field");

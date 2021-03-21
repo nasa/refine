@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
         "unable to load grid in position 1");
 
     if (ref_mpi_once(ref_mpi)) printf("reading function %s\n", argv[2]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &function, argv[2]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &function, argv[2]),
         "unable to load function in position 2");
     ref_malloc(derivatives, 3 * ldim * ref_node_max(ref_grid_node(ref_grid)),
                REF_DBL);
