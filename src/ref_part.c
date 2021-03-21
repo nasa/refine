@@ -1725,7 +1725,7 @@ static REF_STATUS ref_part_plt_string(FILE *file, char *string, int maxlen) {
 }
 
 static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
-                                      REF_LIST zone_nnode,
+                                      REF_LIST zone_type, REF_LIST zone_nnode,
                                       REF_LIST zone_nelem) {
   char header[9];
   int endian, filetype;
@@ -1773,7 +1773,6 @@ static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
     REIS(1, fread(&notused, sizeof(int), 1, file), "notused");
     REIS(-1, notused, "not unused should be -1 plt");
     REIS(1, fread(&zonetype, sizeof(int), 1, file), "zonetype");
-    REIS(5, zonetype, "only FEBRICK plt zone implemented");
     REIS(1, fread(&packing, sizeof(int), 1, file), "packing");
     REIS(1, packing, "only point packing plt implemented");
     REIS(1, fread(&location, sizeof(int), 1, file), "location");
@@ -1789,6 +1788,7 @@ static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
     REIS(1, fread(&numpts, sizeof(int), 1, file), "numpts");
     REIS(1, fread(&numelem, sizeof(int), 1, file), "numelem");
 
+    RSS(ref_list_push(zone_type, zonetype), "save zonetype");
     RSS(ref_list_push(zone_nnode, numpts), "save nnode");
     RSS(ref_list_push(zone_nelem, numelem), "save nelem");
 
@@ -1875,8 +1875,8 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   FILE *file = NULL;
   REF_INT nvar;
-  REF_LIST zone_nnode = NULL, zone_nelem = NULL, touching;
-  REF_INT zone, nzone, length, node, i, point;
+  REF_LIST zone_type = NULL, zone_nnode = NULL, zone_nelem = NULL, touching;
+  REF_INT zone, nzone, zonetype, length, node, i, point;
   REF_DBL *soln;
   REF_SEARCH ref_search;
   REF_DBL radius, position[3], dist, best_dist;
@@ -1895,10 +1895,11 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
 
+    RSS(ref_list_create(&zone_type), "nnode list");
     RSS(ref_list_create(&zone_nnode), "nnode list");
     RSS(ref_list_create(&zone_nelem), "nelem list");
 
-    RSS(ref_part_plt_header(file, &nvar, zone_nnode, zone_nelem),
+    RSS(ref_part_plt_header(file, &nvar, zone_type, zone_nnode, zone_nelem),
         "parse header");
     nzone = ref_list_n(zone_nnode);
   }
@@ -1911,14 +1912,31 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
   RSS(ref_list_create(&touching), "touching list");
   for (zone = 0; zone < nzone; zone++) {
     if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_part_plt_data(file, nvar, zone_nnode, zone_nelem, &length, &soln),
-          "read data");
+      RSS(ref_list_shift(zone_type, &zonetype), "zonetype");
+      if (5 == zonetype) {
+        RSS(ref_part_plt_data(file, nvar, zone_nnode, zone_nelem, &length,
+                              &soln),
+            "read data");
+      } else {
+        printf("skipping zone %d zonetype %d (to read FEBRICK only)\n",
+               zone + 1, zonetype);
+        length = 0;
+        soln = NULL;
+      }
       RSS(ref_mpi_bcast(ref_mpi, &length, 1, REF_INT_TYPE), "b length");
-      RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE), "b soln");
+      if (length > 0) {
+        RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE),
+            "b soln");
+      }
     } else {
       RSS(ref_mpi_bcast(ref_mpi, &length, 1, REF_INT_TYPE), "b length");
-      ref_malloc(soln, nvar * length, REF_DBL);
-      RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE), "b soln");
+      if (length > 0) {
+        ref_malloc(soln, nvar * length, REF_DBL);
+        RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE),
+            "b soln");
+      } else {
+        soln = NULL;
+      }
     }
     for (point = 0; point < length; point++) {
       if (ref_grid_twod(ref_grid)) {
@@ -1961,8 +1979,9 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
 
   if (ref_mpi_once(ref_mpi)) {
     fclose(file);
-    ref_list_free(zone_nnode);
     ref_list_free(zone_nelem);
+    ref_list_free(zone_nnode);
+    ref_list_free(zone_type);
   }
 
   RSS(ref_search_free(ref_search), "free search");

@@ -542,6 +542,33 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(meshb), "test clean up");
   }
 
+  /* gather/part FEBRICK .plt by extension */
+  /* DISABLES CODE until block packing part plt implemented */
+  if (ref_mpi_para(ref_mpi) && !ref_mpi_para(ref_mpi)) {
+    REF_GRID ref_grid;
+    REF_INT ldim;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    char meshb[] = "ref_part_test.meshb";
+    char solb[] = "ref_part_test-brick.plt";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
+    ldim = 2;
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 1.0);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       solb),
+        "gather solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, solb), "part solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(meshb), "test clean up");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 
