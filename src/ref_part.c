@@ -1869,8 +1869,8 @@ static REF_STATUS ref_part_plt_data(FILE *file, REF_INT nvar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, const char *filename,
-                               REF_INT *ldim, REF_DBL **scalar) {
+static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
+                                      REF_DBL **scalar, const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   FILE *file = NULL;
@@ -2225,6 +2225,10 @@ REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
   }
   if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".snap") == 0) {
     RSS(ref_part_scalar_snap(ref_node, ldim, scalar, filename), "snap failed");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".plt") == 0) {
+    RSS(ref_part_scalar_plt(ref_grid, ldim, scalar, filename), "snap failed");
     return REF_SUCCESS;
   }
 
