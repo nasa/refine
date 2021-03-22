@@ -33,7 +33,7 @@ export PATH=`pwd`/egads/src:${PATH}
 
 output=`pwd`/../log-bootstrap-status.txt
 
-cd ../C2S
+cd ../S2S
 
 sketches=`find . -name accept.sh`
 echo ${sketches}
