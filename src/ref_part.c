@@ -18,6 +18,7 @@
 
 #include "ref_part.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1711,6 +1712,346 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_plt_string(FILE *file, char *string, int maxlen) {
+  int i, letter;
+  for (i = 0; i < maxlen; i++) {
+    REIS(1, fread(&letter, sizeof(int), 1, file), "plt string letter");
+    string[i] = (char)letter;
+    if (0 == letter) {
+      return REF_SUCCESS;
+    }
+  }
+  return REF_FAILURE;
+}
+
+static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
+                                      REF_LIST zone_type, REF_LIST zone_packing,
+                                      REF_LIST zone_nnode,
+                                      REF_LIST zone_nelem) {
+  char header[9];
+  int endian, filetype;
+  char title[1024], varname[1024], zonename[1024];
+  int var, numvar;
+  float zonemarker;
+  int parent, strand, notused, zonetype, packing, location, neighbor;
+  double solutiontime;
+  int miscellaneous, i;
+  int numpts, numelem;
+  int dim, aux;
+  REF_BOOL verbose = REF_FALSE;
+
+  RAS(header == fgets(header, 6, file), "header error");
+  header[5] = '\0';
+  REIS(0, strncmp(header, "#!TDV", 5), "header '#!TDV' missing")
+  RAS(header == fgets(header, 4, file), "version error");
+  header[4] = '\0';
+  REIS(0, strncmp(header, "112", 5), "expected version '112'")
+
+  REIS(1, fread(&endian, sizeof(int), 1, file), "magic");
+  REIS(1, endian, "expected little endian plt");
+  REIS(1, fread(&filetype, sizeof(int), 1, file), "filetype");
+  REIS(0, filetype, "expected full filetype");
+
+  RSS(ref_part_plt_string(file, title, 1024), "read title");
+  if (verbose) printf("plt title '%s'\n", title);
+
+  REIS(1, fread(&numvar, sizeof(int), 1, file), "numvar");
+  if (verbose) printf("plt number of variables %d\n", numvar);
+  *nvar = numvar;
+
+  for (var = 0; var < numvar; var++) {
+    RSS(ref_part_plt_string(file, varname, 1024), "read variable name");
+    if (verbose) printf("plt variable name %d '%s'\n", var, varname);
+  }
+
+  REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
+  while (ABS(299.0 - (double)zonemarker) < 1.0e-7) {
+    RSS(ref_part_plt_string(file, zonename, 1024), "read zonename");
+    if (verbose) printf("plt zonename '%s'\n", zonename);
+
+    REIS(1, fread(&parent, sizeof(int), 1, file), "parent");
+    REIS(1, fread(&strand, sizeof(int), 1, file), "strand");
+    REIS(1, fread(&solutiontime, sizeof(double), 1, file), "solutiontime");
+    REIS(1, fread(&notused, sizeof(int), 1, file), "notused");
+    REIS(-1, notused, "not unused should be -1 plt");
+    REIS(1, fread(&zonetype, sizeof(int), 1, file), "zonetype");
+    RSS(ref_list_push(zone_type, zonetype), "save zonetype");
+    REIS(1, fread(&packing, sizeof(int), 1, file), "packing");
+    RSS(ref_list_push(zone_packing, packing), "save packing");
+    REIS(1, fread(&location, sizeof(int), 1, file), "location");
+    REIS(0, location, "only node data location plt implemented");
+    REIS(1, fread(&neighbor, sizeof(int), 1, file), "neighbor");
+    REIS(0, neighbor, "no face neighbor  plt implemented");
+
+    /* there seem to be numvar extra zeros in USM3D volume files */
+    /* assume numpts is first nonzero */
+    miscellaneous = 0;
+    for (i = 0; (i < (numvar + 1)) && (0 == miscellaneous); i++) {
+      REIS(1, fread(&miscellaneous, sizeof(int), 1, file), "mystery");
+    }
+    numpts = miscellaneous;
+
+    RSS(ref_list_push(zone_nnode, numpts), "save nnode");
+    REIS(1, fread(&numelem, sizeof(int), 1, file), "numelem");
+    RSS(ref_list_push(zone_nelem, numelem), "save nelem");
+
+    for (i = 0; i < 3; i++) {
+      REIS(1, fread(&dim, sizeof(int), 1, file), "dim");
+      REIS(0, dim, "dim nonzero plt");
+    }
+    REIS(1, fread(&aux, sizeof(int), 1, file), "aux");
+    REIS(0, aux, "aux nonzero plt");
+
+    REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
+  }
+
+  RWDS(357.0, (double)zonemarker, -1.0, "end of header marker expected");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_part_plt_data(FILE *file, REF_INT nvar,
+                                    REF_LIST zone_type, REF_LIST zone_packing,
+                                    REF_LIST zone_nnode, REF_LIST zone_nelem,
+                                    REF_INT *length, REF_DBL **soln) {
+  float zonemarker;
+  int dataformat;
+  REF_INT i, node, elem, node_per;
+  int passive, sharing, conn, c2n;
+  double minval, maxval;
+  REF_INT zonetype, packing, nnode, nelem;
+  float var_float;
+  double var_double;
+  REF_LIST dataformats = NULL;
+
+  RSS(ref_list_create(&dataformats), "dataformats");
+
+  RSS(ref_list_shift(zone_type, &zonetype), "zonetype");
+  RSS(ref_list_shift(zone_packing, &packing), "zone packing");
+  RSS(ref_list_shift(zone_nnode, &nnode), "zone node size");
+  RSS(ref_list_shift(zone_nelem, &nelem), "zone elem size");
+
+  switch (zonetype) {
+    case 1: /* FELINESEG */
+      node_per = 2;
+      break;
+    case 2: /* FETRIANGLE */
+      node_per = 3;
+      break;
+    case 3: /* FEQUADRILATERAL */
+      node_per = 4;
+      break;
+    case 4: /* FETETRAHEDRON */
+      node_per = 4;
+      break;
+    case 5: /* FEBRICK */
+      node_per = 8;
+      break;
+    default:
+      printf("zonetype = %d\n", zonetype);
+      THROW("unknown tecplot plt zonetype read");
+  }
+
+  *length = nnode;
+
+  REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
+  RWDS(299.0, (double)zonemarker, -1.0, "start of data header expected");
+
+  for (i = 0; i < nvar; i++) {
+    REIS(1, fread(&dataformat, sizeof(int), 1, file), "dim");
+    RSS(ref_list_push(dataformats, dataformat), "save dataformat");
+  }
+  REIS(1, fread(&passive, sizeof(int), 1, file), "dim");
+  if (1 == passive) {
+    for (i = 0; i < nvar; i++) {
+      REIS(1, fread(&passive, sizeof(int), 1, file), "dim");
+      REIS(0, passive, "passive variable nonzero plt");
+    }
+  }
+  REIS(1, fread(&sharing, sizeof(int), 1, file), "dim");
+  if (1 == sharing) {
+    for (i = 0; i < nvar; i++) {
+      REIS(1, fread(&sharing, sizeof(int), 1, file), "dim");
+      REIS(-1, sharing, "variable sharing not implemented plt");
+    }
+  }
+  REIS(1, fread(&conn, sizeof(int), 1, file), "dim");
+  REIS(-1, conn, "connectivity sharing not implemented plt");
+
+  for (i = 0; i < nvar; i++) {
+    REIS(1, fread(&minval, sizeof(double), 1, file), "dim");
+    REIS(1, fread(&maxval, sizeof(double), 1, file), "dim");
+  }
+
+  ref_malloc(*soln, nvar * nnode, REF_DBL);
+
+  if (1 == packing) {
+    for (i = 0; i < nvar; i++) {
+      for (node = 0; node < nnode; node++) {
+        dataformat = ref_list_value(dataformats, i);
+        switch (dataformat) {
+          case 1: /* float */
+            REIS(1, fread(&var_float, sizeof(float), 1, file), "float");
+            (*soln)[i + nvar * node] = (double)var_float;
+            break;
+          case 2: /* double */
+            REIS(1, fread(&var_double, sizeof(double), 1, file), "double");
+            (*soln)[i + nvar * node] = var_double;
+            break;
+          default:
+            printf("dataformat = %d\n", dataformat);
+            RSS(REF_IMPLEMENT, "implement tecplot plt dataformat read");
+        }
+      }
+    }
+  } else {
+    for (node = 0; node < nnode; node++) {
+      for (i = 0; i < nvar; i++) {
+        dataformat = ref_list_value(dataformats, i);
+        switch (dataformat) {
+          case 1: /* float */
+            REIS(1, fread(&var_float, sizeof(float), 1, file), "float");
+            (*soln)[i + nvar * node] = (double)var_float;
+            break;
+          case 2: /* double */
+            REIS(1, fread(&var_double, sizeof(double), 1, file), "double");
+            (*soln)[i + nvar * node] = var_double;
+            break;
+          default:
+            printf("dataformat = %d\n", dataformat);
+            RSS(REF_IMPLEMENT, "implement tecplot plt dataformat read");
+        }
+      }
+    }
+  }
+
+  for (elem = 0; elem < nelem; elem++) {
+    for (i = 0; i < node_per; i++) {
+      REIS(1, fread(&c2n, sizeof(int), 1, file), "dim");
+    }
+  }
+
+  ref_list_free(dataformats);
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
+                                      REF_DBL **scalar, const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  FILE *file = NULL;
+  REF_INT nvar;
+  REF_LIST zone_type = NULL, zone_packing = NULL, zone_nnode = NULL,
+           zone_nelem = NULL, touching;
+  REF_INT zone, nzone, length, node, i, point;
+  REF_DBL *soln = NULL;
+  REF_SEARCH ref_search;
+  REF_DBL radius, position[3], dist, best_dist;
+  REF_INT best, item;
+
+  RSS(ref_search_create(&ref_search, ref_node_n(ref_node)), "create search");
+  each_ref_node_valid_node(ref_node, node) {
+    radius = 0.0;
+    RSS(ref_search_insert(ref_search, node, ref_node_xyz_ptr(ref_node, node),
+                          radius),
+        "ins");
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+
+    RSS(ref_list_create(&zone_type), "zonetype list");
+    RSS(ref_list_create(&zone_packing), "packing list");
+    RSS(ref_list_create(&zone_nnode), "nnode list");
+    RSS(ref_list_create(&zone_nelem), "nelem list");
+
+    RSS(ref_part_plt_header(file, &nvar, zone_type, zone_packing, zone_nnode,
+                            zone_nelem),
+        "parse header");
+    nzone = ref_list_n(zone_nnode);
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &nvar, 1, REF_INT_TYPE), "b nvar");
+  RSS(ref_mpi_bcast(ref_mpi, &nzone, 1, REF_INT_TYPE), "b nzone");
+
+  *ldim = nvar - 3;
+  ref_malloc_init(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL, -999.0);
+
+  RSS(ref_list_create(&touching), "touching list");
+  for (zone = 0; zone < nzone; zone++) {
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_part_plt_data(file, nvar, zone_type, zone_packing, zone_nnode,
+                            zone_nelem, &length, &soln),
+          "read data");
+      RSS(ref_mpi_bcast(ref_mpi, &length, 1, REF_INT_TYPE), "b length");
+      if (length > 0) {
+        RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE),
+            "b soln");
+      }
+    } else {
+      RSS(ref_mpi_bcast(ref_mpi, &length, 1, REF_INT_TYPE), "b length");
+      if (length > 0) {
+        ref_malloc(soln, nvar * length, REF_DBL);
+        RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE),
+            "b soln");
+      } else {
+        soln = NULL;
+      }
+    }
+    for (point = 0; point < length; point++) {
+      if (ref_grid_twod(ref_grid)) {
+        position[0] = soln[0 + nvar * point];
+        position[1] = soln[2 + nvar * point];
+        position[2] = 0.0;
+      } else {
+        for (i = 0; i < 3; i++) {
+          position[i] = soln[i + nvar * point];
+        }
+      }
+      /* single precision */
+      radius =
+          100.0 * 1.0e-8 *
+          sqrt(pow(position[0], 2) + pow(position[1], 2) + pow(position[2], 2));
+      RSS(ref_search_touching(ref_search, touching, position, radius),
+          "search tree");
+      best_dist = 1.0e+200;
+      best = REF_EMPTY;
+      each_ref_list_item(touching, item) {
+        node = ref_list_value(touching, item);
+        dist = sqrt(pow(ref_node_xyz(ref_node, 0, node) - position[0], 2) +
+                    pow(ref_node_xyz(ref_node, 1, node) - position[1], 2) +
+                    pow(ref_node_xyz(ref_node, 2, node) - position[2], 2));
+        if (dist < best_dist) {
+          best_dist = dist;
+          best = node;
+        }
+      }
+      if (REF_EMPTY != best) {
+        for (i = 3; i < nvar; i++) {
+          (*scalar)[(i - 3) + (*ldim) * best] = soln[i + nvar * point];
+        }
+      }
+      RSS(ref_list_erase(touching), "erase");
+    }
+    ref_free(soln);
+  }
+  RSS(ref_list_free(touching), "free touching");
+
+  if (ref_mpi_once(ref_mpi)) {
+    fclose(file);
+    ref_list_free(zone_nelem);
+    ref_list_free(zone_nnode);
+    ref_list_free(zone_packing);
+    ref_list_free(zone_type);
+  }
+
+  RSS(ref_search_free(ref_search), "free search");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
                                        REF_DBL **scalar, const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -1953,8 +2294,9 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
+REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
                            const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   size_t end_of_string;
 
   end_of_string = strlen(filename);
@@ -1965,6 +2307,10 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
   }
   if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".snap") == 0) {
     RSS(ref_part_scalar_snap(ref_node, ldim, scalar, filename), "snap failed");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".plt") == 0) {
+    RSS(ref_part_scalar_plt(ref_grid, ldim, scalar, filename), "snap failed");
     return REF_SUCCESS;
   }
 

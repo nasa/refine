@@ -241,8 +241,7 @@ int main(int argc, char *argv[]) {
     ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     if (ref_mpi_once(ref_mpi)) printf("reading primitive_dual %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
-                        argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &primitive_dual, argv[3]),
         "unable to load primitive_dual in position 3");
     RAS(10 == ldim || 12 == ldim,
         "expected 10 (rho,u,v,w,p,5*adj) or 12 (rho,u,v,w,p,turb,6*adj)");
@@ -359,8 +358,7 @@ int main(int argc, char *argv[]) {
     ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     if (ref_mpi_once(ref_mpi)) printf("reading primitive_dual %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
-                        argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &primitive_dual, argv[3]),
         "unable to load primitive_dual in position 3");
     RAS(10 == ldim || 12 == ldim,
         "expected 10 (rho,u,v,w,p,5*adj) or 12 primitive_dual");
@@ -411,12 +409,12 @@ int main(int argc, char *argv[]) {
     ref_malloc(dual_flux, 4 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     if (ref_mpi_once(ref_mpi)) printf("reading primitive %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &primitive, argv[3]),
         "unable to load primitive in position 3");
     REIS(1, ldim, "expected 1 (s) primitive");
 
     if (ref_mpi_once(ref_mpi)) printf("reading dual %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual, argv[4]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &dual, argv[4]),
         "unable to load primitive in position 3");
     REIS(1, ldim, "expected 1 (lambda) dual");
 
@@ -492,8 +490,7 @@ int main(int argc, char *argv[]) {
         "unable to mapbc in position 3");
 
     if (ref_mpi_once(ref_mpi)) printf("reading primitive_dual %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
-                        argv[4]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &primitive_dual, argv[4]),
         "unable to load primitive_dual in position 3");
     RAS(10 == ldim || 12 == ldim || 15 == ldim || 18 == ldim,
         "expected rho,u,v,w,p,5*adj,[5*dfdq] or "
@@ -554,7 +551,7 @@ int main(int argc, char *argv[]) {
     ref_cell = ref_grid_tri(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading dual flux %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual_flux, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &dual_flux, argv[3]),
         "unable to load scalar in position 3");
     RAS(4 == ldim || 20 == ldim,
         "expected 4 (adj,xflux,yflux,zflux) "
@@ -692,7 +689,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
     if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[3]),
         "unable to load distance in position 3");
     REIS(1, ldim, "expected one distance");
     ref_mpi_stopwatch_stop(ref_mpi, "read distance");
@@ -737,7 +734,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
     if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &distance, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &distance, argv[3]),
         "unable to load distance in position 3");
     REIS(1, ldim, "expected one distance");
     ref_mpi_stopwatch_stop(ref_mpi, "read distance");
@@ -803,7 +800,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_phys_flipper(ref_grid), "flip it");
 
     if (ref_mpi_once(ref_mpi)) printf("reading volume %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &volume, argv[3]),
+    RSS(ref_part_scalar(ref_grid, &ldim, &volume, argv[3]),
         "unable to load volume in position 3");
     RAS(ldim >= 5, "expected a ldim of at least 5");
     ref_mpi_stopwatch_stop(ref_mpi, "read volume");
@@ -1534,8 +1531,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, "ref_phys_test.meshb"),
         "import");
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field,
-                        "ref_phys_test.solb"),
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, "ref_phys_test.solb"),
         "part field");
 
     RSS(ref_dict_create(&ref_dict), "create");
