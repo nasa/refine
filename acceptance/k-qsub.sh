@@ -63,12 +63,17 @@ EOF
 
     sleep 20
 
+    job_running="R"
+    job_finished="F"
     job_status=$(qstat `cat pbs_id` | tail -n1 | sed -r 's/\s+/ /g' | cut -d' ' -f8)
-    if [[ "${job_status}" == "R" ]]; then
-	echo "SUCCESS!"
+    if [[ "${job_status}" == "${job_running}" ]]; then
+	echo "Job Running!"
+	break
+    elif [[ "${job_status}" == "${job_finished}" ]]; then
+	echo "Job Finished!"
 	break
     else
-	echo "FAIL.. try next queue!"
+	echo "try next queue! Status >${job_status}<"
 	qdel -Wforce `cat pbs_id`
     fi
 done
