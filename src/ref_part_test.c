@@ -543,8 +543,7 @@ int main(int argc, char *argv[]) {
   }
 
   /* gather/part FEBRICK .plt by extension */
-  /* DISABLES CODE until block packing part plt implemented */
-  if (ref_mpi_para(ref_mpi) && !ref_mpi_para(ref_mpi)) {
+  {
     REF_GRID ref_grid;
     REF_INT ldim;
     REF_DBL *scalar;
