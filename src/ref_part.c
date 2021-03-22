@@ -1945,7 +1945,7 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
   REF_LIST zone_type = NULL, zone_packing = NULL, zone_nnode = NULL,
            zone_nelem = NULL, touching;
   REF_INT zone, nzone, length, node, i, point;
-  REF_DBL *soln;
+  REF_DBL *soln = NULL;
   REF_SEARCH ref_search;
   REF_DBL radius, position[3], dist, best_dist;
   REF_INT best, item;
@@ -2035,7 +2035,7 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
       }
       RSS(ref_list_erase(touching), "erase");
     }
-    free(soln);
+    ref_free(soln);
   }
   RSS(ref_list_free(touching), "free touching");
 
