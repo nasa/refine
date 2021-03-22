@@ -29,7 +29,8 @@ Configuration and compliation is supported with Autoconf and CMake.
  make
  make install
 ```
-See the INSTALL file for further autoconf build instructions.
+See the INSTALL file in the distribution or `./configure --help`
+for additional build instructions.
 
 ## CMake 3.0 (or later):
 ```
