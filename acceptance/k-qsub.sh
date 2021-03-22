@@ -51,6 +51,9 @@ uname -mrn
 
 cd \$PBS_O_WORKDIR
 
+hostname 2>&1 | tee ${output}
+pwd 2>&1 | tee ${output}
+
 (./acceptance/${testname}.sh) 2>&1 | tee ${output}
 
 EOF
