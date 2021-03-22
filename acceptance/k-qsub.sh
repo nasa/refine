@@ -65,7 +65,7 @@ EOF
 
     job_running="R"
     job_finished="F"
-    job_status=$(qstat `cat pbs_id` | tail -n1 | sed -r 's/\s+/ /g' | cut -d' ' -f8)
+    job_status=$(qstat -x `cat pbs_id` | tail -n1 | sed -r 's/\s+/ /g' | cut -d' ' -f8)
     if [[ "${job_status}" == "${job_running}" ]]; then
 	echo "Job Running!"
 	break
