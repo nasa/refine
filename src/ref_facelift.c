@@ -721,6 +721,7 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
       ref_cell = ref_facelift_tri(ref_facelift);
       RSS(ref_node_clip_bary3(bary, clip), "clip face bary");
     }
+    RNS(ref_cell, "ref_cell NULL, protect dereference");
     RSS(ref_cell_shape(ref_cell, clip, shape), "shape");
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     for (i = 0; i < 3; i++) {
