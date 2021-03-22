@@ -45,6 +45,28 @@ BEGIN_C_DECLORATION
       (ptr)[ref_malloc_init_i] = (ptr_type)(initial_value);                   \
   }
 
+/* block versions */
+
+#define ref_malloc_size_t_block(ptr, n, ptr_type, block)        \
+  {                                                             \
+    (ptr) = (ptr_type *)malloc((size_t)(n) * sizeof(ptr_type)); \
+    RNB((ptr), "malloc " #ptr " of " #ptr_type " NULL", block); \
+  }
+
+#define ref_malloc_block(ptr, n, ptr_type, block)               \
+  {                                                             \
+    RAS((n) >= 0, "malloc " #ptr " of " #ptr_type " negative"); \
+    ref_malloc_size_t_block(ptr, n, ptr_type, block);           \
+  }
+
+#define ref_malloc_init_block(ptr, n, ptr_type, initial_value, block)         \
+  {                                                                           \
+    REF_INT ref_malloc_init_i;                                                \
+    ref_malloc_block(ptr, n, ptr_type, block);                                \
+    for (ref_malloc_init_i = 0; ref_malloc_init_i < (n); ref_malloc_init_i++) \
+      (ptr)[ref_malloc_init_i] = (ptr_type)(initial_value);                   \
+  }
+
 /* realloc of size zero with return NULL */
 
 #define ref_realloc(ptr, n, ptr_type)                                      \

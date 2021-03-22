@@ -943,9 +943,13 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
   RSS(ref_node_shift_new_globals(ref_node), "shift glob");
 
   ref_malloc_init(edge_global, ref_edge_n(ref_edge), REF_GLOB, REF_EMPTY);
-  ref_malloc_init(edge_part, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
-  ref_malloc_init(edge_real, REF_NODE_REAL_PER * ref_edge_n(ref_edge), REF_DBL,
-                  -999.0);
+  ref_malloc_init_block(edge_part, ref_edge_n(ref_edge), REF_INT, REF_EMPTY,
+                        { ref_free(edge_global); });
+  ref_malloc_init_block(edge_real, REF_NODE_REAL_PER * ref_edge_n(ref_edge),
+                        REF_DBL, -999.0, {
+                          ref_free(edge_part);
+                          ref_free(edge_global);
+                        });
   edge_aux = NULL;
   if (ref_node_naux(ref_node) > 0)
     ref_malloc_init(edge_aux, ref_node_naux(ref_node) * ref_edge_n(ref_edge),
