@@ -1738,6 +1738,7 @@ static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
   int miscellaneous, i;
   int numpts, numelem;
   int dim, aux;
+  REF_BOOL verbose = REF_FALSE;
 
   RAS(header == fgets(header, 6, file), "header error");
   header[5] = '\0';
@@ -1752,21 +1753,21 @@ static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
   REIS(0, filetype, "expected full filetype");
 
   RSS(ref_part_plt_string(file, title, 1024), "read title");
-  printf("plt title '%s'\n", title);
+  if (verbose) printf("plt title '%s'\n", title);
 
   REIS(1, fread(&numvar, sizeof(int), 1, file), "numvar");
-  printf("plt number of variables %d\n", numvar);
+  if (verbose) printf("plt number of variables %d\n", numvar);
   *nvar = numvar;
 
   for (var = 0; var < numvar; var++) {
     RSS(ref_part_plt_string(file, varname, 1024), "read variable name");
-    printf("plt variable name %d '%s'\n", var, varname);
+    if (verbose) printf("plt variable name %d '%s'\n", var, varname);
   }
 
   REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
   while (ABS(299.0 - (double)zonemarker) < 1.0e-7) {
     RSS(ref_part_plt_string(file, zonename, 1024), "read zonename");
-    printf("plt zonename '%s'\n", zonename);
+    if (verbose) printf("plt zonename '%s'\n", zonename);
 
     REIS(1, fread(&parent, sizeof(int), 1, file), "parent");
     REIS(1, fread(&strand, sizeof(int), 1, file), "strand");
