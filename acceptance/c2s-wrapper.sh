@@ -27,7 +27,7 @@ cd ${build_directory_root} && \
   cd ${BUILD_TAG} && \
     pwd && \
     git clone ${CI_REPOSITORY_URL} && \
-    git clone git@gitlab.larc.nasa.gov:cad-to-solution/acceptance.git && \
+    time git clone git@gitlab.larc.nasa.gov:cad-to-solution/acceptance.git && \
     cd refine && \
       pwd && \
       ${checkout_cmd} && \
