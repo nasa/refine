@@ -26,6 +26,7 @@ cd ${build_directory_root} && \
   mkdir -p ${BUILD_TAG} && \
   cd ${BUILD_TAG} && \
     pwd && \
+    ps && \
     git clone ${CI_REPOSITORY_URL} && \
     time git clone git@gitlab.larc.nasa.gov:sketch-to-solution/S2S.git && \
     cd refine && \
