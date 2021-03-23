@@ -2664,6 +2664,64 @@ static REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_scalar_edge_tec(REF_GRID ref_grid, REF_INT ldim,
+                                             REF_DBL *scalar,
+                                             const char **scalar_names,
+                                             const char *filename) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  FILE *file;
+  REF_INT i;
+  REF_GLOB nnode, *l2c;
+  REF_LONG ncell;
+  REF_INT min_id, max_id, cell_id;
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    fprintf(file, "title=\"tecplot refine gather\"\n");
+    fprintf(file, "variables = \"x\" \"y\" \"z\"");
+    if (NULL != scalar_names) {
+      for (i = 0; i < ldim; i++) fprintf(file, " \"%s\"", scalar_names[i]);
+    } else {
+      for (i = 0; i < ldim; i++) fprintf(file, " \"V%d\"", i + 1);
+    }
+    fprintf(file, "\n");
+  }
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  ref_cell = ref_grid_edg(ref_grid);
+  RSS(ref_cell_id_range(ref_cell, ref_mpi, &min_id, &max_id), "range");
+
+  for (cell_id = min_id; cell_id <= max_id; cell_id++) {
+    RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, cell_id, &nnode,
+                                       &ncell, &l2c),
+        "l2c");
+    if (nnode > 0 && ncell > 0) {
+      if (ref_grid_once(ref_grid)) {
+        fprintf(file,
+                "zone t=\"edg%d\", nodes=" REF_GLOB_FMT
+                ", elements=%ld, datapacking=%s, "
+                "zonetype=%s\n",
+                cell_id, nnode, ncell, "point", "felineseg");
+      }
+      RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
+          "nodes");
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c,
+                                 REF_FALSE, file),
+          "t");
+    }
+    ref_free(l2c);
+  }
+
+  if (ref_grid_once(ref_grid)) fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
                                       REF_DBL *scalar,
                                       const char **scalar_names,
@@ -3457,6 +3515,13 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
 
   end_of_string = strlen(filename);
 
+  if (end_of_string > 9 &&
+      strcmp(&filename[end_of_string - 9], "-edge.tec") == 0) {
+    RSS(ref_gather_scalar_edge_tec(ref_grid, ldim, scalar, scalar_names,
+                                   filename),
+        "scalar edge tec");
+    return REF_SUCCESS;
+  }
   if (end_of_string > 10 &&
       strcmp(&filename[end_of_string - 10], "-brick.plt") == 0) {
     RSS(ref_gather_scalar_plt(ref_grid, ldim, scalar, scalar_names, REF_TRUE,
