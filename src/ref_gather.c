@@ -2383,7 +2383,7 @@ REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
     RNS(file, "unable to open file");
   }
 
-  if (REF_EXPORT_MESHB_VERTEX_3 < ref_node_n_global(ref_node)) {
+  if (REF_EXPORT_MESHB_VERTEX_3 < ntet + npri) {
     version = 3;
     header_size = 4 + 8 + 4;
   } else {

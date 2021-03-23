@@ -1851,8 +1851,8 @@ REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
     REIS(1, fwrite(&two_word, sizeof(two_word), 1, file), "write next pos");
   } else {
     if (next_position < -2147483647 || 2147483647 < next_position) {
-      printf("next_position outside int32 limits %d %d\n", -2147483647,
-             2147483647);
+      printf("next_position %ld outside int32 limits %d %d\n",
+             (REF_LONG)next_position, -2147483647, 2147483647);
       RSS(REF_INVALID, "meshb version does not support file size");
     }
     one_word = (int32_t)next_position;
