@@ -2665,7 +2665,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
     RSS(ref_mpi_max(ref_mpi, &deviation, &total_deviation, REF_DBL_TYPE),
         "mpi max");
-    printf("max deviation %e\n", deviation);
+    if (ref_mpi_once(ref_mpi)) printf("max deviation %e\n", deviation);
   }
 
   if (ref_mpi_para(ref_mpi)) {
