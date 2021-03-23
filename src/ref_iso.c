@@ -397,7 +397,7 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_GRID iso_grid;
   REF_FACE ref_face;
-  REF_INT face, i, part, cell;
+  REF_INT face, i, j, part, cell;
   REF_GLOB global;
   REF_INT *new_node;
   REF_DBL triangle0[3], triangle1[3], triangle2[3];
@@ -405,6 +405,7 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
   REF_DBL inside = 0.0;
   REF_DBL t0, t1;
   REF_INT id = 1;
+  REF_DBL *iso_field;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync glob");
 
@@ -441,9 +442,37 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
     }
   }
 
-  ref_malloc(*iso_field_ptr, ldim * ref_node_max(ref_grid_node(iso_grid)),
-             REF_DBL);
-  SUPRESS_UNUSED_COMPILER_WARNING(field);
+  if (NULL == field) {
+    *iso_field_ptr = NULL;
+  } else {
+    REF_INT node;
+    ref_malloc(*iso_field_ptr, ldim * ref_node_max(ref_grid_node(iso_grid)),
+               REF_DBL);
+    iso_field = *iso_field_ptr;
+    each_ref_face(ref_face, face) {
+      node = new_node[face];
+      if (REF_EMPTY != node) {
+        for (i = 0; i < 3; i++) {
+          triangle0[i] =
+              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 0, face));
+          triangle1[i] =
+              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 1, face));
+          triangle2[i] =
+              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 2, face));
+        }
+        RSS(ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
+                                     segment1, tuvw),
+            "tuvw");
+        for (j = 0; j < ldim; j++) {
+          iso_field[j + ldim * node] = 0.0;
+          for (i = 0; i < 3; i++) {
+            iso_field[j + ldim * node] +=
+                tuvw[j + 1] * field[j + ldim * ref_face_f2n(ref_face, i, face)];
+          }
+        }
+      }
+    }
+  }
 
   each_ref_cell_valid_cell(ref_cell, cell) {
     REF_INT cell_face, node, face_nodes[4];
