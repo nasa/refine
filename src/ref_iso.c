@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "ref_edge.h"
+#include "ref_face.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_node.h"
@@ -383,6 +384,88 @@ REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
     tuvw[3] = side2_volume / total_volume;
   } else {
     return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
+                        REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
+                        REF_DBL *segment0, REF_DBL *segment1) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_GRID iso_grid;
+  REF_FACE ref_face;
+  REF_INT face, i, part, cell;
+  REF_GLOB global;
+  REF_INT *new_node;
+  REF_DBL triangle0[3], triangle1[3], triangle2[3];
+  REF_DBL tuvw[4];
+  REF_DBL inside = 0.0;
+  REF_DBL t0, t1;
+  REF_INT id = 1;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync glob");
+
+  RSS(ref_grid_create(iso_grid_ptr, ref_mpi), "create");
+  iso_grid = *iso_grid_ptr;
+  RSS(ref_node_initialize_n_global(ref_grid_node(iso_grid), 0), "zero glob");
+
+  RSS(ref_face_create(&ref_face, ref_grid), "create face");
+  ref_malloc_init(new_node, ref_face_n(ref_face), REF_INT, REF_EMPTY);
+
+  each_ref_face(ref_face, face) {
+    for (i = 0; i < 3; i++) {
+      triangle0[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 0, face));
+      triangle1[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 1, face));
+      triangle2[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 2, face));
+    }
+    if (REF_SUCCESS != ref_iso_triangle_segment(triangle0, triangle1, triangle2,
+                                                segment0, segment1, tuvw))
+      continue;
+    if (MIN(MIN(tuvw[1], tuvw[2]), tuvw[3]) < inside) continue;
+
+    RSS(ref_face_part(ref_face, ref_node, face, &part), "face part");
+    if (ref_mpi_rank(ref_mpi) == part) {
+      RSS(ref_node_next_global(ref_grid_node(iso_grid), &global),
+          "next global");
+      RSS(ref_node_add(ref_grid_node(iso_grid), global, &(new_node[face])),
+          "add node");
+      t1 = tuvw[0];
+      t0 = 1.0 - t1;
+      for (i = 0; i < 3; i++) {
+        ref_node_xyz(ref_grid_node(iso_grid), i, new_node[face]) =
+            t1 * segment1[i] + t0 * segment1[i];
+      }
+    }
+  }
+
+  ref_malloc(*iso_field_ptr, ldim * ref_node_max(ref_grid_node(iso_grid)),
+             REF_DBL);
+  SUPRESS_UNUSED_COMPILER_WARNING(field);
+
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    REF_INT cell_face, node, face_nodes[4];
+    REF_INT nface, faces[4];
+    REF_INT new_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+    nface = 0;
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      for (node = 0; node < 4; node++) {
+        face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+      }
+      RSS(ref_face_with(ref_face, face_nodes, &face), "get face");
+      if (REF_EMPTY != new_node[face]) {
+        faces[nface] = face;
+        nface++;
+      }
+    }
+    if (2 == nface) {
+      new_nodes[0] = new_node[faces[0]];
+      new_nodes[1] = new_node[faces[1]];
+      new_nodes[2] = id;
+      RSS(ref_cell_add(ref_grid_edg(iso_grid), new_nodes, &new_cell), "add");
+    }
   }
 
   return REF_SUCCESS;
