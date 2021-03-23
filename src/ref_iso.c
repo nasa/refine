@@ -375,10 +375,10 @@ REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
     return REF_DIV_ZERO;
   }
 
+  total_volume = side0_volume + side1_volume + side2_volume;
   if (ref_math_divisible(side0_volume, total_volume) &&
       ref_math_divisible(side1_volume, total_volume) &&
       ref_math_divisible(side2_volume, total_volume)) {
-    total_volume = side0_volume + side1_volume + side2_volume;
     tuvw[1] = side0_volume / total_volume;
     tuvw[2] = side1_volume / total_volume;
     tuvw[3] = side2_volume / total_volume;
