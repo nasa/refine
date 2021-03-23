@@ -276,9 +276,10 @@ int main(int argc, char *argv[]) {
     segment1[1] = 0.0;
     segment1[2] = 0.0;
 
-    REIS(REF_DIV_ZERO,ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
-                                 segment1, tuvw),
-        "tri-seg");
+    REIS(REF_DIV_ZERO,
+         ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
+                                  segment1, tuvw),
+         "tri-seg");
   }
 
   { /* seg-tri, collapsed seg */
@@ -306,9 +307,10 @@ int main(int argc, char *argv[]) {
     segment1[1] = 0.0;
     segment1[2] = 0.0;
 
-    REIS(REF_DIV_ZERO,ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
-                                 segment1, tuvw),
-        "tri-seg");
+    REIS(REF_DIV_ZERO,
+         ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
+                                  segment1, tuvw),
+         "tri-seg");
   }
 
   { /* seg-tri, collapsed tri */
@@ -336,9 +338,10 @@ int main(int argc, char *argv[]) {
     segment1[1] = 0.0;
     segment1[2] = 1.0;
 
-    REIS(REF_DIV_ZERO,ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
-                                 segment1, tuvw),
-        "tri-seg");
+    REIS(REF_DIV_ZERO,
+         ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
+                                  segment1, tuvw),
+         "tri-seg");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
