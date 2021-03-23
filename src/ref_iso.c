@@ -467,7 +467,7 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
           iso_field[j + ldim * node] = 0.0;
           for (i = 0; i < 3; i++) {
             iso_field[j + ldim * node] +=
-                tuvw[j + 1] * field[j + ldim * ref_face_f2n(ref_face, i, face)];
+                tuvw[i + 1] * field[j + ldim * ref_face_f2n(ref_face, i, face)];
           }
         }
       }
