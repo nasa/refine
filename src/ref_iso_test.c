@@ -217,6 +217,40 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
+  { /* seg-tri, corner */
+    REF_DBL triangle0[3], triangle1[3], triangle2[3];
+    REF_DBL segment0[3], segment1[3];
+    REF_DBL tuvw[4];
+
+    triangle0[0] = 0.0;
+    triangle0[1] = 0.0;
+    triangle0[2] = 0.0;
+
+    triangle1[0] = 1.0;
+    triangle1[1] = 0.0;
+    triangle1[2] = 0.0;
+
+    triangle2[0] = 0.0;
+    triangle2[1] = 1.0;
+    triangle2[2] = 0.0;
+
+    segment0[0] = 0.0;
+    segment0[1] = 0.0;
+    segment0[2] = 0.0;
+
+    segment1[0] = 0.0;
+    segment1[1] = 0.0;
+    segment1[2] = 1.0;
+
+    RSS(ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
+                                 segment1, tuvw),
+        "tri-seg");
+    RWDS(0.0, tuvw[0], -1.0, "t");
+    RWDS(1.0, tuvw[1], -1.0, "u");
+    RWDS(0.0, tuvw[2], -1.0, "v");
+    RWDS(0.0, tuvw[3], -1.0, "w");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

@@ -330,3 +330,60 @@ REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
 
   return REF_SUCCESS;
 }
+
+static REF_DBL ref_iso_volume(double *a, double *b, double *c, double *d) {
+  double m11, m12, m13;
+  double det;
+
+  m11 = (a[0] - d[0]) *
+        ((b[1] - d[1]) * (c[2] - d[2]) - (c[1] - d[1]) * (b[2] - d[2]));
+  m12 = (a[1] - d[1]) *
+        ((b[0] - d[0]) * (c[2] - d[2]) - (c[0] - d[0]) * (b[2] - d[2]));
+  m13 = (a[2] - d[2]) *
+        ((b[0] - d[0]) * (c[1] - d[1]) - (c[0] - d[0]) * (b[1] - d[1]));
+  det = (m11 - m12 + m13);
+
+  return (-det);
+}
+
+REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
+                                    REF_DBL *triangle2, REF_DBL *segment0,
+                                    REF_DBL *segment1, REF_DBL *tuvw) {
+  double top_volume, bot_volume;
+  double side0_volume, side1_volume, side2_volume;
+  double total_volume;
+
+  tuvw[0] = 0.0;
+  tuvw[1] = 0.0;
+  tuvw[2] = 0.0;
+  tuvw[3] = 0.0;
+
+  /* is segment in triangle plane? */
+  top_volume = ref_iso_volume(triangle0, triangle1, triangle2, segment0);
+  bot_volume = ref_iso_volume(triangle0, triangle1, triangle2, segment1);
+
+  /* does segment pass through triangle? */
+  side2_volume = ref_iso_volume(triangle0, triangle1, segment0, segment1);
+  side0_volume = ref_iso_volume(triangle1, triangle2, segment0, segment1);
+  side1_volume = ref_iso_volume(triangle2, triangle0, segment0, segment1);
+
+  total_volume = top_volume - bot_volume;
+  if (ref_math_divisible(top_volume, total_volume)) {
+    tuvw[0] = top_volume / total_volume;
+  } else {
+    return REF_DIV_ZERO;
+  }
+
+  if (ref_math_divisible(side0_volume, total_volume) &&
+      ref_math_divisible(side1_volume, total_volume) &&
+      ref_math_divisible(side2_volume, total_volume)) {
+    total_volume = side0_volume + side1_volume + side2_volume;
+    tuvw[1] = side0_volume / total_volume;
+    tuvw[2] = side1_volume / total_volume;
+    tuvw[3] = side2_volume / total_volume;
+  } else {
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
