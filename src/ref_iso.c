@@ -499,3 +499,63 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
+                           REF_DBL phi, REF_DBL h, REF_DBL *segment0,
+                           REF_DBL *segment1) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL x0, x1, dx;
+  REF_DBL new[3];
+  REF_INT node;
+  REF_BOOL first;
+  x0 = 0;
+  x1 = 1;
+  first = REF_TRUE;
+  each_ref_node_valid_node(ref_node, node) {
+    if (first) {
+      first = REF_FALSE;
+      x0 = ref_node_xyz(ref_node, 0, node);
+      x1 = ref_node_xyz(ref_node, 0, node);
+    } else {
+      x0 = MIN(x0, ref_node_xyz(ref_node, 0, node));
+      x1 = MAX(x1, ref_node_xyz(ref_node, 0, node));
+    }
+  }
+  dx = x1 - x0;
+  x0 -= 0.1 * dx;
+  x1 += 0.1 * dx;
+
+  segment0[0] = x0;
+  segment0[1] = center[1] + h * sin(ref_math_in_radians(phi));
+  segment0[2] = center[2] - h * cos(ref_math_in_radians(phi));
+
+  segment1[0] = x1;
+  segment1[1] = center[1] + h * sin(ref_math_in_radians(phi));
+  segment1[2] = center[2] - h * cos(ref_math_in_radians(phi));
+
+  segment0[0] -= center[0];
+  segment0[1] -= center[1];
+  segment0[2] -= center[2];
+  new[0] = segment0[0] * cos(ref_math_in_radians(aoa)) +
+           segment0[2] * sin(ref_math_in_radians(aoa));
+  new[1] = segment0[1];
+  new[2] = -segment0[0] * sin(ref_math_in_radians(aoa)) +
+           segment0[2] * cos(ref_math_in_radians(aoa));
+  segment0[0] = center[0] + new[0];
+  segment0[1] = center[1] + new[1];
+  segment0[2] = center[2] + new[2];
+
+  segment1[0] -= center[0];
+  segment1[1] -= center[1];
+  segment1[2] -= center[2];
+  new[0] = segment1[0] * cos(ref_math_in_radians(aoa)) +
+           segment1[2] * sin(ref_math_in_radians(aoa));
+  new[1] = segment1[1];
+  new[2] = -segment1[0] * sin(ref_math_in_radians(aoa)) +
+           segment1[2] * cos(ref_math_in_radians(aoa));
+  segment1[0] = center[0] + new[0];
+  segment1[1] = center[1] + new[1];
+  segment1[2] = center[2] + new[2];
+
+  return REF_SUCCESS;
+}
