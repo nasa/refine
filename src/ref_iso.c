@@ -437,7 +437,7 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
       t0 = 1.0 - t1;
       for (i = 0; i < 3; i++) {
         ref_node_xyz(ref_grid_node(iso_grid), i, new_node[face]) =
-            t1 * segment1[i] + t0 * segment1[i];
+            t1 * segment1[i] + t0 * segment0[i];
       }
     }
   }
