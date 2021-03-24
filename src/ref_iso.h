@@ -43,7 +43,7 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid, REF_DBL **iso_field,
                         REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
                         REF_DBL *segment0, REF_DBL *segment1);
 
-REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL alpha,
+REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
                            REF_DBL phi, REF_DBL h, REF_DBL *segment0,
                            REF_DBL *segment1);
 
