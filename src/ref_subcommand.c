@@ -2741,8 +2741,8 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     center[2] = atof(argv[pos + 3]);
     aoa = atof(argv[pos + 4]);
     if (ref_mpi_once(ref_mpi))
-      printf(" center %f %f %f\n", center[0], center[1], center[2]);
-    if (ref_mpi_once(ref_mpi)) printf(" angle of attack %f\n", aoa);
+      printf("  center %f %f %f\n", center[0], center[1], center[2]);
+    if (ref_mpi_once(ref_mpi)) printf("  angle of attack %f\n", aoa);
     for (i = pos + 5; i + 2 < argc; i += 3) {
       REF_DBL segment0[3], segment1[3];
       REF_GRID ray_grid;
@@ -2751,16 +2751,17 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
 
       phi = atof(argv[i]);
       h = atof(argv[i + 1]);
-      if (ref_mpi_once(ref_mpi)) printf(" phi %f h %f\n", phi, h);
+      if (ref_mpi_once(ref_mpi)) printf("   phi %f h %f\n", phi, h);
       RSS(ref_iso_segment(ref_grid, center, aoa, phi, h, segment0, segment1),
           "seg");
       RSS(ref_iso_cast(&ray_grid, &ray_field, ref_grid, dp_pinf, 1, segment0,
                        segment1),
           "cast");
-      if (ref_mpi_once(ref_mpi)) printf(" writing %s\n", argv[i + 2]);
+      if (ref_mpi_once(ref_mpi)) printf("   writing %s\n", argv[i + 2]);
       ref_gather_scalar_by_extension(ray_grid, 1, ray_field, vars, argv[i + 2]);
       ref_free(ray_field);
       ref_grid_free(ray_grid);
+      ref_mpi_stopwatch_stop(ref_mpi, "export ray");
     }
     ref_free(dp_pinf);
     ref_free(field);
