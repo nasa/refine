@@ -2747,7 +2747,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
       REF_DBL segment0[3], segment1[3];
       REF_GRID ray_grid;
       REF_DBL *ray_field;
-      const char *vars[] = {"dp_pinf"};
+      const char *vars[] = {"dp/pinf"};
 
       phi = atof(argv[i]);
       h = atof(argv[i + 1]);
