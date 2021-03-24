@@ -536,11 +536,11 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
   segment0[0] -= center[0];
   segment0[1] -= center[1];
   segment0[2] -= center[2];
-  new[0] = segment0[0] * cos(ref_math_in_radians(aoa)) +
-           segment0[2] * sin(ref_math_in_radians(aoa));
+  new[0] = segment0[0] * cos(ref_math_in_radians(-aoa)) +
+           segment0[2] * sin(ref_math_in_radians(-aoa));
   new[1] = segment0[1];
-  new[2] = -segment0[0] * sin(ref_math_in_radians(aoa)) +
-           segment0[2] * cos(ref_math_in_radians(aoa));
+  new[2] = -segment0[0] * sin(ref_math_in_radians(-aoa)) +
+           segment0[2] * cos(ref_math_in_radians(-aoa));
   segment0[0] = center[0] + new[0];
   segment0[1] = center[1] + new[1];
   segment0[2] = center[2] + new[2];
@@ -548,11 +548,11 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
   segment1[0] -= center[0];
   segment1[1] -= center[1];
   segment1[2] -= center[2];
-  new[0] = segment1[0] * cos(ref_math_in_radians(aoa)) +
-           segment1[2] * sin(ref_math_in_radians(aoa));
+  new[0] = segment1[0] * cos(ref_math_in_radians(-aoa)) +
+           segment1[2] * sin(ref_math_in_radians(-aoa));
   new[1] = segment1[1];
-  new[2] = -segment1[0] * sin(ref_math_in_radians(aoa)) +
-           segment1[2] * cos(ref_math_in_radians(aoa));
+  new[2] = -segment1[0] * sin(ref_math_in_radians(-aoa)) +
+           segment1[2] * cos(ref_math_in_radians(-aoa));
   segment1[0] = center[0] + new[0];
   segment1[1] = center[1] + new[1];
   segment1[2] = center[2] + new[2];

@@ -593,9 +593,9 @@ int main(int argc, char *argv[]) {
 
     {
       RWDS(0, segment0[1], -1.0, "y");
-      RWDS(-segment0[0], segment0[2], -1.0, "z");
+      RWDS(segment0[0], segment0[2], -1.0, "z");
       RWDS(0, segment1[1], -1.0, "y");
-      RWDS(-segment1[0], segment1[2], -1.0, "z");
+      RWDS(segment1[0], segment1[2], -1.0, "z");
     }
 
     ref_grid_free(ref_grid);
