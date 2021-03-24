@@ -2743,7 +2743,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf(" center %f %f %f\n", center[0], center[1], center[2]);
     if (ref_mpi_once(ref_mpi)) printf(" angle of attack %f\n", aoa);
-    for (i = pos + 5; i < argc + 2; i += 3) {
+    for (i = pos + 5; i + 2 < argc; i += 3) {
       REF_DBL segment0[3], segment1[3];
       REF_GRID ray_grid;
       REF_DBL *ray_field;
@@ -2769,7 +2769,6 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("field\n");
     ref_free(field);
     if (ref_mpi_once(ref_mpi)) printf("ref_grid\n");
-    ref_free(field);
     RSS(ref_grid_free(ref_grid), "free grid");
     return REF_SUCCESS;
   }
