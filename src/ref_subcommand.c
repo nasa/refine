@@ -2759,16 +2759,11 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
           "cast");
       if (ref_mpi_once(ref_mpi)) printf(" writing %s\n", argv[i + 2]);
       ref_gather_scalar_by_extension(ray_grid, 1, ray_field, vars, argv[i + 2]);
-      if (ref_mpi_once(ref_mpi)) printf("ray_field\n");
       ref_free(ray_field);
-      if (ref_mpi_once(ref_mpi)) printf("ray_grid\n");
       ref_grid_free(ray_grid);
     }
-    if (ref_mpi_once(ref_mpi)) printf("dp_pinf\n");
     ref_free(dp_pinf);
-    if (ref_mpi_once(ref_mpi)) printf("field\n");
     ref_free(field);
-    if (ref_mpi_once(ref_mpi)) printf("ref_grid\n");
     RSS(ref_grid_free(ref_grid), "free grid");
     return REF_SUCCESS;
   }
