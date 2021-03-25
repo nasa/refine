@@ -35,6 +35,18 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid, REF_GRID ref_grid,
 REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                                    REF_DBL *distance);
 
+REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
+                                    REF_DBL *triangle2, REF_DBL *segment0,
+                                    REF_DBL *segment1, REF_DBL *tuvw);
+
+REF_STATUS ref_iso_cast(REF_GRID *iso_grid, REF_DBL **iso_field,
+                        REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
+                        REF_DBL *segment0, REF_DBL *segment1);
+
+REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
+                           REF_DBL phi, REF_DBL h, REF_DBL *segment0,
+                           REF_DBL *segment1);
+
 END_C_DECLORATION
 
 #endif /* REF_ISO_H */

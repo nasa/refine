@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "ref_edge.h"
+#include "ref_face.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_node.h"
@@ -327,6 +328,234 @@ REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
   RSS(ref_list_free(ref_list), "free");
 
   RSS(ref_grid_free(iso_grid), "iso free");
+
+  return REF_SUCCESS;
+}
+
+static REF_DBL ref_iso_volume(double *a, double *b, double *c, double *d) {
+  double m11, m12, m13;
+  double det;
+
+  m11 = (a[0] - d[0]) *
+        ((b[1] - d[1]) * (c[2] - d[2]) - (c[1] - d[1]) * (b[2] - d[2]));
+  m12 = (a[1] - d[1]) *
+        ((b[0] - d[0]) * (c[2] - d[2]) - (c[0] - d[0]) * (b[2] - d[2]));
+  m13 = (a[2] - d[2]) *
+        ((b[0] - d[0]) * (c[1] - d[1]) - (c[0] - d[0]) * (b[1] - d[1]));
+  det = (m11 - m12 + m13);
+
+  return (-det);
+}
+
+REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
+                                    REF_DBL *triangle2, REF_DBL *segment0,
+                                    REF_DBL *segment1, REF_DBL *tuvw) {
+  double top_volume, bot_volume;
+  double side0_volume, side1_volume, side2_volume;
+  double total_volume;
+
+  tuvw[0] = 0.0;
+  tuvw[1] = 0.0;
+  tuvw[2] = 0.0;
+  tuvw[3] = 0.0;
+
+  /* is segment in triangle plane? */
+  top_volume = ref_iso_volume(triangle0, triangle1, triangle2, segment0);
+  bot_volume = ref_iso_volume(triangle0, triangle1, triangle2, segment1);
+
+  /* does segment pass through triangle? */
+  side2_volume = ref_iso_volume(triangle0, triangle1, segment0, segment1);
+  side0_volume = ref_iso_volume(triangle1, triangle2, segment0, segment1);
+  side1_volume = ref_iso_volume(triangle2, triangle0, segment0, segment1);
+
+  total_volume = top_volume - bot_volume;
+  if (ref_math_divisible(top_volume, total_volume)) {
+    tuvw[0] = top_volume / total_volume;
+  } else {
+    return REF_DIV_ZERO;
+  }
+
+  total_volume = side0_volume + side1_volume + side2_volume;
+  if (ref_math_divisible(side0_volume, total_volume) &&
+      ref_math_divisible(side1_volume, total_volume) &&
+      ref_math_divisible(side2_volume, total_volume)) {
+    tuvw[1] = side0_volume / total_volume;
+    tuvw[2] = side1_volume / total_volume;
+    tuvw[3] = side2_volume / total_volume;
+  } else {
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
+                        REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
+                        REF_DBL *segment0, REF_DBL *segment1) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_GRID iso_grid;
+  REF_FACE ref_face;
+  REF_INT face, i, j, part, cell;
+  REF_GLOB global;
+  REF_INT *new_node;
+  REF_DBL triangle0[3], triangle1[3], triangle2[3];
+  REF_DBL tuvw[4];
+  REF_DBL inside = 0.0;
+  REF_DBL t0, t1;
+  REF_INT id = 1;
+  REF_DBL *iso_field;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync glob");
+
+  RSS(ref_grid_create(iso_grid_ptr, ref_mpi), "create");
+  iso_grid = *iso_grid_ptr;
+  RSS(ref_node_initialize_n_global(ref_grid_node(iso_grid), 0), "zero glob");
+
+  RSS(ref_face_create(&ref_face, ref_grid), "create face");
+  ref_malloc_init(new_node, ref_face_n(ref_face), REF_INT, REF_EMPTY);
+
+  each_ref_face(ref_face, face) {
+    for (i = 0; i < 3; i++) {
+      triangle0[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 0, face));
+      triangle1[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 1, face));
+      triangle2[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 2, face));
+    }
+    if (REF_SUCCESS != ref_iso_triangle_segment(triangle0, triangle1, triangle2,
+                                                segment0, segment1, tuvw))
+      continue;
+    if (MIN(MIN(tuvw[1], tuvw[2]), tuvw[3]) < inside) continue;
+
+    RSS(ref_face_part(ref_face, ref_node, face, &part), "face part");
+    if (ref_mpi_rank(ref_mpi) == part) {
+      RSS(ref_node_next_global(ref_grid_node(iso_grid), &global),
+          "next global");
+      RSS(ref_node_add(ref_grid_node(iso_grid), global, &(new_node[face])),
+          "add node");
+      t1 = tuvw[0];
+      t0 = 1.0 - t1;
+      for (i = 0; i < 3; i++) {
+        ref_node_xyz(ref_grid_node(iso_grid), i, new_node[face]) =
+            t1 * segment1[i] + t0 * segment0[i];
+      }
+    }
+  }
+
+  if (NULL == field) {
+    *iso_field_ptr = NULL;
+  } else {
+    REF_INT node;
+    ref_malloc(*iso_field_ptr, ldim * ref_node_max(ref_grid_node(iso_grid)),
+               REF_DBL);
+    iso_field = *iso_field_ptr;
+    each_ref_face(ref_face, face) {
+      node = new_node[face];
+      if (REF_EMPTY != node) {
+        for (i = 0; i < 3; i++) {
+          triangle0[i] =
+              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 0, face));
+          triangle1[i] =
+              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 1, face));
+          triangle2[i] =
+              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 2, face));
+        }
+        RSS(ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
+                                     segment1, tuvw),
+            "tuvw");
+        for (j = 0; j < ldim; j++) {
+          iso_field[j + ldim * node] = 0.0;
+          for (i = 0; i < 3; i++) {
+            iso_field[j + ldim * node] +=
+                tuvw[i + 1] * field[j + ldim * ref_face_f2n(ref_face, i, face)];
+          }
+        }
+      }
+    }
+  }
+
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    REF_INT cell_face, node, face_nodes[4];
+    REF_INT nface, faces[4];
+    REF_INT new_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+    nface = 0;
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      for (node = 0; node < 4; node++) {
+        face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+      }
+      RSS(ref_face_with(ref_face, face_nodes, &face), "get face");
+      if (REF_EMPTY != new_node[face]) {
+        faces[nface] = face;
+        nface++;
+      }
+    }
+    if (2 == nface) {
+      new_nodes[0] = new_node[faces[0]];
+      new_nodes[1] = new_node[faces[1]];
+      new_nodes[2] = id;
+      RSS(ref_cell_add(ref_grid_edg(iso_grid), new_nodes, &new_cell), "add");
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
+                           REF_DBL phi, REF_DBL h, REF_DBL *segment0,
+                           REF_DBL *segment1) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL x0, x1, dx;
+  REF_DBL new[3];
+  REF_INT node;
+  REF_BOOL first;
+  x0 = 0;
+  x1 = 1;
+  first = REF_TRUE;
+  each_ref_node_valid_node(ref_node, node) {
+    if (first) {
+      first = REF_FALSE;
+      x0 = ref_node_xyz(ref_node, 0, node);
+      x1 = ref_node_xyz(ref_node, 0, node);
+    } else {
+      x0 = MIN(x0, ref_node_xyz(ref_node, 0, node));
+      x1 = MAX(x1, ref_node_xyz(ref_node, 0, node));
+    }
+  }
+  dx = x1 - x0;
+  x0 -= 0.1 * dx;
+  x1 += 0.1 * dx;
+
+  segment0[0] = x0;
+  segment0[1] = center[1] + h * sin(ref_math_in_radians(phi));
+  segment0[2] = center[2] - h * cos(ref_math_in_radians(phi));
+
+  segment1[0] = x1;
+  segment1[1] = center[1] + h * sin(ref_math_in_radians(phi));
+  segment1[2] = center[2] - h * cos(ref_math_in_radians(phi));
+
+  segment0[0] -= center[0];
+  segment0[1] -= center[1];
+  segment0[2] -= center[2];
+  new[0] = segment0[0] * cos(ref_math_in_radians(-aoa)) +
+           segment0[2] * sin(ref_math_in_radians(-aoa));
+  new[1] = segment0[1];
+  new[2] = -segment0[0] * sin(ref_math_in_radians(-aoa)) +
+           segment0[2] * cos(ref_math_in_radians(-aoa));
+  segment0[0] = center[0] + new[0];
+  segment0[1] = center[1] + new[1];
+  segment0[2] = center[2] + new[2];
+
+  segment1[0] -= center[0];
+  segment1[1] -= center[1];
+  segment1[2] -= center[2];
+  new[0] = segment1[0] * cos(ref_math_in_radians(-aoa)) +
+           segment1[2] * sin(ref_math_in_radians(-aoa));
+  new[1] = segment1[1];
+  new[2] = -segment1[0] * sin(ref_math_in_radians(-aoa)) +
+           segment1[2] * cos(ref_math_in_radians(-aoa));
+  segment1[0] = center[0] + new[0];
+  segment1[1] = center[1] + new[1];
+  segment1[2] = center[2] + new[2];
 
   return REF_SUCCESS;
 }

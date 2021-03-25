@@ -28,6 +28,7 @@ END_C_DECLORATION
 
 #include "ref_adj.h"
 #include "ref_grid.h"
+#include "ref_node.h"
 
 BEGIN_C_DECLORATION
 
@@ -48,6 +49,9 @@ REF_STATUS ref_face_free(REF_FACE ref_face);
 
 #define ref_face_adj(ref_face) ((ref_face)->adj)
 
+#define each_ref_face(ref_face, face) \
+  for ((face) = 0; (face) < ref_face_n(ref_face); (face)++)
+
 REF_STATUS ref_face_inspect(REF_FACE ref_face);
 
 REF_STATUS ref_face_with(REF_FACE ref_face, REF_INT *nodes, REF_INT *face);
@@ -61,6 +65,9 @@ REF_STATUS ref_face_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
 
 REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
                               REF_DBL *xyz3, REF_INT *open_node, REF_DBL *dot);
+
+REF_STATUS ref_face_part(REF_FACE ref_face, REF_NODE ref_node, REF_INT face,
+                         REF_INT *part);
 
 END_C_DECLORATION
 

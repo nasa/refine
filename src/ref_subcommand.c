@@ -2724,6 +2724,51 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
   ref_mpi_stopwatch_stop(ref_mpi, "read solution");
 
+  RXS(ref_args_find(argc, argv, "--ray", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos + 4 < argc) {
+    REF_INT node, i;
+    REF_DBL center[3], aoa, phi, h;
+    REF_DBL *dp_pinf;
+    ref_malloc(dp_pinf, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_INT pressure_index = 4;
+      REF_DBL gamma = 1.4;
+      dp_pinf[node] =
+          (field[pressure_index + ldim * node] - 1.0 / gamma) * gamma;
+    }
+    center[0] = atof(argv[pos + 1]);
+    center[1] = atof(argv[pos + 2]);
+    center[2] = atof(argv[pos + 3]);
+    aoa = atof(argv[pos + 4]);
+    if (ref_mpi_once(ref_mpi))
+      printf("  center %f %f %f\n", center[0], center[1], center[2]);
+    if (ref_mpi_once(ref_mpi)) printf("  angle of attack %f\n", aoa);
+    for (i = pos + 5; i + 2 < argc; i += 3) {
+      REF_DBL segment0[3], segment1[3];
+      REF_GRID ray_grid;
+      REF_DBL *ray_field;
+      const char *vars[] = {"dp/pinf"};
+
+      phi = atof(argv[i]);
+      h = atof(argv[i + 1]);
+      if (ref_mpi_once(ref_mpi)) printf("   phi %f h %f\n", phi, h);
+      RSS(ref_iso_segment(ref_grid, center, aoa, phi, h, segment0, segment1),
+          "seg");
+      RSS(ref_iso_cast(&ray_grid, &ray_field, ref_grid, dp_pinf, 1, segment0,
+                       segment1),
+          "cast");
+      if (ref_mpi_once(ref_mpi)) printf("   writing %s\n", argv[i + 2]);
+      ref_gather_scalar_by_extension(ray_grid, 1, ray_field, vars, argv[i + 2]);
+      ref_free(ray_field);
+      ref_grid_free(ray_grid);
+      ref_mpi_stopwatch_stop(ref_mpi, "export ray");
+    }
+    ref_free(dp_pinf);
+    ref_free(field);
+    RSS(ref_grid_free(ref_grid), "free grid");
+    return REF_SUCCESS;
+  }
+
   RXS(ref_args_find(argc, argv, "--subtract", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {

@@ -296,3 +296,28 @@ REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_face_part(REF_FACE ref_face, REF_NODE ref_node, REF_INT face,
+                         REF_INT *part) {
+  REF_GLOB global, smallest_global;
+  REF_INT node, smallest_global_node;
+
+  /* set first node as smallest */
+  node = 0;
+  global = ref_node_global(ref_node, ref_face_f2n(ref_face, node, face));
+  smallest_global = global;
+  smallest_global_node = node;
+  /* search other nodes for smaller global */
+  for (node = 1; node < 4; node++) {
+    global = ref_node_global(ref_node, ref_face_f2n(ref_face, node, face));
+    if (global < smallest_global) {
+      smallest_global = global;
+      smallest_global_node = node;
+    }
+  }
+
+  *part = ref_node_part(ref_node,
+                        ref_face_f2n(ref_face, smallest_global_node, face));
+
+  return REF_SUCCESS;
+}
