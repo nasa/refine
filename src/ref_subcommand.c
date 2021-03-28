@@ -2747,14 +2747,14 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("  angle of attack %f\n", aoa);
     file = NULL;
     if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_iso_boom_header(&file, ldim, vars, out_sol), "boom header");
+      RSS(ref_iso_boom_header(&file, 1, vars, out_sol), "boom header");
     }
-    if (ref_mpi_once(ref_mpi)) printf(" open %f\n", out_sol);
+    if (ref_mpi_once(ref_mpi)) printf(" open %s\n", out_sol);
     for (i = pos + 5; i + 1 < argc; i += 2) {
       phi = atof(argv[i]);
       h = atof(argv[i + 1]);
       if (ref_mpi_once(ref_mpi)) printf("   phi %f h %f\n", phi, h);
-      RSS(ref_iso_boom_zone(file, ref_grid, field, ldim, center, aoa, phi, h),
+      RSS(ref_iso_boom_zone(file, ref_grid, dp_pinf, 1, center, aoa, phi, h),
           " boom zone");
       ref_mpi_stopwatch_stop(ref_mpi, "export ray");
     }
