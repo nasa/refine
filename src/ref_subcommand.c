@@ -2749,6 +2749,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_iso_boom_header(&file, ldim, vars, out_sol), "boom header");
     }
+    if (ref_mpi_once(ref_mpi)) printf(" open %f\n", out_sol);
     for (i = pos + 5; i + 1 < argc; i += 2) {
       phi = atof(argv[i]);
       h = atof(argv[i + 1]);
