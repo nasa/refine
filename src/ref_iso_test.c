@@ -421,6 +421,53 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
+  { /* boom tet brick */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT ldim = 1;
+    REF_DBL *field;
+    REF_INT node;
+    REF_BOOL debug = REF_FALSE;
+    FILE *file;
+    char filename[] = "ref_iso_boom.tec";
+    REF_DBL center[3] = {0.5, 0.5, 0.5};
+    REF_DBL aoa, phi, h;
+
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "tri");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(field, ldim * ref_node_max(ref_node), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      field[node] = ref_node_xyz(ref_node, 0, node);
+    }
+
+    file = NULL;
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_iso_boom_header(&file, ldim, NULL, filename), "header");
+    }
+    aoa = 10.0;
+    phi = 0.0;
+    h = 0.1;
+    RSS(ref_iso_boom_zone(file, ref_grid, field, ldim, center, aoa, phi, h),
+        " zone 00");
+    aoa = 5.0;
+    phi = 20.0;
+    h = 0.1;
+    RSS(ref_iso_boom_zone(file, ref_grid, field, ldim, center, aoa, phi, h),
+        " zone 20");
+    aoa = 0.0;
+    phi = 40.0;
+    h = 0.1;
+    RSS(ref_iso_boom_zone(file, ref_grid, field, ldim, center, aoa, phi, h),
+        " zone 40");
+
+    ref_free(field);
+    ref_grid_free(ref_grid);
+    if (ref_mpi_once(ref_mpi)) {
+      fclose(file);
+      if (!debug) REIS(0, remove(filename), "test clean up");
+    }
+  }
+
   { /* segment, case values */
     REF_GRID ref_grid;
     REF_NODE ref_node;
