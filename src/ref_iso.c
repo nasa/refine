@@ -504,12 +504,13 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
                            REF_DBL phi, REF_DBL h, REF_DBL *segment0,
                            REF_DBL *segment1) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_DBL x0, x1, dx;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_DBL x, x0, x1, dx;
   REF_DBL new[3];
   REF_INT node;
   REF_BOOL first;
-  x0 = 0;
-  x1 = 1;
+  x0 = REF_DBL_MAX;
+  x1 = REF_DBL_MIN;
   first = REF_TRUE;
   each_ref_node_valid_node(ref_node, node) {
     if (first) {
@@ -521,6 +522,13 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
       x1 = MAX(x1, ref_node_xyz(ref_node, 0, node));
     }
   }
+  RSS(ref_mpi_min(ref_mpi, &x0, &x, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &x, 1, REF_DBL_TYPE), "bcast min");
+  x0 = x;
+  RSS(ref_mpi_max(ref_mpi, &x1, &x, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &x, 1, REF_DBL_TYPE), "bcast max");
+  x1 = x;
+
   dx = x1 - x0;
   x0 -= 0.1 * dx;
   x1 += 0.1 * dx;
