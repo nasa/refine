@@ -559,3 +559,22 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_iso_segment_header(FILE **file_ptr, REF_INT ldim,
+                                  const char **scalar_names,
+                                  const char *filename) {
+  REF_INT i;
+  *file_ptr = fopen(filename, "w");
+  if (NULL == ((void *)*file_ptr)) printf("unable to open %s\n", filename);
+  RNS(*file_ptr, "unable to open file");
+  fprintf(*file_ptr, "title=\"tecplot refine gather\"\n");
+  fprintf(*file_ptr, "variables = \"x\" \"y\" \"z\"");
+  if (NULL != scalar_names) {
+    for (i = 0; i < ldim; i++) fprintf(*file_ptr, " \"%s\"", scalar_names[i]);
+  } else {
+    for (i = 0; i < ldim; i++) fprintf(*file_ptr, " \"V%d\"", i + 1);
+  }
+  fprintf(*file_ptr, "\n");
+
+  return REF_SUCCESS;
+}
