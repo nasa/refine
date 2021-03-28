@@ -47,7 +47,7 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
                            REF_DBL phi, REF_DBL h, REF_DBL *segment0,
                            REF_DBL *segment1);
 
-REF_STATUS ref_iso_segment_header(FILE **file, REF_INT ldim,
+REF_STATUS ref_iso_cast_header(FILE **file, REF_INT ldim,
                                   const char **scalar_names,
                                   const char *filename);
 

@@ -560,7 +560,7 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_segment_header(FILE **file_ptr, REF_INT ldim,
+REF_STATUS ref_iso_cast_header(FILE **file_ptr, REF_INT ldim,
                                   const char **scalar_names,
                                   const char *filename) {
   REF_INT i;
