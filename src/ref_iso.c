@@ -560,9 +560,9 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_cast_header(FILE **file_ptr, REF_INT ldim,
-                                  const char **scalar_names,
-                                  const char *filename) {
+REF_STATUS ref_iso_boom_header(FILE **file_ptr, REF_INT ldim,
+                               const char **scalar_names,
+                               const char *filename) {
   REF_INT i;
   *file_ptr = fopen(filename, "w");
   if (NULL == ((void *)*file_ptr)) printf("unable to open %s\n", filename);
@@ -575,6 +575,26 @@ REF_STATUS ref_iso_cast_header(FILE **file_ptr, REF_INT ldim,
     for (i = 0; i < ldim; i++) fprintf(*file_ptr, " \"V%d\"", i + 1);
   }
   fprintf(*file_ptr, "\n");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid, REF_DBL *field,
+                             REF_INT ldim, REF_DBL *center, REF_DBL aoa,
+                             REF_DBL phi, REF_DBL h) {
+  REF_DBL segment0[3], segment1[3];
+  REF_GRID ray_grid;
+  REF_DBL *ray_field;
+  RSS(ref_iso_segment(ref_grid, center, aoa, phi, h, segment0, segment1),
+      "seg");
+  RSS(ref_iso_cast(&ray_grid, &ray_field, ref_grid, field, ldim, segment0,
+                   segment1),
+      "cast");
+
+  SUPRESS_UNUSED_COMPILER_WARNING(file);
+
+  ref_free(ray_field);
+  ref_grid_free(ray_grid);
 
   return REF_SUCCESS;
 }
