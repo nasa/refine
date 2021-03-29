@@ -26,6 +26,7 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_node.h"
+#include "ref_sort.h"
 
 static REF_STATUS ref_iso_ghost(REF_GRID iso_grid, REF_EDGE ref_edge,
                                 REF_INT *new_node) {
@@ -504,12 +505,13 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
                            REF_DBL phi, REF_DBL h, REF_DBL *segment0,
                            REF_DBL *segment1) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_DBL x0, x1, dx;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_DBL x, x0, x1, dx;
   REF_DBL new[3];
   REF_INT node;
   REF_BOOL first;
-  x0 = 0;
-  x1 = 1;
+  x0 = REF_DBL_MAX;
+  x1 = REF_DBL_MIN;
   first = REF_TRUE;
   each_ref_node_valid_node(ref_node, node) {
     if (first) {
@@ -521,6 +523,13 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
       x1 = MAX(x1, ref_node_xyz(ref_node, 0, node));
     }
   }
+  RSS(ref_mpi_min(ref_mpi, &x0, &x, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &x, 1, REF_DBL_TYPE), "bcast min");
+  x0 = x;
+  RSS(ref_mpi_max(ref_mpi, &x1, &x, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &x, 1, REF_DBL_TYPE), "bcast max");
+  x1 = x;
+
   dx = x1 - x0;
   x0 -= 0.1 * dx;
   x1 += 0.1 * dx;
@@ -556,6 +565,94 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
   segment1[0] = center[0] + new[0];
   segment1[1] = center[1] + new[1];
   segment1[2] = center[2] + new[2];
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_iso_boom_header(FILE **file_ptr, REF_INT ldim,
+                               const char **scalar_names,
+                               const char *filename) {
+  REF_INT i;
+  *file_ptr = fopen(filename, "w");
+  if (NULL == ((void *)*file_ptr)) printf("unable to open %s\n", filename);
+  RNS(*file_ptr, "unable to open file");
+  fprintf(*file_ptr, "title=\"tecplot refine gather\"\n");
+  fprintf(*file_ptr, "variables = \"x\" \"y\" \"z\"");
+  if (NULL != scalar_names) {
+    for (i = 0; i < ldim; i++) fprintf(*file_ptr, " \"%s\"", scalar_names[i]);
+  } else {
+    for (i = 0; i < ldim; i++) fprintf(*file_ptr, " \"V%d\"", i + 1);
+  }
+  fprintf(*file_ptr, "\n");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid, REF_DBL *field,
+                             REF_INT ldim, REF_DBL *center, REF_DBL aoa,
+                             REF_DBL phi, REF_DBL h) {
+  REF_DBL segment0[3], segment1[3], ds[3], dt[3];
+  REF_GRID ray_grid;
+  REF_DBL *ray_field;
+  REF_DBL *local_xyzf, *xyzf, *t;
+  REF_NODE ref_node;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT node, local_n, n, *source, i, *order;
+
+  RSS(ref_iso_segment(ref_grid, center, aoa, phi, h, segment0, segment1),
+      "seg");
+  for (i = 0; i < 3; i++) ds[i] = segment1[i] - segment0[i];
+  RSS(ref_math_normalize(ds), "segment unit vector");
+
+  RSS(ref_iso_cast(&ray_grid, &ray_field, ref_grid, field, ldim, segment0,
+                   segment1),
+      "cast");
+  ref_node = ref_grid_node(ray_grid);
+  local_n = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      local_n++;
+    }
+  }
+  ref_malloc(local_xyzf, local_n * (3 + ldim), REF_DBL);
+  local_n = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      for (i = 0; i < 3; i++)
+        local_xyzf[i + (3 + ldim) * local_n] = ref_node_xyz(ref_node, i, node);
+      for (i = 0; i < ldim; i++)
+        local_xyzf[3 + i + (3 + ldim) * local_n] = ray_field[i + node * ldim];
+      local_n++;
+    }
+  }
+  ref_free(ray_field);
+  ref_grid_free(ray_grid);
+
+  RSS(ref_mpi_allconcat(ref_mpi, 3 + ldim, local_n, local_xyzf, &n, &source,
+                        (void **)(&xyzf), REF_DBL_TYPE),
+      "concat");
+  ref_free(local_xyzf);
+  if (ref_mpi_once(ref_mpi)) {
+    ref_free(source);
+    ref_malloc(t, n, REF_DBL);
+
+    for (node = 0; node < n; node++) {
+      for (i = 0; i < 3; i++) dt[i] = xyzf[i + (3 + ldim) * node] - segment0[i];
+      t[node] = ref_math_dot(dt, ds);
+    }
+    ref_malloc(order, n, REF_INT);
+    RSS(ref_sort_heap_dbl(n, t, order), "sort t");
+    fprintf(file, " zone t=\"PHI=%.1f,R=%.1f\"\n", phi, h);
+    for (node = 0; node < n; node++) {
+      for (i = 0; i < 3 + ldim; i++) {
+        fprintf(file, " %.15e", xyzf[i + (3 + ldim) * order[node]]);
+      }
+      fprintf(file, "\n");
+    }
+    ref_free(order);
+    ref_free(t);
+    ref_free(xyzf);
+  }
 
   return REF_SUCCESS;
 }
