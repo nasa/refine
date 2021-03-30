@@ -3622,3 +3622,35 @@ REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid, const char *filename) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_gather_volume_status_tec(REF_GRID ref_grid,
+                                        const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT edge, node0, node1;
+  REF_EDGE ref_edge;
+  REF_DBL *scalar, edge_ratio;
+  const char *vars[2];
+  REF_INT ldim = 2;
+
+  vars[0] = "s";
+  vars[1] = "l";
+  ref_malloc_init(scalar, ldim * ref_node_max(ref_node), REF_DBL, 1.0);
+  RSS(ref_edge_create(&ref_edge, ref_grid), "create edges");
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    node0 = ref_edge_e2n(ref_edge, 0, edge);
+    node1 = ref_edge_e2n(ref_edge, 1, edge);
+    RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
+    scalar[0 + ldim * node0] = MIN(scalar[0 + ldim * node0], edge_ratio);
+    scalar[0 + ldim * node1] = MIN(scalar[0 + ldim * node1], edge_ratio);
+    scalar[1 + ldim * node0] = MAX(scalar[1 + ldim * node0], edge_ratio);
+    scalar[1 + ldim * node1] = MAX(scalar[1 + ldim * node1], edge_ratio);
+  }
+  RSS(ref_edge_free(ref_edge), "free edges");
+
+  RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, vars, filename),
+      "dump");
+
+  ref_free(scalar);
+
+  return REF_SUCCESS;
+}

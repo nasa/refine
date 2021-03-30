@@ -603,7 +603,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_verify_param(ref_grid), "final params");
   ref_mpi_stopwatch_stop(ref_mpi, "verify final params");
 
-  /* export via -x grid.ext and -f final-surf.tec*/
+  /* export via -x grid.ext and -f final-surf.tec and -q final-vol.plt */
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
       if (ref_mpi_para(ref_mpi)) {
@@ -622,6 +622,11 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       if (ref_mpi_once(ref_mpi))
         printf("gather final surface status %s\n", argv[opt + 1]);
       RSS(ref_gather_surf_status_tec(ref_grid, argv[opt + 1]), "gather -f");
+    }
+    if (strcmp(argv[opt], "-q") == 0) {
+      if (ref_mpi_once(ref_mpi))
+        printf("gather final volume status %s\n", argv[opt + 1]);
+      RSS(ref_gather_volume_status_tec(ref_grid, argv[opt + 1]), "gather -f");
     }
   }
 
