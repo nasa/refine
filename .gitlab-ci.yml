@@ -1,7 +1,7 @@
 variables:
   GIT_STRATEGY: clone
 
-ref-accept-k:
+.ref-accept-k:
   only:
     - merge_requests
   tags:
@@ -13,7 +13,7 @@ ref-accept-k:
       - "refine-*.tar.gz"
     expire_in: 1 week
 
-pro-accept-k:
+.pro-accept-k:
   only:
     - merge_requests
   tags:
@@ -25,7 +25,7 @@ pro-accept-k:
       - "CodeCoverageReport.tar.gz"
     expire_in: 1 week
 
-c2s-accept-k:
+.c2s-accept-k:
   only:
     - merge_requests
   tags:
@@ -47,7 +47,7 @@ merge-boot-accept-k:
       - "log-*"
     expire_in: 1 week
 
-merge-cmake-accept-k:
+.merge-cmake-accept-k:
   only:
     - merge_requests
   tags:
