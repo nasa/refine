@@ -45,7 +45,9 @@ do
     ((i=i+1))
     if [ $((i%12)) -eq 0 ];
     then
-	sleep 30
+	uptime
+	sleep 20
+	uptime
     fi
 done
     
