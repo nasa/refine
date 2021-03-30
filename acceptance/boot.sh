@@ -33,7 +33,7 @@ export PATH=`pwd`/egads/src:${PATH}
 
 output=`pwd`/../log-bootstrap-status.txt
 
-cd ../S2S
+cd ../bootstrap
 
 sketches=`find . -name accept.sh`
 echo ${sketches}
@@ -45,11 +45,15 @@ do
     ((i=i+1))
     if [ $((i%12)) -eq 0 ];
     then
-	sleep 30
+	uptime
+	sleep 20
+	uptime
     fi
 done
-    
+
+uptime
 wait
+uptime
 
 statuses=`find . -name accept-bootstrap-status.txt | sort`
 for status in ${statuses}
