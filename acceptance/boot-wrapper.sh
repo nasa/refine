@@ -28,7 +28,7 @@ cd ${build_directory_root} && \
     pwd && \
     which git && \
     which git-lfs && \
-    git clone ${CI_REPOSITORY_URL} && \
+    time git clone ${CI_REPOSITORY_URL} && \
     time git clone git@gitlab.larc.nasa.gov:sketch-to-solution/bootstrap.git && \
     cd refine && \
       pwd && \
