@@ -19,7 +19,14 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}-metric.solb -o ${outproj} -s ${sweeps} -t -f ${outproj}_stat.tec | tee ${inproj}_refine_out
+    ${two}/ref adapt ${inproj}.meshb \
+	  -g ega.egads \
+	  -m ${inproj}-metric.solb \
+	  -x ${outproj}.meshb -s ${sweeps} \
+	  -t \
+	  -f ${outproj}_stat.tec \
+	  -q ${outproj}_stat.plt \
+	| tee ${inproj}_refine_out
     cp ref_gather_movie.tec ${inproj}_movie.tec
     cp ref_gather_histo.tec ${inproj}_histo.tec
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}-metric.solb
