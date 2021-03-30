@@ -50,8 +50,10 @@ do
 	uptime
     fi
 done
-    
+
+uptime
 wait
+uptime
 
 statuses=`find . -name accept-bootstrap-status.txt | sort`
 for status in ${statuses}
