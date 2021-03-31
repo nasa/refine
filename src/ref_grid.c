@@ -139,7 +139,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   REF_INT *o2n, *n2o;
   REF_CELL ref_cell;
   REF_EDGE ref_edge;
-  REF_BOOL timing = REF_TRUE;
+  REF_BOOL timing = REF_FALSE;
 
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync globals");
 
