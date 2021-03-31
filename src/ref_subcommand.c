@@ -283,6 +283,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_INT node;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_DBL gradation = 10.0;
+  REF_BOOL timing = REF_TRUE;
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -296,12 +297,14 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
     yplus = distance[node] / spalding_yplus;
     RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
   }
+  if (timing) ref_mpi_stopwatch_stop(ref_mpi, "spalding uplus");
   RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
+  if (timing) ref_mpi_stopwatch_stop(ref_mpi, "spalding recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
       "local lp=4 norm scaling");
-  ref_mpi_stopwatch_stop(ref_mpi, "spalding recon");
+  if (timing) ref_mpi_stopwatch_stop(ref_mpi, "spalding scale");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "set complexity");
