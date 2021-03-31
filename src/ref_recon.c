@@ -1082,6 +1082,7 @@ REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   switch (recon) {
     case REF_RECON_L2PROJECTION:
       RSS(ref_recon_l2_projection_hessian(ref_grid, scalar, hessian), "l2");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "l2 projection");
       ref_malloc(replace, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
       if (ref_grid_twod(ref_grid)) {
         RSS(ref_recon_mask_edg(ref_grid, replace, 6), "mask edg");
@@ -1091,6 +1092,7 @@ REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       RSS(ref_recon_extrapolate_zeroth(ref_grid, hessian, replace, 6),
           "bound extrap");
       ref_free(replace);
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "zeroth extrap");
       break;
     case REF_RECON_KEXACT:
       RSS(ref_recon_kexact_gradient_hessian(ref_grid, scalar, NULL, hessian),
