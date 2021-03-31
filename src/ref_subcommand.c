@@ -301,6 +301,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
       "local lp=4 norm scaling");
+  ref_mpi_stopwatch_stop(ref_mpi, "spalding recon");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "set complexity");
@@ -309,7 +310,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   ref_free(uplus);
   ref_free(distance);
   ref_free(metric);
-  ref_mpi_stopwatch_stop(ref_mpi, "spalding metric");
+  ref_mpi_stopwatch_stop(ref_mpi, "spalding gradation");
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
       ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
     RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
