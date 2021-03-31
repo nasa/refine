@@ -319,11 +319,12 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   return REF_SUCCESS;
 }
 
-static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
+static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_mesh = NULL;
   char *in_metric = NULL;
   char *in_egads = NULL;
   REF_GRID ref_grid = NULL;
+  REF_MPI ref_mpi = ref_mpi_orig;
   REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
@@ -341,10 +342,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_mesh), "part");
+    ref_mpi = ref_grid_mpi(ref_grid); /* ref_grid made a deep copy */
     ref_mpi_stopwatch_stop(ref_mpi, "part");
   } else {
     if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_mesh);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
+    ref_mpi = ref_grid_mpi(ref_grid); /* ref_grid made a deep copy */
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
   if (ref_mpi_once(ref_mpi))
@@ -1646,11 +1649,12 @@ static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
+static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
   char filename[1024];
   REF_GRID ref_grid = NULL;
+  REF_MPI ref_mpi = ref_mpi_orig;
   REF_GRID extruded_grid = NULL;
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
@@ -1778,6 +1782,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   sprintf(filename, "%s.meshb", in_project);
   if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
   RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
+  ref_mpi = ref_grid_mpi(ref_grid); /* ref_grid made a deep copy */
   ref_mpi_stopwatch_stop(ref_mpi, "part");
   if (ref_mpi_once(ref_mpi))
     printf("  read " REF_GLOB_FMT " vertices\n",
