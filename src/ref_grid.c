@@ -139,20 +139,26 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   REF_INT *o2n, *n2o;
   REF_CELL ref_cell;
   REF_EDGE ref_edge;
+  REF_BOOL timing = REF_TRUE;
 
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync globals");
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
   RSS(ref_edge_rcm(ref_edge, &o2n, &n2o), "compact");
   RSS(ref_edge_free(ref_edge), "free edge");
+  if (timing) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), " pack rcm");
 
   RSS(ref_node_pack(ref_grid_node(ref_grid), o2n, n2o), "pack node");
+  if (timing) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), " pack node");
   each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_cell_pack(ref_cell, o2n), "pack cell");
   }
+  if (timing) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), " pack cell");
 
   RSS(ref_geom_pack(ref_grid_geom(ref_grid), o2n), "pack geom");
+  if (timing) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), " pack geom");
   RSS(ref_interp_pack(ref_grid_interp(ref_grid), n2o), "pack interp");
+  if (timing) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), " pack interp");
 
   ref_free(n2o);
   ref_free(o2n);
