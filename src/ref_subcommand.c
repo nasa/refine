@@ -302,6 +302,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   if (timing) ref_mpi_stopwatch_stop(ref_mpi, "spalding recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
+  if (timing) ref_mpi_stopwatch_stop(ref_mpi, "spalding roundoff limit");
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
       "local lp=4 norm scaling");
   if (timing) ref_mpi_stopwatch_stop(ref_mpi, "spalding scale");
