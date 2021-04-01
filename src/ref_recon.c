@@ -933,42 +933,39 @@ REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid, REF_DBL *recon,
 }
 
 REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node, node0, node1, cell, cell_edge;
-  REF_DBL radius, dist;
+  REF_INT node, node0, node1, edge;
+  REF_DBL *radius, dist;
   REF_DBL round_off_jitter = 1.0e-12;
   REF_DBL eig_floor;
   REF_DBL diag_system[12];
+  REF_EDGE ref_edge;
 
-  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid))
-    ref_cell = ref_grid_tri(ref_grid);
+  ref_malloc_init(radius, ref_node_max(ref_node), REF_DBL, -1.0);
+  RSS(ref_edge_create(&ref_edge, ref_grid), "edges");
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    node0 = ref_edge_e2n(ref_edge, 0, edge);
+    node1 = ref_edge_e2n(ref_edge, 1, edge);
+    dist = sqrt(
+        pow(ref_node_xyz(ref_node, 0, node1) - ref_node_xyz(ref_node, 0, node0),
+            2) +
+        pow(ref_node_xyz(ref_node, 1, node1) - ref_node_xyz(ref_node, 1, node0),
+            2) +
+        pow(ref_node_xyz(ref_node, 2, node1) - ref_node_xyz(ref_node, 2, node0),
+            2));
+    if (radius[node0] < 0.0) radius[node0] = dist;
+    radius[node0] = MIN(radius[node0], dist);
+    if (radius[node1] < 0.0) radius[node1] = dist;
+    radius[node1] = MIN(radius[node1], dist);
+  }
+  ref_edge_free(ref_edge);
 
   each_ref_node_valid_node(ref_node, node) {
-    radius = -1.0;
-    each_ref_cell_valid_cell(ref_cell, cell) {
-      each_ref_cell_cell_edge(ref_cell, cell_edge) {
-        node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
-        node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
-        if (node0 == node || node1 == node) {
-          dist = sqrt(pow(ref_node_xyz(ref_node, 0, node1) -
-                              ref_node_xyz(ref_node, 0, node0),
-                          2) +
-                      pow(ref_node_xyz(ref_node, 1, node1) -
-                              ref_node_xyz(ref_node, 1, node0),
-                          2) +
-                      pow(ref_node_xyz(ref_node, 2, node1) -
-                              ref_node_xyz(ref_node, 2, node0),
-                          2));
-          if (radius < 0.0) radius = dist;
-          radius = MIN(radius, dist);
-        }
-      }
-    }
     /* 2nd order central finite difference */
-    RAS(ref_math_divisible((4 * round_off_jitter), (radius * radius)),
-        "element with zero edge length ro missing element");
-    eig_floor = (4 * round_off_jitter) / (radius * radius);
+    RAS(ref_math_divisible((4 * round_off_jitter),
+                           (radius[node] * radius[node])),
+        "element with zero edge length or missing element");
+    eig_floor = (4 * round_off_jitter) / (radius[node] * radius[node]);
 
     RSS(ref_matrix_diag_m(&(recon[6 * node]), diag_system), "eigen decomp");
     ref_matrix_eig(diag_system, 0) =
@@ -979,6 +976,7 @@ REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
         MAX(ref_matrix_eig(diag_system, 2), eig_floor);
     RSS(ref_matrix_form_m(diag_system, &(recon[6 * node])), "re-form hess");
   }
+  ref_free(radius);
 
   RSS(ref_node_ghost_dbl(ref_node, recon, 6), "update ghosts");
 
