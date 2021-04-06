@@ -858,7 +858,12 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
   }
 
-  RSS(ref_cavity_verify_face_manifold(ref_cavity), "swap face manifold");
+  RSB(ref_cavity_verify_face_manifold(ref_cavity), "swap face manifold", {
+    printf(" %f %f %f\n",
+           ref_node_xyz(ref_node, 0, ref_cavity_node(ref_cavity)),
+           ref_node_xyz(ref_node, 1, ref_cavity_node(ref_cavity)),
+           ref_node_xyz(ref_node, 2, ref_cavity_node(ref_cavity)));
+  });
   RSS(ref_cavity_verify_seg_manifold(ref_cavity), "swap seg manifold");
 
   return REF_SUCCESS;

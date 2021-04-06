@@ -1624,7 +1624,10 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   if (ref_grid_surf(ref_grid)) {
     qtet_orig = 1.0;
   } else {
-    RSS(ref_smooth_tet_quality_around(ref_grid, node, &qtet_orig), "q tet");
+    RSB(ref_smooth_tet_quality_around(ref_grid, node, &qtet_orig), "q tet", {
+      printf(" %f %f %f\n", ref_node_xyz(ref_node, 0, node),
+             ref_node_xyz(ref_node, 1, node), ref_node_xyz(ref_node, 2, node));
+    });
   }
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri_orig), "q tri");
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
