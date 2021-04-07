@@ -2132,7 +2132,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
   REF_GLOB global;
-  REF_INT ntet, node_per;
+  REF_INT ntri, ntet, node_per, id;
   REF_INT node, nnode_surface, item, new_node;
   REF_DBL xyz[3], dist;
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2226,6 +2226,25 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   fclose(file);
 
   /* check .1.face when paranoid, but tetgen -z should not mess with them */
+  snprintf(filename, 896, "%s-tetgen.1.face", project);
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+  REIS(1, fscanf(file, "%d", &ntri), "face header ntri");
+  REIS(1, fscanf(file, "%d", &mark), "face header mark");
+  REIS(1, mark, "face have mark");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  for (cell = 0; cell < ntri; cell++) {
+    REIS(1, fscanf(file, "%d", &item), "tri item");
+    RES(cell, item, "tri index");
+    for (node = 0; node < 3; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "tri");
+    if (1 == mark) REIS(1, fscanf(file, "%d", &id), "tri mark id");
+    RSS(ref_cell_with(ref_cell, nodes, &new_cell), "find tri");
+  }
+
+  fclose(file);
 
   snprintf(filename, 896, "%s-tetgen.1.ele", project);
   file = fopen(filename, "r");
@@ -2241,7 +2260,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   ref_cell = ref_grid_tet(ref_grid);
   for (cell = 0; cell < ntet; cell++) {
     REIS(1, fscanf(file, "%d", &item), "tet item");
-    RES(cell, item, "node index");
+    RES(cell, item, "tet index");
     for (node = 0; node < 4; node++)
       RES(1, fscanf(file, "%d", &(nodes[node])), "tet");
     RSS(ref_cell_add(ref_cell, nodes, &new_cell), "new tet");
