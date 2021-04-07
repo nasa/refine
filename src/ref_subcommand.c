@@ -58,7 +58,7 @@ static void usage(const char *name) {
   printf("  distance     Calculate wall distance (for turbulence model)\n");
   printf("  examine      Report mesh or solution file meta data.\n");
   /*printf("  grow         Fills surface mesh with volume to debug
-   * boostrap\n");*/
+   * bootstrap\n");*/
   printf("  interpolate  Interpolate a field from one mesh to another\n");
   printf("  loop         Multiscale metric, adapt, and interpolation.\n");
   printf("  multiscale   Compute a multiscale metric.\n");
@@ -926,6 +926,9 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       goto shutdown;
     }
     ref_grid_surf(ref_grid) = REF_FALSE; /* needed until vol mesher para */
+    RSS(ref_validation_boundary_face(ref_grid),
+        "boundary-interior connectivity");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "boundary-volume check");
 
     RSS(ref_split_edge_geometry(ref_grid), "split geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
@@ -1079,7 +1082,7 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT self_intersections;
 
   if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref volume is not parallel");
+    RSS(REF_IMPLEMENT, "ref grow is not parallel");
   }
   if (argc < 4) goto shutdown;
   in_file = argv[2];
@@ -1139,8 +1142,19 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
     goto shutdown;
   }
 
+  ref_grid_surf(ref_grid) = REF_FALSE; /* needed until vol mesher para */
+  RSS(ref_validation_boundary_face(ref_grid), "boundary-interior connectivity");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "boundary-volume check");
+
+  RSS(ref_split_edge_geometry(ref_grid), "split geom");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
+
+  RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
+
   printf("export %s\n", out_file);
   RSS(ref_export_by_extension(ref_grid, out_file), "vol export");
+
+  RSS(ref_validation_cell_volume(ref_grid), "vol");
 
   RSS(ref_grid_free(ref_grid), "create");
 

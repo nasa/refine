@@ -2132,11 +2132,14 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
   REF_GLOB global;
-  REF_INT ntet, node_per;
+  REF_INT ntri, ntet, node_per, id;
   REF_INT node, nnode_surface, item, new_node;
   REF_DBL xyz[3], dist;
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   int system_status;
+  REF_BOOL delete_temp_files = REF_TRUE;
+  REF_BOOL problem;
+  REF_BOOL *position;
 
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
@@ -2148,7 +2151,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   printf("    to limit the number of inserted nodes and run time.\n");
   printf("  The 'q20/10' argument (radius-edge-ratio/dihedral-angle)\n");
   printf("    can be adjusted for faster initial volume adaptation.\n");
-  printf("  See 'ref boostrap -h' for '--mesher-options' description.\n");
+  printf("  See 'ref bootstrap -h' for '--mesher-options' description.\n");
 
   if (NULL == options) {
     snprintf(command, 1024,
@@ -2225,6 +2228,47 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   fclose(file);
 
   /* check .1.face when paranoid, but tetgen -z should not mess with them */
+  problem = REF_FALSE;
+  snprintf(filename, 896, "%s-tetgen.1.face", project);
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+  REIS(1, fscanf(file, "%d", &ntri), "face header ntri");
+  REIS(1, fscanf(file, "%d", &mark), "face header mark");
+  REIS(1, mark, "face have mark");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  ref_malloc_init(position, ref_cell_max(ref_cell), REF_INT, REF_EMPTY);
+  for (cell = 0; cell < ntri; cell++) {
+    REIS(1, fscanf(file, "%d", &item), "tri item");
+    RES(cell, item, "tri index");
+    for (node = 0; node < 3; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "tri");
+    if (1 == mark) REIS(1, fscanf(file, "%d", &id), "tri mark id");
+    if (REF_SUCCESS == ref_cell_with(ref_cell, nodes, &new_cell)) {
+      position[new_cell] = cell;
+    } else {
+      problem = REF_TRUE;
+      ref_node_location(ref_node, nodes[0]);
+      ref_node_location(ref_node, nodes[1]);
+      ref_node_location(ref_node, nodes[2]);
+      REF_WHERE("tetgen face tri not found in ref_grid");
+    }
+  }
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (REF_EMPTY == position[cell]) {
+      problem = REF_TRUE;
+      ref_node_location(ref_node, nodes[0]);
+      ref_node_location(ref_node, nodes[1]);
+      ref_node_location(ref_node, nodes[2]);
+      printf("face id %d\n", nodes[3]);
+      REF_WHERE("ref_grid tri not found in tetgen face");
+    }
+  }
+  ref_free(position);
+  RAS(!problem, "problem detected in tetgen triangles");
+
+  fclose(file);
 
   snprintf(filename, 896, "%s-tetgen.1.ele", project);
   file = fopen(filename, "r");
@@ -2240,7 +2284,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   ref_cell = ref_grid_tet(ref_grid);
   for (cell = 0; cell < ntet; cell++) {
     REIS(1, fscanf(file, "%d", &item), "tet item");
-    RES(cell, item, "node index");
+    RES(cell, item, "tet index");
     for (node = 0; node < 4; node++)
       RES(1, fscanf(file, "%d", &(nodes[node])), "tet");
     RSS(ref_cell_add(ref_cell, nodes, &new_cell), "new tet");
@@ -2251,16 +2295,18 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
 
   ref_grid_surf(ref_grid) = REF_FALSE;
 
-  snprintf(filename, 896, "%s-tetgen.1.edge", project);
-  REIS(0, remove(filename), "rm .1.edge tetgen output file");
-  snprintf(filename, 896, "%s-tetgen.1.face", project);
-  REIS(0, remove(filename), "rm .1.face tetgen output file");
-  snprintf(filename, 896, "%s-tetgen.1.node", project);
-  REIS(0, remove(filename), "rm .1.node tetgen output file");
-  snprintf(filename, 896, "%s-tetgen.1.ele", project);
-  REIS(0, remove(filename), "rm .1.ele tetgen output file");
-  snprintf(filename, 896, "%s-tetgen.poly", project);
-  REIS(0, remove(filename), "rm .poly tetgen input file");
+  if (delete_temp_files) {
+    snprintf(filename, 896, "%s-tetgen.1.edge", project);
+    REIS(0, remove(filename), "rm .1.edge tetgen output file");
+    snprintf(filename, 896, "%s-tetgen.1.face", project);
+    REIS(0, remove(filename), "rm .1.face tetgen output file");
+    snprintf(filename, 896, "%s-tetgen.1.node", project);
+    REIS(0, remove(filename), "rm .1.node tetgen output file");
+    snprintf(filename, 896, "%s-tetgen.1.ele", project);
+    REIS(0, remove(filename), "rm .1.ele tetgen output file");
+    snprintf(filename, 896, "%s-tetgen.poly", project);
+    REIS(0, remove(filename), "rm .poly tetgen input file");
+  }
 
   return REF_SUCCESS;
 }
