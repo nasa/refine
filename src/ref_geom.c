@@ -2137,6 +2137,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   REF_DBL xyz[3], dist;
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   int system_status;
+  REF_BOOL delete_temp_files = REF_TRUE;
 
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
@@ -2251,16 +2252,18 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
 
   ref_grid_surf(ref_grid) = REF_FALSE;
 
-  snprintf(filename, 896, "%s-tetgen.1.edge", project);
-  REIS(0, remove(filename), "rm .1.edge tetgen output file");
-  snprintf(filename, 896, "%s-tetgen.1.face", project);
-  REIS(0, remove(filename), "rm .1.face tetgen output file");
-  snprintf(filename, 896, "%s-tetgen.1.node", project);
-  REIS(0, remove(filename), "rm .1.node tetgen output file");
-  snprintf(filename, 896, "%s-tetgen.1.ele", project);
-  REIS(0, remove(filename), "rm .1.ele tetgen output file");
-  snprintf(filename, 896, "%s-tetgen.poly", project);
-  REIS(0, remove(filename), "rm .poly tetgen input file");
+  if (delete_temp_files) {
+    snprintf(filename, 896, "%s-tetgen.1.edge", project);
+    REIS(0, remove(filename), "rm .1.edge tetgen output file");
+    snprintf(filename, 896, "%s-tetgen.1.face", project);
+    REIS(0, remove(filename), "rm .1.face tetgen output file");
+    snprintf(filename, 896, "%s-tetgen.1.node", project);
+    REIS(0, remove(filename), "rm .1.node tetgen output file");
+    snprintf(filename, 896, "%s-tetgen.1.ele", project);
+    REIS(0, remove(filename), "rm .1.ele tetgen output file");
+    snprintf(filename, 896, "%s-tetgen.poly", project);
+    REIS(0, remove(filename), "rm .poly tetgen input file");
+  }
 
   return REF_SUCCESS;
 }
