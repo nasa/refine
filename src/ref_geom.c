@@ -2138,6 +2138,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   int system_status;
   REF_BOOL delete_temp_files = REF_TRUE;
+  REF_BOOL problem;
 
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
@@ -2226,6 +2227,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   fclose(file);
 
   /* check .1.face when paranoid, but tetgen -z should not mess with them */
+  problem = REF_FALSE;
   snprintf(filename, 896, "%s-tetgen.1.face", project);
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -2241,8 +2243,15 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
     for (node = 0; node < 3; node++)
       RES(1, fscanf(file, "%d", &(nodes[node])), "tri");
     if (1 == mark) REIS(1, fscanf(file, "%d", &id), "tri mark id");
-    RSS(ref_cell_with(ref_cell, nodes, &new_cell), "find tri");
+    if (REF_SUCCESS != ref_cell_with(ref_cell, nodes, &new_cell)) {
+      problem = REF_TRUE;
+      ref_node_location(ref_node, nodes[0]);
+      ref_node_location(ref_node, nodes[1]);
+      ref_node_location(ref_node, nodes[2]);
+      REF_WHERE("tetgen face tri not found in ref_grid");
+    }
   }
+  RAS(!problem, "problem detected in tetgen triangles");
 
   fclose(file);
 
