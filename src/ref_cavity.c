@@ -1561,7 +1561,7 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   RNS(f, "unable to open file");
 
   fprintf(f, "title=\"tecplot refine cavity\"\n");
-  fprintf(f, "variables = \"x\" \"y\" \"z\"\n");
+  fprintf(f, "variables = \"x\" \"y\" \"z\" \"i\"\n");
 
   RSS(ref_dict_create(&node_dict), "create nodes");
   RSS(ref_dict_create(&face_dict), "create faces");
@@ -1586,7 +1586,8 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
       xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
       xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
       xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
-      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+      fprintf(f, " %.16e %.16e %.16e %d\n", xyz_phys[0], xyz_phys[1],
+              xyz_phys[2], local);
     }
 
     for (item = 0; item < ref_dict_n(face_dict); item++) {
@@ -1625,7 +1626,8 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
       xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
       xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
       xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
-      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+      fprintf(f, " %.16e %.16e %.16e %d\n", xyz_phys[0], xyz_phys[1],
+              xyz_phys[2], local);
     }
 
     for (item = 0; item < ref_dict_n(face_dict); item++) {
@@ -1670,7 +1672,8 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
       xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
       xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
       xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
-      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+      fprintf(f, " %.16e %.16e %.16e %d\n", xyz_phys[0], xyz_phys[1],
+              xyz_phys[2], local);
     }
 
     for (item = 0; item < ref_dict_n(face_dict); item++) {
@@ -1709,7 +1712,8 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
       xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
       xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
       xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
-      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+      fprintf(f, " %.16e %.16e %.16e %d\n", xyz_phys[0], xyz_phys[1],
+              xyz_phys[2], local);
     }
 
     for (item = 0; item < ref_dict_n(face_dict); item++) {
