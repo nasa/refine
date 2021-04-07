@@ -2139,6 +2139,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   int system_status;
   REF_BOOL delete_temp_files = REF_TRUE;
   REF_BOOL problem;
+  REF_BOOL *position;
 
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
@@ -2237,13 +2238,16 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   REIS(1, mark, "face have mark");
 
   ref_cell = ref_grid_tri(ref_grid);
+  ref_malloc_init(position, ref_cell_max(ref_cell), REF_INT, REF_EMPTY);
   for (cell = 0; cell < ntri; cell++) {
     REIS(1, fscanf(file, "%d", &item), "tri item");
     RES(cell, item, "tri index");
     for (node = 0; node < 3; node++)
       RES(1, fscanf(file, "%d", &(nodes[node])), "tri");
     if (1 == mark) REIS(1, fscanf(file, "%d", &id), "tri mark id");
-    if (REF_SUCCESS != ref_cell_with(ref_cell, nodes, &new_cell)) {
+    if (REF_SUCCESS == ref_cell_with(ref_cell, nodes, &new_cell)) {
+      position[new_cell] = cell;
+    } else {
       problem = REF_TRUE;
       ref_node_location(ref_node, nodes[0]);
       ref_node_location(ref_node, nodes[1]);
@@ -2251,6 +2255,17 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
       REF_WHERE("tetgen face tri not found in ref_grid");
     }
   }
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (REF_EMPTY == position[cell]) {
+      problem = REF_TRUE;
+      ref_node_location(ref_node, nodes[0]);
+      ref_node_location(ref_node, nodes[1]);
+      ref_node_location(ref_node, nodes[2]);
+      printf("face id %d\n", nodes[3]);
+      REF_WHERE("ref_grid tri not found in tetgen face");
+    }
+  }
+  ref_free(position);
   RAS(!problem, "problem detected in tetgen triangles");
 
   fclose(file);
