@@ -1625,6 +1625,45 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_node_scalar_sol(REF_GRID ref_grid, REF_INT ldim,
+                                             REF_DBL *scalar, FILE *file) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT i;
+  REF_INT version, dim;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  dim = 3;
+  if (ref_grid_twod(ref_grid)) dim = 2;
+
+  version = 2;
+
+  if (ref_mpi_once(ref_mpi)) {
+    fprintf(file, "MeshVersionFormatted %d\n\n", version);
+    fprintf(file, "Dimension %d\n\n", dim);
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    fprintf(file, "SolAtVertices\n");
+    fprintf(file, REF_GLOB_FMT "\n", ref_node_n_global(ref_node));
+    fprintf(file, "%d", ldim);
+    for (i = 0; i < ldim; i++) {
+      fprintf(file, " %d", 1);
+    }
+    fprintf(file, "\n");
+  }
+
+  RSS(ref_gather_node_scalar_txt(ref_node, ldim, scalar, " ", REF_FALSE, file),
+      "txt dump in solb");
+
+  if (ref_mpi_once(ref_mpi)) { /* End */
+    fprintf(file, "\nEnd\n");
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
                                   REF_BOOL faceid_insted_of_c2n,
                                   REF_BOOL always_id, REF_BOOL swap_endian,
@@ -2336,6 +2375,27 @@ static REF_STATUS ref_gather_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
   }
 
   RSS(ref_gather_node_scalar_solb(ref_grid, ldim, scalar, file), "nodes");
+
+  if (ref_grid_once(ref_grid)) fclose(file);
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_scalar_sol(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar, const char *filename) {
+  FILE *file;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+  }
+
+  RSS(ref_gather_node_scalar_sol(ref_grid, ldim, scalar, file), "nodes");
 
   if (ref_grid_once(ref_grid)) fclose(file);
 
@@ -3547,6 +3607,10 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
   if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".pcd") == 0) {
     RSS(ref_gather_scalar_pcd(ref_grid, ldim, scalar, scalar_names, filename),
         "scalar pcd");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".sol") == 0) {
+    RSS(ref_gather_scalar_sol(ref_grid, ldim, scalar, filename), "scalar sol");
     return REF_SUCCESS;
   }
   if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0) {
