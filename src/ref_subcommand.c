@@ -2414,7 +2414,6 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
 
   RXS(ref_args_find(argc, argv, "--pcd", &pos), REF_NOT_FOUND, "arg search");
-  printf("pos %d arc %d\n", pos, argc);
   if (REF_EMPTY != pos && pos + 1 < argc) {
     REF_DBL *hh;
     const char *title[] = {"spacing", "decay"};
