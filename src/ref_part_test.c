@@ -469,7 +469,7 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
-    char meshb[] = "ref_part_test.meshb";
+    char meshb[] = "ref_part_test_sol.meshb";
     char solb[] = "ref_part_test.sol";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     ref_grid_meshb_version(ref_grid) = 2;
@@ -495,7 +495,7 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
-    char meshb[] = "ref_part_test.meshb";
+    char meshb[] = "ref_part_test_restart_sol.meshb";
     char solb[] = "ref_part_test.restart_sol";
     REF_NODE ref_node;
     REF_INT node;
@@ -517,6 +517,7 @@ int main(int argc, char *argv[]) {
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
+    ref_node = ref_grid_node(ref_grid);
     RSS(ref_part_scalar(ref_grid, &ldim, &scalar, solb), "part solb");
     each_ref_node_valid_node(ref_node, node) {
       RWDS(1, scalar[0 + ldim * node], -1, "rho");
