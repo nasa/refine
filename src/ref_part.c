@@ -2052,6 +2052,60 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_scalar_cell_restart_sol(REF_GRID ref_grid,
+                                                   REF_INT *ldim,
+                                                   REF_DBL **scalar,
+                                                   const char *filename) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  FILE *file;
+  REF_INT ncell, i, cell_node;
+  REF_INT node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *hits;
+
+  RAS(!ref_mpi_para(ref_mpi), "only implemented for single core");
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  *ldim = 5;
+  REIS(1, fscanf(file, "%d", &ncell), "read ncell");
+  if (ncell != ref_cell_n(ref_cell)) {
+    printf("file %d ref_cell %d\n", ncell, ref_cell_n(ref_cell));
+    THROW("ERROR: global count mismatch");
+  }
+
+  ref_malloc_init(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0.0);
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    REF_DBL rho, u, v, p;
+    REIS(4, fscanf(file, "%lf %lf %lf %lf", &rho, &u, &v, &p),
+         "cell data read");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      (*scalar)[0 + (*ldim) * nodes[cell_node]] += rho;
+      (*scalar)[1 + (*ldim) * nodes[cell_node]] += u;
+      (*scalar)[3 + (*ldim) * nodes[cell_node]] += v;
+      (*scalar)[4 + (*ldim) * nodes[cell_node]] += p;
+      hits[nodes[cell_node]] += 1;
+    }
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    RAS(hits[node] > 0, "zero hits for node");
+    for (i = 0; i < 5; i++) {
+      (*scalar)[i + (*ldim) * node] /= (REF_DBL)hits[node];
+    }
+  }
+  ref_free(hits);
+
+  REIS(0, fclose(file), "close file");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_scalar_sol(REF_NODE ref_node, REF_INT *ldim,
                                       REF_DBL **scalar, const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -2428,6 +2482,12 @@ REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
 
   end_of_string = strlen(filename);
 
+  if (end_of_string > 12 &&
+      strcmp(&filename[end_of_string - 12], ".restart_sol") == 0) {
+    RSS(ref_part_scalar_cell_restart_sol(ref_grid, ldim, scalar, filename),
+        "restart_sol failed");
+    return REF_SUCCESS;
+  }
   if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".sol") == 0) {
     RSS(ref_part_scalar_sol(ref_node, ldim, scalar, filename), "sol failed");
     return REF_SUCCESS;
