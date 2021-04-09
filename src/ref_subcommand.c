@@ -1689,6 +1689,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   const char *interpolant = mach_interpolant;
   const char *lb8_ugrid = "lb8.ugrid";
   const char *b8_ugrid = "b8.ugrid";
+  const char *i_like_grid = "grid";
   const char *mesh_extension = lb8_ugrid;
 
   if (argc < 5) goto shutdown;
@@ -1752,6 +1753,12 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     mesh_extension = b8_ugrid;
   }
 
+  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    mesh_extension = i_like_grid;
+  }
+
   RXS(ref_args_find(argc, argv, "--mesh-extension", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
@@ -1793,11 +1800,22 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
-  sprintf(filename, "%s.meshb", in_project);
-  if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
-  RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
-  ref_mpi = ref_grid_mpi(ref_grid); /* ref_grid made a deep copy */
-  ref_mpi_stopwatch_stop(ref_mpi, "part");
+  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    RAS(!ref_mpi_para(ref_mpi), "--i-like-adaptation is not parallel");
+    sprintf(filename, "%s.grid", in_project);
+    if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, filename), "part");
+    ref_mpi = ref_grid_mpi(ref_grid); /* ref_grid made a deep copy */
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    sprintf(filename, "%s.meshb", in_project);
+    if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
+    ref_mpi = ref_grid_mpi(ref_grid); /* ref_grid made a deep copy */
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  }
   if (ref_mpi_once(ref_mpi))
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
@@ -1879,19 +1897,30 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "verify param");
   }
 
-  RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY == pos) {
-    sprintf(filename, "%s_volume.solb", in_project);
+  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    sprintf(filename, "%s.restart_sol", in_project);
     if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
     RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
         "part scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
   } else {
-    sprintf(filename, "%s_volume.plt", in_project);
-    if (ref_mpi_once(ref_mpi)) printf("reconstruct scalar %s\n", filename);
-    RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-        "part scalar");
-    ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
+    RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY == pos) {
+      sprintf(filename, "%s_volume.solb", in_project);
+      if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
+      RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
+          "part scalar");
+      ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+    } else {
+      sprintf(filename, "%s_volume.plt", in_project);
+      if (ref_mpi_once(ref_mpi)) printf("reconstruct scalar %s\n", filename);
+      RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
+          "part scalar");
+      ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
+    }
   }
 
   if (ref_grid_twod(ref_grid)) {
@@ -2092,8 +2121,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "export metric");
   }
 
-  ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+    ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
     RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   }
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
@@ -2157,7 +2186,9 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
   sprintf(filename, "%s.%s", out_project, mesh_extension);
-  if (ref_grid_twod(ref_grid)) {
+  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY == pos && ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
     if (ref_mpi_once(ref_mpi))
@@ -2170,7 +2201,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf("gather " REF_GLOB_FMT " nodes to %s\n",
              ref_node_n_global(ref_grid_node(ref_grid)), filename);
-    RSS(ref_gather_by_extension(ref_grid, filename), "gather mesh extension");
+    if (ref_mpi_para(ref_mpi)) {
+      RSS(ref_gather_by_extension(ref_grid, filename), "gather mesh extension");
+    } else {
+      RSS(ref_export_by_extension(ref_grid, filename), "export mesh extension");
+    }
   }
   ref_mpi_stopwatch_stop(ref_mpi, "gather mesh extension");
 
@@ -2208,51 +2243,63 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, ref_field), "flip");
   }
 
-  if (ref_grid_twod(ref_grid)) {
-    if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);
-    ref_malloc(extruded_field,
-               ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
-    RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
-                               extruded_field),
-        "extrude field");
-    RSS(ref_validation_finite(extruded_grid, ldim, extruded_field),
-        "extruded field");
-    RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY == pos) {
-      sprintf(filename, "%s-restart.solb", out_project);
-      if (ref_mpi_once(ref_mpi))
-        printf("writing interpolated extruded field %s\n", filename);
-      RSS(ref_gather_scalar_by_extension(extruded_grid, ldim, extruded_field,
-                                         NULL, filename),
-          "gather recept");
-    } else {
-      sprintf(filename, "%s.solb", out_project);
-      if (ref_mpi_once(ref_mpi))
-        printf("writing interpolated field at prism cell centers %s\n",
-               filename);
-      RSS(ref_gather_scalar_cell_solb(extruded_grid, ldim, extruded_field,
-                                      filename),
-          "gather cell center");
-    }
-    ref_free(extruded_field);
-    ref_grid_free(extruded_grid);
+  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    sprintf(filename, "%s.restart_sol", out_project);
+    if (ref_mpi_once(ref_mpi))
+      printf("writing interpolated field at tri cell centers %s\n", filename);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
+                                       filename),
+        "gather cell center");
   } else {
-    RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY == pos) {
-      sprintf(filename, "%s-restart.solb", out_project);
-      if (ref_mpi_once(ref_mpi))
-        printf("writing interpolated field %s\n", filename);
-      RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
-                                         filename),
-          "gather recept");
+    if (ref_grid_twod(ref_grid)) {
+      if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);
+      ref_malloc(extruded_field,
+                 ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
+      RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
+                                 extruded_field),
+          "extrude field");
+      RSS(ref_validation_finite(extruded_grid, ldim, extruded_field),
+          "extruded field");
+      RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY == pos) {
+        sprintf(filename, "%s-restart.solb", out_project);
+        if (ref_mpi_once(ref_mpi))
+          printf("writing interpolated extruded field %s\n", filename);
+        RSS(ref_gather_scalar_by_extension(extruded_grid, ldim, extruded_field,
+                                           NULL, filename),
+            "gather recept");
+      } else {
+        sprintf(filename, "%s.solb", out_project);
+        if (ref_mpi_once(ref_mpi))
+          printf("writing interpolated field at prism cell centers %s\n",
+                 filename);
+        RSS(ref_gather_scalar_cell_solb(extruded_grid, ldim, extruded_field,
+                                        filename),
+            "gather cell center");
+      }
+      ref_free(extruded_field);
+      ref_grid_free(extruded_grid);
     } else {
-      sprintf(filename, "%s.solb", out_project);
-      if (ref_mpi_once(ref_mpi))
-        printf("writing interpolated field at tet cell centers %s\n", filename);
-      RSS(ref_gather_scalar_cell_solb(ref_grid, ldim, ref_field, filename),
-          "gather cell center");
+      RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY == pos) {
+        sprintf(filename, "%s-restart.solb", out_project);
+        if (ref_mpi_once(ref_mpi))
+          printf("writing interpolated field %s\n", filename);
+        RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
+                                           filename),
+            "gather recept");
+      } else {
+        sprintf(filename, "%s.solb", out_project);
+        if (ref_mpi_once(ref_mpi))
+          printf("writing interpolated field at tet cell centers %s\n",
+                 filename);
+        RSS(ref_gather_scalar_cell_solb(ref_grid, ldim, ref_field, filename),
+            "gather cell center");
+      }
     }
   }
   ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
