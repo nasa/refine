@@ -2381,6 +2381,48 @@ static REF_STATUS ref_gather_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_scalar_cell_restart_sol(REF_GRID ref_grid,
+                                                     REF_INT ldim,
+                                                     REF_DBL *scalar,
+                                                     const char *filename) {
+  FILE *file;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
+
+  RAS(!ref_mpi_para(ref_mpi), "only implemented for single core");
+  REIS(5, ldim, "only implemented for ldim=5");
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "%d\n", ref_cell_n(ref_cell));
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    REF_DBL rho, u, v, p;
+    rho = 0;
+    u = 0;
+    v = 0;
+    p = 0;
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      rho += scalar[0 + ldim * nodes[cell_node]];
+      u += scalar[1 + ldim * nodes[cell_node]];
+      v += scalar[3 + ldim * nodes[cell_node]];
+      p += scalar[4 + ldim * nodes[cell_node]];
+    }
+    rho /= (REF_DBL)ref_cell_node_per(ref_cell);
+    u /= (REF_DBL)ref_cell_node_per(ref_cell);
+    v /= (REF_DBL)ref_cell_node_per(ref_cell);
+    p /= (REF_DBL)ref_cell_node_per(ref_cell);
+    fprintf(file, "%.15e %.15e %.15e %.15e\n", rho, u, v, p);
+  }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_scalar_sol(REF_GRID ref_grid, REF_INT ldim,
                                         REF_DBL *scalar, const char *filename) {
   FILE *file;
@@ -3607,6 +3649,12 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
   if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".pcd") == 0) {
     RSS(ref_gather_scalar_pcd(ref_grid, ldim, scalar, scalar_names, filename),
         "scalar pcd");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 12 &&
+      strcmp(&filename[end_of_string - 12], ".restart_sol") == 0) {
+    RSS(ref_gather_scalar_cell_restart_sol(ref_grid, ldim, scalar, filename),
+        "scalar sol");
     return REF_SUCCESS;
   }
   if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".sol") == 0) {
