@@ -54,6 +54,7 @@ REF_STATUS ref_egads_close(REF_GEOM ref_geom) {
   if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
   if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
   if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  if (NULL != ref_geom->pcurves) ref_free((ego *)(ref_geom->pcurves));
   if (NULL != ref_geom->context)
     REIS(EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
 #endif
@@ -81,11 +82,13 @@ REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
 }
 
 #ifdef HAVE_EGADS
-#if !defined(HAVE_EGADS_LITE)
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
+    defined(HAVE_EGADS_EFFECTIVE)
 static REF_STATUS ref_egads_free_body_objects(REF_GEOM ref_geom) {
   if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
   if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
   if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  if (NULL != ref_geom->pcurves) ref_free((ego *)(ref_geom->pcurves));
   ref_free(ref_geom->face_seg_per_rad);
   ref_free(ref_geom->face_min_length);
   ref_free(ref_geom->initial_cell_height);

@@ -96,6 +96,8 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->faces = NULL;
   ref_geom->edges = NULL;
   ref_geom->nodes = NULL;
+  ref_geom->pcurves = NULL;
+  ref_geom->e2f = NULL;
 
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
@@ -112,6 +114,7 @@ REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
   if (NULL == (void *)ref_geom) return REF_NULL;
   ref_facelift_free(ref_geom_facelift(ref_geom));
   ref_free(ref_geom->cad_data);
+  ref_free(ref_geom->e2f);
   if (ref_geom->contex_owned)
     RSS(ref_egads_close(ref_geom), "close egads contex");
   RSS(ref_adj_free(ref_geom->ref_adj), "adj free");
@@ -165,6 +168,14 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->contex_owned = REF_FALSE;
   RSS(ref_geom_share_context(ref_geom, original), "share egads");
 
+  if (NULL == original->e2f) {
+    ref_geom->e2f = NULL;
+  } else {
+    ref_malloc(ref_geom->e2f, 2 * ref_geom->nedge, REF_INT);
+    for (i = 0; i < 2 * ref_geom->nedge; i++)
+      ref_geom->e2f[i] = original->e2f[i];
+  }
+
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
 
@@ -194,6 +205,7 @@ REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
   ref_geom_recipient->faces = ref_geom_donor->faces;
   ref_geom_recipient->edges = ref_geom_donor->edges;
   ref_geom_recipient->nodes = ref_geom_donor->nodes;
+  ref_geom_recipient->pcurves = ref_geom_donor->pcurves;
 
   return REF_SUCCESS;
 }
