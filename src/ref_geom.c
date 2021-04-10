@@ -2974,6 +2974,9 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
           "from");
       if (-1 == sens) local = nnode - 1;
       t[local] = tvalue;
+      RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t[local],
+                                 &(uv[2 * local])),
+          "p-curve uv");
       RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
       RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_EDGE, &tvalue,
                             &sens),
@@ -3397,6 +3400,7 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   FILE *file;
   REF_INT geom, id, min_id, max_id;
+  REF_INT *edge_faces;
 
   file = fopen(filename, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -3416,6 +3420,29 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
 
   for (id = min_id; id <= max_id; id++)
     RSS(ref_geom_edge_tec_zone(ref_grid, id, file), "tec edge");
+
+  if (ref_geom_model_loaded(ref_geom)) {
+    RSS(ref_egads_edge_faces(ref_geom, &edge_faces), "edge faces");
+    for (id = min_id; id <= max_id; id++) {
+      if (edge_faces[0 + 2 * (id - 1)] ==
+          edge_faces[1 + 2 * (id - 1)]) { /* edge used twice by face */
+        RSS(ref_geom_pcrv_tec_zone(ref_grid, id, edge_faces[0 + 2 * (id - 1)],
+                                   1, file),
+            "tec pcrv");
+        RSS(ref_geom_pcrv_tec_zone(ref_grid, id, edge_faces[1 + 2 * (id - 1)],
+                                   -1, file),
+            "tec pcrv");
+      } else { /* edge used by two faces */
+        RSS(ref_geom_pcrv_tec_zone(ref_grid, id, edge_faces[0 + 2 * (id - 1)],
+                                   0, file),
+            "tec pcrv");
+        RSS(ref_geom_pcrv_tec_zone(ref_grid, id, edge_faces[1 + 2 * (id - 1)],
+                                   0, file),
+            "tec pcrv");
+      }
+    }
+    ref_free(edge_faces);
+  }
 
   min_id = REF_INT_MAX;
   max_id = REF_INT_MIN;
