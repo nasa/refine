@@ -1045,6 +1045,7 @@ static REF_STATUS ref_import_i_like_cfd_grid(REF_GRID *ref_grid_ptr,
   REF_INT *count;
   REF_INT n0, n1, n2, n3;
   REF_DBL x, y;
+  char line[1024];
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -1097,9 +1098,11 @@ static REF_STATUS ref_import_i_like_cfd_grid(REF_GRID *ref_grid_ptr,
     REIS(1, fscanf(file, "%d\n", &(count[id - 1])), "elements in edge groups");
   }
   for (id = 1; id <= nid; id++) {
-    REIS(1, fscanf(file, "%d\n", &n0), "first edge node");
+    RNS(fgets(line, 1024, file), "read line for first edge node");
+    REIS(1, sscanf(line, "%d", &n0), "first edge node");
     for (i = 1; i < count[id - 1]; i++) {
-      REIS(1, fscanf(file, "%d\n", &n1), "next edge node");
+      RNS(fgets(line, 1024, file), "read line for first edge node");
+      REIS(1, sscanf(line, "%d", &n1), "next edge node");
       nodes[0] = n0 - 1;
       nodes[1] = n1 - 1;
       nodes[2] = id;

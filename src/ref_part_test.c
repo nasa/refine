@@ -464,6 +464,73 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(metric_file), "test clean up");
   }
 
+  { /* gather/part .sol by extension (version 2) */
+    REF_GRID ref_grid;
+    REF_INT ldim;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    char meshb[] = "ref_part_test_sol.meshb";
+    char solb[] = "ref_part_test.sol";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(ref_grid) = 2;
+    RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
+    ldim = 2;
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 1.0);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       solb),
+        "gather solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, solb), "part solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(meshb), "test clean up");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* gather/part .restart_sol by extension */
+    REF_GRID ref_grid;
+    REF_INT ldim;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    char meshb[] = "ref_part_test_restart_sol.meshb";
+    char solb[] = "ref_part_test.restart_sol";
+    REF_NODE ref_node;
+    REF_INT node;
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 5), "set up tet");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
+    ldim = 5;
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 0.0);
+    each_ref_node_valid_node(ref_node, node) {
+      scalar[0 + ldim * node] = 1;
+      scalar[1 + ldim * node] = 2;
+      scalar[3 + ldim * node] = 3;
+      scalar[4 + ldim * node] = 4;
+    }
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       solb),
+        "gather solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, solb), "part solb");
+    each_ref_node_valid_node(ref_node, node) {
+      RWDS(1, scalar[0 + ldim * node], -1, "rho");
+      RWDS(2, scalar[1 + ldim * node], -1, "u");
+      RWDS(3, scalar[3 + ldim * node], -1, "v");
+      RWDS(4, scalar[4 + ldim * node], -1, "p");
+    }
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(meshb), "test clean up");
+  }
+
   { /* gather/part .solb by extension, version 2 */
     REF_GRID ref_grid;
     REF_INT ldim;

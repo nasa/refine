@@ -2052,6 +2052,187 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_scalar_cell_restart_sol(REF_GRID ref_grid,
+                                                   REF_INT *ldim,
+                                                   REF_DBL **scalar,
+                                                   const char *filename) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  FILE *file;
+  REF_INT ncell, i, cell_node;
+  REF_INT node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *hits;
+
+  RAS(!ref_mpi_para(ref_mpi), "only implemented for single core");
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  *ldim = 5;
+  REIS(1, fscanf(file, "%d", &ncell), "read ncell");
+  if (ncell != ref_cell_n(ref_cell)) {
+    printf("file %d ref_cell %d\n", ncell, ref_cell_n(ref_cell));
+    THROW("ERROR: global count mismatch");
+  }
+
+  ref_malloc_init(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0.0);
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    REF_DBL rho, u, v, p;
+    REIS(4, fscanf(file, "%lf %lf %lf %lf", &rho, &u, &v, &p),
+         "cell data read");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      (*scalar)[0 + (*ldim) * nodes[cell_node]] += rho;
+      (*scalar)[1 + (*ldim) * nodes[cell_node]] += u;
+      (*scalar)[3 + (*ldim) * nodes[cell_node]] += v;
+      (*scalar)[4 + (*ldim) * nodes[cell_node]] += p;
+      hits[nodes[cell_node]] += 1;
+    }
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    RAS(hits[node] > 0, "zero hits for node");
+    for (i = 0; i < 5; i++) {
+      (*scalar)[i + (*ldim) * node] /= (REF_DBL)hits[node];
+    }
+  }
+  ref_free(hits);
+
+  REIS(0, fclose(file), "close file");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_part_scalar_sol(REF_NODE ref_node, REF_INT *ldim,
+                                      REF_DBL **scalar, const char *filename) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  FILE *file;
+  REF_INT chunk;
+  REF_DBL *data;
+  REF_INT section_size;
+  REF_GLOB global;
+  REF_INT node, local;
+  REF_INT dim, ntype, type, i;
+  REF_LONG nnode = REF_EMPTY, nnode_read;
+  REF_INT status;
+  char line[1024];
+  REF_BOOL found_keyword = REF_FALSE;
+
+  file = NULL;
+  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+
+    dim = REF_EMPTY;
+    while (!feof(file)) {
+      status = fscanf(file, "%s", line);
+      if (EOF == status) break;
+      REIS(1, status, "line read failed");
+
+      if (0 == strcmp("Dimension", line)) {
+        REIS(1, fscanf(file, "%d", &dim), "read dim");
+        printf("dim %d\n", dim);
+      }
+
+      if (0 == strcmp("SolAtVertices", line)) {
+        REIS(1, fscanf(file, "%ld", &nnode), "read nnode");
+        printf("nnode %d\n", (REF_INT)nnode);
+        REIS(1, fscanf(file, "%d", &ntype), "read ldim");
+        printf("ntype %d\n", ntype);
+        *ldim = 0;
+        for (i = 0; i < ntype; i++) {
+          REIS(1, fscanf(file, "%d", &type), "read type");
+          printf("%d type %d\n", i, type);
+          if (1 == type) {
+            (*ldim) += 1;
+          } else if (2 == type) {
+            (*ldim) += dim;
+          } else {
+            printf("item %d type %d\n", i, type);
+            THROW("solb type");
+          }
+        }
+        RAS(0 <= fscanf(file, "%*[^1234567890-+.]"), "skip blank line");
+        found_keyword = REF_TRUE;
+        break;
+      }
+    }
+    RUS(REF_EMPTY, dim, "Dimension keyword missing from .sol metric");
+    RAS(found_keyword, "SolAtVertices keyword missing from .sol metric");
+    printf("nnode %d ldim %d dim %d\n", (REF_INT)nnode, *ldim, dim);
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_GLOB_TYPE), "bcast nnode");
+  RSS(ref_mpi_bcast(ref_mpi, ldim, 1, REF_INT_TYPE), "bcast ldim");
+  RSS(ref_mpi_bcast(ref_mpi, &dim, 1, REF_INT_TYPE), "bcast dim");
+
+  if ((nnode != ref_node_n_global(ref_node)) &&
+      (nnode / 2 != ref_node_n_global(ref_node))) {
+    if (ref_mpi_once(ref_mpi))
+      printf("file %ld ref_node " REF_GLOB_FMT " %s\n", nnode,
+             ref_node_n_global(ref_node), filename);
+    if (nnode > ref_node_n_global(ref_node)) {
+      if (ref_mpi_once(ref_mpi))
+        REF_WHERE("WARNING: global count mismatch, too many");
+    } else {
+      THROW("ERROR: global count mismatch, too few");
+    }
+  }
+
+  ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
+
+  chunk =
+      (REF_INT)MAX(100000, nnode / (REF_LONG)ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = (REF_INT)MIN((REF_LONG)chunk, nnode);
+
+  ref_malloc_init(data, (*ldim) * chunk, REF_DBL, -1.0);
+
+  nnode_read = 0;
+  while (nnode_read < nnode) {
+    section_size = MIN(chunk, (REF_INT)(nnode - nnode_read));
+    if (ref_mpi_once(ref_node_mpi(ref_node))) {
+      for (i = 0; i < ((*ldim) * section_size); i++)
+        REIS(1, fscanf(file, "%lf", &(data[i])), "vertex data read error");
+      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
+                        REF_DBL_TYPE),
+          "bcast");
+    } else {
+      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
+                        REF_DBL_TYPE),
+          "bcast");
+    }
+    for (node = 0; node < section_size; node++) {
+      global = node + nnode_read;
+      RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
+      if (REF_EMPTY != local) {
+        for (i = 0; i < *ldim; i++) {
+          (*scalar)[i + local * (*ldim)] = data[i + node * (*ldim)];
+        }
+      }
+      if (2 == dim) {
+        global = nnode + (REF_GLOB)node + nnode_read;
+        RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
+        if (REF_EMPTY != local) {
+          for (i = 0; i < *ldim; i++) {
+            (*scalar)[i + local * (*ldim)] = data[i + node * (*ldim)];
+          }
+        }
+      }
+    }
+    nnode_read += (REF_LONG)section_size;
+  }
+
+  ref_free(data);
+
+  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+    REIS(0, fclose(file), "close file");
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
                                        REF_DBL **scalar, const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -2301,6 +2482,16 @@ REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
 
   end_of_string = strlen(filename);
 
+  if (end_of_string > 12 &&
+      strcmp(&filename[end_of_string - 12], ".restart_sol") == 0) {
+    RSS(ref_part_scalar_cell_restart_sol(ref_grid, ldim, scalar, filename),
+        "restart_sol failed");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".sol") == 0) {
+    RSS(ref_part_scalar_sol(ref_node, ldim, scalar, filename), "sol failed");
+    return REF_SUCCESS;
+  }
   if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0) {
     RSS(ref_part_scalar_solb(ref_node, ldim, scalar, filename), "solb failed");
     return REF_SUCCESS;
