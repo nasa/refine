@@ -44,6 +44,8 @@ REF_BOOL ref_egads_allows_construction(void);
 REF_BOOL ref_egads_allows_effective(void);
 REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description);
 
+REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom, REF_INT **edge_faces);
+
 REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
                           REF_DBL *global_params);
 

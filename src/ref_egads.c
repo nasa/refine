@@ -678,9 +678,8 @@ static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
 }
 #endif
 
+REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom, REF_INT **edge_face_arg) {
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom,
-                                       REF_INT **edge_face_arg) {
   REF_INT *e2f, *nface;
   REF_INT face, edge;
 
@@ -718,8 +717,13 @@ static REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom,
 
   ref_free(nface);
   return REF_SUCCESS;
-}
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  *edge_face_arg = NULL;
+  printf("No EGADS linked for %s\n", __func__);
+  return REF_IMPLEMENT;
 #endif
+}
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_node_faces(REF_GEOM ref_geom,
