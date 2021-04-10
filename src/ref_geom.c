@@ -3433,12 +3433,14 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
                                    -1, file),
             "tec pcrv");
       } else { /* edge used by two faces */
-        RSS(ref_geom_pcrv_tec_zone(ref_grid, id, edge_faces[0 + 2 * (id - 1)],
-                                   0, file),
-            "tec pcrv");
-        RSS(ref_geom_pcrv_tec_zone(ref_grid, id, edge_faces[1 + 2 * (id - 1)],
-                                   0, file),
-            "tec pcrv");
+        if (REF_EMPTY != edge_faces[0 + 2 * (id - 1)])
+          RSS(ref_geom_pcrv_tec_zone(ref_grid, id, edge_faces[0 + 2 * (id - 1)],
+                                     0, file),
+              "tec pcrv");
+        if (REF_EMPTY != edge_faces[1 + 2 * (id - 1)])
+          RSS(ref_geom_pcrv_tec_zone(ref_grid, id, edge_faces[1 + 2 * (id - 1)],
+                                     0, file),
+              "tec pcrv");
       }
     }
     ref_free(edge_faces);
