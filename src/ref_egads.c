@@ -144,7 +144,6 @@ static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
 
     ego esurf, *eloops;
     int nloop;
-    double data[18];
     ego loop_curve, *loop_edges;
     int iloop, iedge, loop_nedge;
 
@@ -155,12 +154,12 @@ static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
     for (face = 0; face < (ref_geom->nface); face++) {
       REIS(EGADS_SUCCESS,
            EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
-                          &mtype, data, &nloop, &eloops, &senses),
+                          &mtype, NULL, &nloop, &eloops, &senses),
            "topo");
       for (iloop = 0; iloop < nloop; iloop++) {
         /* loop through all Edges associated with this Loop */
         REIS(EGADS_SUCCESS,
-             EG_getTopology(eloops[iloop], &loop_curve, &oclass, &mtype, data,
+             EG_getTopology(eloops[iloop], &loop_curve, &oclass, &mtype, NULL,
                             &loop_nedge, &loop_edges, &senses),
              "topo");
         for (iedge = 0; iedge < loop_nedge; iedge++) {
@@ -170,8 +169,10 @@ static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
                      ref_geom->e2f[0 + 2 * edge], ref_geom->e2f[1 + 2 * edge],
                      face + 1, edge + 1));
           ref_geom->e2f[facefound[edge] + 2 * edge] = face + 1;
-          ref_geom->pcurves[facefound[edge] + 2 * edge] =
-              (void *)&(loop_edges[iedge + loop_nedge]);
+          if (NULL != loop_curve) { /* LOOP has reference SURFACE */
+            ref_geom->pcurves[facefound[edge] + 2 * edge] =
+                loop_edges[iedge + loop_nedge];
+          }
           facefound[edge]++;
         }
       }
