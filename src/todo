@@ -1,7 +1,6 @@
 
 introduce a code enum in ref_subcommand loop
 
-add pcrv tecplot output
 optimize t to reduce eval t and eval uv in edgeUV
 
 sync twod oriention with and without EGADS
