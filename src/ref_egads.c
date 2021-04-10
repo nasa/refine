@@ -81,6 +81,18 @@ REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
 }
 
 #ifdef HAVE_EGADS
+#if !defined(HAVE_EGADS_LITE)
+static REF_STATUS ref_egads_free_body_objects(REF_GEOM ref_geom) {
+  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
+  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
+  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  ref_free(ref_geom->face_seg_per_rad);
+  ref_free(ref_geom->face_min_length);
+  ref_free(ref_geom->initial_cell_height);
+  ref_free(ref_geom->uv_area_sign);
+  return REF_SUCCESS;
+}
+#endif
 static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
   ego body = (ego)(ref_geom->body);
   ego *faces, *edges, *nodes;
@@ -3476,13 +3488,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
 
   /* need to use copy to build tess so they match */
   ref_geom->body = effective[0];
-  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
-  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
-  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
-  ref_free(ref_geom->face_seg_per_rad);
-  ref_free(ref_geom->face_min_length);
-  ref_free(ref_geom->initial_cell_height);
-  ref_free(ref_geom->uv_area_sign);
+  RSS(ref_egads_free_body_objects(ref_geom), "free before new cache");
   RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
   RSS(ref_egads_tess_create(ref_geom, &tess, auto_tparams, global_params),
       "create tess object");
@@ -3513,13 +3519,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
   ref_geom->body = (void *)effective[1];
   ref_geom_effective(ref_geom) = REF_TRUE;
 
-  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
-  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
-  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
-  ref_free(ref_geom->face_seg_per_rad);
-  ref_free(ref_geom->face_min_length);
-  ref_free(ref_geom->initial_cell_height);
-  ref_free(ref_geom->uv_area_sign);
+  RSS(ref_egads_free_body_objects(ref_geom), "free before new cache");
   RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
 
   return REF_SUCCESS;
