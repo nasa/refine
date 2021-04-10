@@ -1,4 +1,6 @@
 
+use cached e2f
+
 introduce a code enum in ref_subcommand loop
 
 optimize t to reduce eval t and eval uv in edgeUV

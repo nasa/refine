@@ -138,6 +138,48 @@ static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
   ref_geom->nface = nface;
   ref_geom->faces = (void *)faces;
 
+  { /* gather e2f and pcurves */
+    REF_INT *facefound;
+    REF_INT edge;
+
+    ego esurf, *eloops;
+    int nloop;
+    double data[18];
+    ego loop_curve, *loop_edges;
+    int iloop, iedge, loop_nedge;
+
+    ref_malloc_init(ref_geom->pcurves, 2 * (ref_geom->nedge), void *, NULL);
+    ref_malloc_init(ref_geom->e2f, 2 * (ref_geom->nedge), REF_INT, REF_EMPTY);
+    ref_malloc_init(facefound, (ref_geom->nedge), REF_INT, 0);
+
+    for (face = 0; face < (ref_geom->nface); face++) {
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
+                          &mtype, data, &nloop, &eloops, &senses),
+           "topo");
+      for (iloop = 0; iloop < nloop; iloop++) {
+        /* loop through all Edges associated with this Loop */
+        REIS(EGADS_SUCCESS,
+             EG_getTopology(eloops[iloop], &loop_curve, &oclass, &mtype, data,
+                            &loop_nedge, &loop_edges, &senses),
+             "topo");
+        for (iedge = 0; iedge < loop_nedge; iedge++) {
+          edge = EG_indexBodyTopo((ego)(ref_geom->body), loop_edges[iedge]) - 1;
+          RAB(2 > facefound[edge], "edge has more than 2 faces",
+              printf("face ids %d %d %d edge id %d\n",
+                     ref_geom->e2f[0 + 2 * edge], ref_geom->e2f[1 + 2 * edge],
+                     face + 1, edge + 1));
+          ref_geom->e2f[facefound[edge] + 2 * edge] = face + 1;
+          ref_geom->pcurves[facefound[edge] + 2 * edge] =
+              (void *)&(loop_edges[iedge + loop_nedge]);
+          facefound[edge]++;
+        }
+      }
+    }
+
+    ref_free(facefound);
+  }
+
   /* use face mtype SFORWARD, SREVERSE to set uv_area_sign */
   /* If it is SFORWARD (1) then the Face's Normal is in the same direction as
      the surface (u cross v), which points outward of the body. If it is
