@@ -861,7 +861,11 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
       "edge uv");
 
   if (ref_facelift_direct(ref_facelift)) {
-    RAS(0 == sense, "implement sense != 0 for uv jumps");
+    if (0 != sense) {
+      /* IMPLEMENT sense here, will need surrogate jump support */
+      /* uses EGADS edgeUV */
+      return REF_SUCCESS;
+    }
     RSS(ref_facelift_enclosing(ref_facelift, REF_GEOM_EDGE, edgeid, &t, &cell,
                                bary),
         "enclose");

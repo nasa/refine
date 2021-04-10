@@ -919,16 +919,9 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
       if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
         faceid = ref_geom_id(ref_geom, face_geom);
         sense = 0;
-        if (NULL != ref_geom_facelift(ref_geom)) {
-          RSS(ref_facelift_edge_face_uv(ref_geom_facelift(ref_geom),
-                                        ref_geom_id(ref_geom, edge_geom),
-                                        faceid, sense, t, edgeuv),
-              "facelift eval wrapper");
-        } else {
-          RSS(ref_egads_edge_face_uv(ref_geom, ref_geom_id(ref_geom, edge_geom),
-                                     faceid, sense, t, edgeuv),
-              "edge uv");
-        }
+        RSS(ref_egads_edge_face_uv(ref_geom, ref_geom_id(ref_geom, edge_geom),
+                                   faceid, sense, t, edgeuv),
+            "edge uv");
         ref_geom_param(ref_geom, 0, face_geom) = edgeuv[0];
         ref_geom_param(ref_geom, 1, face_geom) = edgeuv[1];
       }

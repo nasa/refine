@@ -2759,6 +2759,13 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
   ego *faces, *edges;
   ego face_ego, edge_ego;
 
+  if (NULL != ref_geom_facelift(ref_geom)) {
+    RSS(ref_facelift_edge_face_uv(ref_geom_facelift(ref_geom), edgeid, faceid,
+                                  sense, t, uv),
+        "facelift eval wrapper");
+    return REF_SUCCESS;
+  }
+
   RNS(ref_geom->edges, "edges not loaded");
   edges = (ego *)(ref_geom->edges);
   RAS(1 <= edgeid && edgeid <= ref_geom->nedge, "edge id out of range");

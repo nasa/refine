@@ -14,6 +14,7 @@ effective egads
   group via quilting papers (crease)
 
 facelift direct surrogate boundary representation tolerance
+  edgeuv sense != 0
   plot displacement between surrogate and EGADS
   plot interpolated boundary representation tolerance independently
   smooth enrich surface (conform curvature metric?)
