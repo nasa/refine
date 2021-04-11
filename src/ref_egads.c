@@ -2849,6 +2849,52 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
          printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0], trange[1]);
        });
 
+  if (0 == sense) {
+    ego pcurve = NULL;
+    double pcurve_uv[18];
+    double edge_xyz[18];
+    double pcurve_xyz[18];
+    double dxyz[3], dxyz_dt[3];
+    REF_INT iter, ixyz;
+    int status;
+    REF_DBL tprime, dt;
+    REF_DBL tol = 1.0e-14;
+
+    if (faceid == ref_geom->e2f[0 + 2 * (edgeid - 1)]) {
+      pcurve = ((ego *)(ref_geom->pcurves))[0 + 2 * (edgeid - 1)];
+    }
+    if (faceid == ref_geom->e2f[1 + 2 * (edgeid - 1)]) {
+      pcurve = ((ego *)(ref_geom->pcurves))[1 + 2 * (edgeid - 1)];
+    }
+    if (NULL != pcurve) {
+      status = EG_evaluate(edge_ego, &t, edge_xyz);
+      if (EGADS_DEGEN == status) return REF_SUCCESS;
+      REIS(EGADS_SUCCESS, status, "edge eval");
+      tprime = t;
+      for (iter = 0; iter < 0; iter++) {
+        status = EG_evaluate(pcurve, &tprime, pcurve_uv);
+        if (EGADS_DEGEN == status) return REF_SUCCESS;
+        REIS(EGADS_SUCCESS, status, "pcurve eval");
+        REIS(EGADS_SUCCESS, EG_evaluate(face_ego, pcurve_uv, pcurve_xyz),
+             "pcurve eval");
+        for (ixyz = 0; ixyz < 3; ixyz++) {
+          dxyz[ixyz] = pcurve_xyz[ixyz] - edge_xyz[ixyz];
+        }
+        dxyz_dt[0] =
+            pcurve_uv[2] * pcurve_xyz[3] + pcurve_uv[3] * pcurve_xyz[6];
+        dxyz_dt[1] =
+            pcurve_uv[2] * pcurve_xyz[4] + pcurve_uv[3] * pcurve_xyz[7];
+        dxyz_dt[2] =
+            pcurve_uv[2] * pcurve_xyz[5] + pcurve_uv[3] * pcurve_xyz[8];
+        dt = ref_math_dot(dxyz_dt, dxyz);
+        /*dist = sqrt(ref_math_dot(dxyz, dxyz));
+        printf("%02d dist %e dt %e T %f %f\n", iter, dist,dt,t,tprime);*/
+        if (ABS(dt) < tol) break;
+        tprime += dt;
+      }
+    }
+  }
+
   return REF_SUCCESS;
 #else
   printf("No EGADS linked for %s\n", __func__);
