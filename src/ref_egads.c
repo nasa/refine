@@ -2854,11 +2854,11 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
     double pcurve_eval[18];
     double edge_eval[18];
     double face_eval[18];
-    double dxyz[3], dxyz_dt[3];
+    double dxyz[3], dxyz_dt[3], dir[3];
     REF_INT iter, ixyz;
     int status;
-    REF_DBL tprime, dt;
-    REF_DBL tol = 1.0e-14;
+    REF_DBL tprime, dt, tangent_distance, ddistance_dt;
+    REF_DBL tol = 1.0e-12;
 
     RNS(ref_geom->e2f, "ref_geom->e2f NULL");
     RNS(ref_geom->pcurves, "ref_geom->pcurves NULL");
@@ -2875,13 +2875,13 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
       if (EGADS_NULLOBJ == status) return REF_SUCCESS;
       REIS(EGADS_SUCCESS, status, "edge eval");
       tprime = t;
-      for (iter = 0; iter < 0; iter++) {
+      for (iter = 0; iter < 5; iter++) {
         status = EG_evaluate(pcurve, &tprime, pcurve_eval);
         if (EGADS_DEGEN == status) return REF_SUCCESS;
         REIS(EGADS_SUCCESS, status, "pcurve eval");
         REIS(EGADS_SUCCESS, EG_evaluate(face_ego, pcurve_eval, face_eval),
              "pcurve eval");
-        for (ixyz = 0; ixyz < 3; ixyz++) {
+        for (ixyz = 0; ixyz < 10; ixyz++) {
           dxyz[ixyz] = face_eval[ixyz] - edge_eval[ixyz];
         }
         dxyz_dt[0] =
@@ -2890,12 +2890,29 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
             pcurve_eval[2] * face_eval[4] + pcurve_eval[3] * face_eval[7];
         dxyz_dt[2] =
             pcurve_eval[2] * face_eval[5] + pcurve_eval[3] * face_eval[8];
-        dt = ref_math_dot(dxyz_dt, dxyz);
-        /*dist = sqrt(ref_math_dot(dxyz, dxyz));
-        printf("%02d dist %e dt %e T %f %f\n", iter, dist,dt,t,tprime);*/
-        if (ABS(dt) < tol) break;
-        tprime += dt;
+        for (ixyz = 0; ixyz < 3; ixyz++) {
+          dir[ixyz] = dxyz_dt[ixyz];
+        }
+        if (REF_SUCCESS != ref_math_normalize(dir)) break;
+        tangent_distance = ref_math_dot(dir, dxyz);
+        ddistance_dt = sqrt(ref_math_dot(dxyz_dt, dxyz_dt));
+        if (!ref_math_divisible(tangent_distance, ddistance_dt)) break;
+        dt = tangent_distance / ddistance_dt;
+        /* printf("%02d dist %e dt %e T %f %f\n", iter,
+         * tangent_distance,dt,t,tprime); */
+        if (ABS(dt) < tol * ABS(tprime)) break;
+        tprime -= dt;
       }
+      REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, tprime, uv),
+           "eval edge face uv", {
+             REF_DBL trange[2];
+             printf("faceid %d edgeid %d sense %d t %.18e tprime %.18e\n",
+                    faceid, edgeid, sense, t, tprime);
+             printf("ref_egads_edge_trange status %d\n",
+                    ref_egads_edge_trange(ref_geom, edgeid, trange));
+             printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0],
+                    trange[1]);
+           });
     }
   }
 
