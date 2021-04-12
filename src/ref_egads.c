@@ -2858,6 +2858,7 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
     REF_INT iter, ixyz;
     int status;
     REF_DBL tprime, dt, tangent_distance, ddistance_dt;
+    REF_DBL dist, distprime;
     REF_DBL tol = 1.0e-12;
 
     RNS(ref_geom->e2f, "ref_geom->e2f NULL");
@@ -2903,16 +2904,33 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
         if (ABS(dt) < tol * ABS(tprime)) break;
         tprime -= dt;
       }
-      REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, tprime, uv),
-           "eval edge face uv", {
-             REF_DBL trange[2];
-             printf("faceid %d edgeid %d sense %d t %.18e tprime %.18e\n",
-                    faceid, edgeid, sense, t, tprime);
-             printf("ref_egads_edge_trange status %d\n",
-                    ref_egads_edge_trange(ref_geom, edgeid, trange));
-             printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0],
-                    trange[1]);
-           });
+      REIS(EGADS_SUCCESS, EG_evaluate(pcurve, &t, pcurve_eval), "pcurve eval");
+      REIS(EGADS_SUCCESS, EG_evaluate(face_ego, pcurve_eval, face_eval),
+           "pcurve eval");
+      for (ixyz = 0; ixyz < 3; ixyz++) {
+        dxyz[ixyz] = face_eval[ixyz] - edge_eval[ixyz];
+      }
+      dist = sqrt(ref_math_dot(dxyz, dxyz));
+      REIS(EGADS_SUCCESS, EG_evaluate(pcurve, &tprime, pcurve_eval),
+           "pcurve eval");
+      REIS(EGADS_SUCCESS, EG_evaluate(face_ego, pcurve_eval, face_eval),
+           "pcurve eval");
+      for (ixyz = 0; ixyz < 3; ixyz++) {
+        dxyz[ixyz] = face_eval[ixyz] - edge_eval[ixyz];
+      }
+      distprime = sqrt(ref_math_dot(dxyz, dxyz));
+      if (distprime < dist) {
+        REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, tprime, uv),
+             "eval edge face uv", {
+               REF_DBL trange[2];
+               printf("faceid %d edgeid %d sense %d t %.18e tprime %.18e\n",
+                      faceid, edgeid, sense, t, tprime);
+               printf("ref_egads_edge_trange status %d\n",
+                      ref_egads_edge_trange(ref_geom, edgeid, trange));
+               printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0],
+                      trange[1]);
+             });
+      }
     }
   }
 
