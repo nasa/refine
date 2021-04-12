@@ -2860,6 +2860,7 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
     REF_DBL tprime, dt, tangent_distance, ddistance_dt;
     REF_DBL dist, distprime;
     REF_DBL tol = 1.0e-12;
+    REF_INT niters = 20;
 
     RNS(ref_geom->e2f, "ref_geom->e2f NULL");
     RNS(ref_geom->pcurves, "ref_geom->pcurves NULL");
@@ -2876,7 +2877,7 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
       if (EGADS_NULLOBJ == status) return REF_SUCCESS;
       REIS(EGADS_SUCCESS, status, "edge eval");
       tprime = t;
-      for (iter = 0; iter < 10; iter++) {
+      for (iter = 0; iter < niters; iter++) {
         status = EG_evaluate(pcurve, &tprime, pcurve_eval);
         if (EGADS_DEGEN == status) return REF_SUCCESS;
         REIS(EGADS_SUCCESS, status, "pcurve eval");
