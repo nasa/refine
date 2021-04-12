@@ -2861,6 +2861,7 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
     REF_DBL tol = 1.0e-14;
 
     RNS(ref_geom->e2f, "ref_geom->e2f NULL");
+    RNS(ref_geom->pcurves, "ref_geom->pcurves NULL");
     if (faceid == ref_geom->e2f[0 + 2 * (edgeid - 1)]) {
       pcurve = ((ego *)(ref_geom->pcurves))[0 + 2 * (edgeid - 1)];
     }
