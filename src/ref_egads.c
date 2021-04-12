@@ -2871,6 +2871,8 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
     if (NULL != pcurve) {
       status = EG_evaluate(edge_ego, &t, edge_eval);
       if (EGADS_DEGEN == status) return REF_SUCCESS;
+      /* fix next escape for egadslite */
+      if (EGADS_NULLOBJ == status) return REF_SUCCESS;
       REIS(EGADS_SUCCESS, status, "edge eval");
       tprime = t;
       for (iter = 0; iter < 0; iter++) {
