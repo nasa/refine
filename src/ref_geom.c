@@ -168,14 +168,6 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->contex_owned = REF_FALSE;
   RSS(ref_geom_share_context(ref_geom, original), "share egads");
 
-  if (NULL == original->e2f) {
-    ref_geom->e2f = NULL;
-  } else {
-    ref_malloc(ref_geom->e2f, 2 * ref_geom->nedge, REF_INT);
-    for (i = 0; i < 2 * ref_geom->nedge; i++)
-      ref_geom->e2f[i] = original->e2f[i];
-  }
-
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
 
@@ -206,6 +198,15 @@ REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
   ref_geom_recipient->edges = ref_geom_donor->edges;
   ref_geom_recipient->nodes = ref_geom_donor->nodes;
   ref_geom_recipient->pcurves = ref_geom_donor->pcurves;
+
+  if (NULL == ref_geom_donor->e2f) {
+    ref_geom_recipient->e2f = NULL;
+  } else {
+    REF_INT i;
+    ref_malloc(ref_geom_recipient->e2f, 2 * ref_geom_recipient->nedge, REF_INT);
+    for (i = 0; i < 2 * ref_geom_recipient->nedge; i++)
+      ref_geom_recipient->e2f[i] = ref_geom_donor->e2f[i];
+  }
 
   return REF_SUCCESS;
 }
