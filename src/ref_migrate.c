@@ -1277,7 +1277,7 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       if (ref_node_part(ref_node, node) < 0 ||
           ref_node_part(ref_node, node) >= ref_mpi_n(ref_mpi)) {
-        printf("id %d node %d global " REF_GLOB_FMT " part %d",
+        printf("id %d node %d global " REF_GLOB_FMT " part %d ",
                ref_mpi_rank(ref_mpi), node, ref_node_global(ref_node, node),
                ref_node_part(ref_node, node));
         THROW("part out of range");
