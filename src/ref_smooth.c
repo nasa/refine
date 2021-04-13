@@ -691,6 +691,11 @@ static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
   if (ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
   /* protect mixed-element quads */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* can't mixed elements */
+  if (!ref_cell_node_empty(ref_grid_pyr(ref_grid), node) ||
+      !ref_cell_node_empty(ref_grid_pri(ref_grid), node) ||
+      !ref_cell_node_empty(ref_grid_hex(ref_grid), node))
+    return REF_SUCCESS;
   /* protect geometry */
   RSS(ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_EDGE, &geom_edge),
       "edge check");
@@ -953,6 +958,11 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
 
   /* can't handle mixed elements */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* can't mixed elements */
+  if (!ref_cell_node_empty(ref_grid_pyr(ref_grid), node) ||
+      !ref_cell_node_empty(ref_grid_pri(ref_grid), node) ||
+      !ref_cell_node_empty(ref_grid_hex(ref_grid), node))
+    return REF_SUCCESS;
   /* won't keep an edg straight */
   if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
 
@@ -1359,6 +1369,12 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   /* can't handle boundaries yet */
   if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node) ||
       !ref_cell_node_empty(ref_grid_qua(ref_grid), node))
+    return REF_SUCCESS;
+
+  /* can't mixed elements */
+  if (!ref_cell_node_empty(ref_grid_pyr(ref_grid), node) ||
+      !ref_cell_node_empty(ref_grid_pri(ref_grid), node) ||
+      !ref_cell_node_empty(ref_grid_hex(ref_grid), node))
     return REF_SUCCESS;
 
   for (ixyz = 0; ixyz < 3; ixyz++)
