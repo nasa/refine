@@ -2832,6 +2832,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     donor_origpart[donation] = ref_mpi_rank(ref_mpi);
   }
 
+  /* ensure parts of from_node are set */
+  each_ref_node_valid_node(from_node, node) {
+    RUS(REF_EMPTY, from_part[node], "from_part not set for node");
+  }
+
   /* set parts of from_node */
   for (node = 0; node < ref_node_max(from_node); node++)
     ref_node_part(from_node, node) = from_part[node];
