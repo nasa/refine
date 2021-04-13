@@ -822,14 +822,12 @@ static REF_STATUS ref_recon_mask_edg(REF_GRID ref_grid, REF_BOOL *replace,
 REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
                                         REF_BOOL *replace, REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT node;
-  REF_INT max_node = REF_RECON_MAX_DEGREE, nnode;
-  REF_INT node_list[REF_RECON_MAX_DEGREE];
+  REF_INT node, item, edge;
+  REF_EDGE ref_edge;
   REF_INT i, neighbor, nint;
   REF_INT pass, remain;
 
-  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_edge_create(&ref_edge, ref_grid), "edges");
 
   RSS(ref_node_ghost_int(ref_node, replace, ldim), "update ghosts");
   RSS(ref_node_ghost_dbl(ref_node, recon, ldim), "update ghosts");
@@ -840,19 +838,21 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
       if (ref_node_owned(ref_node, node)) {
         for (i = 0; i < ldim; i++) {
           if (replace[i + ldim * node]) {
-            RXS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode,
-                                          node_list),
-                REF_INCREASE_LIMIT, "unable to build neighbor list ");
             nint = 0;
-            for (neighbor = 0; neighbor < nnode; neighbor++)
-              if (!replace[i + ldim * node_list[neighbor]]) nint++;
+            each_edge_having_node(ref_edge, node, item, edge) {
+              neighbor = ref_edge_e2n(ref_edge, 0, edge) +
+                         ref_edge_e2n(ref_edge, 1, edge) - node;
+              if (!replace[i + ldim * neighbor]) nint++;
+            }
             if (0 < nint) {
               recon[i + ldim * node] = 0.0;
-              for (neighbor = 0; neighbor < nnode; neighbor++)
-                if (!replace[i + ldim * node_list[neighbor]]) {
-                  recon[i + ldim * node] +=
-                      recon[i + ldim * node_list[neighbor]];
+              each_edge_having_node(ref_edge, node, item, edge) {
+                neighbor = ref_edge_e2n(ref_edge, 0, edge) +
+                           ref_edge_e2n(ref_edge, 1, edge) - node;
+                if (!replace[i + ldim * neighbor]) {
+                  recon[i + ldim * node] += recon[i + ldim * neighbor];
                 }
+              }
               /* use Euclidean average, these are derivatives */
               recon[i + ldim * node] /= (REF_DBL)nint;
               replace[i + ldim * node] = REF_FALSE;
@@ -877,6 +877,8 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
 
     if (0 == remain) break;
   }
+
+  ref_edge_free(ref_edge);
 
   if (0 < remain && ref_mpi_once(ref_grid_mpi(ref_grid))) {
     printf(" %d remain\n", remain);
