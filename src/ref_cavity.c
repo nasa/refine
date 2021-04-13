@@ -707,9 +707,17 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_BOOL has_node;
   REF_BOOL already_have_it, all_local;
   REF_INT face_nodes[3], seg_nodes[3];
+
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
   if (!ref_node_owned(ref_node, node)) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
+  /* mixed element protections are not mature */
+  if (ref_cell_n(ref_grid_pyr(ref_grid)) > 0 ||
+      ref_cell_n(ref_grid_pri(ref_grid)) > 0) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
     return REF_SUCCESS;
   }
 
@@ -789,9 +797,17 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_BOOL already_have_it, all_local;
   REF_INT face_nodes[3], seg_nodes[3];
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
+
   if (!ref_node_owned(ref_node, node0) || !ref_node_owned(ref_node, node1) ||
       !ref_node_owned(ref_node, node)) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
+  /* mixed element protections are not mature */
+  if (ref_cell_n(ref_grid_pyr(ref_grid)) > 0 ||
+      ref_cell_n(ref_grid_pri(ref_grid)) > 0) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
     return REF_SUCCESS;
   }
 
@@ -885,6 +901,13 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   if (!ref_node_owned(ref_node, node0) || !ref_node_owned(ref_node, node1) ||
       !ref_node_owned(ref_node, new_node)) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
+  /* mixed element protections are not mature */
+  if (ref_cell_n(ref_grid_pyr(ref_grid)) > 0 ||
+      ref_cell_n(ref_grid_pri(ref_grid)) > 0) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
     return REF_SUCCESS;
   }
 
@@ -991,6 +1014,13 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "init form empty");
   if (!ref_node_owned(ref_node, node0) || !ref_node_owned(ref_node, node1)) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
+  /* mixed element protections are not mature */
+  if (ref_cell_n(ref_grid_pyr(ref_grid)) > 0 ||
+      ref_cell_n(ref_grid_pri(ref_grid)) > 0) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
     return REF_SUCCESS;
   }
 
@@ -1510,6 +1540,18 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
     }
   }
 
+  /* make sure all face nodes are tet */
+  each_ref_cavity_face_node(ref_cavity, face_node) {
+    node = ref_cavity_f2n(ref_cavity, face_node, face);
+    if (!(ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
+          ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node) &&
+          ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node) &&
+          ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node))) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+  }
+
   face_nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
   face_nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
   face_nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
@@ -2009,6 +2051,20 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_cavity_mixed(REF_GRID ref_grid, REF_INT node0,
+                                   REF_INT node1, REF_BOOL *allowed) {
+  *allowed = (ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node0) &&
+              ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node0) &&
+              ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node0) &&
+              ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node0) &&
+              ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node1) &&
+              ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node1) &&
+              ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node1) &&
+              ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node1));
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
                                                 REF_INT node0, REF_INT node1,
                                                 REF_BOOL *allowed) {
@@ -2087,6 +2143,9 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         n0 = others[other][0];
         n1 = others[other][1];
         n2 = others[other][2];
+        RSS(ref_cavity_mixed(ref_grid, nodes[n0], nodes[n1], &allowed),
+            "mixed");
+        if (!allowed) continue;
         RSS(ref_cell_local_gem(ref_cell, ref_node, nodes[n0], nodes[n1],
                                &allowed),
             "local gem");

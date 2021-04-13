@@ -1820,6 +1820,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
 
+  RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos)
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "movie on");
+
   RXS(ref_args_find(argc, argv, "--partitioner", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {

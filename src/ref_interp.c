@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ref_edge.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_search.h"
@@ -2665,21 +2666,17 @@ static REF_STATUS ref_interp_from_part_status(REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_from_part_neighbor(REF_INTERP ref_interp,
+static REF_STATUS ref_interp_from_part_neighbor(REF_EDGE ref_edge,
                                                 REF_INT *from_part,
                                                 REF_INT node) {
-  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
-  REF_CELL ref_cell = ref_grid_tet(from_grid);
-  REF_INT item, cell, cell_node;
+  REF_INT item, edge, neighbor;
 
-  if (ref_grid_twod(from_grid)) ref_cell = ref_grid_tri(from_grid);
-
-  each_ref_cell_having_node(ref_cell, node, item, cell) {
-    each_ref_cell_cell_node(ref_cell, cell_node) {
-      if (REF_EMPTY != from_part[ref_cell_c2n(ref_cell, cell_node, cell)]) {
-        from_part[node] = from_part[ref_cell_c2n(ref_cell, cell_node, cell)];
-        return REF_SUCCESS;
-      }
+  each_edge_having_node(ref_edge, node, item, edge) {
+    neighbor = ref_edge_e2n(ref_edge, 0, edge) +
+               ref_edge_e2n(ref_edge, 1, edge) - node;
+    if (REF_EMPTY != from_part[neighbor]) {
+      from_part[node] = from_part[neighbor];
+      return REF_SUCCESS;
     }
   }
 
@@ -2693,6 +2690,10 @@ static REF_STATUS ref_interp_fill_empty_from_part(REF_INTERP ref_interp,
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_BOOL again;
   REF_INT nsweeps, node;
+  REF_EDGE ref_edge;
+
+  RSS(ref_edge_create(&ref_edge, from_grid), "edges");
+
   nsweeps = 0;
   again = REF_TRUE;
   while (again) {
@@ -2700,17 +2701,17 @@ static REF_STATUS ref_interp_fill_empty_from_part(REF_INTERP ref_interp,
     again = REF_FALSE;
     each_ref_node_valid_node(from_node, node) {
       if (ref_node_owned(from_node, node) && REF_EMPTY == from_part[node]) {
-        RSS(ref_interp_from_part_neighbor(ref_interp, from_part, node), "fill");
-        again = again || REF_EMPTY != from_part[node];
+        RSS(ref_interp_from_part_neighbor(ref_edge, from_part, node), "fill");
+        again = again || REF_EMPTY == from_part[node];
       }
     }
+    RSS(ref_mpi_all_or(ref_mpi, &again), "mpi all or");
+    RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
 
     RUS(200, nsweeps, "too many sweeps, stop inf loop");
-    RSS(ref_mpi_all_or(ref_mpi, &again), "mpi all or");
-    if (again) {
-      RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
-    }
   }
+
+  RSS(ref_edge_free(ref_edge), "ref_edge free");
 
   return REF_SUCCESS;
 }
@@ -2830,6 +2831,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
         "part cell_node");
     donor_part[donation] = from_part[nodes[cell_node]];
     donor_origpart[donation] = ref_mpi_rank(ref_mpi);
+  }
+
+  /* ensure parts of from_node are set */
+  each_ref_node_valid_node(from_node, node) {
+    RUS(REF_EMPTY, from_part[node], "from_part not set for node");
   }
 
   /* set parts of from_node */

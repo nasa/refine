@@ -39,7 +39,7 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT i, node, cell, group, cell_node;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER], tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL div_by_zero;
   REF_DBL cell_vol, cell_grad[3];
   REF_DBL *vol;
@@ -68,8 +68,8 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
   } else {
     each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-        switch (ref_cell_node_per(ref_cell)) {
-          case 4:
+        switch (ref_cell_type(ref_cell)) {
+          case REF_CELL_TET:
             vol_status = ref_node_tet_vol(ref_node, nodes, &cell_vol);
             grad_status =
                 ref_node_tet_grad_nodes(ref_node, nodes, scalar, cell_grad);
@@ -84,31 +84,68 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
                      __LINE__, __func__, vol_status, grad_status);
             }
             break;
-          case 6:
-            tri_nodes[0] = nodes[0];
-            tri_nodes[1] = nodes[1];
-            tri_nodes[2] = nodes[2];
-            RSS(ref_node_tri_area(ref_node, tri_nodes, &cell_vol), "vol");
-            RSS(ref_node_tri_grad_nodes(ref_node, tri_nodes, scalar, cell_grad),
-                "vol");
-            for (cell_node = 0; cell_node < 3; cell_node++)
-              for (i = 0; i < 3; i++)
-                grad[i + 3 * tri_nodes[cell_node]] += cell_vol * cell_grad[i];
-            for (cell_node = 0; cell_node < 3; cell_node++)
-              vol[tri_nodes[cell_node]] += cell_vol;
-            tri_nodes[0] = nodes[5];
-            tri_nodes[1] = nodes[4];
-            tri_nodes[2] = nodes[3];
-            RSS(ref_node_tri_area(ref_node, tri_nodes, &cell_vol), "vol");
-            RSS(ref_node_tri_grad_nodes(ref_node, tri_nodes, scalar, cell_grad),
-                "vol");
-            for (cell_node = 0; cell_node < 3; cell_node++)
-              for (i = 0; i < 3; i++)
-                grad[i + 3 * tri_nodes[cell_node]] += cell_vol * cell_grad[i];
-            for (cell_node = 0; cell_node < 3; cell_node++)
-              vol[tri_nodes[cell_node]] += cell_vol;
+          case REF_CELL_PRI:
+            tet_nodes[0] = nodes[0];
+            tet_nodes[1] = nodes[4];
+            tet_nodes[2] = nodes[5];
+            tet_nodes[3] = nodes[3];
+            vol_status = ref_node_tet_vol(ref_node, tet_nodes, &cell_vol);
+            grad_status =
+                ref_node_tet_grad_nodes(ref_node, tet_nodes, scalar, cell_grad);
+            if (REF_SUCCESS == vol_status && REF_SUCCESS == grad_status) {
+              for (cell_node = 0; cell_node < 4; cell_node++)
+                for (i = 0; i < 3; i++)
+                  grad[i + 3 * tet_nodes[cell_node]] += cell_vol * cell_grad[i];
+              for (cell_node = 0; cell_node < 4; cell_node++)
+                vol[tet_nodes[cell_node]] += cell_vol;
+            } else {
+              printf("%s: %d: %s: vol status %d grad status %d\n", __FILE__,
+                     __LINE__, __func__, vol_status, grad_status);
+            }
+            tet_nodes[0] = nodes[0];
+            tet_nodes[1] = nodes[1];
+            tet_nodes[2] = nodes[5];
+            tet_nodes[3] = nodes[4];
+            vol_status = ref_node_tet_vol(ref_node, tet_nodes, &cell_vol);
+            grad_status =
+                ref_node_tet_grad_nodes(ref_node, tet_nodes, scalar, cell_grad);
+            if (REF_SUCCESS == vol_status && REF_SUCCESS == grad_status) {
+              for (cell_node = 0; cell_node < 4; cell_node++)
+                for (i = 0; i < 3; i++)
+                  grad[i + 3 * tet_nodes[cell_node]] += cell_vol * cell_grad[i];
+              for (cell_node = 0; cell_node < 4; cell_node++)
+                vol[tet_nodes[cell_node]] += cell_vol;
+            } else {
+              printf("%s: %d: %s: vol status %d grad status %d\n", __FILE__,
+                     __LINE__, __func__, vol_status, grad_status);
+            }
+            tet_nodes[0] = nodes[0];
+            tet_nodes[1] = nodes[1];
+            tet_nodes[2] = nodes[2];
+            tet_nodes[3] = nodes[5];
+            vol_status = ref_node_tet_vol(ref_node, tet_nodes, &cell_vol);
+            grad_status =
+                ref_node_tet_grad_nodes(ref_node, tet_nodes, scalar, cell_grad);
+            if (REF_SUCCESS == vol_status && REF_SUCCESS == grad_status) {
+              for (cell_node = 0; cell_node < 4; cell_node++)
+                for (i = 0; i < 3; i++)
+                  grad[i + 3 * tet_nodes[cell_node]] += cell_vol * cell_grad[i];
+              for (cell_node = 0; cell_node < 4; cell_node++)
+                vol[tet_nodes[cell_node]] += cell_vol;
+            } else {
+              printf("%s: %d: %s: vol status %d grad status %d\n", __FILE__,
+                     __LINE__, __func__, vol_status, grad_status);
+            }
             break;
-          default:
+          case REF_CELL_EDG:
+          case REF_CELL_ED2:
+          case REF_CELL_ED3:
+          case REF_CELL_TRI:
+          case REF_CELL_TR2:
+          case REF_CELL_TR3:
+          case REF_CELL_QUA:
+          case REF_CELL_PYR:
+          case REF_CELL_HEX:
             RSS(REF_IMPLEMENT, "implement cell type");
             break;
         }
@@ -785,14 +822,12 @@ static REF_STATUS ref_recon_mask_edg(REF_GRID ref_grid, REF_BOOL *replace,
 REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
                                         REF_BOOL *replace, REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT node;
-  REF_INT max_node = REF_RECON_MAX_DEGREE, nnode;
-  REF_INT node_list[REF_RECON_MAX_DEGREE];
+  REF_INT node, item, edge;
+  REF_EDGE ref_edge;
   REF_INT i, neighbor, nint;
   REF_INT pass, remain;
 
-  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_edge_create(&ref_edge, ref_grid), "edges");
 
   RSS(ref_node_ghost_int(ref_node, replace, ldim), "update ghosts");
   RSS(ref_node_ghost_dbl(ref_node, recon, ldim), "update ghosts");
@@ -803,19 +838,21 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
       if (ref_node_owned(ref_node, node)) {
         for (i = 0; i < ldim; i++) {
           if (replace[i + ldim * node]) {
-            RXS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode,
-                                          node_list),
-                REF_INCREASE_LIMIT, "unable to build neighbor list ");
             nint = 0;
-            for (neighbor = 0; neighbor < nnode; neighbor++)
-              if (!replace[i + ldim * node_list[neighbor]]) nint++;
+            each_edge_having_node(ref_edge, node, item, edge) {
+              neighbor = ref_edge_e2n(ref_edge, 0, edge) +
+                         ref_edge_e2n(ref_edge, 1, edge) - node;
+              if (!replace[i + ldim * neighbor]) nint++;
+            }
             if (0 < nint) {
               recon[i + ldim * node] = 0.0;
-              for (neighbor = 0; neighbor < nnode; neighbor++)
-                if (!replace[i + ldim * node_list[neighbor]]) {
-                  recon[i + ldim * node] +=
-                      recon[i + ldim * node_list[neighbor]];
+              each_edge_having_node(ref_edge, node, item, edge) {
+                neighbor = ref_edge_e2n(ref_edge, 0, edge) +
+                           ref_edge_e2n(ref_edge, 1, edge) - node;
+                if (!replace[i + ldim * neighbor]) {
+                  recon[i + ldim * node] += recon[i + ldim * neighbor];
                 }
+              }
               /* use Euclidean average, these are derivatives */
               recon[i + ldim * node] /= (REF_DBL)nint;
               replace[i + ldim * node] = REF_FALSE;
@@ -840,6 +877,8 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
 
     if (0 == remain) break;
   }
+
+  ref_edge_free(ref_edge);
 
   if (0 < remain && ref_mpi_once(ref_grid_mpi(ref_grid))) {
     printf(" %d remain\n", remain);
