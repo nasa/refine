@@ -2815,6 +2815,26 @@ REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT edgeid,
 }
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_edge_face_dist(ego edge, ego face, ego pcurve,
+                                           REF_DBL t, REF_DBL tprime,
+                                           REF_DBL *dist) {
+  double edge_eval[18];
+  double face_eval[18];
+  double pcurve_eval[18];
+  double dxyz[3];
+  REF_INT ixyz;
+  REIS(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval), "edge eval");
+  REIS(EGADS_SUCCESS, EG_evaluate(pcurve, &tprime, pcurve_eval), "pcurve eval");
+  REIS(EGADS_SUCCESS, EG_evaluate(face, pcurve_eval, face_eval), "pcurve eval");
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    dxyz[ixyz] = face_eval[ixyz] - edge_eval[ixyz];
+  }
+  *dist = sqrt(ref_math_dot(dxyz, dxyz));
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
                                              REF_INT faceid, REF_INT sense,
                                              REF_DBL t, REF_DBL *tprime) {
@@ -2887,20 +2907,10 @@ static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
       if (ABS(dt) < tol * ABS(tp)) break;
       tp -= dt;
     }
-    REIS(EGADS_SUCCESS, EG_evaluate(pcurve, &t, pcurve_eval), "pcurve eval");
-    REIS(EGADS_SUCCESS, EG_evaluate(face_ego, pcurve_eval, face_eval),
-         "pcurve eval");
-    for (ixyz = 0; ixyz < 3; ixyz++) {
-      dxyz[ixyz] = face_eval[ixyz] - edge_eval[ixyz];
-    }
-    dist = sqrt(ref_math_dot(dxyz, dxyz));
-    REIS(EGADS_SUCCESS, EG_evaluate(pcurve, &tp, pcurve_eval), "pcurve eval");
-    REIS(EGADS_SUCCESS, EG_evaluate(face_ego, pcurve_eval, face_eval),
-         "pcurve eval");
-    for (ixyz = 0; ixyz < 3; ixyz++) {
-      dxyz[ixyz] = face_eval[ixyz] - edge_eval[ixyz];
-    }
-    distp = sqrt(ref_math_dot(dxyz, dxyz));
+    RSS(ref_egads_edge_face_dist(edge_ego, face_ego, pcurve, t, t, &dist),
+        "dist");
+    RSS(ref_egads_edge_face_dist(edge_ego, face_ego, pcurve, t, tp, &distp),
+        "dist");
     if (distp < dist) *tprime = tp;
   }
   return REF_SUCCESS;
