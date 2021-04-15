@@ -2843,19 +2843,51 @@ static REF_STATUS ref_egads_edge_face_dxyz_dt(ego edge, ego face, ego pcurve,
 #endif
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
+                                           REF_DBL t, REF_DBL *tp,
+                                           REF_BOOL *again) {
+  double dxyz[3], dxyz_dt[3], dir[3];
+  REF_INT ixyz;
+  REF_STATUS ref_status;
+  REF_DBL dt, tangent_distance, ddistance_dt;
+  REF_DBL tol = 1.0e-12;
+
+  ref_status =
+      ref_egads_edge_face_dxyz_dt(edge, face, pcurve, t, *tp, dxyz, dxyz_dt);
+  if (REF_ILL_CONDITIONED == ref_status) return REF_ILL_CONDITIONED;
+  RSS(ref_status, "dxyz_dt");
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    dir[ixyz] = dxyz_dt[ixyz];
+  }
+  if (REF_SUCCESS != ref_math_normalize(dir)) return REF_ILL_CONDITIONED;
+  tangent_distance = ref_math_dot(dir, dxyz);
+  ddistance_dt = sqrt(ref_math_dot(dxyz_dt, dxyz_dt));
+  if (!ref_math_divisible(tangent_distance, ddistance_dt))
+    return REF_ILL_CONDITIONED;
+  dt = tangent_distance / ddistance_dt;
+  /* printf("%02d dist %e dt %e T %f %f\n", iter,
+   * tangent_distance,dt,t,tp); */
+  *again = (ABS(dt) > tol * ABS(*tp));
+  (*tp) -= dt;
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
                                              REF_INT faceid, REF_INT sense,
                                              REF_DBL t, REF_DBL *tprime) {
   ego *faces, *edges;
   ego face_ego, edge_ego;
   ego pcurve = NULL;
-  double dxyz[3], dxyz_dt[3], dir[3];
-  REF_INT iter, ixyz;
+  double dxyz[3], dxyz_dt[3];
+  REF_INT iter;
   REF_STATUS ref_status;
-  REF_DBL tp, dt, tangent_distance, ddistance_dt;
+  REF_DBL tp;
   REF_DBL dist, distp;
-  REF_DBL tol = 1.0e-12;
   REF_INT niters = 20;
+  REF_BOOL again;
 
   *tprime = t;
 
@@ -2879,23 +2911,11 @@ static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
   }
   if (NULL != pcurve) {
     tp = t;
-    for (iter = 0; iter < niters; iter++) {
-      ref_status = ref_egads_edge_face_dxyz_dt(edge_ego, face_ego, pcurve, t,
-                                               tp, dxyz, dxyz_dt);
+    again = REF_TRUE;
+    for (iter = 0; again && iter < niters; iter++) {
+      ref_status =
+          ref_egads_edge_face_step(edge_ego, face_ego, pcurve, t, &tp, &again);
       if (REF_ILL_CONDITIONED == ref_status) return REF_SUCCESS;
-      RSS(ref_status, "dxyz_dt");
-      for (ixyz = 0; ixyz < 3; ixyz++) {
-        dir[ixyz] = dxyz_dt[ixyz];
-      }
-      if (REF_SUCCESS != ref_math_normalize(dir)) break;
-      tangent_distance = ref_math_dot(dir, dxyz);
-      ddistance_dt = sqrt(ref_math_dot(dxyz_dt, dxyz_dt));
-      if (!ref_math_divisible(tangent_distance, ddistance_dt)) break;
-      dt = tangent_distance / ddistance_dt;
-      /* printf("%02d dist %e dt %e T %f %f\n", iter,
-       * tangent_distance,dt,t,tp); */
-      if (ABS(dt) < tol * ABS(tp)) break;
-      tp -= dt;
     }
     RSS(ref_egads_edge_face_dxyz_dt(edge_ego, face_ego, pcurve, t, t, dxyz,
                                     dxyz_dt),
