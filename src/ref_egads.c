@@ -2846,29 +2846,55 @@ static REF_STATUS ref_egads_edge_face_dxyz_dt(ego edge, ego face, ego pcurve,
 static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
                                            REF_DBL t, REF_DBL *tp,
                                            REF_BOOL *again) {
-  double dxyz[3], dxyz_dt[3], dir[3];
+  double dxyz[3], n_dxyz[3], dxyz_dt[3], n_dxyz_dt[3], l_dxyz_dt;
   REF_INT ixyz;
   REF_STATUS ref_status;
-  REF_DBL dt, tangent_distance, ddistance_dt;
+  REF_DBL dt, tangent_distance;
   REF_DBL tol = 1.0e-12;
+  REF_DBL alpha;
+  REF_INT search;
+  REF_BOOL verbose = REF_FALSE;
 
   ref_status =
       ref_egads_edge_face_dxyz_dt(edge, face, pcurve, t, *tp, dxyz, dxyz_dt);
   if (REF_ILL_CONDITIONED == ref_status) return REF_ILL_CONDITIONED;
   RSS(ref_status, "dxyz_dt");
   for (ixyz = 0; ixyz < 3; ixyz++) {
-    dir[ixyz] = dxyz_dt[ixyz];
+    n_dxyz[ixyz] = dxyz[ixyz];
   }
-  if (REF_SUCCESS != ref_math_normalize(dir)) return REF_ILL_CONDITIONED;
-  tangent_distance = ref_math_dot(dir, dxyz);
-  ddistance_dt = sqrt(ref_math_dot(dxyz_dt, dxyz_dt));
-  if (!ref_math_divisible(tangent_distance, ddistance_dt))
+  if (REF_SUCCESS != ref_math_normalize(n_dxyz)) return REF_ILL_CONDITIONED;
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    n_dxyz_dt[ixyz] = dxyz_dt[ixyz];
+  }
+  if (REF_SUCCESS != ref_math_normalize(n_dxyz_dt)) return REF_ILL_CONDITIONED;
+  l_dxyz_dt = sqrt(ref_math_dot(dxyz_dt, dxyz_dt));
+  tangent_distance = ref_math_dot(n_dxyz_dt, dxyz);
+  if (!ref_math_divisible(tangent_distance, l_dxyz_dt))
     return REF_ILL_CONDITIONED;
-  dt = tangent_distance / ddistance_dt;
-  /* printf("%02d dist %e dt %e T %f %f\n", iter,
-   * tangent_distance,dt,t,tp); */
+  dt = tangent_distance / l_dxyz_dt;
   *again = (ABS(dt) > tol * ABS(*tp));
-  (*tp) -= dt;
+  alpha = 1.0;
+  for (search = 0; search < 40; search++) {
+    REF_DBL actual_tp = *tp - alpha * dt;
+    REF_DBL actual_dxyz[3], actual_dxyz_dt[3];
+    REF_DBL estimate, actual;
+    estimate = alpha * dt * l_dxyz_dt * ref_math_dot(n_dxyz, n_dxyz_dt);
+    ref_status = ref_egads_edge_face_dxyz_dt(edge, face, pcurve, t, actual_tp,
+                                             actual_dxyz, actual_dxyz_dt);
+    if (REF_ILL_CONDITIONED == ref_status) return REF_ILL_CONDITIONED;
+    RSS(ref_status, "dxyz_dt");
+    actual = sqrt(ref_math_dot(dxyz, dxyz)) -
+             sqrt(ref_math_dot(actual_dxyz, actual_dxyz));
+    if (verbose)
+      printf("search %d est %.6e act %.6e\n", search, estimate, actual);
+    if ((0.8 * estimate <= actual && actual <= 1.2 * estimate) ||
+        actual < tol) {
+      break;
+    } else {
+      alpha *= 0.5;
+    }
+  }
+  (*tp) -= alpha * dt;
 
   return REF_SUCCESS;
 }
