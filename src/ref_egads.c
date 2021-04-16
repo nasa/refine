@@ -54,6 +54,7 @@ REF_STATUS ref_egads_close(REF_GEOM ref_geom) {
   if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
   if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
   if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  if (NULL != ref_geom->pcurves) ref_free((ego *)(ref_geom->pcurves));
   if (NULL != ref_geom->context)
     REIS(EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
 #endif
@@ -81,6 +82,20 @@ REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
 }
 
 #ifdef HAVE_EGADS
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
+    defined(HAVE_EGADS_EFFECTIVE)
+static REF_STATUS ref_egads_free_body_objects(REF_GEOM ref_geom) {
+  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
+  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
+  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  if (NULL != ref_geom->pcurves) ref_free((ego *)(ref_geom->pcurves));
+  ref_free(ref_geom->face_seg_per_rad);
+  ref_free(ref_geom->face_min_length);
+  ref_free(ref_geom->initial_cell_height);
+  ref_free(ref_geom->uv_area_sign);
+  return REF_SUCCESS;
+}
+#endif
 static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
   ego body = (ego)(ref_geom->body);
   ego *faces, *edges, *nodes;
@@ -122,6 +137,49 @@ static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
   ref_geom->edges = (void *)edges;
   ref_geom->nface = nface;
   ref_geom->faces = (void *)faces;
+
+  { /* gather e2f and pcurves */
+    REF_INT *facefound;
+    REF_INT edge;
+
+    ego esurf, *eloops;
+    int nloop;
+    ego loop_curve, *loop_edges;
+    int iloop, iedge, loop_nedge;
+
+    ref_malloc_init(ref_geom->pcurves, 2 * (ref_geom->nedge), void *, NULL);
+    ref_malloc_init(ref_geom->e2f, 2 * (ref_geom->nedge), REF_INT, REF_EMPTY);
+    ref_malloc_init(facefound, (ref_geom->nedge), REF_INT, 0);
+
+    for (face = 0; face < (ref_geom->nface); face++) {
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
+                          &mtype, NULL, &nloop, &eloops, &senses),
+           "topo");
+      for (iloop = 0; iloop < nloop; iloop++) {
+        /* loop through all Edges associated with this Loop */
+        REIS(EGADS_SUCCESS,
+             EG_getTopology(eloops[iloop], &loop_curve, &oclass, &mtype, NULL,
+                            &loop_nedge, &loop_edges, &senses),
+             "topo");
+        for (iedge = 0; iedge < loop_nedge; iedge++) {
+          edge = EG_indexBodyTopo((ego)(ref_geom->body), loop_edges[iedge]) - 1;
+          RAB(2 > facefound[edge], "edge has more than 2 faces",
+              printf("face ids %d %d %d edge id %d\n",
+                     ref_geom->e2f[0 + 2 * edge], ref_geom->e2f[1 + 2 * edge],
+                     face + 1, edge + 1));
+          ref_geom->e2f[facefound[edge] + 2 * edge] = face + 1;
+          if (NULL != loop_curve) { /* LOOP has reference SURFACE */
+            ref_geom->pcurves[facefound[edge] + 2 * edge] =
+                loop_edges[iedge + loop_nedge];
+          }
+          facefound[edge]++;
+        }
+      }
+    }
+
+    ref_free(facefound);
+  }
 
   /* use face mtype SFORWARD, SREVERSE to set uv_area_sign */
   /* If it is SFORWARD (1) then the Face's Normal is in the same direction as
@@ -678,9 +736,8 @@ static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
 }
 #endif
 
+REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom, REF_INT **edge_face_arg) {
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom,
-                                       REF_INT **edge_face_arg) {
   REF_INT *e2f, *nface;
   REF_INT face, edge;
 
@@ -718,8 +775,13 @@ static REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom,
 
   ref_free(nface);
   return REF_SUCCESS;
-}
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  *edge_face_arg = NULL;
+  printf("No EGADS linked for %s\n", __func__);
+  return REF_IMPLEMENT;
 #endif
+}
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_node_faces(REF_GEOM ref_geom,
@@ -2752,12 +2814,108 @@ REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT edgeid,
 #endif
 }
 
-REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
-                                  REF_INT faceid, REF_INT sense, REF_DBL t,
-                                  REF_DBL *uv) {
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_edge_face_dxyz_dt(ego edge, ego face, ego pcurve,
+                                              REF_DBL t, REF_DBL tprime,
+                                              REF_DBL *dxyz, REF_DBL *dxyz_dt) {
+  double edge_eval[18];
+  double face_eval[18];
+  double pcurve_eval[18];
+  REF_INT ixyz;
+  int status;
+  status = EG_evaluate(edge, &t, edge_eval);
+  if (EGADS_DEGEN == status) return REF_ILL_CONDITIONED;
+  /* fix next escape for egadslite */
+  if (EGADS_NULLOBJ == status) return REF_ILL_CONDITIONED;
+  REIS(EGADS_SUCCESS, status, "edge eval");
+  status = EG_evaluate(pcurve, &tprime, pcurve_eval);
+  if (EGADS_DEGEN == status) return REF_ILL_CONDITIONED;
+  REIS(EGADS_SUCCESS, status, "pcurve eval");
+  REIS(EGADS_SUCCESS, EG_evaluate(face, pcurve_eval, face_eval), "pcurve eval");
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    dxyz[ixyz] = face_eval[ixyz] - edge_eval[ixyz];
+  }
+  dxyz_dt[0] = pcurve_eval[2] * face_eval[3] + pcurve_eval[3] * face_eval[6];
+  dxyz_dt[1] = pcurve_eval[2] * face_eval[4] + pcurve_eval[3] * face_eval[7];
+  dxyz_dt[2] = pcurve_eval[2] * face_eval[5] + pcurve_eval[3] * face_eval[8];
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
+                                           REF_DBL t, REF_DBL *tp,
+                                           REF_BOOL *again) {
+  double dxyz[3], n_dxyz[3], dxyz_dt[3], n_dxyz_dt[3], l_dxyz_dt;
+  REF_INT ixyz;
+  REF_STATUS ref_status;
+  REF_DBL dt, tangent_distance;
+  REF_DBL tol = 1.0e-12;
+  REF_DBL alpha;
+  REF_INT search;
+  REF_BOOL verbose = REF_FALSE;
+
+  ref_status =
+      ref_egads_edge_face_dxyz_dt(edge, face, pcurve, t, *tp, dxyz, dxyz_dt);
+  if (REF_ILL_CONDITIONED == ref_status) return REF_ILL_CONDITIONED;
+  RSS(ref_status, "dxyz_dt");
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    n_dxyz[ixyz] = dxyz[ixyz];
+  }
+  if (REF_SUCCESS != ref_math_normalize(n_dxyz)) return REF_ILL_CONDITIONED;
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    n_dxyz_dt[ixyz] = dxyz_dt[ixyz];
+  }
+  if (REF_SUCCESS != ref_math_normalize(n_dxyz_dt)) return REF_ILL_CONDITIONED;
+  l_dxyz_dt = sqrt(ref_math_dot(dxyz_dt, dxyz_dt));
+  tangent_distance = ref_math_dot(n_dxyz_dt, dxyz);
+  if (!ref_math_divisible(tangent_distance, l_dxyz_dt))
+    return REF_ILL_CONDITIONED;
+  dt = tangent_distance / l_dxyz_dt;
+  *again = (ABS(dt) > tol * ABS(*tp));
+  alpha = 1.0;
+  for (search = 0; search < 40; search++) {
+    REF_DBL actual_tp = *tp - alpha * dt;
+    REF_DBL actual_dxyz[3], actual_dxyz_dt[3];
+    REF_DBL estimate, actual;
+    estimate = alpha * dt * l_dxyz_dt * ref_math_dot(n_dxyz, n_dxyz_dt);
+    ref_status = ref_egads_edge_face_dxyz_dt(edge, face, pcurve, t, actual_tp,
+                                             actual_dxyz, actual_dxyz_dt);
+    if (REF_ILL_CONDITIONED == ref_status) return REF_ILL_CONDITIONED;
+    RSS(ref_status, "dxyz_dt");
+    actual = sqrt(ref_math_dot(dxyz, dxyz)) -
+             sqrt(ref_math_dot(actual_dxyz, actual_dxyz));
+    if (verbose)
+      printf("search %d est %.6e act %.6e\n", search, estimate, actual);
+    if ((0.8 * estimate <= actual && actual <= 1.2 * estimate) ||
+        actual < tol) {
+      break;
+    } else {
+      alpha *= 0.5;
+    }
+  }
+  (*tp) -= alpha * dt;
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
+                                             REF_INT faceid, REF_INT sense,
+                                             REF_DBL t, REF_DBL *tprime) {
   ego *faces, *edges;
   ego face_ego, edge_ego;
+  ego pcurve = NULL;
+  double dxyz[3], dxyz_dt[3];
+  REF_INT iter;
+  REF_STATUS ref_status;
+  REF_DBL tp;
+  REF_DBL dist, distp;
+  REF_INT niters = 20;
+  REF_BOOL again;
+
+  *tprime = t;
 
   RNS(ref_geom->edges, "edges not loaded");
   edges = (ego *)(ref_geom->edges);
@@ -2766,10 +2924,79 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
 
   RNS(ref_geom->faces, "faces not loaded");
   faces = (ego *)(ref_geom->faces);
-  RAS(1 <= faceid && faceid <= ref_geom->nface, "face id out of range");
+  RAB(1 <= faceid && faceid <= ref_geom->nface, "face id out of range",
+      { printf("edgeid %d faceid %d sense %d\n", edgeid, faceid, sense); });
+  face_ego = faces[faceid - 1];
+  RNS(ref_geom->e2f, "ref_geom->e2f NULL");
+  RNS(ref_geom->pcurves, "ref_geom->pcurves NULL");
+  if (faceid == ref_geom->e2f[0 + 2 * (edgeid - 1)]) {
+    pcurve = ((ego *)(ref_geom->pcurves))[0 + 2 * (edgeid - 1)];
+  }
+  if (faceid == ref_geom->e2f[1 + 2 * (edgeid - 1)]) {
+    pcurve = ((ego *)(ref_geom->pcurves))[1 + 2 * (edgeid - 1)];
+  }
+  if (NULL != pcurve) {
+    tp = t;
+    again = REF_TRUE;
+    for (iter = 0; again && iter < niters; iter++) {
+      ref_status =
+          ref_egads_edge_face_step(edge_ego, face_ego, pcurve, t, &tp, &again);
+      if (REF_ILL_CONDITIONED == ref_status) return REF_SUCCESS;
+    }
+    RSS(ref_egads_edge_face_dxyz_dt(edge_ego, face_ego, pcurve, t, t, dxyz,
+                                    dxyz_dt),
+        "t");
+    dist = sqrt(ref_math_dot(dxyz, dxyz));
+    RSS(ref_egads_edge_face_dxyz_dt(edge_ego, face_ego, pcurve, t, tp, dxyz,
+                                    dxyz_dt),
+        "tp");
+    distp = sqrt(ref_math_dot(dxyz, dxyz));
+    if (distp < dist) *tprime = tp;
+  }
+  return REF_SUCCESS;
+}
+#endif
+
+REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
+                                  REF_INT faceid, REF_INT sense, REF_DBL t,
+                                  REF_DBL *uv) {
+#ifdef HAVE_EGADS
+  ego *faces, *edges;
+  ego face_ego, edge_ego;
+  REF_DBL tprime;
+
+  if (NULL != ref_geom_facelift(ref_geom)) {
+    RSS(ref_facelift_edge_face_uv(ref_geom_facelift(ref_geom), edgeid, faceid,
+                                  sense, t, uv),
+        "facelift eval wrapper");
+    return REF_SUCCESS;
+  }
+
+  RNS(ref_geom->edges, "edges not loaded");
+  edges = (ego *)(ref_geom->edges);
+  RAS(1 <= edgeid && edgeid <= ref_geom->nedge, "edge id out of range");
+  edge_ego = edges[edgeid - 1];
+
+  RNS(ref_geom->faces, "faces not loaded");
+  faces = (ego *)(ref_geom->faces);
+  RAB(1 <= faceid && faceid <= ref_geom->nface, "face id out of range",
+      { printf("edgeid %d faceid %d sense %d\n", edgeid, faceid, sense); });
   face_ego = faces[faceid - 1];
 
   REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
+       "eval edge face uv", {
+         REF_DBL trange[2];
+         printf("faceid %d edgeid %d sense %d t %.18e\n", faceid, edgeid, sense,
+                t);
+         printf("ref_egads_edge_trange status %d\n",
+                ref_egads_edge_trange(ref_geom, edgeid, trange));
+         printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0], trange[1]);
+       });
+
+  RSS(ref_egads_edge_face_tprime(ref_geom, edgeid, faceid, sense, t, &tprime),
+      "tprime");
+
+  REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, tprime, uv),
        "eval edge face uv", {
          REF_DBL trange[2];
          printf("faceid %d edgeid %d sense %d t %.18e\n", faceid, edgeid, sense,
@@ -3464,13 +3691,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
 
   /* need to use copy to build tess so they match */
   ref_geom->body = effective[0];
-  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
-  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
-  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
-  ref_free(ref_geom->face_seg_per_rad);
-  ref_free(ref_geom->face_min_length);
-  ref_free(ref_geom->initial_cell_height);
-  ref_free(ref_geom->uv_area_sign);
+  RSS(ref_egads_free_body_objects(ref_geom), "free before new cache");
   RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
   RSS(ref_egads_tess_create(ref_geom, &tess, auto_tparams, global_params),
       "create tess object");
@@ -3501,13 +3722,7 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
   ref_geom->body = (void *)effective[1];
   ref_geom_effective(ref_geom) = REF_TRUE;
 
-  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
-  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
-  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
-  ref_free(ref_geom->face_seg_per_rad);
-  ref_free(ref_geom->face_min_length);
-  ref_free(ref_geom->initial_cell_height);
-  ref_free(ref_geom->uv_area_sign);
+  RSS(ref_egads_free_body_objects(ref_geom), "free before new cache");
   RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
 
   return REF_SUCCESS;

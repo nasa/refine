@@ -1,4 +1,12 @@
 
+use cached e2f
+assign e2f and pcurves position based on sense
+recall e2f and pcurves position based on sense
+
+introduce a code enum in ref_subcommand loop
+
+optimize t to reduce eval t and eval uv in edgeUV
+
 sync twod oriention with and without EGADS
 flip boundary orientation convention
 use CGNS winding
@@ -9,6 +17,7 @@ effective egads
   group via quilting papers (crease)
 
 facelift direct surrogate boundary representation tolerance
+  edgeuv sense != 0
   plot displacement between surrogate and EGADS
   plot interpolated boundary representation tolerance independently
   smooth enrich surface (conform curvature metric?)
