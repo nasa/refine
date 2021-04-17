@@ -2912,7 +2912,7 @@ static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
   REF_STATUS ref_status;
   REF_DBL tp;
   REF_DBL dist, distp;
-  REF_INT niters = 20;
+  REF_INT niters = 40;
   REF_BOOL again;
 
   *tprime = t;
