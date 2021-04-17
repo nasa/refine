@@ -2854,6 +2854,9 @@ static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
   REF_DBL alpha;
   REF_INT search;
   REF_BOOL verbose = REF_FALSE;
+  REF_DBL dist, distp;
+  REF_DBL trange[2];
+  int periodic;
 
   ref_status =
       ref_egads_edge_face_dxyz_dt(edge, face, pcurve, t, *tp, dxyz, dxyz_dt);
@@ -2872,6 +2875,15 @@ static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
   if (!ref_math_divisible(tangent_distance, l_dxyz_dt))
     return REF_ILL_CONDITIONED;
   dt = tangent_distance / l_dxyz_dt;
+  if (EGADS_SUCCESS == EG_getRange(edge, trange, &periodic)) {
+    REF_DBL tlength = ABS(trange[1] - trange[0]);
+    REF_DBL tallow = 0.1 * tlength;
+    if (ABS(dt) > tallow) {
+      if (verbose)printf("range %e %e dt %e", trange[0], trange[1], dt);
+      dt = MIN(MAX(-tallow, dt), tallow);
+      if (verbose)printf(" limit dt %e\n", dt);
+    }
+  }
   *again = (ABS(dt) > tol * ABS(*tp));
   alpha = 1.0;
   for (search = 0; search < 40; search++) {
@@ -2883,12 +2895,14 @@ static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
                                              actual_dxyz, actual_dxyz_dt);
     if (REF_ILL_CONDITIONED == ref_status) return REF_ILL_CONDITIONED;
     RSS(ref_status, "dxyz_dt");
-    actual = sqrt(ref_math_dot(dxyz, dxyz)) -
-             sqrt(ref_math_dot(actual_dxyz, actual_dxyz));
+    dist = sqrt(ref_math_dot(dxyz, dxyz));
+    distp = sqrt(ref_math_dot(actual_dxyz, actual_dxyz));
+    actual = dist - distp;
     if (verbose)
-      printf("search %d est %.6e act %.6e\n", search, estimate, actual);
+      printf("search %d est %.4e act %.4e dist %.4e %.4e\n", search, estimate,
+             actual, dist, distp);
     if ((0.8 * estimate <= actual && actual <= 1.2 * estimate) ||
-        actual < tol) {
+        (distp < dist)) {
       break;
     } else {
       alpha *= 0.5;
