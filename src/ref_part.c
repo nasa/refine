@@ -2109,15 +2109,17 @@ static REF_STATUS ref_part_scalar_cell_restart_sol(REF_GRID ref_grid,
 
 static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
                                       REF_DBL **scalar, const char *filename) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
   FILE *file;
   REF_BOOL verbose = REF_TRUE;
+  int dim, variables, steps, dof;
 
   *ldim = 0;
   *scalar = NULL;
 
   file = NULL;
-  if (ref_mpi_once(ref_node_mpi(ref_node))) {
-    int i, length, version, dim, variables, steps, dof, doubles;
+  if (ref_mpi_once(ref_mpi)) {
+    int i, length, version, doubles;
     char letter;
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -2146,9 +2148,23 @@ static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
     if (verbose) printf("%d doubles\n", doubles);
     REIS(0, doubles, "expected zero doubles");
     /* assert zero doubles, skip misc metadata (timestep) */
-    fclose(file);
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &dim, 1, REF_INT_TYPE), "bcast dim");
+  RSS(ref_mpi_bcast(ref_mpi, &variables, 1, REF_INT_TYPE), "bcast dim");
+  RSS(ref_mpi_bcast(ref_mpi, &steps, 1, REF_INT_TYPE), "bcast dim");
+  RSS(ref_mpi_bcast(ref_mpi, &dof, 1, REF_INT_TYPE), "bcast dim");
+
+  if (ref_node_n_global(ref_node) != dof) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("file %d ref_node " REF_GLOB_FMT " %s\n", dof,
+             ref_node_n_global(ref_node), filename);
+    }
+    THROW("ERROR: global count mismatch");
   }
 
+  if (ref_mpi_once(ref_mpi)) {
+    fclose(file);
+  }
   return REF_SUCCESS;
 }
 
