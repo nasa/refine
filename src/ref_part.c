@@ -2107,6 +2107,51 @@ static REF_STATUS ref_part_scalar_cell_restart_sol(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
+                                      REF_DBL **scalar, const char *filename) {
+  FILE *file;
+  REF_BOOL verbose = REF_TRUE;
+
+  *ldim = 0;
+  *scalar = NULL;
+
+  file = NULL;
+  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+    int i, length, version, dim, variables, steps, dof, doubles;
+    char letter;
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    REIS(1, fread(&length, sizeof(length), 1, file), "dim");
+    if (verbose) printf("%d length of magic string\n", length);
+    REIS(8, length, "magic string length");
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "dim");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    REIS(1, fread(&version, sizeof(version), 1, file), "dim");
+    if (verbose) printf("%d version\n", version);
+    REIS(2, version, "version");
+    REIS(1, fread(&dim, sizeof(dim), 1, file), "dim");
+    if (verbose) printf("%d dim\n", dim);
+    RAS(2 <= dim && dim <= 3, "dim");
+    REIS(1, fread(&variables, sizeof(variables), 1, file), "variables");
+    if (verbose) printf("%d variables\n", variables);
+    REIS(1, fread(&steps, sizeof(steps), 1, file), "steps");
+    if (verbose) printf("%d steps\n", steps);
+    REIS(1, fread(&dof, sizeof(dof), 1, file), "dof");
+    if (verbose) printf("%d dof\n", dof);
+    REIS(1, fread(&doubles, sizeof(doubles), 1, file), "doubles");
+    if (verbose) printf("%d doubles\n", doubles);
+    REIS(0, doubles, "expected zero doubles");
+    /* assert zero doubles, skip misc metadata (timestep) */
+    fclose(file);
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_scalar_sol(REF_NODE ref_node, REF_INT *ldim,
                                       REF_DBL **scalar, const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -2522,6 +2567,10 @@ REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
       strcmp(&filename[end_of_string - 12], ".restart_sol") == 0) {
     RSS(ref_part_scalar_cell_restart_sol(ref_grid, ldim, scalar, filename),
         "restart_sol failed");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".rst") == 0) {
+    RSS(ref_part_scalar_rst(ref_node, ldim, scalar, filename), "rst failed");
     return REF_SUCCESS;
   }
   if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".sol") == 0) {
