@@ -4,7 +4,7 @@ module load openmpi_1.10.2_intel_2017
 module load intel.2017.2.174
 
 module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
-module load tetgen/1.5.0
+module load tetgen
 
 module use --append /usr/local/pkgs-geolab/Modules/modulefiles
 module load geolab_64 AFLR3/16.28.5
