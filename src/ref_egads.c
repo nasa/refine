@@ -2843,6 +2843,41 @@ static REF_STATUS ref_egads_edge_face_dxyz_dt(ego edge, ego face, ego pcurve,
 #endif
 
 #ifdef HAVE_EGADS
+
+REF_STATUS ref_egads_edge_face_viz(ego edge, ego face, ego pcurve);
+REF_STATUS ref_egads_edge_face_viz(ego edge, ego face, ego pcurve) {
+  FILE *file;
+  REF_DBL trange[2];
+  int periodic;
+  double edge_eval[18];
+  double face_eval[18];
+  double pcurve_eval[18];
+  double s0, s1, t;
+  int i, n;
+  file = fopen("ref_egads_pcurve.tec", "w");
+  fprintf(file,
+          "variables = \"xe\" \"ye\" \"ze\" \"xc\" \"yc\" \"zc\" \"t\"\n");
+  if (EGADS_SUCCESS == EG_getRange(edge, trange, &periodic)) {
+    fprintf(file, "zone\n");
+    n = 1001;
+    for (i = 0; i < n; i++) {
+      s1 = 1.0 / (n - 1) * i;
+      s0 = 1.0 - s1;
+      t = s0 * trange[0] + s1 * trange[1];
+      REIS(EGADS_SUCCESS, EG_evaluate(edge, &t, edge_eval), "edge");
+      REIS(EGADS_SUCCESS, EG_evaluate(pcurve, &t, pcurve_eval), "edge");
+      REIS(EGADS_SUCCESS, EG_evaluate(face, pcurve_eval, face_eval), "edge");
+
+      fprintf(file, "%e %e %e %e %e %e %e\n", edge_eval[0], edge_eval[1],
+              edge_eval[2], face_eval[0], face_eval[1], face_eval[2], t);
+    }
+  }
+  fclose(file);
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
                                            REF_DBL t, REF_DBL *tp,
                                            REF_BOOL *again) {
@@ -2854,6 +2889,9 @@ static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
   REF_DBL alpha;
   REF_INT search;
   REF_BOOL verbose = REF_FALSE;
+  REF_DBL dist, distp;
+  REF_DBL trange[2];
+  int periodic;
 
   ref_status =
       ref_egads_edge_face_dxyz_dt(edge, face, pcurve, t, *tp, dxyz, dxyz_dt);
@@ -2872,6 +2910,15 @@ static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
   if (!ref_math_divisible(tangent_distance, l_dxyz_dt))
     return REF_ILL_CONDITIONED;
   dt = tangent_distance / l_dxyz_dt;
+  if (EGADS_SUCCESS == EG_getRange(edge, trange, &periodic)) {
+    REF_DBL tlength = ABS(trange[1] - trange[0]);
+    REF_DBL tallow = 0.1 * tlength;
+    if (ABS(dt) > tallow) {
+      if (verbose) printf("range %e %e dt %e", trange[0], trange[1], dt);
+      dt = MIN(MAX(-tallow, dt), tallow);
+      if (verbose) printf(" limit dt %e\n", dt);
+    }
+  }
   *again = (ABS(dt) > tol * ABS(*tp));
   alpha = 1.0;
   for (search = 0; search < 40; search++) {
@@ -2883,12 +2930,14 @@ static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
                                              actual_dxyz, actual_dxyz_dt);
     if (REF_ILL_CONDITIONED == ref_status) return REF_ILL_CONDITIONED;
     RSS(ref_status, "dxyz_dt");
-    actual = sqrt(ref_math_dot(dxyz, dxyz)) -
-             sqrt(ref_math_dot(actual_dxyz, actual_dxyz));
+    dist = sqrt(ref_math_dot(dxyz, dxyz));
+    distp = sqrt(ref_math_dot(actual_dxyz, actual_dxyz));
+    actual = dist - distp;
     if (verbose)
-      printf("search %d est %.6e act %.6e\n", search, estimate, actual);
+      printf("search %d est %.4e act %.4e dist %.4e %.4e\n", search, estimate,
+             actual, dist, distp);
     if ((0.8 * estimate <= actual && actual <= 1.2 * estimate) ||
-        actual < tol) {
+        (distp < dist)) {
       break;
     } else {
       alpha *= 0.5;
@@ -2912,7 +2961,7 @@ static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
   REF_STATUS ref_status;
   REF_DBL tp;
   REF_DBL dist, distp;
-  REF_INT niters = 20;
+  REF_INT niters = 40;
   REF_BOOL again;
 
   *tprime = t;
@@ -2993,18 +3042,20 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
          printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0], trange[1]);
        });
 
-  RSS(ref_egads_edge_face_tprime(ref_geom, edgeid, faceid, sense, t, &tprime),
-      "tprime");
-
-  REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, tprime, uv),
-       "eval edge face uv", {
-         REF_DBL trange[2];
-         printf("faceid %d edgeid %d sense %d t %.18e\n", faceid, edgeid, sense,
-                t);
-         printf("ref_egads_edge_trange status %d\n",
-                ref_egads_edge_trange(ref_geom, edgeid, trange));
-         printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0], trange[1]);
-       });
+  if (ref_geom_zip_pcurve(ref_geom)) {
+    RSS(ref_egads_edge_face_tprime(ref_geom, edgeid, faceid, sense, t, &tprime),
+        "tprime");
+    REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, tprime, uv),
+         "eval edge face uv", {
+           REF_DBL trange[2];
+           printf("faceid %d edgeid %d sense %d t %.18e\n", faceid, edgeid,
+                  sense, t);
+           printf("ref_egads_edge_trange status %d\n",
+                  ref_egads_edge_trange(ref_geom, edgeid, trange));
+           printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0],
+                  trange[1]);
+         });
+  }
 
   return REF_SUCCESS;
 #else

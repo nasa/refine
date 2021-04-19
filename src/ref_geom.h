@@ -61,6 +61,7 @@ struct REF_GEOM_STRUCT {
   REF_DBL gap_protection;
   REF_ADJ ref_adj;
   REF_INT nnode, nedge, nface;
+  REF_BOOL zip_pcurve;
   REF_BOOL effective;
   REF_BOOL effective_curvature;
   REF_BOOL manifold;
@@ -89,6 +90,7 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_manifold(ref_geom) ((ref_geom)->manifold)
 #define ref_geom_cad_data(ref_geom) ((ref_geom)->cad_data)
 #define ref_geom_cad_data_size(ref_geom) ((ref_geom)->cad_data_size)
+#define ref_geom_zip_pcurve(ref_geom) ((ref_geom)->zip_pcurve)
 #define ref_geom_facelift(ref_geom) ((ref_geom)->ref_facelift)
 
 #define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->model))
