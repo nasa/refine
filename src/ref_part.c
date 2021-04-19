@@ -2112,10 +2112,13 @@ static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   FILE *file;
   REF_BOOL verbose = REF_TRUE;
-  int dim, variables, steps, dof;
-
-  *ldim = 0;
-  *scalar = NULL;
+  int dim, variables, step, steps, dof;
+  REF_INT chunk;
+  REF_DBL *data;
+  REF_INT section_size;
+  REF_GLOB global;
+  REF_INT node, local;
+  REF_LONG nnode_read;
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
@@ -2161,6 +2164,48 @@ static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
     }
     THROW("ERROR: global count mismatch");
   }
+
+  *ldim = variables * steps;
+  ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
+
+  chunk =
+      (REF_INT)MAX(100000, dof / (REF_LONG)ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = (REF_INT)MIN((REF_LONG)chunk, dof);
+
+  ref_malloc_init(data, variables * chunk, REF_DBL, -1.0);
+
+  for (step = 0; step < steps; step++) {
+    int i;
+    nnode_read = 0;
+    while (nnode_read < dof) {
+      section_size = MIN(chunk, (REF_INT)(dof - nnode_read));
+      if (ref_mpi_once(ref_node_mpi(ref_node))) {
+        REIS((variables)*section_size,
+             fread(data, sizeof(REF_DBL), (size_t)(variables * section_size),
+                   file),
+             "dat");
+        RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, variables * chunk,
+                          REF_DBL_TYPE),
+            "bcast");
+      } else {
+        RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, variables * chunk,
+                          REF_DBL_TYPE),
+            "bcast");
+      }
+      for (node = 0; node < section_size; node++) {
+        global = node + nnode_read;
+        RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
+        if (REF_EMPTY != local) {
+          for (i = 0; i < variables; i++) {
+            (*scalar)[i + step * variables + local * (*ldim)] =
+                data[i + node * variables];
+          }
+        }
+      }
+      nnode_read += (REF_LONG)section_size;
+    }
+  }
+  ref_free(data);
 
   if (ref_mpi_once(ref_mpi)) {
     fclose(file);
