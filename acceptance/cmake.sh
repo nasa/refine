@@ -13,10 +13,9 @@ module list
 set -x # echo commands
 
 log=`pwd`/../log-build.txt
-
-export CMAKE_PREFIX_PATH=${mpi_path}:${egads_path}:${opencascade_path}
 trap "cat $log" EXIT
 mkdir -p build
+export CMAKE_PREFIX_PATH=${mpi_path}:${egads_path}:${opencascade_path}
 ( cd build && \
       cmake \
 	  -DCMAKE_INSTALL_PREFIX=`pwd` \
