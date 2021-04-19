@@ -3042,18 +3042,20 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
          printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0], trange[1]);
        });
 
-  RSS(ref_egads_edge_face_tprime(ref_geom, edgeid, faceid, sense, t, &tprime),
-      "tprime");
-
-  REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, tprime, uv),
-       "eval edge face uv", {
-         REF_DBL trange[2];
-         printf("faceid %d edgeid %d sense %d t %.18e\n", faceid, edgeid, sense,
-                t);
-         printf("ref_egads_edge_trange status %d\n",
-                ref_egads_edge_trange(ref_geom, edgeid, trange));
-         printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0], trange[1]);
-       });
+  if (ref_geom_zip_pcurve(ref_geom)) {
+    RSS(ref_egads_edge_face_tprime(ref_geom, edgeid, faceid, sense, t, &tprime),
+        "tprime");
+    REIB(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, tprime, uv),
+         "eval edge face uv", {
+           REF_DBL trange[2];
+           printf("faceid %d edgeid %d sense %d t %.18e\n", faceid, edgeid,
+                  sense, t);
+           printf("ref_egads_edge_trange status %d\n",
+                  ref_egads_edge_trange(ref_geom, edgeid, trange));
+           printf("edgeid %d trange %.18e %.18e\n", edgeid, trange[0],
+                  trange[1]);
+         });
+  }
 
   return REF_SUCCESS;
 #else
