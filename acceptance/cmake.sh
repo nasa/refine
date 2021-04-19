@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 set -e # exit on first error
-set -u # Treat unset variables as error
+set -u # treat unset variables as error
+set -o pipefail # prevents errors in a pipeline from being masked
 
 # Setup bash module environment
 set +x # echo commands off for module
@@ -25,3 +26,11 @@ export CMAKE_PREFIX_PATH=${mpi_path}:${egads_path}:${opencascade_path}
       && make -j 8 install >> $log 2>&1\
       && ctest --output-on-failure >> $log 2>&1) || exit 1
 trap - EXIT
+
+log=`pwd`/../log-bootstrap.txt
+trap "cat $log" EXIT
+export PATH=${PATH}:`pwd`/build/bin
+( cd acceptance/hemisphere/uniform && \
+      ./generate.sh >> $log 2>&1 ) || exit 1
+trap - EXIT
+
