@@ -79,6 +79,10 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename);
 REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
                            const char *filename);
 
+/* call from ref_import */
+REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                        const char *filename);
+
 END_C_DECLORATION
 
 #endif /* REF_PART_H */

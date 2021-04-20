@@ -1390,6 +1390,62 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                        const char *filename) {
+  REF_GRID ref_grid;
+  REF_BOOL verbose = REF_TRUE;
+  FILE *file;
+  REF_INT dim;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
+  ref_grid = *ref_grid_ptr;
+
+  file = NULL;
+  if (ref_mpi_once(ref_mpi)) {
+    int i, length, magic, revision, meshes, precision;
+    char letter;
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    length = 6;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    REIS(1, fread(&magic, sizeof(magic), 1, file), "dim");
+    if (verbose) printf("%d magic\n", magic);
+    REIS(1, magic, "magic");
+    REIS(1, fread(&revision, sizeof(revision), 1, file), "dim");
+    if (verbose) printf("%d revision\n", revision);
+    REIS(2, revision, "revision");
+    REIS(1, fread(&meshes, sizeof(meshes), 1, file), "dim");
+    if (verbose) printf("%d meshes\n", meshes);
+    REIS(1, meshes, "meshes");
+    length = 128;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    REIS(1, fread(&precision, sizeof(precision), 1, file), "dim");
+    if (verbose) printf("%d precision\n", precision);
+    REIS(2, precision, "precision");
+    REIS(1, fread(&dim, sizeof(dim), 1, file), "dim");
+    if (verbose) printf("%d dim\n", dim);
+    RAS(2 <= dim && dim <= 3, "dim");
+    REIS(1, fread(&length, sizeof(length), 1, file), "dim");
+    if (verbose) printf("%d description length\n", length);
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "dim");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+  }
+  if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
                                        const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -2706,6 +2762,10 @@ REF_STATUS ref_part_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   if (end_of_string > 6 &&
       strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
     RSS(ref_part_meshb(ref_grid_ptr, ref_mpi, filename), "meshb failed");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".avm") == 0) {
+    RSS(ref_part_avm(ref_grid_ptr, ref_mpi, filename), "avm failed");
     return REF_SUCCESS;
   }
   printf("%s: %d: %s %s\n", __FILE__, __LINE__,
