@@ -1415,6 +1415,81 @@ static REF_STATUS ref_gather_node_metric_solb(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_scalar_rst(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar, const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
+  REF_STATUS status;
+  FILE *file;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+  }
+
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+
+  ref_malloc(local_xyzm, (ldim + 1) * chunk, REF_DBL);
+  ref_malloc(xyzm, (ldim + 1) * chunk, REF_DBL);
+
+  nnode_written = 0;
+  while (nnode_written < ref_node_n_global(ref_node)) {
+    first = nnode_written;
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
+
+    nnode_written += n;
+
+    for (i = 0; i < (ldim + 1) * chunk; i++) local_xyzm[i] = 0.0;
+
+    for (i = 0; i < n; i++) {
+      global = first + i;
+      status = ref_node_local(ref_node, global, &local);
+      RXS(status, REF_NOT_FOUND, "node local failed");
+      if (REF_SUCCESS == status &&
+          ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
+        for (im = 0; im < ldim; im++)
+          local_xyzm[im + (ldim + 1) * i] = scalar[im + ldim * local];
+        local_xyzm[ldim + (ldim + 1) * i] = 1.0;
+      } else {
+        for (im = 0; im < (ldim + 1); im++)
+          local_xyzm[im + (ldim + 1) * i] = 0.0;
+      }
+    }
+
+    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (ldim + 1) * n, REF_DBL_TYPE),
+        "sum");
+
+    if (ref_mpi_once(ref_mpi))
+      for (i = 0; i < n; i++) {
+        if (ABS(xyzm[ldim + (ldim + 1) * i] - 1.0) > 0.1) {
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                 xyzm[ldim + (ldim + 1) * i]);
+        }
+        for (im = 0; im < ldim; im++) {
+          REIS(1,
+               fwrite(&(xyzm[im + (ldim + 1) * i]), sizeof(REF_DBL), 1, file),
+               "s");
+        }
+      }
+  }
+
+  ref_free(xyzm);
+  ref_free(local_xyzm);
+
+  if (ref_grid_once(ref_grid)) fclose(file);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
                                              REF_DBL *scalar, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -3649,6 +3724,10 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
   if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".pcd") == 0) {
     RSS(ref_gather_scalar_pcd(ref_grid, ldim, scalar, scalar_names, filename),
         "scalar pcd");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".rst") == 0) {
+    RSS(ref_gather_scalar_rst(ref_grid, ldim, scalar, filename), "scalar rst");
     return REF_SUCCESS;
   }
   if (end_of_string > 12 &&
