@@ -3098,6 +3098,41 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_free(overflow);
   }
 
+  RXS(ref_args_find(argc, argv, "--fun-coffe", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_DBL *coffe;
+    REF_INT variables;
+    REF_INT node, i;
+    variables = ldim;
+    ldim *= 2;
+    if (ref_mpi_once(ref_mpi))
+      printf("creating steps: %d variables %d ldim\n", variables, ldim);
+    ref_malloc(coffe, (ldim)*ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    if (ref_grid_twod(ref_grid)) {
+      THROW("2D translation not implemented");
+    } else {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        REF_DBL gamma = 1.4;
+        REF_DBL rho, u, temp, pressure;
+        for (i = 0; i < variables; i++) {
+          coffe[i + ldim * node] = field[i + variables * node];
+        }
+        rho = field[0 + variables * node];
+        u = field[1 + variables * node];
+        pressure = field[4 + variables * node];
+        temp = gamma * (pressure / rho);
+        coffe[1 + ldim * node] = -u;
+        coffe[4 + ldim * node] = temp;
+        for (i = 0; i < variables; i++) {
+          coffe[i + variables + ldim * node] = coffe[i + ldim * node];
+        }
+      }
+    }
+    ref_free(field);
+    field = coffe;
+  }
+
   RXS(ref_args_find(argc, argv, "--iso", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 2) {
     REF_DBL *scalar;
