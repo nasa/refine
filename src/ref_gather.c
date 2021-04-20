@@ -1425,61 +1425,89 @@ static REF_STATUS ref_gather_scalar_rst(REF_GRID ref_grid, REF_INT ldim,
   REF_INT local, n, i, im;
   REF_STATUS status;
   FILE *file;
+  int variables, step, steps, dof;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
+  steps = 2;
+  variables = ldim / steps;
+  REIS(ldim, variables * steps, "ldim not divisble by steps");
+  dof = (int)ref_node_n_global(ref_node);
 
   file = NULL;
   if (ref_grid_once(ref_grid)) {
+    int length = 8;
+    char magic[] = "COFFERST";
+    int version = 2;
+    int dim;
+    int doubles = 0;
+
     file = fopen(filename, "w");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
+
+    REIS(1, fwrite(&length, sizeof(length), 1, file), "length");
+    REIS(length, fwrite(magic, sizeof(char), (unsigned long)length, file),
+         "magic");
+    REIS(1, fwrite(&version, sizeof(version), 1, file), "version");
+    dim = 3;
+    if (ref_grid_twod(ref_grid)) dim = 2;
+    REIS(1, fwrite(&dim, sizeof(dim), 1, file), "dim");
+    REIS(1, fwrite(&variables, sizeof(variables), 1, file), "variables");
+    REIS(1, fwrite(&steps, sizeof(steps), 1, file), "steps");
+    REIS(1, fwrite(&dof, sizeof(dof), 1, file), "dof");
+    REIS(1, fwrite(&doubles, sizeof(doubles), 1, file), "doubles");
+    /* assume zero doubles, skip misc metadata (timestep) */
   }
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
-  ref_malloc(local_xyzm, (ldim + 1) * chunk, REF_DBL);
-  ref_malloc(xyzm, (ldim + 1) * chunk, REF_DBL);
+  ref_malloc(local_xyzm, (variables + 1) * chunk, REF_DBL);
+  ref_malloc(xyzm, (variables + 1) * chunk, REF_DBL);
 
-  nnode_written = 0;
-  while (nnode_written < ref_node_n_global(ref_node)) {
-    first = nnode_written;
-    n = (REF_INT)MIN((REF_GLOB)chunk,
-                     ref_node_n_global(ref_node) - nnode_written);
+  for (step = 0; step < steps; step++) {
+    nnode_written = 0;
+    while (nnode_written < ref_node_n_global(ref_node)) {
+      first = nnode_written;
+      n = (REF_INT)MIN((REF_GLOB)chunk,
+                       ref_node_n_global(ref_node) - nnode_written);
 
-    nnode_written += n;
+      nnode_written += n;
 
-    for (i = 0; i < (ldim + 1) * chunk; i++) local_xyzm[i] = 0.0;
+      for (i = 0; i < (variables + 1) * chunk; i++) local_xyzm[i] = 0.0;
 
-    for (i = 0; i < n; i++) {
-      global = first + i;
-      status = ref_node_local(ref_node, global, &local);
-      RXS(status, REF_NOT_FOUND, "node local failed");
-      if (REF_SUCCESS == status &&
-          ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
-        for (im = 0; im < ldim; im++)
-          local_xyzm[im + (ldim + 1) * i] = scalar[im + ldim * local];
-        local_xyzm[ldim + (ldim + 1) * i] = 1.0;
-      } else {
-        for (im = 0; im < (ldim + 1); im++)
-          local_xyzm[im + (ldim + 1) * i] = 0.0;
-      }
-    }
-
-    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (ldim + 1) * n, REF_DBL_TYPE),
-        "sum");
-
-    if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
-        if (ABS(xyzm[ldim + (ldim + 1) * i] - 1.0) > 0.1) {
-          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
-                 xyzm[ldim + (ldim + 1) * i]);
-        }
-        for (im = 0; im < ldim; im++) {
-          REIS(1,
-               fwrite(&(xyzm[im + (ldim + 1) * i]), sizeof(REF_DBL), 1, file),
-               "s");
+        global = first + i;
+        status = ref_node_local(ref_node, global, &local);
+        RXS(status, REF_NOT_FOUND, "node local failed");
+        if (REF_SUCCESS == status &&
+            ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
+          for (im = 0; im < variables; im++)
+            local_xyzm[im + (variables + 1) * i] = scalar[im + ldim * local];
+          local_xyzm[variables + (variables + 1) * i] = 1.0;
+        } else {
+          for (im = 0; im < (variables + 1); im++)
+            local_xyzm[im + (variables + 1) * i] = 0.0;
         }
       }
+
+      RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (variables + 1) * n,
+                      REF_DBL_TYPE),
+          "sum");
+
+      if (ref_mpi_once(ref_mpi))
+        for (i = 0; i < n; i++) {
+          if (ABS(xyzm[variables + (variables + 1) * i] - 1.0) > 0.1) {
+            printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                   xyzm[variables + (variables + 1) * i]);
+          }
+          for (im = 0; im < variables; im++) {
+            REIS(1,
+                 fwrite(&(xyzm[im + (variables + 1) * i]), sizeof(REF_DBL), 1,
+                        file),
+                 "s");
+          }
+        }
+    }
   }
 
   ref_free(xyzm);
