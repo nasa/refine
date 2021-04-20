@@ -1409,6 +1409,7 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     double model_scale;
     char units[3];
     double reference[7];
+    int refined;
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1498,6 +1499,23 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     for (i = 0; i < 7; i++) {
       if (verbose) printf("%f reference %d\n", reference[i], i);
     }
+    /* reference point description */
+    length = 128;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    REIS(1, fread(&refined, sizeof(refined), 1, file), "refined");
+    if (verbose) printf("%d refined\n", refined);
+    REIS(0, refined, "refined");
+    /* mesh description */
+    length = 128;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
