@@ -3114,15 +3114,17 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     } else {
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         REF_DBL gamma = 1.4;
-        REF_DBL rho, u, temp, pressure;
+        REF_DBL rho, u, w, temp, pressure;
         for (i = 0; i < variables; i++) {
           coffe[i + ldim * node] = field[i + variables * node];
         }
         rho = field[0 + variables * node];
         u = field[1 + variables * node];
+        w = field[3 + variables * node];
         pressure = field[4 + variables * node];
         temp = gamma * (pressure / rho);
         coffe[1 + ldim * node] = -u;
+        coffe[3 + ldim * node] = -w;
         coffe[4 + ldim * node] = temp;
         for (i = 0; i < variables; i++) {
           coffe[i + variables + ldim * node] = coffe[i + ldim * node];
