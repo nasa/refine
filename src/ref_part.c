@@ -1404,6 +1404,9 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   if (ref_mpi_once(ref_mpi)) {
     int i, length, magic, revision, meshes, precision;
     char letter;
+    char mesh_type[8];
+    char coordinate_system[7];
+    double model_scale;
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1441,6 +1444,45 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       if (verbose) printf("%c", letter);
     }
     if (verbose) printf("\n");
+    /* mesh name */
+    length = 128;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    REIS(7, fread(mesh_type, sizeof(char), 7, file), "letter");
+    mesh_type[7] = '\0';
+    if (verbose) printf("%s", mesh_type);
+    REIS(0, strcmp("unstruc", mesh_type), "mesh type");
+    length = 128 - 7;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    /* mesh generator */
+    length = 128;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    REIS(6, fread(coordinate_system, sizeof(char), 6, file),
+         "coordinate_system");
+    coordinate_system[6] = '\0';
+    if (verbose) printf("%s", coordinate_system);
+    REIS(0, strcmp("xByRzU", coordinate_system), "coordinate_system");
+
+    length = 128 - 6;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    REIS(1, fread(&model_scale, sizeof(model_scale), 1, file), "model_scale");
+    if (verbose) printf("%f model_scale\n", model_scale);
+    RWDS(1, model_scale, -1, "model_scale");
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
