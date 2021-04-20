@@ -1407,6 +1407,8 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     char mesh_type[8];
     char coordinate_system[7];
     double model_scale;
+    char units[3];
+    double reference[7];
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1473,7 +1475,6 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     coordinate_system[6] = '\0';
     if (verbose) printf("%s", coordinate_system);
     REIS(0, strcmp("xByRzU", coordinate_system), "coordinate_system");
-
     length = 128 - 6;
     for (i = 0; i < length; i++) {
       REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
@@ -1483,6 +1484,20 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REIS(1, fread(&model_scale, sizeof(model_scale), 1, file), "model_scale");
     if (verbose) printf("%f model_scale\n", model_scale);
     RWDS(1, model_scale, -1, "model_scale");
+    REIS(2, fread(units, sizeof(char), 2, file), "units");
+    units[2] = '\0';
+    if (verbose) printf("%s", units);
+    /* REIS(0, strcmp("in", units), "units"); */
+    length = 128 - 2;
+    for (i = 0; i < length; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
+      if (verbose) printf("%c", letter);
+    }
+    if (verbose) printf("\n");
+    REIS(7, fread(reference, sizeof(double), 7, file), "letter");
+    for (i = 0; i < 7; i++) {
+      if (verbose) printf("%f reference %d\n", reference[i], i);
+    }
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
