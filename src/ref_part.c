@@ -1416,6 +1416,8 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     int max_nodes_per_cell;
     int max_faces_per_cell;
     char element_scheme[33];
+    int face_polynomial_order;
+    int cell_polynomial_order;
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1541,6 +1543,17 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     element_scheme[32] = '\0';
     if (verbose) printf("%s\n", element_scheme);
     REIS(0, strcmp("uniform", element_scheme), "element_scheme");
+    REIS(1,
+         fread(&face_polynomial_order, sizeof(face_polynomial_order), 1, file),
+         "face_polynomial_order");
+    REIS(1,
+         fread(&cell_polynomial_order, sizeof(cell_polynomial_order), 1, file),
+         "cell_polynomial_order");
+    if (verbose)
+      printf("%d face_polynomial_order %d cell_polynomial_order\n",
+             face_polynomial_order, cell_polynomial_order);
+    REIS(1, face_polynomial_order, "face_polynomial_order");
+    REIS(1, cell_polynomial_order, "cell_polynomial_order");
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
