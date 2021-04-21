@@ -449,11 +449,11 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       printf("--ratio-method %d\n", ref_grid_node(ref_grid)->ratio_method);
   }
 
-  RXS(ref_args_find(argc, argv, "--no-zip-pcurve", &pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--zip-pcurve", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    ref_geom_zip_pcurve(ref_grid_geom(ref_grid)) = REF_FALSE;
-    if (ref_mpi_once(ref_mpi)) printf("--no-zip-pcurve pcurve zipping off\n");
+    ref_geom_zip_pcurve(ref_grid_geom(ref_grid)) = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--zip-pcurve pcurve zipping\n");
   }
 
   RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");
@@ -682,11 +682,11 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
 
-  RXS(ref_args_find(argc, argv, "--no-zip-pcurve", &pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--zip-pcurve", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    ref_geom_zip_pcurve(ref_grid_geom(ref_grid)) = REF_FALSE;
-    if (ref_mpi_once(ref_mpi)) printf("--no-zip-pcurve pcurve zipping off\n");
+    ref_geom_zip_pcurve(ref_grid_geom(ref_grid)) = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--zip-pcurve pcurve zipping\n");
   }
 
   RXS(ref_args_find(argc, argv, "--partitioner", &pos), REF_NOT_FOUND,
@@ -1868,11 +1868,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       printf("--ratio-method %d\n", ref_grid_node(ref_grid)->ratio_method);
   }
 
-  RXS(ref_args_find(argc, argv, "--no-zip-pcurve", &pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--zip-pcurve", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    ref_geom_zip_pcurve(ref_grid_geom(ref_grid)) = REF_FALSE;
-    if (ref_mpi_once(ref_mpi)) printf("--no-zip-pcurve pcurve zipping off\n");
+    ref_geom_zip_pcurve(ref_grid_geom(ref_grid)) = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--zip-pcurve pcurve zipping\n");
   }
 
   RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");

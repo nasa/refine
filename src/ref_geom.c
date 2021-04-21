@@ -85,7 +85,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
-  ref_geom->zip_pcurve = REF_TRUE;
+  ref_geom->zip_pcurve = REF_FALSE;
   ref_geom->effective = REF_FALSE;
   ref_geom->effective_curvature = REF_TRUE;
   ref_geom->manifold = REF_TRUE;
