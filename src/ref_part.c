@@ -1398,6 +1398,7 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT dim;
   REF_INT nnodes;
   REF_INT ntet;
+  REF_INT ntri;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = *ref_grid_ptr;
@@ -1421,6 +1422,7 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     int cell_polynomial_order;
     int boundary_patches;
     int nhex, npri, npyr;
+    int ntri2, nqua, nqua2;
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1570,6 +1572,15 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REIS(0, npri, "cant do prism");
     REIS(0, npyr, "cant do pyramid");
     REIS(ncells, ntet, "ncells does not match ntet");
+    REIS(1, fread(&ntri, sizeof(ntri), 1, file), "ntri");
+    REIS(1, fread(&ntri2, sizeof(ntri2), 1, file), "ntri2");
+    REIS(1, fread(&nqua, sizeof(nqua), 1, file), "nqua");
+    REIS(1, fread(&nqua2, sizeof(nqua2), 1, file), "nqua2");
+    if (verbose)
+      printf("%d ntri %d ntri %d nqua %d nqua\n", ntri, ntri2, nqua, nqua2);
+    REIS(ntri, ntri2, "ntri mismatch");
+    REIS(0, nqua, "cant do quad");
+    REIS(nqua, nqua2, "nquad mismatch");
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
