@@ -1415,6 +1415,7 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     int max_nodes_per_face;
     int max_nodes_per_cell;
     int max_faces_per_cell;
+    char element_scheme[33];
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1536,6 +1537,10 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       printf(
           "%d max_nodes_per_face %d max_faces_per_face %d max_faces_per_cell\n",
           max_nodes_per_face, max_nodes_per_cell, max_faces_per_cell);
+    REIS(32, fread(element_scheme, sizeof(char), 32, file), "element_scheme");
+    element_scheme[32] = '\0';
+    if (verbose) printf("%s\n", element_scheme);
+    REIS(0, strcmp("uniform", element_scheme), "element_scheme");
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
