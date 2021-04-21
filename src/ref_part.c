@@ -1398,8 +1398,8 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   FILE *file;
   REF_INT dim;
   REF_LONG nnode;
-  REF_INT ntet;
-  REF_INT ntri;
+  REF_LONG ntet;
+  REF_LONG ntri;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = *ref_grid_ptr;
@@ -1423,8 +1423,8 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     int face_polynomial_order;
     int cell_polynomial_order;
     int boundary_patches;
-    int nhex, npri, npyr;
-    int ntri2, nqua, nqua2;
+    int ntet_int, nhex, npri, npyr;
+    int ntri_int, ntri2, nqua, nqua2;
     int zeros[5];
     char patch_label[33];
     char patch_type[17];
@@ -1570,21 +1570,23 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
          "boundary_patches");
     if (verbose) printf("%d boundary_patches\n", boundary_patches);
     REIS(1, fread(&nhex, sizeof(nhex), 1, file), "nhex");
-    REIS(1, fread(&ntet, sizeof(ntet), 1, file), "ntet");
+    REIS(1, fread(&ntet_int, sizeof(ntet_int), 1, file), "ntet_int");
+    ntet = (REF_LONG)ntet_int;
     REIS(1, fread(&npri, sizeof(npri), 1, file), "npri");
     REIS(1, fread(&npyr, sizeof(npyr), 1, file), "npyr");
     if (verbose)
-      printf("%d nhex %d ntet %d npri %d npyr\n", nhex, ntet, npri, npyr);
+      printf("%d nhex %d ntet %d npri %d npyr\n", nhex, ntet_int, npri, npyr);
     REIS(0, nhex, "cant do hex");
     REIS(0, npri, "cant do prism");
     REIS(0, npyr, "cant do pyramid");
-    REIS(ncells, ntet, "ncells does not match ntet");
-    REIS(1, fread(&ntri, sizeof(ntri), 1, file), "ntri");
+    REIS(ncells, ntet_int, "ncells does not match ntet");
+    REIS(1, fread(&ntri_int, sizeof(ntri_int), 1, file), "ntri_int");
+    ntri = (REF_LONG)ntri_int;
     REIS(1, fread(&ntri2, sizeof(ntri2), 1, file), "ntri2");
     REIS(1, fread(&nqua, sizeof(nqua), 1, file), "nqua");
     REIS(1, fread(&nqua2, sizeof(nqua2), 1, file), "nqua2");
     if (verbose)
-      printf("%d ntri %d ntri %d nqua %d nqua\n", ntri, ntri2, nqua, nqua2);
+      printf("%d ntri %d ntri %d nqua %d nqua\n", ntri_int, ntri2, nqua, nqua2);
     REIS(ntri, ntri2, "ntri mismatch");
     REIS(0, nqua, "cant do quad");
     REIS(nqua, nqua2, "nquad mismatch");
@@ -1603,6 +1605,8 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     nnode = nnodes;
   }
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nnode, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntri, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntet, 1, REF_LONG_TYPE), "bcast");
 
   {
     REF_BOOL swap_endian = REF_FALSE;
@@ -1610,6 +1614,25 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REF_BOOL twod = REF_FALSE;
     RSS(ref_part_node(file, swap_endian, version, twod, ref_node, nnode),
         "part node");
+  }
+
+  {
+    REF_INT version = 0;
+    RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ntri, ref_node, nnode,
+                            version, file),
+        "read tri");
+  }
+
+  {
+    REF_FILEPOS conn_offset, faceid_offset;
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_BOOL sixty_four_bit = REF_FALSE;
+    conn_offset = ftello(file);
+    faceid_offset = 0;
+    RSS(ref_part_bin_ugrid_cell(ref_grid_tet(ref_grid), ntet, ref_node, nnode,
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
+        "read tet");
   }
 
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
