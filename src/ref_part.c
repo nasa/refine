@@ -1424,6 +1424,10 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     int nhex, npri, npyr;
     int ntri2, nqua, nqua2;
     int zeros[5];
+    char patch_label[33];
+    char patch_type[17];
+    int patch_id;
+
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1585,6 +1589,14 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REIS(5, fread(zeros, sizeof(int), 5, file), "zeros");
     for (i = 0; i < 5; i++) {
       REIS(0, zeros[i], "zeros not zero");
+    }
+    for (i = 0; i < boundary_patches; i++) {
+      REIS(32, fread(patch_label, sizeof(char), 32, file), "patch_label");
+      patch_label[32] = '\0';
+      REIS(16, fread(patch_type, sizeof(char), 16, file), "patch_type");
+      patch_type[16] = '\0';
+      REIS(1, fread(&patch_id, sizeof(patch_id), 1, file), "patch_id");
+      if (verbose) printf("%s %s %d\n", patch_label, patch_type, patch_id);
     }
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
