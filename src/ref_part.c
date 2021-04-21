@@ -1397,6 +1397,7 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   FILE *file;
   REF_INT dim;
   REF_INT nnodes;
+  REF_INT ntet;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = *ref_grid_ptr;
@@ -1418,6 +1419,8 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     char element_scheme[33];
     int face_polynomial_order;
     int cell_polynomial_order;
+    int boundary_patches;
+    int nhex, npri, npyr;
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1554,6 +1557,19 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
              face_polynomial_order, cell_polynomial_order);
     REIS(1, face_polynomial_order, "face_polynomial_order");
     REIS(1, cell_polynomial_order, "cell_polynomial_order");
+    REIS(1, fread(&boundary_patches, sizeof(boundary_patches), 1, file),
+         "boundary_patches");
+    if (verbose) printf("%d boundary_patches\n", boundary_patches);
+    REIS(1, fread(&nhex, sizeof(nhex), 1, file), "nhex");
+    REIS(1, fread(&ntet, sizeof(ntet), 1, file), "ntet");
+    REIS(1, fread(&npri, sizeof(npri), 1, file), "npri");
+    REIS(1, fread(&npyr, sizeof(npyr), 1, file), "npyr");
+    if (verbose)
+      printf("%d nhex %d ntet %d npri %d npyr\n", nhex, ntet, npri, npyr);
+    REIS(0, nhex, "cant do hex");
+    REIS(0, npri, "cant do prism");
+    REIS(0, npyr, "cant do pyramid");
+    REIS(ncells, ntet, "ncells does not match ntet");
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
