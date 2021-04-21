@@ -1423,6 +1423,7 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     int boundary_patches;
     int nhex, npri, npyr;
     int ntri2, nqua, nqua2;
+    int zeros[5];
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1581,6 +1582,10 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REIS(ntri, ntri2, "ntri mismatch");
     REIS(0, nqua, "cant do quad");
     REIS(nqua, nqua2, "nquad mismatch");
+    REIS(5, fread(zeros, sizeof(int), 5, file), "zeros");
+    for (i = 0; i < 5; i++) {
+      REIS(0, zeros[i], "zeros not zero");
+    }
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
