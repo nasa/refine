@@ -1396,6 +1396,7 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_BOOL verbose = REF_TRUE;
   FILE *file;
   REF_INT dim;
+  REF_INT nnodes;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = *ref_grid_ptr;
@@ -1410,6 +1411,10 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     char units[3];
     double reference[7];
     int refined;
+    int nfaces, ncells;
+    int max_nodes_per_face;
+    int max_nodes_per_cell;
+    int max_faces_per_cell;
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1516,6 +1521,21 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       if (verbose) printf("%c", letter);
     }
     if (verbose) printf("\n");
+    REIS(1, fread(&nnodes, sizeof(nnodes), 1, file), "nnodes");
+    REIS(1, fread(&nfaces, sizeof(nfaces), 1, file), "nfaces");
+    REIS(1, fread(&ncells, sizeof(ncells), 1, file), "ncells");
+    if (verbose)
+      printf("%d nnodes %d nfaces %d ncells\n", nnodes, nfaces, ncells);
+    REIS(1, fread(&max_nodes_per_face, sizeof(max_nodes_per_face), 1, file),
+         "max_nodes_per_face");
+    REIS(1, fread(&max_nodes_per_cell, sizeof(max_nodes_per_cell), 1, file),
+         "max_nodes_per_cell");
+    REIS(1, fread(&max_faces_per_cell, sizeof(max_faces_per_cell), 1, file),
+         "max_faces_per_cell");
+    if (verbose)
+      printf(
+          "%d max_nodes_per_face %d max_faces_per_face %d max_faces_per_cell\n",
+          max_nodes_per_face, max_nodes_per_cell, max_faces_per_cell);
   }
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
