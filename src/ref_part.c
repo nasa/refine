@@ -1393,15 +1393,17 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                         const char *filename) {
   REF_GRID ref_grid;
+  REF_NODE ref_node;
   REF_BOOL verbose = REF_TRUE;
   FILE *file;
   REF_INT dim;
-  REF_INT nnodes;
+  REF_LONG nnode;
   REF_INT ntet;
   REF_INT ntri;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
@@ -1413,7 +1415,7 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     char units[3];
     double reference[7];
     int refined;
-    int nfaces, ncells;
+    int nnodes, nfaces, ncells;
     int max_nodes_per_face;
     int max_nodes_per_cell;
     int max_faces_per_cell;
@@ -1598,7 +1600,18 @@ REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       REIS(1, fread(&patch_id, sizeof(patch_id), 1, file), "patch_id");
       if (verbose) printf("%s %s %d\n", patch_label, patch_type, patch_id);
     }
+    nnode = nnodes;
   }
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nnode, 1, REF_LONG_TYPE), "bcast");
+
+  {
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_INT version = 0;
+    REF_BOOL twod = REF_FALSE;
+    RSS(ref_part_node(file, swap_endian, version, twod, ref_node, nnode),
+        "part node");
+  }
+
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
   return REF_SUCCESS;
 }
