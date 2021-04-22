@@ -2364,9 +2364,9 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   REF_INT node, local;
   size_t end_of_string;
   REF_INT i;
-  unsigned long version_number;
-  unsigned long number_of_fields;
-  unsigned long number_of_chars;
+  uint64_t version_number;
+  uint64_t number_of_fields;
+  uint64_t number_of_chars;
   char letter;
   unsigned long field_length, uint_nnode;
   int association;
@@ -2388,30 +2388,60 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
 
     REIS(1, fread(&version_number, sizeof(version_number), 1, file),
          "version number");
-    REIS(2, version_number, "only version 2 supported");
+    RAS(2 <= version_number && version_number <= 3,
+        "only versions 2 and 3 supported");
 
     REIS(1, fread(&number_of_fields, sizeof(number_of_fields), 1, file),
          "number");
-    REIS(1, number_of_fields, "only one field supported");
     if (verbose)
-      printf("version %lu fields %lu\n", version_number, number_of_fields);
+      printf("version %llu fields %llu\n", version_number, number_of_fields);
+    REIS(1, number_of_fields, "only one field supported");
 
-    REIS(1, fread(&number_of_chars, sizeof(number_of_chars), 1, file),
-         "number");
-    for (i = 0; i < (REF_INT)number_of_chars; i++) {
-      REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
+    if (2 == version_number) {
+      REIS(1, fread(&number_of_chars, sizeof(number_of_chars), 1, file),
+           "number");
+      for (i = 0; i < (REF_INT)number_of_chars; i++) {
+        REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
+      }
+      REIS(1, fread(&field_length, sizeof(field_length), 1, file), "number");
+      next_position = (REF_FILEPOS)field_length + ftello(file);
+      REIS(1, fread(&uint_nnode, sizeof(uint_nnode), 1, file), "number");
+      nnode = (REF_GLOB)uint_nnode;
+      REIS(1, fread(&association, sizeof(association), 1, file), "number");
+      REIS(-1, association, "field node association only");
+    } else {
+      uint64_t length_remaining;
+      uint64_t n_global;
+      uint64_t entry_length_uint64;
+      uint64_t pair;
+      uint64_t count;
+      REIS(1, fread(&length_remaining, sizeof(length_remaining), 1, file),
+           "length_remaining");
+      next_position = (REF_FILEPOS)length_remaining + ftello(file);
+      REIS(1, fread(&n_global, sizeof(n_global), 1, file), "n_global");
+      REIS(1, fread(&entry_length_uint64, sizeof(entry_length_uint64), 1, file),
+           "entry_length_uint64");
+      nnode = (REF_GLOB)n_global;
+      REIS(1, entry_length_uint64, "require entry_length == 1");
+
+      REIS(1, fread(&count, sizeof(count), 1, file), "count");
+      for (pair = 0; pair < count; pair++) {
+        uint64_t length;
+        /* key */
+        REIS(1, fread(&length, sizeof(length), 1, file), "length");
+        for (i = 0; i < (REF_INT)length; i++) {
+          REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
+        }
+        /* value */
+        REIS(1, fread(&length, sizeof(length), 1, file), "length");
+        for (i = 0; i < (REF_INT)length; i++) {
+          REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
+        }
+      }
     }
 
-    REIS(1, fread(&field_length, sizeof(field_length), 1, file), "number");
-    next_position = (REF_FILEPOS)field_length + ftello(file);
-    REIS(1, fread(&uint_nnode, sizeof(uint_nnode), 1, file), "number");
-    nnode = (REF_GLOB)uint_nnode;
-    REIS(1, fread(&association, sizeof(association), 1, file), "number");
-
-    REIS(-1, association, "field node association only");
-
     if (verbose)
-      printf("file nnode %lu ref nnode " REF_GLOB_FMT "\n", uint_nnode,
+      printf("file nnode %ld ref nnode " REF_GLOB_FMT "\n", nnode,
              ref_node_n_global(ref_node));
 
     *ldim = 1;
