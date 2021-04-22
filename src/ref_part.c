@@ -19,6 +19,7 @@
 #include "ref_part.h"
 
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -2364,13 +2365,15 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   REF_INT node, local;
   size_t end_of_string;
   REF_INT i;
-  unsigned long version_number;
-  unsigned long number_of_fields;
-  unsigned long number_of_chars;
+  REF_INT version;
+  uint64_t version_number;
+  uint64_t number_of_fields;
+  uint64_t number_of_chars;
   char letter;
   unsigned long field_length, uint_nnode;
   int association;
-  REF_BOOL verbose = REF_FALSE;
+  REF_INT field;
+  REF_BOOL verbose = REF_TRUE;
 
   nnode = -1;
   next_position = -1;
@@ -2388,90 +2391,125 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
 
     REIS(1, fread(&version_number, sizeof(version_number), 1, file),
          "version number");
-    REIS(2, version_number, "only version 2 supported");
+    RAS(2 <= version_number && version_number <= 3,
+        "only versions 2 and 3 supported");
+    version = (REF_INT)version_number;
 
     REIS(1, fread(&number_of_fields, sizeof(number_of_fields), 1, file),
          "number");
-    REIS(1, number_of_fields, "only one field supported");
     if (verbose)
       printf("version %lu fields %lu\n", version_number, number_of_fields);
-
-    REIS(1, fread(&number_of_chars, sizeof(number_of_chars), 1, file),
-         "number");
-    for (i = 0; i < (REF_INT)number_of_chars; i++) {
-      REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
-    }
-
-    REIS(1, fread(&field_length, sizeof(field_length), 1, file), "number");
-    next_position = (REF_FILEPOS)field_length + ftello(file);
-    REIS(1, fread(&uint_nnode, sizeof(uint_nnode), 1, file), "number");
-    nnode = (REF_GLOB)uint_nnode;
-    REIS(1, fread(&association, sizeof(association), 1, file), "number");
-
-    REIS(-1, association, "field node association only");
-
-    if (verbose)
-      printf("file nnode %lu ref nnode " REF_GLOB_FMT "\n", uint_nnode,
-             ref_node_n_global(ref_node));
-
-    *ldim = 1;
-
-    if ((nnode != ref_node_n_global(ref_node)) &&
-        (nnode / 2 != ref_node_n_global(ref_node))) {
-      printf("file " REF_GLOB_FMT " ref_node " REF_GLOB_FMT "\n", nnode,
-             ref_node_n_global(ref_node));
-      THROW("global count mismatch");
-    }
+    *ldim = (REF_INT)number_of_fields;
   }
-  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), ldim, 1, REF_INT_TYPE),
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &version, 1, REF_INT_TYPE),
       "bcast ldim");
-  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_INT_TYPE),
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), ldim, 1, REF_INT_TYPE),
       "bcast ldim");
   ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
 
-  chunk = (REF_INT)MAX(100000, nnode / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = (REF_INT)MIN((REF_GLOB)chunk, nnode);
-
-  ref_malloc_init(data, (*ldim) * chunk, REF_DBL, -1.0);
-
-  nnode_read = 0;
-  while (nnode_read < nnode) {
-    if (verbose)
-      printf("nnode " REF_GLOB_FMT " read " REF_GLOB_FMT "\n", nnode,
-             nnode_read);
-
-    section_size = (REF_INT)MIN((REF_GLOB)chunk, nnode - nnode_read);
+  for (field = 0; field < (*ldim); field++) {
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
-      REIS((*ldim) * section_size,
-           fread(data, sizeof(REF_DBL), (size_t)((*ldim) * section_size), file),
-           "dat");
-      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
-                        REF_DBL_TYPE),
-          "bcast");
-    } else {
-      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
-                        REF_DBL_TYPE),
-          "bcast");
-    }
-    for (node = 0; node < section_size; node++) {
-      global = node + nnode_read;
-      RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
-      if (REF_EMPTY != local) {
-        for (i = 0; i < *ldim; i++) {
-          (*scalar)[i + local * (*ldim)] = data[i + node * (*ldim)];
+      if (2 == version) {
+        REIS(1, fread(&number_of_chars, sizeof(number_of_chars), 1, file),
+             "number");
+        for (i = 0; i < (REF_INT)number_of_chars; i++) {
+          REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
+        }
+        REIS(1, fread(&field_length, sizeof(field_length), 1, file), "number");
+        next_position = (REF_FILEPOS)field_length + ftello(file);
+        REIS(1, fread(&uint_nnode, sizeof(uint_nnode), 1, file), "number");
+        nnode = (REF_GLOB)uint_nnode;
+        REIS(1, fread(&association, sizeof(association), 1, file), "number");
+        REIS(-1, association, "field node association only");
+      } else {
+        uint64_t length_remaining;
+        uint64_t n_global;
+        uint64_t entry_length_uint64;
+        uint64_t pair;
+        uint64_t count;
+        REIS(1, fread(&length_remaining, sizeof(length_remaining), 1, file),
+             "length_remaining");
+        next_position = (REF_FILEPOS)length_remaining + ftello(file);
+        REIS(1, fread(&n_global, sizeof(n_global), 1, file), "n_global");
+        REIS(1,
+             fread(&entry_length_uint64, sizeof(entry_length_uint64), 1, file),
+             "entry_length_uint64");
+        nnode = (REF_GLOB)n_global;
+        REIS(1, entry_length_uint64, "require entry_length == 1");
+
+        REIS(1, fread(&count, sizeof(count), 1, file), "count");
+        for (pair = 0; pair < count; pair++) {
+          uint64_t length;
+          /* key */
+          REIS(1, fread(&length, sizeof(length), 1, file), "length");
+          for (i = 0; i < (REF_INT)length; i++) {
+            REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
+          }
+          /* value */
+          REIS(1, fread(&length, sizeof(length), 1, file), "length");
+          for (i = 0; i < (REF_INT)length; i++) {
+            REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
+          }
         }
       }
-    }
-    nnode_read += section_size;
-  }
 
-  ref_free(data);
+      if (verbose)
+        printf("file nnode %ld ref nnode " REF_GLOB_FMT "\n", nnode,
+               ref_node_n_global(ref_node));
+
+      if ((nnode != ref_node_n_global(ref_node)) &&
+          (nnode / 2 != ref_node_n_global(ref_node))) {
+        printf("file " REF_GLOB_FMT " ref_node " REF_GLOB_FMT "\n", nnode,
+               ref_node_n_global(ref_node));
+        THROW("global count mismatch");
+      }
+    }
+    RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_INT_TYPE),
+        "bcast ldim");
+
+    chunk = (REF_INT)MAX(100000, nnode / ref_mpi_n(ref_node_mpi(ref_node)));
+    chunk = (REF_INT)MIN((REF_GLOB)chunk, nnode);
+
+    ref_malloc_init(data, chunk, REF_DBL, -1.0);
+
+    nnode_read = 0;
+    while (nnode_read < nnode) {
+      if (verbose)
+        printf("nnode " REF_GLOB_FMT " read " REF_GLOB_FMT "\n", nnode,
+               nnode_read);
+
+      section_size = (REF_INT)MIN((REF_GLOB)chunk, nnode - nnode_read);
+      if (ref_mpi_once(ref_node_mpi(ref_node))) {
+        REIS(section_size,
+             fread(data, sizeof(REF_DBL), (size_t)(section_size), file), "dat");
+        RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, chunk, REF_DBL_TYPE),
+            "bcast");
+      } else {
+        RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, chunk, REF_DBL_TYPE),
+            "bcast");
+      }
+      for (node = 0; node < section_size; node++) {
+        global = node + nnode_read;
+        RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
+        if (REF_EMPTY != local) {
+          (*scalar)[field + local * (*ldim)] = data[node];
+        }
+      }
+      nnode_read += section_size;
+    }
+
+    ref_free(data);
+
+    if (ref_mpi_once(ref_node_mpi(ref_node))) {
+      if (nnode == ref_node_n_global(ref_node))
+        REIS(next_position, ftello(file), "end location");
+    }
+  }
 
   if (ref_mpi_once(ref_node_mpi(ref_node))) {
-    if (nnode == ref_node_n_global(ref_node))
-      REIS(next_position, ftello(file), "end location");
     REIS(0, fclose(file), "close file");
   }
+
   return REF_SUCCESS;
 }
 
