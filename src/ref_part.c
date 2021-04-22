@@ -1390,8 +1390,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                        const char *filename) {
+static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                               const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_BOOL verbose = REF_TRUE;
