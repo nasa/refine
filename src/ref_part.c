@@ -2373,7 +2373,7 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   unsigned long field_length, uint_nnode;
   int association;
   REF_INT field;
-  REF_BOOL verbose = REF_TRUE;
+  REF_BOOL verbose = REF_FALSE;
 
   nnode = -1;
   next_position = -1;
@@ -2397,8 +2397,6 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
 
     REIS(1, fread(&number_of_fields, sizeof(number_of_fields), 1, file),
          "number");
-    if (verbose)
-      printf("version %lu fields %lu\n", version_number, number_of_fields);
     *ldim = (REF_INT)number_of_fields;
   }
   RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &version, 1, REF_INT_TYPE),
