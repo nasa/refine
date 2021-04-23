@@ -665,6 +665,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT passes = 15;
   REF_INT self_intersections;
   REF_DBL *global_params = NULL;
+  REF_GRID ref_fossil = NULL;
 
   if (!ref_egads_allows_construction()) {
     if (ref_mpi_once(ref_mpi))
@@ -970,6 +971,20 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
+
+  RXS(ref_args_find(argc, argv, "--fossil", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[pos + 1]);
+      RSS(ref_part_by_extension(&ref_fossil, ref_mpi, argv[pos + 1]), "part");
+      ref_mpi_stopwatch_stop(ref_mpi, "part");
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[pos + 1]);
+      RSS(ref_import_by_extension(&ref_fossil, ref_mpi, argv[pos + 1]),
+          "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import");
+    }
+  }
 
   sprintf(filename, "%s-vol.meshb", project);
   if (ref_mpi_once(ref_mpi))
