@@ -650,6 +650,42 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS fossilize(REF_GRID ref_grid, const char *filename) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_GRID fossil_grid;
+  REF_NODE ref_node, fossil_node;
+  REF_INT node, new_node, *f2g;
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", filename);
+    RSS(ref_part_by_extension(&fossil_grid, ref_mpi, filename), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+    ref_grid_partitioner(ref_grid) = REF_MIGRATE_SINGLE;
+    RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_mpi, "pack");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", filename);
+    RSS(ref_import_by_extension(&fossil_grid, ref_mpi, filename), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  fossil_node = ref_grid_node(fossil_grid);
+  ref_node = ref_grid_node(ref_grid);
+  ref_malloc_init(f2g, ref_node_max(fossil_node), REF_INT, REF_EMPTY);
+  each_ref_node_valid_node(fossil_node, node) {
+    if (!ref_cell_node_empty(ref_grid_tri(fossil_grid), node)) {
+      RSS(ref_node_add(ref_node, node, &new_node), "new_node");
+      f2g[node] = new_node;
+      ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(fossil_node, 0, node);
+      ref_node_xyz(ref_node, 1, new_node) = ref_node_xyz(fossil_node, 1, node);
+      ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(fossil_node, 2, node);
+    }
+  }
+  ref_free(f2g);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   size_t end_of_string;
   char project[1000];
@@ -665,7 +701,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT passes = 15;
   REF_INT self_intersections;
   REF_DBL *global_params = NULL;
-  REF_GRID ref_fossil = NULL;
 
   if (!ref_egads_allows_construction()) {
     if (ref_mpi_once(ref_mpi))
@@ -919,6 +954,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "gather surrogate");
   }
 
+  RXS(ref_args_find(argc, argv, "--fossil", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    RSS(fossilize(ref_grid, argv[pos + 1]), "fossilize");
+    RSS(ref_grid_free(ref_grid), "free grid");
+    return REF_SUCCESS;
+  }
+
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (strncmp(mesher, "t", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {
@@ -971,20 +1013,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
-
-  RXS(ref_args_find(argc, argv, "--fossil", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos && pos < argc - 1) {
-    if (ref_mpi_para(ref_mpi)) {
-      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[pos + 1]);
-      RSS(ref_part_by_extension(&ref_fossil, ref_mpi, argv[pos + 1]), "part");
-      ref_mpi_stopwatch_stop(ref_mpi, "part");
-    } else {
-      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[pos + 1]);
-      RSS(ref_import_by_extension(&ref_fossil, ref_mpi, argv[pos + 1]),
-          "import");
-      ref_mpi_stopwatch_stop(ref_mpi, "import");
-    }
-  }
 
   sprintf(filename, "%s-vol.meshb", project);
   if (ref_mpi_once(ref_mpi))
