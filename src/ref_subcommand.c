@@ -662,6 +662,7 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
   REF_GLOB global;
   char filename[1024];
   REF_INT self_intersections;
+  REF_INT group, cell_node;
 
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", fossil_filename);
@@ -767,14 +768,14 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
     }
   }
 
-  fossil_cell = ref_grid_tet(fossil_grid);
-  ref_cell = ref_grid_tet(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(fossil_cell, cell, nodes) {
-    nodes[0] = f2g[nodes[0]];
-    nodes[1] = f2g[nodes[1]];
-    nodes[2] = f2g[nodes[2]];
-    nodes[3] = f2g[nodes[3]];
-    RSS(ref_cell_add(ref_cell, nodes, &new_cell), "insert tri");
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+    fossil_cell = ref_grid_cell(fossil_grid, group);
+    each_ref_cell_valid_cell_with_nodes(fossil_cell, cell, nodes) {
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        nodes[cell_node] = f2g[nodes[cell_node]];
+      }
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "insert vol cell");
+    }
   }
 
   sprintf(filename, "%s-vol.plt", project);
