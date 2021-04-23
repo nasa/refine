@@ -748,6 +748,45 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
 
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (REF_EMPTY == nodes[3]) RSS(ref_cell_remove(ref_cell, cell), "rm tri");
+  }
+
+  each_ref_node_valid_node(fossil_node, node) {
+    if (ref_cell_node_empty(ref_grid_tri(fossil_grid), node)) {
+      RSS(ref_node_next_global(ref_node, &global), "next global");
+      RSS(ref_node_add(ref_node, global, &new_node), "new_node");
+      printf("nnode %d nglobal %ld globa %ld node %d new %d\n",
+             ref_node_n(ref_node), ref_node_n_global(ref_node),
+             ref_node_global(ref_node, node), node, new_node);
+      f2g[node] = new_node;
+      ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(fossil_node, 0, node);
+      ref_node_xyz(ref_node, 1, new_node) = ref_node_xyz(fossil_node, 1, node);
+      ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(fossil_node, 2, node);
+    }
+  }
+
+  fossil_cell = ref_grid_tet(fossil_grid);
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(fossil_cell, cell, nodes) {
+    nodes[0] = f2g[nodes[0]];
+    nodes[1] = f2g[nodes[1]];
+    nodes[2] = f2g[nodes[2]];
+    nodes[3] = f2g[nodes[3]];
+    RSS(ref_cell_add(ref_cell, nodes, &new_cell), "insert tri");
+  }
+
+  sprintf(filename, "%s-vol.plt", project);
+  if (ref_mpi_once(ref_mpi))
+    printf("gather " REF_GLOB_FMT " nodes to %s\n",
+           ref_node_n_global(ref_grid_node(ref_grid)), filename);
+  RSS(ref_gather_by_extension(ref_grid, filename), "vol export");
+  ref_mpi_stopwatch_stop(ref_mpi, "export volume");
+
+  RSS(ref_validation_boundary_face(ref_grid), "boundary-interior connectivity");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "boundary-volume check");
+
   sprintf(filename, "%s-vol.meshb", project);
   if (ref_mpi_once(ref_mpi))
     printf("gather " REF_GLOB_FMT " nodes to %s\n",
