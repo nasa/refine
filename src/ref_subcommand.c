@@ -650,7 +650,9 @@ shutdown:
   return REF_FAILURE;
 }
 
-static REF_STATUS fossilize(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
+                            const char *project, const char *mesher,
+                            const char *mesher_options) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GRID fossil_grid;
   REF_NODE ref_node, fossil_node;
@@ -658,18 +660,21 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *filename) {
   REF_INT node, new_node, *f2g;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], tempnode, cell, new_cell;
   REF_GLOB global;
+  char filename[1024];
+  REF_INT self_intersections;
 
   if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("part %s\n", filename);
-    RSS(ref_part_by_extension(&fossil_grid, ref_mpi, filename), "part");
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", fossil_filename);
+    RSS(ref_part_by_extension(&fossil_grid, ref_mpi, fossil_filename), "part");
     ref_mpi_stopwatch_stop(ref_mpi, "part");
     ref_grid_partitioner(ref_grid) = REF_MIGRATE_SINGLE;
     RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("import %s\n", filename);
-    RSS(ref_import_by_extension(&fossil_grid, ref_mpi, filename), "import");
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", fossil_filename);
+    RSS(ref_import_by_extension(&fossil_grid, ref_mpi, fossil_filename),
+        "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
 
@@ -704,6 +709,51 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *filename) {
 
     RSS(ref_cell_add(ref_cell, nodes, &new_cell), "insert tri");
   }
+
+  if (strncmp(mesher, "t", 1) == 0) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("fill volume with TetGen\n");
+      RSB(ref_geom_tetgen_volume(ref_grid, project, mesher_options),
+          "tetgen surface to volume", {
+            printf("probing adapted tessellation self-intersections\n");
+            RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+                "bumps");
+            printf("%d segment-triangle intersections detected.\n",
+                   self_intersections);
+          });
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
+  } else if (strncmp(mesher, "a", 1) == 0) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("fill volume with AFLR3\n");
+      RSB(ref_geom_aflr_volume(ref_grid, project, mesher_options),
+          "aflr surface to volume", {
+            printf("probing adapted tessellation self-intersections\n");
+            RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+                "bumps");
+            printf("%d segment-triangle intersections detected.\n",
+                   self_intersections);
+          });
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("mesher '%s' not implemented\n", mesher);
+    return REF_FAILURE;
+  }
+  ref_grid_surf(ref_grid) = REF_FALSE; /* needed until vol mesher para */
+  RSS(ref_validation_boundary_face(ref_grid), "boundary-interior connectivity");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "boundary-volume check");
+
+  RSS(ref_split_edge_geometry(ref_grid), "split geom");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
+  RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
+
+  sprintf(filename, "%s-vol.meshb", project);
+  if (ref_mpi_once(ref_mpi))
+    printf("gather " REF_GLOB_FMT " nodes to %s\n",
+           ref_node_n_global(ref_grid_node(ref_grid)), filename);
+  RSS(ref_gather_by_extension(ref_grid, filename), "vol export");
+  ref_mpi_stopwatch_stop(ref_mpi, "export volume");
 
   ref_free(f2g);
   return REF_SUCCESS;
@@ -979,7 +1029,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--fossil", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    RSS(fossilize(ref_grid, argv[pos + 1]), "fossilize");
+    sprintf(filename, "%s-vol.meshb", project);
+
+    RSS(fossilize(ref_grid, argv[pos + 1], project, mesher, mesher_options),
+        "fossilize");
+    RSS(ref_grid_free(ref_grid), "free grid");
+
+    return REF_SUCCESS;
   }
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
