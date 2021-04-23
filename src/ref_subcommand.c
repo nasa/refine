@@ -654,7 +654,10 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GRID fossil_grid;
   REF_NODE ref_node, fossil_node;
+  REF_CELL ref_cell, fossil_cell;
   REF_INT node, new_node, *f2g;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], tempnode, cell, new_cell;
+  REF_GLOB global;
 
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", filename);
@@ -675,13 +678,33 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *filename) {
   ref_malloc_init(f2g, ref_node_max(fossil_node), REF_INT, REF_EMPTY);
   each_ref_node_valid_node(fossil_node, node) {
     if (!ref_cell_node_empty(ref_grid_tri(fossil_grid), node)) {
-      RSS(ref_node_add(ref_node, node, &new_node), "new_node");
+      RSS(ref_node_next_global(ref_node, &global), "next global");
+      RSS(ref_node_add(ref_node, global, &new_node), "new_node");
+      printf("nnode %d nglobal %ld globa %ld node %d new %d\n",
+             ref_node_n(ref_node), ref_node_n_global(ref_node),
+             ref_node_global(ref_node, node), node, new_node);
       f2g[node] = new_node;
       ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(fossil_node, 0, node);
       ref_node_xyz(ref_node, 1, new_node) = ref_node_xyz(fossil_node, 1, node);
       ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(fossil_node, 2, node);
     }
   }
+
+  fossil_cell = ref_grid_tri(fossil_grid);
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(fossil_cell, cell, nodes) {
+    tempnode = nodes[0];
+    nodes[0] = nodes[1];
+    nodes[1] = tempnode;
+
+    nodes[0] = f2g[nodes[0]];
+    nodes[1] = f2g[nodes[1]];
+    nodes[2] = f2g[nodes[2]];
+    nodes[3] = REF_EMPTY;
+
+    RSS(ref_cell_add(ref_cell, nodes, &new_cell), "insert tri");
+  }
+
   ref_free(f2g);
   return REF_SUCCESS;
 }
@@ -957,8 +980,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--fossil", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     RSS(fossilize(ref_grid, argv[pos + 1]), "fossilize");
-    RSS(ref_grid_free(ref_grid), "free grid");
-    return REF_SUCCESS;
   }
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
