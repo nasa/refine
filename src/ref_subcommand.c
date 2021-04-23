@@ -686,9 +686,6 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
     if (!ref_cell_node_empty(ref_grid_tri(fossil_grid), node)) {
       RSS(ref_node_next_global(ref_node, &global), "next global");
       RSS(ref_node_add(ref_node, global, &new_node), "new_node");
-      printf("nnode %d nglobal %ld globa %ld node %d new %d\n",
-             ref_node_n(ref_node), ref_node_n_global(ref_node),
-             ref_node_global(ref_node, node), node, new_node);
       f2g[node] = new_node;
       ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(fossil_node, 0, node);
       ref_node_xyz(ref_node, 1, new_node) = ref_node_xyz(fossil_node, 1, node);
@@ -758,9 +755,6 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
     if (ref_cell_node_empty(ref_grid_tri(fossil_grid), node)) {
       RSS(ref_node_next_global(ref_node, &global), "next global");
       RSS(ref_node_add(ref_node, global, &new_node), "new_node");
-      printf("nnode %d nglobal %ld globa %ld node %d new %d\n",
-             ref_node_n(ref_node), ref_node_n_global(ref_node),
-             ref_node_global(ref_node, node), node, new_node);
       f2g[node] = new_node;
       ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(fossil_node, 0, node);
       ref_node_xyz(ref_node, 1, new_node) = ref_node_xyz(fossil_node, 1, node);
