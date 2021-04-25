@@ -2207,9 +2207,20 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
+    char magic_string[] = "AVMESH";
+    int magic_number = 1;
+    int revision_number = 2;
+    int n_meshes = 1;
     file = fopen(filename, "w");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
+
+    REIS(6, fwrite(magic_string, sizeof(char), 6, file), "magic_string");
+    REIS(1, fwrite(&magic_number, sizeof(magic_number), 1, file),
+         "magic_number");
+    REIS(1, fwrite(&revision_number, sizeof(revision_number), 1, file),
+         "revision_number");
+    REIS(1, fwrite(&n_meshes, sizeof(n_meshes), 1, file), "n_meshes");
   }
   if (ref_mpi_once(ref_mpi)) fclose(file);
   return REF_SUCCESS;
