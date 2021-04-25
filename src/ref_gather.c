@@ -2211,6 +2211,11 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     int magic_number = 1;
     int revision_number = 2;
     int n_meshes = 1;
+    char nul = '\0';
+    int length, i;
+    int precision = 2;
+    int dimension;
+    char file_description[] = "refine";
     file = fopen(filename, "w");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -2221,6 +2226,18 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&revision_number, sizeof(revision_number), 1, file),
          "revision_number");
     REIS(1, fwrite(&n_meshes, sizeof(n_meshes), 1, file), "n_meshes");
+    length = 128; /* contact info */
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    REIS(1, fwrite(&precision, sizeof(precision), 1, file), "precision");
+    dimension = (ref_grid_twod(ref_grid) ? 2 : 3);
+    REIS(1, fwrite(&dimension, sizeof(dimension), 1, file), "dimension");
+    length = (int)strlen(file_description);
+    REIS(1, fwrite(&length, sizeof(length), 1, file), "length");
+    REIS(length,
+         fwrite(file_description, sizeof(char), (unsigned long)length, file),
+         "file_description");
   }
   if (ref_mpi_once(ref_mpi)) fclose(file);
   return REF_SUCCESS;
