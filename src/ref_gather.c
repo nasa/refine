@@ -2221,6 +2221,7 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     char coordinate_system[7];
     double model_scale = 1.0;
     char mesh_units[12];
+    int refined = 0;
     file = fopen(filename, "w");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -2304,6 +2305,17 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REIS(length, fwrite(mesh_units, sizeof(char), (unsigned long)length, file),
          "mesh_units");
     length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    REIS(7, fwrite(&ref_grid_reference(ref_grid, 0), sizeof(double), 7, file),
+         "reference");
+    length = 128; /* reference point description */
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    REIS(1, fwrite(&refined, sizeof(refined), 1, file), "refined");
+    length = 128; /* mesh description */
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
