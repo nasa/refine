@@ -2194,6 +2194,27 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
+  FILE *file;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_LONG ntri, ntet;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  RSS(ref_cell_ncell(ref_grid_tri(ref_grid), ref_node, &ntri), "ntri");
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "ntet");
+
+  file = NULL;
+  if (ref_mpi_once(ref_mpi)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+  }
+  if (ref_mpi_once(ref_mpi)) fclose(file);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                                        REF_BOOL swap_endian,
                                        REF_BOOL sixty_four_bit) {
@@ -2332,6 +2353,11 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
                             strcmp(&filename[end_of_string - 4], ".dat") == 0 ||
                             strcmp(&filename[end_of_string - 2], ".t") == 0)) {
     RSS(ref_gather_tec(ref_grid, filename), "scalar tec");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 &&
+      (strcmp(&filename[end_of_string - 4], ".avm") == 0)) {
+    RSS(ref_gather_avm(ref_grid, filename), "scalar plt");
     return REF_SUCCESS;
   }
   if (end_of_string > 4 &&
