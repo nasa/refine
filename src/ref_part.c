@@ -1495,7 +1495,8 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
          "coordinate_system");
     coordinate_system[6] = '\0';
     if (verbose) printf("%s", coordinate_system);
-    REIS(0, strcmp("xByRzU", coordinate_system), "coordinate_system");
+    RSS(ref_grid_parse_coordinate_system(ref_grid, coordinate_system),
+        "parse coordinate_system");
     length = 128 - 6;
     for (i = 0; i < length; i++) {
       REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
@@ -1508,7 +1509,7 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REIS(2, fread(units, sizeof(char), 2, file), "units");
     units[2] = '\0';
     if (verbose) printf("%s", units);
-    /* REIS(0, strcmp("in", units), "units"); */
+    RSS(ref_grid_parse_unit(ref_grid, units), "parse unit");
     length = 128 - 2;
     for (i = 0; i < length; i++) {
       REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
@@ -1517,6 +1518,7 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (verbose) printf("\n");
     REIS(7, fread(reference, sizeof(double), 7, file), "letter");
     for (i = 0; i < 7; i++) {
+      ref_grid_reference(ref_grid, i) = reference[i];
       if (verbose) printf("%f reference %d\n", reference[i], i);
     }
     /* reference point description */
@@ -1604,6 +1606,16 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     }
     nnode = nnodes;
   }
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid),
+                    &ref_grid_coordinate_system(ref_grid), 1, REF_INT_TYPE),
+      "coordinate_system");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ref_grid_unit(ref_grid), 1,
+                    REF_INT_TYPE),
+      "unit");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ref_grid_reference(ref_grid, 0), 7,
+                    REF_DBL_TYPE),
+      "reference");
+
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nnode, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntri, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntet, 1, REF_LONG_TYPE), "bcast");
