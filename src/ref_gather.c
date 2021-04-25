@@ -2198,10 +2198,12 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GLOB nnode;
   REF_LONG ntri, ntet;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
+  nnode = ref_node_n_global(ref_node);
   RSS(ref_cell_ncell(ref_grid_tri(ref_grid), ref_node, &ntri), "ntri");
   RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "ntet");
 
@@ -2222,6 +2224,7 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     double model_scale = 1.0;
     char mesh_units[12];
     int refined = 0;
+    int n_int;
     file = fopen(filename, "w");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -2319,6 +2322,18 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
+    n_int = (int)nnode;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nodes");
+    n_int = ((int)ntri + 4 * (int)ntet) / 2;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nfaces");
+    n_int = (int)ntet;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "ncells");
+    n_int = 3;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per face");
+    n_int = 4;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per cell");
+    n_int = 4;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max faces per cell");
   }
   if (ref_mpi_once(ref_mpi)) fclose(file);
   return REF_SUCCESS;
