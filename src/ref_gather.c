@@ -2216,6 +2216,8 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     int precision = 2;
     int dimension;
     char file_description[] = "refine";
+    char mesh_type[] = "unstruc";
+    char mesh_generator[] = "refine";
     file = fopen(filename, "w");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -2238,6 +2240,25 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REIS(length,
          fwrite(file_description, sizeof(char), (unsigned long)length, file),
          "file_description");
+    length = 128; /* mesh name */
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    length = (int)strlen(mesh_type);
+    REIS(length, fwrite(mesh_type, sizeof(char), (unsigned long)length, file),
+         "mesh_type");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    length = (int)strlen(mesh_generator);
+    REIS(length,
+         fwrite(mesh_generator, sizeof(char), (unsigned long)length, file),
+         "mesh_generator");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
   }
   if (ref_mpi_once(ref_mpi)) fclose(file);
   return REF_SUCCESS;
