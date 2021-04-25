@@ -54,6 +54,15 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   ref_grid_partitioner_full(ref_grid) = REF_FALSE;
 
   ref_grid_meshb_version(ref_grid) = 0;
+  ref_grid_coordinate_system(ref_grid) = REF_GRID_XBYRZU;
+  ref_grid_unit(ref_grid) = REF_GRID_M;
+  ref_grid_reference(ref_grid, 0) = 1.0;
+  ref_grid_reference(ref_grid, 1) = 1.0;
+  ref_grid_reference(ref_grid, 2) = 1.0;
+  ref_grid_reference(ref_grid, 3) = 1.0;
+  ref_grid_reference(ref_grid, 4) = 0.0;
+  ref_grid_reference(ref_grid, 5) = 0.0;
+  ref_grid_reference(ref_grid, 6) = 0.0;
 
   ref_grid_twod(ref_grid) = REF_FALSE;
   ref_grid_surf(ref_grid) = REF_FALSE;
@@ -96,6 +105,15 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
   ref_grid_partitioner_full(ref_grid) = ref_grid_partitioner_full(original);
 
   ref_grid_meshb_version(ref_grid) = 0;
+  ref_grid_coordinate_system(ref_grid) = ref_grid_coordinate_system(original);
+  ref_grid_unit(ref_grid) = ref_grid_unit(original);
+  ref_grid_reference(ref_grid, 0) = ref_grid_reference(original, 0);
+  ref_grid_reference(ref_grid, 1) = ref_grid_reference(original, 1);
+  ref_grid_reference(ref_grid, 2) = ref_grid_reference(original, 2);
+  ref_grid_reference(ref_grid, 3) = ref_grid_reference(original, 3);
+  ref_grid_reference(ref_grid, 4) = ref_grid_reference(original, 4);
+  ref_grid_reference(ref_grid, 5) = ref_grid_reference(original, 5);
+  ref_grid_reference(ref_grid, 6) = ref_grid_reference(original, 6);
 
   ref_grid_twod(ref_grid) = ref_grid_twod(original);
   ref_grid_surf(ref_grid) = ref_grid_surf(original);
