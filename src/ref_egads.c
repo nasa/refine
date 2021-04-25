@@ -2418,7 +2418,7 @@ REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
       objects = (ego *)(ref_geom->faces);
       object = objects[id - 1];
       break;
-    case REF_GEOM_SOLID:
+    case REF_GEOM_BODY:
       object = (ego)(ref_geom->body);
       break;
     default:
@@ -3816,7 +3816,7 @@ REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
         if (id < 1 || id > ref_geom->nface) return REF_INVALID;
         object = ((ego *)(ref_geom->faces))[id - 1];
         break;
-      case (REF_GEOM_SOLID):
+      case (REF_GEOM_BODY):
         RNS(ref_geom->body, "body not loaded");
         object = (ego)(ref_geom->body);
         break;
@@ -3869,7 +3869,7 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
       if (id < 1 || id > ref_geom->nface) return REF_INVALID;
       object = ((ego *)(ref_geom->faces))[id - 1];
       break;
-    case (REF_GEOM_SOLID):
+    case (REF_GEOM_BODY):
       RNS(ref_geom->body, "body not loaded");
       object = (ego)(ref_geom->body);
       break;
