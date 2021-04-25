@@ -2218,6 +2218,9 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     char file_description[] = "refine";
     char mesh_type[] = "unstruc";
     char mesh_generator[] = "refine";
+    char coordinate_system[7];
+    double model_scale = 1.0;
+    char mesh_units[12];
     file = fopen(filename, "w");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -2255,6 +2258,51 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REIS(length,
          fwrite(mesh_generator, sizeof(char), (unsigned long)length, file),
          "mesh_generator");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    switch (ref_grid_coordinate_system(ref_grid)) {
+      case REF_GRID_XBYRZU:
+        sprintf(coordinate_system, "xByRzU");
+        break;
+      case REF_GRID_XBYUZL:
+        sprintf(coordinate_system, "xByUzL");
+        break;
+      case REF_GRID_XFYRZD:
+        sprintf(coordinate_system, "xFyRzD");
+        break;
+      case REF_GRID_COORDSYS_LAST:
+        THROW("REF_GRID_COORDSYS_LAST");
+    }
+    length = (int)strlen(coordinate_system);
+    REIS(length,
+         fwrite(coordinate_system, sizeof(char), (unsigned long)length, file),
+         "coordinate_system");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    REIS(1, fwrite(&model_scale, sizeof(model_scale), 1, file), "model_scale");
+    switch (ref_grid_unit(ref_grid)) {
+      case REF_GRID_IN:
+        sprintf(mesh_units, "in");
+        break;
+      case REF_GRID_FT:
+        sprintf(mesh_units, "ft");
+        break;
+      case REF_GRID_M:
+        sprintf(mesh_units, "m");
+        break;
+      case REF_GRID_CM:
+        sprintf(mesh_units, "cm");
+        break;
+      case REF_GRID_UNIT_LAST:
+        THROW("REF_GRID_UNIT_LAST");
+    }
+    length = (int)strlen(mesh_units);
+    REIS(length, fwrite(mesh_units, sizeof(char), (unsigned long)length, file),
+         "mesh_units");
     length = 128 - length;
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
