@@ -150,6 +150,10 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
   for ((group) = 0, (ref_cell) = ref_grid_cell(ref_grid, group); (group) <= 2; \
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
+REF_STATUS ref_grid_parse_coordinate_system(REF_GRID ref_grid,
+                                            const char *coordinate_system);
+REF_STATUS ref_grid_parse_unit(REF_GRID ref_grid, const char *unit);
+
 REF_STATUS ref_grid_inspect(REF_GRID ref_grid);
 REF_STATUS ref_grid_tattle(REF_GRID ref_grid, REF_INT node);
 

@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ref_edge.h"
 #include "ref_malloc.h"
@@ -208,6 +209,29 @@ REF_STATUS ref_grid_free(REF_GRID ref_grid) {
   RSS(ref_mpi_free(ref_grid_mpi(ref_grid)), "mpi free");
 
   ref_free(ref_grid);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_grid_parse_coordinate_system(REF_GRID ref_grid,
+                                            const char *coordinate_system) {
+  ref_grid_coordinate_system(ref_grid) = REF_GRID_COORDSYS_LAST;
+  if (strcmp("xByUzL", coordinate_system))
+    ref_grid_coordinate_system(ref_grid) = REF_GRID_XBYUZL;
+  if (strcmp("xByRzU", coordinate_system))
+    ref_grid_coordinate_system(ref_grid) = REF_GRID_XBYRZU;
+  if (strcmp("xFyRzD", coordinate_system))
+    ref_grid_coordinate_system(ref_grid) = REF_GRID_XFYRZD;
+  RUS(REF_GRID_COORDSYS_LAST, ref_grid_coordinate_system(ref_grid),
+      "coordinate_system not recognized");
+  return REF_SUCCESS;
+}
+REF_STATUS ref_grid_parse_unit(REF_GRID ref_grid, const char *unit) {
+  ref_grid_unit(ref_grid) = REF_GRID_UNIT_LAST;
+  if (strcmp("in", unit)) ref_grid_unit(ref_grid) = REF_GRID_IN;
+  if (strcmp("ft", unit)) ref_grid_unit(ref_grid) = REF_GRID_FT;
+  if (strcmp("m", unit)) ref_grid_unit(ref_grid) = REF_GRID_M;
+  if (strcmp("cm", unit)) ref_grid_unit(ref_grid) = REF_GRID_CM;
+  RUS(REF_GRID_UNIT_LAST, ref_grid_unit(ref_grid), "mesh_units not recognized");
   return REF_SUCCESS;
 }
 
