@@ -698,7 +698,9 @@ static REF_BOOL ref_phys_wall_distance_bc(REF_INT bc) {
           bc == 4100 ||  /* viscous_wall_function */
           bc == 4110 ||  /* viscous_weak_wall */
           bc == -4110 || /* viscous_weak_trs */
-          bc == -4100);  /* viscous_wf_trs */
+          bc == -4100 || /* viscous_wf_trs */
+          bc == 6200 ||  /* block_interface */
+          bc == 6210);   /* filter */
 }
 
 REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
