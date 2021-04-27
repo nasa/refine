@@ -23,6 +23,7 @@
 
 #include "ref_defs.h"
 #include "ref_dict.h"
+#include "ref_geom.h"
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
@@ -51,6 +52,7 @@ REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
 
 REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename);
 REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags);
+REF_STATUS ref_phys_av_tag_attributes(REF_DICT ref_dict, REF_GEOM ref_geom);
 
 REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
                               REF_DBL *res);
