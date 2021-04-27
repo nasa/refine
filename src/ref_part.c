@@ -1602,7 +1602,9 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       REIS(16, fread(patch_type, sizeof(char), 16, file), "patch_type");
       patch_type[16] = '\0';
       REIS(1, fread(&patch_id, sizeof(patch_id), 1, file), "patch_id");
-      if (verbose) printf("%s %s %d\n", patch_label, patch_type, patch_id);
+      if (verbose)
+        printf("%s %s %d -> %d\n", patch_label, patch_type, patch_id,
+               -patch_id);
     }
     nnode = nnodes;
   }
@@ -1630,9 +1632,15 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   {
     REF_INT version = 0;
+    REF_INT cell;
     RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ntri, ref_node, nnode,
                             version, file),
         "read tri");
+    /* positive face ids */
+    each_ref_cell_valid_cell(ref_grid_tri(ref_grid), cell) {
+      ref_cell_c2n(ref_grid_tri(ref_grid), 3, cell) =
+          -ref_cell_c2n(ref_grid_tri(ref_grid), 3, cell);
+    }
   }
 
   {
