@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_endian.h"
 #include "ref_export.h"
 #include "ref_histogram.h"
@@ -2229,6 +2230,7 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     int refined = 0;
     int n_int;
     char element_scheme[] = "uniform";
+    int faceid;
     file = fopen(filename, "w");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -2370,6 +2372,35 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     for (i = 0; i < length; i++) {
       n_int = 0;
       REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "zeros");
+    }
+    for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      const char *patch_label, *patch_type;
+      REF_STATUS ref_status;
+      ref_status = ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, faceid,
+                                           "av:patch_label", &patch_label);
+      if (REF_SUCCESS != ref_status) patch_label = "unknown";
+      length = (int)strlen(patch_label);
+      REIS(length,
+           fwrite(patch_label, sizeof(char), (unsigned long)length, file),
+           "patch_label");
+      length = 32 - length;
+      for (i = 0; i < length; i++) {
+        REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+      }
+      ref_status = ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, faceid,
+                                           "av:patch_type", &patch_type);
+      if (REF_SUCCESS != ref_status) patch_type = "unknown";
+      length = (int)strlen(patch_type);
+      REIS(length,
+           fwrite(patch_type, sizeof(char), (unsigned long)length, file),
+           "patch_label");
+      length = 16 - length;
+      for (i = 0; i < length; i++) {
+        REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+      }
+      n_int = -faceid;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "patch ID");
     }
   }
   if (ref_mpi_once(ref_mpi)) fclose(file);
