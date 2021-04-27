@@ -473,6 +473,16 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
 
   RSS(ref_dict_create(&ref_dict_bcs), "make dict");
 
+  RXS(ref_args_find(argc, argv, "--av", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("parse AV bcs from EGADS attributes\n");
+      RSS(ref_phys_av_tag_attributes(ref_dict_bcs, ref_grid_geom(ref_grid)),
+          "unable to parse AV bcs from EGADS attribute");
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
+  }
+
   RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
@@ -1197,14 +1207,6 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
   }
 
-  if (0 == ref_dict_n(ref_dict_bcs)) {
-    if (ref_mpi_once(ref_mpi))
-      printf(
-          "\nno solid walls specified\n"
-          "set viscous boundaries via --fun3d-mapbc or --viscous-tags\n\n");
-    goto shutdown;
-  }
-
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_mesh), "part");
@@ -1217,6 +1219,24 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi))
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
+
+  RXS(ref_args_find(argc, argv, "--av", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("parse AV bcs from EGADS attributes\n");
+      RSS(ref_phys_av_tag_attributes(ref_dict_bcs, ref_grid_geom(ref_grid)),
+          "unable to parse AV bcs from EGADS attribute");
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
+  }
+
+  if (0 == ref_dict_n(ref_dict_bcs)) {
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "\nno solid walls specified\n"
+          "set viscous boundaries via --fun3d-mapbc or --viscous-tags\n\n");
+    goto shutdown;
+  }
 
   ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   -1.0);
