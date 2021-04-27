@@ -3855,22 +3855,22 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
   switch (type) {
     case (REF_GEOM_NODE):
-      RNS(ref_geom->nodes, "nodes not loaded");
+      if (NULL == ref_geom->nodes) return REF_INVALID;
       if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
       object = ((ego *)(ref_geom->nodes))[id - 1];
       break;
     case (REF_GEOM_EDGE):
-      RNS(ref_geom->edges, "edges not loaded");
+      if (NULL == ref_geom->edges) return REF_INVALID;
       if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
       object = ((ego *)(ref_geom->edges))[id - 1];
       break;
     case (REF_GEOM_FACE):
-      RNS(ref_geom->faces, "faces not loaded");
+      if (NULL == ref_geom->faces) return REF_INVALID;
       if (id < 1 || id > ref_geom->nface) return REF_INVALID;
       object = ((ego *)(ref_geom->faces))[id - 1];
       break;
     case (REF_GEOM_BODY):
-      RNS(ref_geom->body, "body not loaded");
+      if (NULL == ref_geom->body) return REF_INVALID;
       object = (ego)(ref_geom->body);
       break;
     default:
@@ -3881,7 +3881,7 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                                  &reals, value);
   if (EGADS_NOTFOUND == egads_status) return REF_NOT_FOUND;
   REIS(EGADS_SUCCESS, egads_status, "get/return attribute");
-  REIS(ATTRSTRING, attribute_type, "expected string");
+  if (ATTRSTRING != attribute_type) return REF_NOT_FOUND;
 
   return REF_SUCCESS;
 #else
