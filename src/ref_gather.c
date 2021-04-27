@@ -2403,6 +2403,14 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
       REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "patch ID");
     }
   }
+
+  {
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_INT version = 0; /* meshb version, zero is no id */
+    REF_BOOL twod = ref_grid_twod(ref_grid);
+    RSS(ref_gather_node(ref_node, swap_endian, version, twod, file), "nodes");
+  }
+
   if (ref_mpi_once(ref_mpi)) fclose(file);
   return REF_SUCCESS;
 }
