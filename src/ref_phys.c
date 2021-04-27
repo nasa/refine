@@ -691,6 +691,18 @@ REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
   return REF_SUCCESS;
 }
 
+static REF_BOOL ref_phys_wall_distance_bc(REF_INT bc) {
+  return (bc == 4000 ||  /* viscous_solid */
+          bc == -4000 || /* viscous_solid_trs */
+          bc == 4075 ||  /* viscous_wall_rough */
+          bc == 4100 ||  /* viscous_wall_function */
+          bc == 4110 ||  /* viscous_weak_wall */
+          bc == -4110 || /* viscous_weak_trs */
+          bc == -4100 || /* viscous_wf_trs */
+          bc == 6200 ||  /* block_interface */
+          bc == 6210);   /* filter */
+}
+
 REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
                                   REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
@@ -718,7 +730,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     bc = REF_EMPTY;
     RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
         REF_NOT_FOUND, "bc");
-    if (4000 == bc) {
+    if (ref_phys_wall_distance_bc(bc)) {
       local_ncell++;
     }
   }
@@ -728,7 +740,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
       bc = REF_EMPTY;
       RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
           REF_NOT_FOUND, "bc");
-      if (4000 == bc) {
+      if (ref_phys_wall_distance_bc(bc)) {
         local_ncell += 2;
       }
     }
@@ -740,7 +752,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     bc = REF_EMPTY;
     RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
         REF_NOT_FOUND, "bc");
-    if (4000 == bc) {
+    if (ref_phys_wall_distance_bc(bc)) {
       for (node = 0; node < node_per; node++) {
         for (i = 0; i < 3; i++) {
           local_xyz[i + 3 * node + 3 * node_per * local_ncell] =
@@ -756,7 +768,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
       bc = REF_EMPTY;
       RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
           REF_NOT_FOUND, "bc");
-      if (4000 == bc) {
+      if (ref_phys_wall_distance_bc(bc)) {
         for (i = 0; i < 3; i++) {
           local_xyz[i + 3 * 0 + 3 * node_per * local_ncell] =
               ref_node_xyz(ref_node, i, nodes[0]);
