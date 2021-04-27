@@ -2411,6 +2411,41 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     RSS(ref_gather_node(ref_node, swap_endian, version, twod, file), "nodes");
   }
 
+  {
+    REF_CELL ref_cell = ref_grid_tri(ref_grid);
+    REF_BOOL faceid_insted_of_c2n = REF_FALSE;
+    REF_BOOL always_id = REF_TRUE;
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_BOOL sixty_four_bit = REF_FALSE;
+    REF_BOOL select_faceid = REF_FALSE;
+    REF_INT faceid = 0;
+    REF_INT cell;
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+    }
+    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
+                        swap_endian, sixty_four_bit, select_faceid, faceid,
+                        file),
+        "nodes");
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+    }
+  }
+
+  {
+    REF_CELL ref_cell = ref_grid_tet(ref_grid);
+    REF_BOOL faceid_insted_of_c2n = REF_FALSE;
+    REF_BOOL always_id = REF_FALSE;
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_BOOL sixty_four_bit = REF_FALSE;
+    REF_BOOL select_faceid = REF_FALSE;
+    REF_INT faceid = 0;
+    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
+                        swap_endian, sixty_four_bit, select_faceid, faceid,
+                        file),
+        "nodes");
+  }
+
   if (ref_mpi_once(ref_mpi)) fclose(file);
   return REF_SUCCESS;
 }
