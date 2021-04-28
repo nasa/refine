@@ -2395,13 +2395,15 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
       REF_GEOM ref_geom = ref_grid_geom(ref_grid);
       const char *patch_label, *patch_type;
+      char patch_label_index[33];
       REF_STATUS ref_status;
       ref_status = ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, faceid,
                                            "av:patch_label", &patch_label);
       if (REF_SUCCESS != ref_status) patch_label = "unknown";
-      length = (int)strlen(patch_label);
+      snprintf(patch_label_index, 33, "%s-%d", patch_label, faceid);
+      length = (int)strlen(patch_label_index);
       REIS(length,
-           fwrite(patch_label, sizeof(char), (unsigned long)length, file),
+           fwrite(patch_label_index, sizeof(char), (unsigned long)length, file),
            "patch_label");
       length = 32 - length;
       for (i = 0; i < length; i++) {
