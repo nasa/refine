@@ -2222,6 +2222,7 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     int precision = 2;
     int dimension;
     char file_description[] = "refine";
+    char mesh_name[] = "Sketch2Solution";
     char mesh_type[] = "unstruc";
     char mesh_generator[] = "refine";
     char coordinate_system[7];
@@ -2253,7 +2254,10 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REIS(length,
          fwrite(file_description, sizeof(char), (unsigned long)length, file),
          "file_description");
-    length = 128; /* mesh name */
+    length = (int)strlen(mesh_name);
+    REIS(length, fwrite(mesh_name, sizeof(char), (unsigned long)length, file),
+         "mesh_name");
+    length = 128 - length;
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
