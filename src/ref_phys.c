@@ -21,6 +21,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "ref_egads.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_recon.h"
@@ -382,6 +383,23 @@ REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags) {
   }
   free(copy);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_av_tag_attributes(REF_DICT ref_dict, REF_GEOM ref_geom) {
+  const char *patch_type;
+  REF_INT id, type;
+  REF_STATUS ref_status;
+  each_ref_geom_face_id(ref_geom, id) {
+    ref_status = ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, id,
+                                         "av:patch_type", &patch_type);
+    if (REF_SUCCESS == ref_status) {
+      if (0 == strcmp("noslipwall", patch_type)) {
+        type = 4000;
+        RSS(ref_dict_store(ref_dict, id, type), "store");
+      }
+    }
+  }
   return REF_SUCCESS;
 }
 

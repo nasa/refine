@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ref_edge.h"
 #include "ref_malloc.h"
@@ -54,6 +55,15 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   ref_grid_partitioner_full(ref_grid) = REF_FALSE;
 
   ref_grid_meshb_version(ref_grid) = 0;
+  ref_grid_coordinate_system(ref_grid) = REF_GRID_XBYRZU;
+  ref_grid_unit(ref_grid) = REF_GRID_M;
+  ref_grid_reference(ref_grid, 0) = 1.0;
+  ref_grid_reference(ref_grid, 1) = 1.0;
+  ref_grid_reference(ref_grid, 2) = 1.0;
+  ref_grid_reference(ref_grid, 3) = 1.0;
+  ref_grid_reference(ref_grid, 4) = 0.0;
+  ref_grid_reference(ref_grid, 5) = 0.0;
+  ref_grid_reference(ref_grid, 6) = 0.0;
 
   ref_grid_twod(ref_grid) = REF_FALSE;
   ref_grid_surf(ref_grid) = REF_FALSE;
@@ -96,6 +106,15 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
   ref_grid_partitioner_full(ref_grid) = ref_grid_partitioner_full(original);
 
   ref_grid_meshb_version(ref_grid) = 0;
+  ref_grid_coordinate_system(ref_grid) = ref_grid_coordinate_system(original);
+  ref_grid_unit(ref_grid) = ref_grid_unit(original);
+  ref_grid_reference(ref_grid, 0) = ref_grid_reference(original, 0);
+  ref_grid_reference(ref_grid, 1) = ref_grid_reference(original, 1);
+  ref_grid_reference(ref_grid, 2) = ref_grid_reference(original, 2);
+  ref_grid_reference(ref_grid, 3) = ref_grid_reference(original, 3);
+  ref_grid_reference(ref_grid, 4) = ref_grid_reference(original, 4);
+  ref_grid_reference(ref_grid, 5) = ref_grid_reference(original, 5);
+  ref_grid_reference(ref_grid, 6) = ref_grid_reference(original, 6);
 
   ref_grid_twod(ref_grid) = ref_grid_twod(original);
   ref_grid_surf(ref_grid) = ref_grid_surf(original);
@@ -190,6 +209,29 @@ REF_STATUS ref_grid_free(REF_GRID ref_grid) {
   RSS(ref_mpi_free(ref_grid_mpi(ref_grid)), "mpi free");
 
   ref_free(ref_grid);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_grid_parse_coordinate_system(REF_GRID ref_grid,
+                                            const char *coordinate_system) {
+  ref_grid_coordinate_system(ref_grid) = REF_GRID_COORDSYS_LAST;
+  if (0 == strcmp("xByUzL", coordinate_system))
+    ref_grid_coordinate_system(ref_grid) = REF_GRID_XBYUZL;
+  if (0 == strcmp("xByRzU", coordinate_system))
+    ref_grid_coordinate_system(ref_grid) = REF_GRID_XBYRZU;
+  if (0 == strcmp("xFyRzD", coordinate_system))
+    ref_grid_coordinate_system(ref_grid) = REF_GRID_XFYRZD;
+  RUS(REF_GRID_COORDSYS_LAST, ref_grid_coordinate_system(ref_grid),
+      "coordinate_system not recognized");
+  return REF_SUCCESS;
+}
+REF_STATUS ref_grid_parse_unit(REF_GRID ref_grid, const char *unit) {
+  ref_grid_unit(ref_grid) = REF_GRID_UNIT_LAST;
+  if (0 == strcmp("in", unit)) ref_grid_unit(ref_grid) = REF_GRID_IN;
+  if (0 == strcmp("ft", unit)) ref_grid_unit(ref_grid) = REF_GRID_FT;
+  if (0 == strcmp("m", unit)) ref_grid_unit(ref_grid) = REF_GRID_M;
+  if (0 == strcmp("cm", unit)) ref_grid_unit(ref_grid) = REF_GRID_CM;
+  RUS(REF_GRID_UNIT_LAST, ref_grid_unit(ref_grid), "mesh_units not recognized");
   return REF_SUCCESS;
 }
 

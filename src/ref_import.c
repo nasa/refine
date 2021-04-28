@@ -24,6 +24,7 @@
 
 #include "ref_endian.h"
 #include "ref_malloc.h"
+#include "ref_part.h"
 
 #define VTK_LINE (3)
 #define VTK_TRIANGLE (5)
@@ -1475,6 +1476,8 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   } else if (strcmp(&filename[end_of_string - 5], ".grid") == 0) {
     RSS(ref_import_i_like_cfd_grid(ref_grid_ptr, ref_mpi, filename),
         "I Like CFD grid failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".avm") == 0) {
+    RSS(ref_part_by_extension(ref_grid_ptr, ref_mpi, filename), "part failed");
   } else {
     printf("%s: %d: %s %s\n", __FILE__, __LINE__,
            "input file name extension unknown", filename);

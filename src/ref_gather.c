@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_endian.h"
 #include "ref_export.h"
 #include "ref_histogram.h"
@@ -1415,6 +1416,109 @@ static REF_STATUS ref_gather_node_metric_solb(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_scalar_rst(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar, const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
+  REF_STATUS status;
+  FILE *file;
+  int variables, step, steps, dof;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+  steps = 2;
+  variables = ldim / steps;
+  REIS(ldim, variables * steps, "ldim not divisble by steps");
+  dof = (int)ref_node_n_global(ref_node);
+
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    int length = 8;
+    char magic[] = "COFFERST";
+    int version = 2;
+    int dim;
+    int doubles = 0;
+
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+
+    REIS(1, fwrite(&length, sizeof(length), 1, file), "length");
+    REIS(length, fwrite(magic, sizeof(char), (unsigned long)length, file),
+         "magic");
+    REIS(1, fwrite(&version, sizeof(version), 1, file), "version");
+    dim = 3;
+    if (ref_grid_twod(ref_grid)) dim = 2;
+    REIS(1, fwrite(&dim, sizeof(dim), 1, file), "dim");
+    REIS(1, fwrite(&variables, sizeof(variables), 1, file), "variables");
+    REIS(1, fwrite(&steps, sizeof(steps), 1, file), "steps");
+    REIS(1, fwrite(&dof, sizeof(dof), 1, file), "dof");
+    REIS(1, fwrite(&doubles, sizeof(doubles), 1, file), "doubles");
+    /* assume zero doubles, skip misc metadata (timestep) */
+  }
+
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+
+  ref_malloc(local_xyzm, (variables + 1) * chunk, REF_DBL);
+  ref_malloc(xyzm, (variables + 1) * chunk, REF_DBL);
+
+  for (step = 0; step < steps; step++) {
+    nnode_written = 0;
+    while (nnode_written < ref_node_n_global(ref_node)) {
+      first = nnode_written;
+      n = (REF_INT)MIN((REF_GLOB)chunk,
+                       ref_node_n_global(ref_node) - nnode_written);
+
+      nnode_written += n;
+
+      for (i = 0; i < (variables + 1) * chunk; i++) local_xyzm[i] = 0.0;
+
+      for (i = 0; i < n; i++) {
+        global = first + i;
+        status = ref_node_local(ref_node, global, &local);
+        RXS(status, REF_NOT_FOUND, "node local failed");
+        if (REF_SUCCESS == status &&
+            ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
+          for (im = 0; im < variables; im++)
+            local_xyzm[im + (variables + 1) * i] = scalar[im + ldim * local];
+          local_xyzm[variables + (variables + 1) * i] = 1.0;
+        } else {
+          for (im = 0; im < (variables + 1); im++)
+            local_xyzm[im + (variables + 1) * i] = 0.0;
+        }
+      }
+
+      RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (variables + 1) * n,
+                      REF_DBL_TYPE),
+          "sum");
+
+      if (ref_mpi_once(ref_mpi))
+        for (i = 0; i < n; i++) {
+          if (ABS(xyzm[variables + (variables + 1) * i] - 1.0) > 0.1) {
+            printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                   xyzm[variables + (variables + 1) * i]);
+          }
+          for (im = 0; im < variables; im++) {
+            REIS(1,
+                 fwrite(&(xyzm[im + (variables + 1) * i]), sizeof(REF_DBL), 1,
+                        file),
+                 "s");
+          }
+        }
+    }
+  }
+
+  ref_free(xyzm);
+  ref_free(local_xyzm);
+
+  if (ref_grid_once(ref_grid)) fclose(file);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
                                              REF_DBL *scalar, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -2091,6 +2195,282 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
+  FILE *file;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GLOB nnode;
+  REF_LONG ntri, ntet;
+  REF_INT nfaceid, min_faceid, max_faceid;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  nnode = ref_node_n_global(ref_node);
+  RSS(ref_cell_ncell(ref_grid_tri(ref_grid), ref_node, &ntri), "ntri");
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "ntet");
+  RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  nfaceid = max_faceid - min_faceid + 1;
+
+  file = NULL;
+  if (ref_mpi_once(ref_mpi)) {
+    char magic_string[] = "AVMESH";
+    int magic_number = 1;
+    int revision_number = 2;
+    int n_meshes = 1;
+    char nul = '\0';
+    int length, i;
+    char contact_info[] = "NASA/refine";
+    int precision = 2;
+    int dimension;
+    char file_description[] = "refine";
+    char mesh_name[] = "Sketch2Solution";
+    char mesh_type[] = "unstruc";
+    char mesh_generator[] = "refine";
+    char coordinate_system[7];
+    char ref_point_desc[] = "";
+    char mesh_description[] = "refineSketch2Solution";
+    double model_scale = 1.0;
+    char mesh_units[12];
+    int refined = 0;
+    int n_int;
+    char element_scheme[] = "uniform";
+    int faceid;
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+
+    REIS(6, fwrite(magic_string, sizeof(char), 6, file), "magic_string");
+    REIS(1, fwrite(&magic_number, sizeof(magic_number), 1, file),
+         "magic_number");
+    REIS(1, fwrite(&revision_number, sizeof(revision_number), 1, file),
+         "revision_number");
+    REIS(1, fwrite(&n_meshes, sizeof(n_meshes), 1, file), "n_meshes");
+    length = (int)strlen(contact_info);
+    REIS(length,
+         fwrite(contact_info, sizeof(char), (unsigned long)length, file),
+         "contact_info");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    REIS(1, fwrite(&precision, sizeof(precision), 1, file), "precision");
+    dimension = (ref_grid_twod(ref_grid) ? 2 : 3);
+    REIS(1, fwrite(&dimension, sizeof(dimension), 1, file), "dimension");
+    length = (int)strlen(file_description);
+    REIS(1, fwrite(&length, sizeof(length), 1, file), "length");
+    REIS(length,
+         fwrite(file_description, sizeof(char), (unsigned long)length, file),
+         "file_description");
+    length = (int)strlen(mesh_name);
+    REIS(length, fwrite(mesh_name, sizeof(char), (unsigned long)length, file),
+         "mesh_name");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    length = (int)strlen(mesh_type);
+    REIS(length, fwrite(mesh_type, sizeof(char), (unsigned long)length, file),
+         "mesh_type");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    length = (int)strlen(mesh_generator);
+    REIS(length,
+         fwrite(mesh_generator, sizeof(char), (unsigned long)length, file),
+         "mesh_generator");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    switch (ref_grid_coordinate_system(ref_grid)) {
+      case REF_GRID_XBYRZU:
+        sprintf(coordinate_system, "xByRzU");
+        break;
+      case REF_GRID_XBYUZL:
+        sprintf(coordinate_system, "xByUzL");
+        break;
+      case REF_GRID_XFYRZD:
+        sprintf(coordinate_system, "xFyRzD");
+        break;
+      case REF_GRID_COORDSYS_LAST:
+        THROW("REF_GRID_COORDSYS_LAST");
+    }
+    length = (int)strlen(coordinate_system);
+    REIS(length,
+         fwrite(coordinate_system, sizeof(char), (unsigned long)length, file),
+         "coordinate_system");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    REIS(1, fwrite(&model_scale, sizeof(model_scale), 1, file), "model_scale");
+    switch (ref_grid_unit(ref_grid)) {
+      case REF_GRID_IN:
+        sprintf(mesh_units, "in");
+        break;
+      case REF_GRID_FT:
+        sprintf(mesh_units, "ft");
+        break;
+      case REF_GRID_M:
+        sprintf(mesh_units, "m");
+        break;
+      case REF_GRID_CM:
+        sprintf(mesh_units, "cm");
+        break;
+      case REF_GRID_UNIT_LAST:
+        THROW("REF_GRID_UNIT_LAST");
+    }
+    length = (int)strlen(mesh_units);
+    REIS(length, fwrite(mesh_units, sizeof(char), (unsigned long)length, file),
+         "mesh_units");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    REIS(7, fwrite(&ref_grid_reference(ref_grid, 0), sizeof(double), 7, file),
+         "reference");
+    length = (int)strlen(ref_point_desc);
+    REIS(length,
+         fwrite(ref_point_desc, sizeof(char), (unsigned long)length, file),
+         "ref_point_desc");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    REIS(1, fwrite(&refined, sizeof(refined), 1, file), "refined");
+    length = (int)strlen(mesh_description);
+    REIS(length,
+         fwrite(mesh_description, sizeof(char), (unsigned long)length, file),
+         "mesh_description");
+    length = 128 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    n_int = (int)nnode;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nodes");
+    n_int = ((int)ntri + 4 * (int)ntet) / 2;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nfaces");
+    n_int = (int)ntet;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "ncells");
+    n_int = 3;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per face");
+    n_int = 4;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per cell");
+    n_int = 4;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max faces per cell");
+    length = (int)strlen(element_scheme);
+    REIS(length,
+         fwrite(element_scheme, sizeof(char), (unsigned long)length, file),
+         "element_scheme");
+    length = 32 - length;
+    for (i = 0; i < length; i++) {
+      REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    n_int = 1;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "face polynomial order");
+    n_int = 1;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "cell polynomial order");
+    n_int = nfaceid;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "# boundary patches");
+    n_int = 0;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nhex");
+    n_int = (int)ntet;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "ntet");
+    n_int = 0;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "npri");
+    n_int = 0;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "npyr");
+    n_int = (int)ntri;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "# boundary tri faces");
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "# tri faces");
+    n_int = 0;
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "# boundary quad faces");
+    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "# quad faces");
+    length = 5;
+    for (i = 0; i < length; i++) {
+      n_int = 0;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "zeros");
+    }
+    for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      const char *patch_label, *patch_type;
+      char patch_label_index[33];
+      REF_STATUS ref_status;
+      ref_status = ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, faceid,
+                                           "av:patch_label", &patch_label);
+      if (REF_SUCCESS != ref_status) patch_label = "unknown";
+      snprintf(patch_label_index, 33, "%s-%d", patch_label, faceid);
+      length = (int)strlen(patch_label_index);
+      REIS(length,
+           fwrite(patch_label_index, sizeof(char), (unsigned long)length, file),
+           "patch_label");
+      length = 32 - length;
+      for (i = 0; i < length; i++) {
+        REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+      }
+      ref_status = ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, faceid,
+                                           "av:patch_type", &patch_type);
+      if (REF_SUCCESS != ref_status) patch_type = "unknown";
+      length = (int)strlen(patch_type);
+      REIS(length,
+           fwrite(patch_type, sizeof(char), (unsigned long)length, file),
+           "patch_label");
+      length = 16 - length;
+      for (i = 0; i < length; i++) {
+        REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+      }
+      n_int = -faceid;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "patch ID");
+    }
+  }
+
+  {
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_INT version = 0; /* meshb version, zero is no id */
+    REF_BOOL twod = ref_grid_twod(ref_grid);
+    RSS(ref_gather_node(ref_node, swap_endian, version, twod, file), "nodes");
+  }
+
+  {
+    REF_CELL ref_cell = ref_grid_tri(ref_grid);
+    REF_BOOL faceid_insted_of_c2n = REF_FALSE;
+    REF_BOOL always_id = REF_TRUE;
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_BOOL sixty_four_bit = REF_FALSE;
+    REF_BOOL select_faceid = REF_FALSE;
+    REF_INT faceid = 0;
+    REF_INT cell;
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+    }
+    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
+                        swap_endian, sixty_four_bit, select_faceid, faceid,
+                        file),
+        "nodes");
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+    }
+  }
+
+  {
+    REF_CELL ref_cell = ref_grid_tet(ref_grid);
+    REF_BOOL faceid_insted_of_c2n = REF_FALSE;
+    REF_BOOL always_id = REF_FALSE;
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_BOOL sixty_four_bit = REF_FALSE;
+    REF_BOOL select_faceid = REF_FALSE;
+    REF_INT faceid = 0;
+    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
+                        swap_endian, sixty_four_bit, select_faceid, faceid,
+                        file),
+        "nodes");
+  }
+
+  if (ref_mpi_once(ref_mpi)) fclose(file);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                                        REF_BOOL swap_endian,
                                        REF_BOOL sixty_four_bit) {
@@ -2229,6 +2609,11 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
                             strcmp(&filename[end_of_string - 4], ".dat") == 0 ||
                             strcmp(&filename[end_of_string - 2], ".t") == 0)) {
     RSS(ref_gather_tec(ref_grid, filename), "scalar tec");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 &&
+      (strcmp(&filename[end_of_string - 4], ".avm") == 0)) {
+    RSS(ref_gather_avm(ref_grid, filename), "scalar plt");
     return REF_SUCCESS;
   }
   if (end_of_string > 4 &&
@@ -3649,6 +4034,10 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
   if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".pcd") == 0) {
     RSS(ref_gather_scalar_pcd(ref_grid, ldim, scalar, scalar_names, filename),
         "scalar pcd");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".rst") == 0) {
+    RSS(ref_gather_scalar_rst(ref_grid, ldim, scalar, filename), "scalar rst");
     return REF_SUCCESS;
   }
   if (end_of_string > 12 &&

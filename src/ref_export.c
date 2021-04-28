@@ -2269,9 +2269,7 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
     RSS(ref_export_twod_msh(ref_grid, filename), "msh export failed");
   } else {
-    printf("%s: %d: %s %s\n", __FILE__, __LINE__,
-           "export file name extension unknown", filename);
-    RSS(REF_FAILURE, "unknown file extension");
+    RSS(ref_gather_by_extension(ref_grid, filename), "export via gather");
   }
 
   return REF_SUCCESS;

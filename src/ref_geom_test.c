@@ -300,8 +300,8 @@ int main(int argc, char *argv[]) {
       REF_INT id = REF_EMPTY;
       REF_INT min_id, max_id;
       REF_DBL min_tol, max_tol;
-      RSS(ref_egads_tolerance(ref_geom, REF_GEOM_SOLID, id, &tol), "solid tol");
-      printf("%e solid tolerance\n", tol);
+      RSS(ref_egads_tolerance(ref_geom, REF_GEOM_BODY, id, &tol), "solid tol");
+      printf("%e body tolerance\n", tol);
 
       min_id = REF_EMPTY;
       max_id = REF_EMPTY;

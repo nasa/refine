@@ -1,4 +1,6 @@
 
+ref_gather_bin_ugrid REF_GLOB nnode
+
 use cached e2f
 assign e2f and pcurves position based on sense
 recall e2f and pcurves position based on sense

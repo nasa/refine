@@ -37,6 +37,17 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
+typedef enum REF_GRID_COORDSYSS { /* 0 */ REF_GRID_XBYRZU,
+                                  /* 1 */ REF_GRID_XBYUZL,
+                                  /* 2 */ REF_GRID_XFYRZD,
+                                  /* 3 */ REF_GRID_COORDSYS_LAST
+} REF_GRID_COORDSYS;
+typedef enum REF_GRID_UNITS { /* 0 */ REF_GRID_IN,
+                              /* 1 */ REF_GRID_FT,
+                              /* 2 */ REF_GRID_M,
+                              /* 3 */ REF_GRID_CM,
+                              /* 4 */ REF_GRID_UNIT_LAST } REF_GRID_UNIT;
+
 struct REF_GRID_STRUCT {
   REF_MPI mpi;
   REF_NODE node;
@@ -54,6 +65,9 @@ struct REF_GRID_STRUCT {
   REF_BOOL partitioner_full;
 
   REF_INT meshb_version;
+  REF_GRID_COORDSYS coordinate_system;
+  REF_GRID_UNIT unit;
+  REF_DBL references[7];
 
   REF_BOOL twod;
   REF_BOOL surf;
@@ -99,6 +113,10 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_partitioner_full(ref_grid) ((ref_grid)->partitioner_full)
 
 #define ref_grid_meshb_version(ref_grid) ((ref_grid)->meshb_version)
+#define ref_grid_coordinate_system(ref_grid) ((ref_grid)->coordinate_system)
+#define ref_grid_unit(ref_grid) ((ref_grid)->unit)
+#define ref_grid_reference(ref_grid, ref_index) \
+  ((ref_grid)->references[(ref_index)])
 
 #define ref_grid_twod(ref_grid) ((ref_grid)->twod)
 #define ref_grid_surf(ref_grid) ((ref_grid)->surf)
@@ -131,6 +149,10 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define each_ref_grid_edge_ref_cell(ref_grid, group, ref_cell)                 \
   for ((group) = 0, (ref_cell) = ref_grid_cell(ref_grid, group); (group) <= 2; \
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
+
+REF_STATUS ref_grid_parse_coordinate_system(REF_GRID ref_grid,
+                                            const char *coordinate_system);
+REF_STATUS ref_grid_parse_unit(REF_GRID ref_grid, const char *unit);
 
 REF_STATUS ref_grid_inspect(REF_GRID ref_grid);
 REF_STATUS ref_grid_tattle(REF_GRID ref_grid, REF_INT node);

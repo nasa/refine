@@ -28,7 +28,7 @@ typedef REF_GEOM_STRUCT *REF_GEOM;
 #define REF_GEOM_NODE (0)
 #define REF_GEOM_EDGE (1)
 #define REF_GEOM_FACE (2)
-#define REF_GEOM_SOLID (3)
+#define REF_GEOM_BODY (3)
 
 #define REF_GEOM_DESCR_SIZE (6)
 #define REF_GEOM_DESCR_TYPE (0)
