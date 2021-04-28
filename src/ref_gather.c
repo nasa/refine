@@ -2227,7 +2227,7 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     char mesh_type[] = "unstruc";
     char mesh_generator[] = "refine";
     char coordinate_system[7];
-    char ref_point_desc[] = "reference_point_description";
+    char ref_point_desc[] = "";
     char mesh_description[] = "refineSketch2Solution";
     double model_scale = 1.0;
     char mesh_units[12];
