@@ -2219,6 +2219,7 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     int n_meshes = 1;
     char nul = '\0';
     int length, i;
+    char contact_info[] = "NASA/refine";
     int precision = 2;
     int dimension;
     char file_description[] = "refine";
@@ -2226,6 +2227,8 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     char mesh_type[] = "unstruc";
     char mesh_generator[] = "refine";
     char coordinate_system[7];
+    char ref_point_desc[] = "reference_point_description";
+    char mesh_description[] = "refineSketch2Solution";
     double model_scale = 1.0;
     char mesh_units[12];
     int refined = 0;
@@ -2242,7 +2245,11 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&revision_number, sizeof(revision_number), 1, file),
          "revision_number");
     REIS(1, fwrite(&n_meshes, sizeof(n_meshes), 1, file), "n_meshes");
-    length = 128; /* contact info */
+    length = (int)strlen(contact_info);
+    REIS(length,
+         fwrite(contact_info, sizeof(char), (unsigned long)length, file),
+         "contact_info");
+    length = 128 - length;
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
@@ -2323,12 +2330,20 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     }
     REIS(7, fwrite(&ref_grid_reference(ref_grid, 0), sizeof(double), 7, file),
          "reference");
-    length = 128; /* reference point description */
+    length = (int)strlen(ref_point_desc);
+    REIS(length,
+         fwrite(ref_point_desc, sizeof(char), (unsigned long)length, file),
+         "ref_point_desc");
+    length = 128 - length;
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
     REIS(1, fwrite(&refined, sizeof(refined), 1, file), "refined");
-    length = 128; /* mesh description */
+    length = (int)strlen(mesh_description);
+    REIS(length,
+         fwrite(mesh_description, sizeof(char), (unsigned long)length, file),
+         "mesh_description");
+    length = 128 - length;
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
