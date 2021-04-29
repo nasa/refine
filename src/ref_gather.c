@@ -2476,7 +2476,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                                        REF_BOOL sixty_four_bit) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT nnode;
+  REF_GLOB nnode;
   REF_LONG ntri, nqua, ntet, npyr, npri, nhex;
   REF_LONG size_long;
   REF_INT size_int;
@@ -2488,7 +2488,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  nnode = (REF_INT)ref_node_n_global(ref_node);
+  nnode = ref_node_n_global(ref_node);
 
   RSS(ref_cell_ncell(ref_grid_tri(ref_grid), ref_node, &ntri), "ntri");
   RSS(ref_cell_ncell(ref_grid_qua(ref_grid), ref_node, &nqua), "nqua");
