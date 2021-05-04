@@ -283,6 +283,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_INT node;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_DBL gradation = 10.0;
+  REF_INT pos;
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -301,6 +302,15 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
       "local lp=4 norm scaling");
+  RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    REF_DBL aspect_ratio = atof(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi))
+      printf("limit --aspect-ratio to %f\n", aspect_ratio);
+    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
+        "limit aspect ratio");
+  }
   ref_mpi_stopwatch_stop(ref_mpi, "spalding metric");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
