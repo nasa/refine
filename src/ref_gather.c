@@ -1292,7 +1292,7 @@ static REF_STATUS ref_gather_node_bamg_met(REF_GRID ref_grid, FILE *file) {
   REF_INT local, n, i, im;
   REF_STATUS status;
 
-  RAS(!ref_grid_twod(ref_grid), "only implemented for twod mesh");
+  RAS(ref_grid_twod(ref_grid), "only implemented for twod mesh");
 
   if (ref_mpi_once(ref_mpi)) {
     printf("%ld %d", (long)ref_node_n_global(ref_node), 3);
