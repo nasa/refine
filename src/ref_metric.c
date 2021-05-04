@@ -1605,6 +1605,48 @@ REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric, REF_GRID ref_grid,
+                                         REF_DBL aspect_ratio) {
+  REF_DBL diag_system[12];
+  REF_DBL max_eig, limit_eig;
+  REF_INT node;
+  if (ref_grid_twod(ref_grid)) {
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
+      RSS(ref_matrix_ascending_eig_twod(diag_system), "2D eig sort");
+      max_eig = ref_matrix_eig(diag_system, 0);
+      max_eig = MAX(ref_matrix_eig(diag_system, 1), max_eig);
+      RAS(ref_math_divisible(max_eig, (aspect_ratio * aspect_ratio)),
+          "AR div zero");
+      limit_eig = max_eig / (aspect_ratio * aspect_ratio);
+      ref_matrix_eig(diag_system, 0) =
+          MAX(ref_matrix_eig(diag_system, 0), limit_eig);
+      ref_matrix_eig(diag_system, 1) =
+          MAX(ref_matrix_eig(diag_system, 1), limit_eig);
+      RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform m");
+      RSS(ref_matrix_twod_m(&(metric[6 * node])), "enforce 2D m for roundoff");
+    }
+  } else {
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
+      max_eig = ref_matrix_eig(diag_system, 0);
+      max_eig = MAX(ref_matrix_eig(diag_system, 1), max_eig);
+      max_eig = MAX(ref_matrix_eig(diag_system, 2), max_eig);
+      RAS(ref_math_divisible(max_eig, (aspect_ratio * aspect_ratio)),
+          "AR div zero");
+      limit_eig = max_eig / (aspect_ratio * aspect_ratio);
+      ref_matrix_eig(diag_system, 0) =
+          MAX(ref_matrix_eig(diag_system, 0), limit_eig);
+      ref_matrix_eig(diag_system, 1) =
+          MAX(ref_matrix_eig(diag_system, 1), limit_eig);
+      ref_matrix_eig(diag_system, 2) =
+          MAX(ref_matrix_eig(diag_system, 2), limit_eig);
+      RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform m");
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
                               REF_DBL hmax) {
   REF_DBL diag_system[12];
