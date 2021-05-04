@@ -80,6 +80,8 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                  REF_DBL *complexity);
 REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                      REF_DBL target_complexity);
+REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric, REF_GRID ref_grid,
+                                         REF_DBL aspect_ratio);
 REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
                               REF_DBL hmax);
 REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
