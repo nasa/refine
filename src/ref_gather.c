@@ -1283,6 +1283,68 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_node_bamg_met(REF_GRID ref_grid, FILE *file) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
+  REF_STATUS status;
+
+  RAS(!ref_grid_twod(ref_grid), "only implemented for twod mesh");
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("%ld %d", (long)ref_node_n_global(ref_node), 3);
+  }
+
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+
+  ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
+  ref_malloc(xyzm, 7 * chunk, REF_DBL);
+
+  nnode_written = 0;
+  while (nnode_written < ref_node_n_global(ref_node)) {
+    first = nnode_written;
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
+
+    nnode_written += n;
+
+    for (i = 0; i < 7 * chunk; i++) local_xyzm[i] = 0.0;
+
+    for (i = 0; i < n; i++) {
+      global = first + i;
+      status = ref_node_local(ref_node, global, &local);
+      RXS(status, REF_NOT_FOUND, "node local failed");
+      if (REF_SUCCESS == status &&
+          ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
+        RSS(ref_node_metric_get(ref_node, local, &(local_xyzm[7 * i])), "get");
+        local_xyzm[6 + 7 * i] = 1.0;
+      } else {
+        for (im = 0; im < 7; im++) local_xyzm[im + 7 * i] = 0.0;
+      }
+    }
+
+    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, 7 * n, REF_DBL_TYPE), "sum");
+
+    if (ref_mpi_once(ref_mpi))
+      for (i = 0; i < n; i++) {
+        if (ABS(xyzm[6 + 7 * i] - 1.0) > 0.1) {
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                 xyzm[6 + 7 * i]);
+        }
+        fprintf(file, "%.15e %.15e %.15e\n", xyzm[0 + 7 * i], xyzm[1 + 7 * i],
+                xyzm[3 + 7 * i]);
+      }
+  }
+
+  ref_free(xyzm);
+  ref_free(local_xyzm);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_node_metric_solb(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
@@ -2673,6 +2735,7 @@ REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   size_t end_of_string;
   REF_BOOL solb_format = REF_FALSE;
+  REF_BOOL met_format = REF_FALSE;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
@@ -2685,11 +2748,17 @@ REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename) {
     end_of_string = strlen(filename);
     if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0)
       solb_format = REF_TRUE;
+    end_of_string = strlen(filename);
+    if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".met") == 0)
+      met_format = REF_TRUE;
   }
   RSS(ref_mpi_all_or(ref_grid_mpi(ref_grid), &solb_format), "bcast");
+  RSS(ref_mpi_all_or(ref_grid_mpi(ref_grid), &met_format), "bcast");
 
   if (solb_format) {
     RSS(ref_gather_node_metric_solb(ref_grid, file), "nodes");
+  } else if (met_format) {
+    RSS(ref_gather_node_bamg_met(ref_grid, file), "nodes");
   } else {
     RSS(ref_gather_node_metric(ref_node, file), "nodes");
   }
