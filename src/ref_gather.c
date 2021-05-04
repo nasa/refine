@@ -1295,7 +1295,7 @@ static REF_STATUS ref_gather_node_bamg_met(REF_GRID ref_grid, FILE *file) {
   RAS(ref_grid_twod(ref_grid), "only implemented for twod mesh");
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("%ld %d", (long)ref_node_n_global(ref_node), 3);
+    fprintf(file, "%ld %d\n", (long)ref_node_n_global(ref_node), 3);
   }
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
