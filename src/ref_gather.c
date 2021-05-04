@@ -2748,7 +2748,6 @@ REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename) {
     end_of_string = strlen(filename);
     if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0)
       solb_format = REF_TRUE;
-    end_of_string = strlen(filename);
     if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".met") == 0)
       met_format = REF_TRUE;
   }
