@@ -40,6 +40,7 @@
 #include "ref_mpi.h"
 #include "ref_part.h"
 #include "ref_phys.h"
+#include "ref_shard.h"
 #include "ref_split.h"
 #include "ref_validation.h"
 
@@ -257,6 +258,7 @@ static void translate_help(const char *name) {
   printf("       extrusion added implicitly for ugrid output files\n");
   printf("   --planes <N> extrude a 2D mesh to N layers of prisms.\n");
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
+  printf("   --shard converts mixed-elments to simplicies.\n");
   printf("\n");
 }
 static void visualize_help(const char *name) {
@@ -2884,6 +2886,12 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi))
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
+
+  RXS(ref_args_find(argc, argv, "--shard", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    RSS(ref_shard_in_place(ref_grid), "shard to simplex");
+  }
 
   RXS(ref_args_find(argc, argv, "--extrude", &pos), REF_NOT_FOUND,
       "arg search");
