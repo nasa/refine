@@ -1032,52 +1032,59 @@ REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_shard_add_qua_as_tri(REF_NODE ref_node, REF_CELL ref_cell,
+                                           REF_INT *qua_nodes) {
+  REF_GLOB qua_global[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+
+  tri_nodes[3] = qua_nodes[4]; /* patch id */
+
+  for (node = 0; node < 4; node++)
+    qua_global[node] = ref_node_global(ref_node, qua_nodes[node]);
+
+  if ((qua_global[0] < qua_global[1] && qua_global[0] < qua_global[3]) ||
+      (qua_global[2] < qua_global[1] &&
+       qua_global[2] < qua_global[3])) { /* 0-2 diag split of quad */
+                                         /* 2-1
+                                            |\|
+                                            3-0 */
+    tri_nodes[0] = qua_nodes[0];
+    tri_nodes[1] = qua_nodes[2];
+    tri_nodes[2] = qua_nodes[3];
+    RSS(ref_shard_cell_add_local(ref_node, ref_cell, tri_nodes), "a tri");
+    tri_nodes[0] = qua_nodes[0];
+    tri_nodes[1] = qua_nodes[1];
+    tri_nodes[2] = qua_nodes[2];
+    RSS(ref_shard_cell_add_local(ref_node, ref_cell, tri_nodes), "a tri");
+  } else { /* 3-1 diag split of quad */
+           /* 2-1
+              |/|
+              3-0 */
+    tri_nodes[0] = qua_nodes[0];
+    tri_nodes[1] = qua_nodes[1];
+    tri_nodes[2] = qua_nodes[3];
+    RSS(ref_shard_cell_add_local(ref_node, ref_cell, tri_nodes), "a tri");
+    tri_nodes[0] = qua_nodes[2];
+    tri_nodes[1] = qua_nodes[3];
+    tri_nodes[2] = qua_nodes[1];
+    RSS(ref_shard_cell_add_local(ref_node, ref_cell, tri_nodes), "a tri");
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL tri;
-  REF_CELL qua;
-  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL tri, qua;
   REF_INT qua_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_GLOB qua_global[REF_CELL_MAX_SIZE_PER];
-  REF_INT cell, node;
+  REF_INT cell;
   RSS(ref_cell_deep_copy(ref_cell_ptr, ref_grid_tri(ref_grid)),
       "deep tri copy");
   tri = *ref_cell_ptr;
   qua = ref_grid_qua(ref_grid);
 
   each_ref_cell_valid_cell_with_nodes(qua, cell, qua_nodes) {
-    tri_nodes[3] = qua_nodes[4]; /* patch id */
-
-    for (node = 0; node < ref_cell_node_per(qua); node++)
-      qua_global[node] = ref_node_global(ref_node, qua_nodes[node]);
-
-    if ((qua_global[0] < qua_global[1] && qua_global[0] < qua_global[3]) ||
-        (qua_global[2] < qua_global[1] &&
-         qua_global[2] < qua_global[3])) { /* 0-2 diag split of quad */
-                                           /* 2-1
-                                              |\|
-                                              3-0 */
-      tri_nodes[0] = qua_nodes[0];
-      tri_nodes[1] = qua_nodes[2];
-      tri_nodes[2] = qua_nodes[3];
-      RSS(ref_shard_cell_add_local(ref_node, tri, tri_nodes), "a tri");
-      tri_nodes[0] = qua_nodes[0];
-      tri_nodes[1] = qua_nodes[1];
-      tri_nodes[2] = qua_nodes[2];
-      RSS(ref_shard_cell_add_local(ref_node, tri, tri_nodes), "a tri");
-    } else { /* 3-1 diag split of quad */
-             /* 2-1
-                |/|
-                3-0 */
-      tri_nodes[0] = qua_nodes[0];
-      tri_nodes[1] = qua_nodes[1];
-      tri_nodes[2] = qua_nodes[3];
-      RSS(ref_shard_cell_add_local(ref_node, tri, tri_nodes), "a tri");
-      tri_nodes[0] = qua_nodes[2];
-      tri_nodes[1] = qua_nodes[3];
-      tri_nodes[2] = qua_nodes[1];
-      RSS(ref_shard_cell_add_local(ref_node, tri, tri_nodes), "a tri");
-    }
+    RSS(ref_shard_add_qua_as_tri(ref_node, tri, qua_nodes), "add tri");
   }
 
   return REF_SUCCESS;
