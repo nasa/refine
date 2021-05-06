@@ -1117,6 +1117,7 @@ REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
 REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_qua(ref_grid), cell, nodes) {
     RSS(ref_shard_add_qua_as_tri(ref_node, ref_grid_tri(ref_grid), nodes),
@@ -1146,6 +1147,13 @@ REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
   }
   RSS(ref_cell_free(ref_grid_hex(ref_grid)), "free hex");
   RSS(ref_cell_create(&ref_grid_hex(ref_grid), REF_CELL_HEX), "hex create");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_adj_empty(ref_cell_adj(ref_grid_tri(ref_grid)), node) &&
+        ref_adj_empty(ref_cell_adj(ref_grid_tet(ref_grid)), node)) {
+      RSS(ref_node_remove_without_global(ref_node, node), "hanging node");
+    }
+  }
 
   return REF_SUCCESS;
 }
