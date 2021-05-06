@@ -317,7 +317,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_shard), "tear down");
   }
 
-  { /* shard prism */
+  if (!ref_mpi_para(ref_mpi)) { /* shard prism */
 
     REF_GRID ref_grid;
 
@@ -331,7 +331,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* shard half stack */
+  if (!ref_mpi_para(ref_mpi)) { /* shard half stack */
 
     REF_GRID ref_grid;
     REF_INT cell, nodes[] = {0, 1, 2, 15};
@@ -493,6 +493,25 @@ int main(int argc, char *argv[]) {
     RSS(ref_validation_all(shard_grid), "valid");
 
     RSS(ref_grid_free(shard_grid), "free");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* shard hex brick inplace */
+
+    REF_GRID ref_grid;
+
+    RSS(ref_fixture_hex_brick_grid(&ref_grid, ref_mpi), "fixture hex");
+
+    RSS(ref_shard_in_place(ref_grid), "shard to simplex");
+
+    REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "no more qua");
+    REIS(0, ref_cell_n(ref_grid_pyr(ref_grid)), "no more pyr");
+    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)), "no more pri");
+    REIS(0, ref_cell_n(ref_grid_hex(ref_grid)), "no more hex");
+
+    RSB(ref_validation_simplex_node(ref_grid), "valid",
+        { ref_export_by_extension(ref_grid, "ref_shard_test_hex.tec"); });
+
     RSS(ref_grid_free(ref_grid), "free");
   }
 
