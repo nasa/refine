@@ -504,6 +504,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_shard_in_place(ref_grid), "shard to simplex");
 
+    REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "no more qua");
+    REIS(0, ref_cell_n(ref_grid_pyr(ref_grid)), "no more pyr");
+    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)), "no more pri");
+    REIS(0, ref_cell_n(ref_grid_hex(ref_grid)), "no more hex");
+
     RSB(ref_validation_simplex_node(ref_grid), "valid",
         { ref_export_by_extension(ref_grid, "ref_shard_test_hex.tec"); });
 

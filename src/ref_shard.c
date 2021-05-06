@@ -1117,22 +1117,35 @@ REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
 REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+
   each_ref_cell_valid_cell_with_nodes(ref_grid_qua(ref_grid), cell, nodes) {
     RSS(ref_shard_add_qua_as_tri(ref_node, ref_grid_tri(ref_grid), nodes),
         "add qua tri");
   }
+  RSS(ref_cell_free(ref_grid_qua(ref_grid)), "free qua");
+  RSS(ref_cell_create(&ref_grid_qua(ref_grid), REF_CELL_QUA), "qua create");
+
   each_ref_cell_valid_cell_with_nodes(ref_grid_pyr(ref_grid), cell, nodes) {
     RSS(ref_shard_add_pyr_as_tet(ref_node, ref_grid_tet(ref_grid), nodes),
         "add pyr tet");
   }
+  RSS(ref_cell_free(ref_grid_pyr(ref_grid)), "free pyr");
+  RSS(ref_cell_create(&ref_grid_pyr(ref_grid), REF_CELL_PYR), "pyr create");
+
   each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
     RSS(ref_shard_add_pri_as_tet(ref_node, ref_grid_tet(ref_grid), nodes,
                                  REF_FALSE),
         "add pri tet");
   }
+  RSS(ref_cell_free(ref_grid_pri(ref_grid)), "free pri");
+  RSS(ref_cell_create(&ref_grid_pri(ref_grid), REF_CELL_PRI), "pri create");
+
   each_ref_cell_valid_cell_with_nodes(ref_grid_hex(ref_grid), cell, nodes) {
     RSS(ref_shard_add_hex_as_tet(ref_node, ref_grid_tet(ref_grid), nodes),
         "add hex tet");
   }
+  RSS(ref_cell_free(ref_grid_hex(ref_grid)), "free hex");
+  RSS(ref_cell_create(&ref_grid_hex(ref_grid), REF_CELL_HEX), "hex create");
+
   return REF_SUCCESS;
 }
