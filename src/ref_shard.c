@@ -1113,3 +1113,26 @@ REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  each_ref_cell_valid_cell_with_nodes(ref_grid_qua(ref_grid), cell, nodes) {
+    RSS(ref_shard_add_qua_as_tri(ref_node, ref_grid_tri(ref_grid), nodes),
+        "add qua tri");
+  }
+  each_ref_cell_valid_cell_with_nodes(ref_grid_pyr(ref_grid), cell, nodes) {
+    RSS(ref_shard_add_pyr_as_tet(ref_node, ref_grid_tet(ref_grid), nodes),
+        "add pyr tet");
+  }
+  each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
+    RSS(ref_shard_add_pri_as_tet(ref_node, ref_grid_tet(ref_grid), nodes,
+                                 REF_FALSE),
+        "add pri tet");
+  }
+  each_ref_cell_valid_cell_with_nodes(ref_grid_hex(ref_grid), cell, nodes) {
+    RSS(ref_shard_add_hex_as_tet(ref_node, ref_grid_tet(ref_grid), nodes),
+        "add hex tet");
+  }
+  return REF_SUCCESS;
+}
