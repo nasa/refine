@@ -33,7 +33,7 @@ cd       _build_$VERSION
  --with-metis=${MODULE_ROOT}/${PARMETIS} \
  --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
  --with-mpi=/usr/local/pkgs-modules/${OPENMPI_MODULE} \
- CC=gcc \
+ CC=icc \
  CFLAGS='-g -O2'
 
  make -j 12 
