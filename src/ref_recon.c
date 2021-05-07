@@ -138,13 +138,6 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
                      __LINE__, __func__, vol_status, grad_status);
             }
             break;
-          case REF_CELL_EDG:
-          case REF_CELL_ED2:
-          case REF_CELL_ED3:
-          case REF_CELL_TRI:
-          case REF_CELL_TR2:
-          case REF_CELL_TR3:
-          case REF_CELL_QUA:
           case REF_CELL_PYR:
             tet_nodes[0] = nodes[0];
             tet_nodes[1] = nodes[4];
@@ -301,8 +294,15 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
             }
 
             break;
-            RSS(REF_IMPLEMENT, "implement cell type");
-            break;
+          case REF_CELL_EDG:
+          case REF_CELL_ED2:
+          case REF_CELL_ED3:
+          case REF_CELL_TRI:
+          case REF_CELL_TR2:
+          case REF_CELL_TR3:
+          case REF_CELL_QUA:
+            RSB(REF_IMPLEMENT, "implement cell type",
+                { printf("unknown type %d\n", (int)ref_cell_type(ref_cell)); });
         }
       }
     }
