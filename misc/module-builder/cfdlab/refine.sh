@@ -17,7 +17,7 @@ OPENMPI_MODULE="openmpi_${OPENMPI_VERSION}_intel_2017"
 echo Build ${PACKAGE} ${VERSION}
 
 module purge
-module load ${GCC_MODULE}
+module load ${INTEL_MODULE}
 module list
 
 ( cd ${TOPDIR} && ./bootstrap )
