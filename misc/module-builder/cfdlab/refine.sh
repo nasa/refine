@@ -17,7 +17,7 @@ OPENMPI_MODULE="openmpi_${OPENMPI_VERSION}_intel_2017"
 echo Build ${PACKAGE} ${VERSION}
 
 module purge
-module load ${GCC_MODULE}
+module load ${INTEL_MODULE}
 module list
 
 ( cd ${TOPDIR} && ./bootstrap )
@@ -32,8 +32,8 @@ cd       _build_$VERSION
  --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
  --with-metis=${MODULE_ROOT}/${PARMETIS} \
  --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
- --with-mpi=/usr/local/pkgs/modules_3.2.9_64/Modules/modulefiles/${OPENMPI_MODULE} \
- CC=gcc \
+ --with-mpi=/usr/local/pkgs-modules/${OPENMPI_MODULE} \
+ CC=icc \
  CFLAGS='-g -O2'
 
  make -j 12 
@@ -57,6 +57,9 @@ set modmode  [module-info mode]
 
 set base    $MODULE_BASE
 set version $VERSION
+
+prereq ${INTEL_MODULE}
+prereq ${OPENMPI_MODULE}
 
 set logr "/bin"
 
