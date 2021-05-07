@@ -32,7 +32,7 @@ cd       _build_$VERSION
  --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
  --with-metis=${MODULE_ROOT}/${PARMETIS} \
  --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
- --with-mpi=/usr/local/pkgs/modules_3.2.9_64/Modules/modulefiles/${OPENMPI_MODULE} \
+ --with-mpi=/usr/local/pkgs-modules/${OPENMPI_MODULE} \
  CC=gcc \
  CFLAGS='-g -O2'
 
