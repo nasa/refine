@@ -2159,7 +2159,8 @@ static REF_STATUS ref_part_plt_data(FILE *file, REF_INT nvar,
 
   ref_malloc(*soln, nvar * nnode, REF_DBL);
 
-  if (1 == packing) {
+  /* Data packing. 0 = Block 1 = Point */
+  if (0 == packing) {
     for (i = 0; i < nvar; i++) {
       for (node = 0; node < nnode; node++) {
         dataformat = ref_list_value(dataformats, i);
@@ -2247,6 +2248,15 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
                             zone_nelem),
         "parse header");
     nzone = ref_list_n(zone_nnode);
+
+    {
+      REF_BOOL force_block = REF_FALSE;
+      each_ref_list_item(zone_packing, item) {
+        force_block = force_block || (1 == ref_list_value(zone_packing, item));
+        ref_list_value(zone_packing, item) = 0;
+      }
+      if (force_block) printf("data packing set to block, was point\n");
+    }
   }
   RSS(ref_mpi_bcast(ref_mpi, &nvar, 1, REF_INT_TYPE), "b nvar");
   RSS(ref_mpi_bcast(ref_mpi, &nzone, 1, REF_INT_TYPE), "b nzone");
