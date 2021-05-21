@@ -2093,6 +2093,7 @@ static REF_STATUS ref_part_plt_data(FILE *file, REF_INT nvar,
   float var_float;
   double var_double;
   REF_LIST dataformats = NULL;
+  REF_BOOL verbose = REF_FALSE;
 
   RSS(ref_list_create(&dataformats), "dataformats");
 
@@ -2121,6 +2122,9 @@ static REF_STATUS ref_part_plt_data(FILE *file, REF_INT nvar,
       printf("zonetype = %d\n", zonetype);
       THROW("unknown tecplot plt zonetype read");
   }
+  if (verbose)
+    printf("zone type %d node_per %d packing %d nnode %d nelem %d\n", zonetype,
+           node_per, packing, nnode, nelem);
 
   *length = nnode;
 
@@ -2219,6 +2223,7 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
   REF_SEARCH ref_search;
   REF_DBL radius, position[3], dist, best_dist;
   REF_INT best, item;
+  REF_BOOL verbose = REF_FALSE;
 
   RSS(ref_search_create(&ref_search, ref_node_n(ref_node)), "create search");
   each_ref_node_valid_node(ref_node, node) {
@@ -2271,6 +2276,14 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
       }
     }
     for (point = 0; point < length; point++) {
+      if (verbose) {
+        printf("point %d", point);
+        for (i = 0; i < nvar; i++) {
+          printf(" %e", soln[i + nvar * point]);
+        }
+        printf("\n");
+      }
+
       if (ref_grid_twod(ref_grid)) {
         position[0] = soln[0 + nvar * point];
         position[1] = soln[2 + nvar * point];
@@ -2298,6 +2311,7 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
           best = node;
         }
       }
+      if (verbose) printf("best %d %e\n", best, best_dist);
       if (REF_EMPTY != best) {
         for (i = 3; i < nvar; i++) {
           (*scalar)[(i - 3) + (*ldim) * best] = soln[i + nvar * point];
