@@ -1,8 +1,6 @@
 
 module use --append /u/shared/fun3d/fun3d_users/modulefiles
 
-module load FUN3D/13.6
-
 module load gcc_6.2.0
 module load ESP/119-beta.2021.03.05.1211
 module load tetgen

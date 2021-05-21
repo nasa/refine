@@ -4,7 +4,7 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-build_directory_root=/hpnobackup1/fun3d/c2s-ci
+build_directory_root=/hpnobackup1/fun3d/s2s-ci
 
 build_machine=k4
 ssh -o StrictHostKeyChecking=no fun3d@${build_machine} true
@@ -27,7 +27,7 @@ cd ${build_directory_root} && \
   cd ${BUILD_TAG} && \
     pwd && \
     git clone ${CI_REPOSITORY_URL} && \
-    time git clone git@gitlab.larc.nasa.gov:sketch-to-solution/acceptance.git && \
+    time git clone git@gitlab.larc.nasa.gov:sketch-to-solution/tutorials.git && \
     cd refine && \
       pwd && \
       ${checkout_cmd} && \
