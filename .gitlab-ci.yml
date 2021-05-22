@@ -25,12 +25,12 @@ pro-accept-k:
       - "CodeCoverageReport.tar.gz"
     expire_in: 1 week
 
-c2s-accept-k:
+s2s-accept-k:
   only:
     - merge_requests
   tags:
     - gitlab_runner
-  script: ./acceptance/c2s-wrapper.sh
+  script: ./acceptance/s2s-wrapper.sh
   artifacts:
     paths:
       - "log-*"
