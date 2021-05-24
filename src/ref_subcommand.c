@@ -1928,7 +1928,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   const char *b8_ugrid = "b8.ugrid";
   const char *i_like_grid = "grid";
   const char *avm_grid = "avm";
-  const char *mesh_extension = lb8_ugrid;
+  const char *mesh_export_extension = lb8_ugrid;
 
   if (argc < 5) goto shutdown;
   in_project = argv[2];
@@ -1963,24 +1963,24 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
-    mesh_extension = b8_ugrid;
+    mesh_export_extension = b8_ugrid;
   }
 
   RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    mesh_extension = i_like_grid;
+    mesh_export_extension = i_like_grid;
   }
 
   RXS(ref_args_find(argc, argv, "--avm", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
-    mesh_extension = avm_grid;
+    mesh_export_extension = avm_grid;
   }
 
   RXS(ref_args_find(argc, argv, "--mesh-extension", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    mesh_extension = argv[pos + 1];
+    mesh_export_extension = argv[pos + 1];
   }
 
   RXS(ref_args_find(argc, argv, "-s", &pos), REF_NOT_FOUND, "arg search");
@@ -2425,7 +2425,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   RSS(ref_gather_by_extension(ref_grid, filename), "gather .meshb");
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
-  sprintf(filename, "%s.%s", out_project, mesh_extension);
+  sprintf(filename, "%s.%s", out_project, mesh_export_extension);
   RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY == pos && ref_grid_twod(ref_grid)) {
