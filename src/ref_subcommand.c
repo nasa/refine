@@ -1874,6 +1874,32 @@ static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS parse_p(int argc, char *argv[], REF_INT *p) {
+  REF_INT pos;
+  *p = 2;
+  RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    *p = 1;
+  }
+  RXS(ref_args_find(argc, argv, "--cons-euler", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    *p = 1;
+  }
+  RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 3 < argc) {
+    *p = 1;
+  }
+  RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 1 < argc) {
+    *p = atoi(argv[pos + 1]);
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -1908,32 +1934,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   out_project = argv[3];
   complexity = atof(argv[4]);
 
-  p = 2;
-  RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    p = 1;
-  }
-  RXS(ref_args_find(argc, argv, "--cons-euler", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    p = 1;
-  }
-  RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos && pos + 3 < argc) {
-    p = 1;
-  }
-  RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    if (pos >= argc - 1) {
-      if (ref_mpi_once(ref_mpi))
-        printf("option missing value: --norm-power <norm power>\n");
-      goto shutdown;
-    }
-    p = atoi(argv[pos + 1]);
-  }
+  RSS(parse_p(argc, argv, &p), "parse p");
 
   gradation = -1.0;
   RXS(ref_args_find(argc, argv, "--gradation", &pos), REF_NOT_FOUND,
