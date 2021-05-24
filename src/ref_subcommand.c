@@ -1927,6 +1927,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   const char *lb8_ugrid = "lb8.ugrid";
   const char *b8_ugrid = "b8.ugrid";
   const char *i_like_grid = "grid";
+  const char *avm_grid = "avm";
   const char *mesh_extension = lb8_ugrid;
 
   if (argc < 5) goto shutdown;
@@ -1969,6 +1970,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     mesh_extension = i_like_grid;
+  }
+
+  RXS(ref_args_find(argc, argv, "--avm", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    mesh_extension = avm_grid;
   }
 
   RXS(ref_args_find(argc, argv, "--mesh-extension", &pos), REF_NOT_FOUND,
