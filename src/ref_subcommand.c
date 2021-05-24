@@ -2557,7 +2557,6 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) loop_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -2888,8 +2887,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
 
-  RXS(ref_args_find(argc, argv, "--shard", &pos), REF_NOT_FOUND,
-      "arg search");
+  RXS(ref_args_find(argc, argv, "--shard", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     RSS(ref_shard_in_place(ref_grid), "shard to simplex");
   }
@@ -3287,7 +3285,9 @@ int main(int argc, char *argv[]) {
     }
   } else if (strncmp(argv[1], "l", 1) == 0) {
     if (REF_EMPTY == help_pos) {
-      RSS(loop(ref_mpi, argc, argv), "loop");
+      RSB(loop(ref_mpi, argc, argv), "loop", {
+        if (ref_mpi_once(ref_mpi)) loop_help(argv[0]);
+      });
     } else {
       if (ref_mpi_once(ref_mpi)) loop_help(argv[0]);
       goto shutdown;
