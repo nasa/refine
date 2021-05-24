@@ -1924,11 +1924,18 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   REF_INT fixed_point_pos, deforming_pos;
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
+
   const char *lb8_ugrid = "lb8.ugrid";
   const char *b8_ugrid = "b8.ugrid";
   const char *i_like_grid = "grid";
   const char *avm_grid = "avm";
   const char *mesh_export_extension = lb8_ugrid;
+
+  const char *solb_soln = "_volume.solb";
+  const char *i_like_soln = ".restart_sol";
+  const char *avm_soln = ".rst";
+  const char *plt_soln = "_volume.plt";
+  const char *soln_import_extension = solb_soln;
 
   if (argc < 5) goto shutdown;
   in_project = argv[2];
@@ -1964,17 +1971,20 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     mesh_export_extension = b8_ugrid;
+    soln_import_extension = plt_soln;
   }
 
   RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
     mesh_export_extension = i_like_grid;
+    soln_import_extension = i_like_soln;
   }
 
   RXS(ref_args_find(argc, argv, "--avm", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     mesh_export_extension = avm_grid;
+    soln_import_extension = avm_soln;
   }
 
   RXS(ref_args_find(argc, argv, "--mesh-extension", &pos), REF_NOT_FOUND,
@@ -2127,41 +2137,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "verify param");
   }
 
-  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    sprintf(filename, "%s.restart_sol", in_project);
-    if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
-    RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-        "part scalar");
-    ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
-  } else {
-    RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY != pos) {
-      sprintf(filename, "%s_volume.plt", in_project);
-      if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
-      RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-          "part scalar");
-      ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
-    } else {
-      RXS(ref_args_find(argc, argv, "--avm", &pos), REF_NOT_FOUND,
-          "arg search");
-      if (REF_EMPTY != pos) {
-        sprintf(filename, "%s.rst", in_project);
-        if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
-        RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-            "part scalar");
-        ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
-      } else {
-        sprintf(filename, "%s_volume.solb", in_project);
-        if (ref_mpi_once(ref_mpi)) printf("reconstruct scalar %s\n", filename);
-        RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-            "part scalar");
-        ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
-      }
-    }
-  }
+  sprintf(filename, "%s%s", in_project, soln_import_extension);
+  if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
+  RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
+      "part scalar");
+  ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
   if (ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("flip initial_field v-w for twod\n");
