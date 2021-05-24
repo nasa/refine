@@ -2138,18 +2138,28 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   } else {
     RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
         "arg search");
-    if (REF_EMPTY == pos) {
-      sprintf(filename, "%s_volume.solb", in_project);
+    if (REF_EMPTY != pos) {
+      sprintf(filename, "%s_volume.plt", in_project);
       if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
       RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
           "part scalar");
       ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
     } else {
-      sprintf(filename, "%s_volume.plt", in_project);
-      if (ref_mpi_once(ref_mpi)) printf("reconstruct scalar %s\n", filename);
-      RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-          "part scalar");
-      ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
+      RXS(ref_args_find(argc, argv, "--avm", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos) {
+        sprintf(filename, "%s.rst", in_project);
+        if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
+        RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
+            "part scalar");
+        ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+      } else {
+        sprintf(filename, "%s_volume.solb", in_project);
+        if (ref_mpi_once(ref_mpi)) printf("reconstruct scalar %s\n", filename);
+        RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
+            "part scalar");
+        ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
+      }
     }
   }
 
