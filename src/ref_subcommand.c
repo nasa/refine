@@ -1930,11 +1930,12 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   const char *avm_grid = "avm";
   const char *mesh_export_extension = lb8_ugrid;
 
-  const char *solb_soln = "_volume.solb";
+  const char *fun3d_soln = "_volume.solb";
+  const char *usm3d_soln = "_volume.plt";
   const char *i_like_soln = ".restart_sol";
   const char *avm_soln = ".rst";
-  const char *plt_soln = "_volume.plt";
-  const char *soln_import_extension = solb_soln;
+  const char *locichem_soln = "_volume.plt";
+  const char *soln_import_extension = fun3d_soln;
 
   const char *fun3d_restart = "-restart.solb";
   const char *usm3d_restart = ".solb";
@@ -1977,7 +1978,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     mesh_export_extension = b8_ugrid;
-    soln_import_extension = plt_soln;
+    soln_import_extension = usm3d_soln;
     soln_export_extension = usm3d_restart;
   }
 
@@ -2000,7 +2001,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     mesh_export_extension = lb8_ugrid;
-    soln_import_extension = plt_soln;
+    soln_import_extension = locichem_soln;
     soln_export_extension = locichem_restart;
   }
 
