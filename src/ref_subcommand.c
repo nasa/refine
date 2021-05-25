@@ -1528,10 +1528,9 @@ shutdown:
   return REF_FAILURE;
 }
 
-static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
-                                       REF_DBL *initial_field,
-                                       const char *interpolant,
-                                       REF_DBL *scalar) {
+static REF_STATUS fun3d_field_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                     REF_DBL *initial_field,
+                                     const char *interpolant, REF_DBL *scalar) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT node;
   REF_DBL gamma = 1.4;
@@ -2309,8 +2308,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     if (ref_mpi_once(ref_mpi))
       printf("computing interpolant %s for multiscale metric\n", interpolant);
-    RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
-                             scalar),
+    RSS(fun3d_field_scalar(ref_grid, ldim, initial_field, interpolant, scalar),
         "field metric");
 
     RXS(ref_args_find(argc, argv, "--deforming", &pos), REF_NOT_FOUND,
