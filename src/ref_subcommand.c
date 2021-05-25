@@ -1987,6 +1987,13 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     soln_import_extension = avm_soln;
   }
 
+  RXS(ref_args_find(argc, argv, "--locichem", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    mesh_export_extension = lb8_ugrid;
+    soln_import_extension = plt_soln;
+  }
+
   RXS(ref_args_find(argc, argv, "--mesh-extension", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
