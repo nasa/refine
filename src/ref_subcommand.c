@@ -1535,6 +1535,12 @@ static REF_STATUS locichem_field_scalar(REF_GRID ref_grid, REF_INT ldim,
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT node;
   REF_BOOL recognized = REF_FALSE;
+  REF_BOOL debug = REF_FALSE;
+
+  if (debug)
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, initial_field, NULL,
+                                       "loci-field.plt"),
+        "field");
 
   RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
   if (ref_mpi_once(ref_mpi)) printf("extract %s\n", interpolant);
@@ -1566,6 +1572,11 @@ static REF_STATUS locichem_field_scalar(REF_GRID ref_grid, REF_INT ldim,
     ref_free(solb_scalar);
     ref_mpi_stopwatch_stop(ref_mpi, "read interpolant from file");
   }
+
+  if (debug)
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, scalar, NULL,
+                                       "loci-scalar.plt"),
+        "scalar");
 
   return REF_SUCCESS;
 }
@@ -2276,7 +2287,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       "part scalar");
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
-  if (ref_grid_twod(ref_grid)) {
+  if (ref_grid_twod(ref_grid) &&
+      0 != strcmp(soln_import_extension, locichem_soln)) {
     if (ref_mpi_once(ref_mpi)) printf("flip initial_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, initial_field), "flip");
   }
@@ -2605,7 +2617,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   ref_grid_interp(ref_grid) = NULL;
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
-  if (ref_grid_twod(ref_grid)) {
+  if (ref_grid_twod(ref_grid) &&
+      0 != strcmp(soln_import_extension, locichem_soln)) {
     if (ref_mpi_once(ref_mpi)) printf("flip ref_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, ref_field), "flip");
   }
