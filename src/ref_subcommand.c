@@ -1934,7 +1934,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   const char *usm3d_soln = "_volume.plt";
   const char *i_like_soln = ".restart_sol";
   const char *avm_soln = ".rst";
-  const char *locichem_soln = "_volume.plt";
+  const char *locichem_soln = ".plt";
   const char *soln_import_extension = fun3d_soln;
 
   const char *fun3d_restart = "-restart.solb";
