@@ -1528,10 +1528,135 @@ shutdown:
   return REF_FAILURE;
 }
 
-static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
-                                       REF_DBL *initial_field,
-                                       const char *interpolant,
-                                       REF_DBL *scalar) {
+static REF_STATUS locichem_field_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *initial_field,
+                                        const char *interpolant,
+                                        REF_DBL *scalar) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT node;
+  REF_BOOL recognized = REF_FALSE;
+  REF_BOOL debug = REF_FALSE;
+
+  if (debug)
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, initial_field, NULL,
+                                       "loci-field.plt"),
+        "field");
+
+  RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
+  if (ref_mpi_once(ref_mpi)) printf("extract %s\n", interpolant);
+  if (0 == strcmp(interpolant, "mach")) {
+    recognized = REF_TRUE;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = initial_field[2 + ldim * node];
+    }
+  }
+  if (0 == strcmp(interpolant, "temperature")) {
+    recognized = REF_TRUE;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = initial_field[5 + ldim * node];
+    }
+  }
+  if (recognized) ref_mpi_stopwatch_stop(ref_mpi, "extract scalar");
+
+  if (!recognized) {
+    REF_INT solb_ldim;
+    REF_DBL *solb_scalar;
+    if (ref_mpi_once(ref_mpi))
+      printf("opening %s as multiscale interpolant\n", interpolant);
+    RSS(ref_part_scalar(ref_grid, &solb_ldim, &solb_scalar, interpolant),
+        "unable to load interpolant scalar");
+    REIS(1, solb_ldim, "expected one interpolant scalar");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = solb_scalar[node];
+    }
+    ref_free(solb_scalar);
+    ref_mpi_stopwatch_stop(ref_mpi, "read interpolant from file");
+  }
+
+  if (debug)
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, scalar, NULL,
+                                       "loci-scalar.plt"),
+        "scalar");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS avm_field_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                   REF_DBL *initial_field,
+                                   const char *interpolant, REF_DBL *scalar) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT node;
+  REF_DBL gamma = 1.4;
+  REF_BOOL recognized = REF_FALSE;
+
+  RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
+  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
+  if ((strcmp(interpolant, "mach") == 0) ||
+      (strcmp(interpolant, "htot") == 0) ||
+      (strcmp(interpolant, "pressure") == 0) ||
+      (strcmp(interpolant, "density") == 0) ||
+      (strcmp(interpolant, "temperature") == 0)) {
+    RAS(5 <= ldim, "expected 5 or more variables per vertex for compressible");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho, u, v, w, press, temp, u2, mach2;
+      rho = initial_field[0 + ldim * node];
+      u = initial_field[1 + ldim * node];
+      v = initial_field[2 + ldim * node];
+      w = initial_field[3 + ldim * node];
+      temp = initial_field[4 + ldim * node];
+      press = rho * temp / gamma;
+      u2 = u * u + v * v + w * w;
+      RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+               u, v, w, press, temp);
+      });
+      mach2 = u2 / temp;
+      RAB(mach2 >= 0, "negative mach2", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+               u, v, w, press, temp);
+      });
+      if (strcmp(interpolant, "mach") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = sqrt(mach2);
+      } else if (strcmp(interpolant, "htot") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
+      } else if (strcmp(interpolant, "pressure") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = press;
+      } else if (strcmp(interpolant, "density") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = rho;
+      } else if (strcmp(interpolant, "temperature") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = temp;
+      }
+    }
+    if (recognized)
+      ref_mpi_stopwatch_stop(ref_mpi, "compute compressible scalar");
+  }
+
+  if (!recognized) {
+    REF_INT solb_ldim;
+    REF_DBL *solb_scalar;
+    if (ref_mpi_once(ref_mpi))
+      printf("opening %s as multiscale interpolant\n", interpolant);
+    RSS(ref_part_scalar(ref_grid, &solb_ldim, &solb_scalar, interpolant),
+        "unable to load interpolant scalar");
+    REIS(1, solb_ldim, "expected one interpolant scalar");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = solb_scalar[node];
+    }
+    ref_free(solb_scalar);
+    ref_mpi_stopwatch_stop(ref_mpi, "read interpolant from file");
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS fun3d_field_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                     REF_DBL *initial_field,
+                                     const char *interpolant, REF_DBL *scalar) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT node;
   REF_DBL gamma = 1.4;
@@ -1874,6 +1999,32 @@ static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS parse_p(int argc, char *argv[], REF_INT *p) {
+  REF_INT pos;
+  *p = 2;
+  RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    *p = 1;
+  }
+  RXS(ref_args_find(argc, argv, "--cons-euler", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    *p = 1;
+  }
+  RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 3 < argc) {
+    *p = 1;
+  }
+  RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 1 < argc) {
+    *p = atoi(argv[pos + 1]);
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -1898,42 +2049,33 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   REF_INT fixed_point_pos, deforming_pos;
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
+
   const char *lb8_ugrid = "lb8.ugrid";
   const char *b8_ugrid = "b8.ugrid";
   const char *i_like_grid = "grid";
-  const char *mesh_extension = lb8_ugrid;
+  const char *avm_grid = "avm";
+  const char *mesh_export_extension = lb8_ugrid;
+
+  const char *fun3d_soln = "_volume.solb";
+  const char *usm3d_soln = "_volume.plt";
+  const char *i_like_soln = ".restart_sol";
+  const char *avm_soln = ".rst";
+  const char *locichem_soln = ".plt";
+  const char *soln_import_extension = fun3d_soln;
+
+  const char *fun3d_restart = "-restart.solb";
+  const char *usm3d_restart = ".solb";
+  const char *i_like_restart = ".restart_sol";
+  const char *avm_restart = "-restart.rst";
+  const char *locichem_restart = "-restart.plt";
+  const char *soln_export_extension = fun3d_restart;
 
   if (argc < 5) goto shutdown;
   in_project = argv[2];
   out_project = argv[3];
   complexity = atof(argv[4]);
 
-  p = 2;
-  RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    p = 1;
-  }
-  RXS(ref_args_find(argc, argv, "--cons-euler", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    p = 1;
-  }
-  RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos && pos + 3 < argc) {
-    p = 1;
-  }
-  RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    if (pos >= argc - 1) {
-      if (ref_mpi_once(ref_mpi))
-        printf("option missing value: --norm-power <norm power>\n");
-      goto shutdown;
-    }
-    p = atoi(argv[pos + 1]);
-  }
+  RSS(parse_p(argc, argv, &p), "parse p");
 
   gradation = -1.0;
   RXS(ref_args_find(argc, argv, "--gradation", &pos), REF_NOT_FOUND,
@@ -1961,19 +2103,38 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
-    mesh_extension = b8_ugrid;
+    mesh_export_extension = b8_ugrid;
+    soln_import_extension = usm3d_soln;
+    soln_export_extension = usm3d_restart;
   }
 
   RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    mesh_extension = i_like_grid;
+    mesh_export_extension = i_like_grid;
+    soln_import_extension = i_like_soln;
+    soln_export_extension = i_like_restart;
+  }
+
+  RXS(ref_args_find(argc, argv, "--avm", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    mesh_export_extension = avm_grid;
+    soln_import_extension = avm_soln;
+    soln_export_extension = avm_restart;
+  }
+
+  RXS(ref_args_find(argc, argv, "--locichem", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    mesh_export_extension = lb8_ugrid;
+    soln_import_extension = locichem_soln;
+    soln_export_extension = locichem_restart;
   }
 
   RXS(ref_args_find(argc, argv, "--mesh-extension", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    mesh_extension = argv[pos + 1];
+    mesh_export_extension = argv[pos + 1];
   }
 
   RXS(ref_args_find(argc, argv, "-s", &pos), REF_NOT_FOUND, "arg search");
@@ -2120,33 +2281,14 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "verify param");
   }
 
-  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    sprintf(filename, "%s.restart_sol", in_project);
-    if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
-    RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-        "part scalar");
-    ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
-  } else {
-    RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY == pos) {
-      sprintf(filename, "%s_volume.solb", in_project);
-      if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
-      RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-          "part scalar");
-      ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
-    } else {
-      sprintf(filename, "%s_volume.plt", in_project);
-      if (ref_mpi_once(ref_mpi)) printf("reconstruct scalar %s\n", filename);
-      RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
-          "part scalar");
-      ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
-    }
-  }
+  sprintf(filename, "%s%s", in_project, soln_import_extension);
+  if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
+  RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
+      "part scalar");
+  ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
-  if (ref_grid_twod(ref_grid)) {
+  if (ref_grid_twod(ref_grid) &&
+      0 != strcmp(soln_import_extension, locichem_soln)) {
     if (ref_mpi_once(ref_mpi)) printf("flip initial_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, initial_field), "flip");
   }
@@ -2294,9 +2436,22 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     if (ref_mpi_once(ref_mpi))
       printf("computing interpolant %s for multiscale metric\n", interpolant);
-    RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
+    if (0 == strcmp(soln_import_extension, locichem_soln)) {
+      if (ref_mpi_once(ref_mpi)) printf("assuming Loci/CHEM format\n");
+      RSS(locichem_field_scalar(ref_grid, ldim, initial_field, interpolant,
+                                scalar),
+          "Loci/CHEM scalar field reduction");
+    } else if (0 == strcmp(soln_import_extension, avm_soln)) {
+      if (ref_mpi_once(ref_mpi)) printf("assuming AVM (COFFE) format\n");
+      RSS(avm_field_scalar(ref_grid, ldim, initial_field, interpolant, scalar),
+          "AVM scalar field reduction");
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("assuming FUN3D equivalent format and nondimensional\n");
+      RSS(fun3d_field_scalar(ref_grid, ldim, initial_field, interpolant,
                              scalar),
-        "field metric");
+          "FUN3D scalar field reduction");
+    }
 
     RXS(ref_args_find(argc, argv, "--deforming", &pos), REF_NOT_FOUND,
         "arg search");
@@ -2408,10 +2563,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   RSS(ref_gather_by_extension(ref_grid, filename), "gather .meshb");
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
-  sprintf(filename, "%s.%s", out_project, mesh_extension);
+  sprintf(filename, "%s.%s", out_project, mesh_export_extension);
   RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
       "arg search");
-  if (REF_EMPTY == pos && ref_grid_twod(ref_grid)) {
+  if (strcmp(soln_export_extension, i_like_restart) != 0 &&
+      ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
     if (ref_mpi_once(ref_mpi))
@@ -2461,68 +2617,50 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   ref_grid_interp(ref_grid) = NULL;
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
-  if (ref_grid_twod(ref_grid)) {
+  if (ref_grid_twod(ref_grid) &&
+      0 != strcmp(soln_import_extension, locichem_soln)) {
     if (ref_mpi_once(ref_mpi)) printf("flip ref_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, ref_field), "flip");
   }
 
-  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    sprintf(filename, "%s.restart_sol", out_project);
-    if (ref_mpi_once(ref_mpi))
-      printf("writing interpolated field at tri cell centers %s\n", filename);
-    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
-                                       filename),
-        "gather cell center");
-  } else {
-    if (ref_grid_twod(ref_grid)) {
-      if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);
-      ref_malloc(extruded_field,
-                 ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
-      RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
-                                 extruded_field),
-          "extrude field");
-      RSS(ref_validation_finite(extruded_grid, ldim, extruded_field),
-          "extruded field");
-      RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
-          "arg search");
-      if (REF_EMPTY == pos) {
-        sprintf(filename, "%s-restart.solb", out_project);
-        if (ref_mpi_once(ref_mpi))
-          printf("writing interpolated extruded field %s\n", filename);
-        RSS(ref_gather_scalar_by_extension(extruded_grid, ldim, extruded_field,
-                                           NULL, filename),
-            "gather recept");
-      } else {
-        sprintf(filename, "%s.solb", out_project);
-        if (ref_mpi_once(ref_mpi))
-          printf("writing interpolated field at prism cell centers %s\n",
-                 filename);
-        RSS(ref_gather_scalar_cell_solb(extruded_grid, ldim, extruded_field,
-                                        filename),
-            "gather cell center");
-      }
-      ref_free(extruded_field);
-      ref_grid_free(extruded_grid);
+  sprintf(filename, "%s%s", out_project, soln_export_extension);
+  if (NULL != extruded_grid) {
+    if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);
+    ref_malloc(extruded_field,
+               ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
+    RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
+                               extruded_field),
+        "extrude field");
+    RSS(ref_validation_finite(extruded_grid, ldim, extruded_field),
+        "extruded field");
+    if (usm3d_restart != soln_export_extension) {
+      if (ref_mpi_once(ref_mpi))
+        printf("writing interpolated extruded field %s\n", filename);
+      RSS(ref_gather_scalar_by_extension(extruded_grid, ldim, extruded_field,
+                                         NULL, filename),
+          "gather recept");
     } else {
-      RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
-          "arg search");
-      if (REF_EMPTY == pos) {
-        sprintf(filename, "%s-restart.solb", out_project);
-        if (ref_mpi_once(ref_mpi))
-          printf("writing interpolated field %s\n", filename);
-        RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
-                                           filename),
-            "gather recept");
-      } else {
-        sprintf(filename, "%s.solb", out_project);
-        if (ref_mpi_once(ref_mpi))
-          printf("writing interpolated field at tet cell centers %s\n",
-                 filename);
-        RSS(ref_gather_scalar_cell_solb(ref_grid, ldim, ref_field, filename),
-            "gather cell center");
-      }
+      if (ref_mpi_once(ref_mpi))
+        printf("writing interpolated field at prism cell centers %s\n",
+               filename);
+      RSS(ref_gather_scalar_cell_solb(extruded_grid, ldim, extruded_field,
+                                      filename),
+          "gather cell center");
+    }
+    ref_free(extruded_field);
+    ref_grid_free(extruded_grid);
+  } else {
+    if (usm3d_restart != soln_export_extension) {
+      if (ref_mpi_once(ref_mpi))
+        printf("writing interpolated field %s\n", filename);
+      RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
+                                         filename),
+          "gather recept");
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("writing interpolated field at tet cell centers %s\n", filename);
+      RSS(ref_gather_scalar_cell_solb(ref_grid, ldim, ref_field, filename),
+          "gather cell center");
     }
   }
   ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
@@ -2556,7 +2694,6 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) loop_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -2887,8 +3024,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
 
-  RXS(ref_args_find(argc, argv, "--shard", &pos), REF_NOT_FOUND,
-      "arg search");
+  RXS(ref_args_find(argc, argv, "--shard", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     RSS(ref_shard_in_place(ref_grid), "shard to simplex");
   }
@@ -3286,7 +3422,9 @@ int main(int argc, char *argv[]) {
     }
   } else if (strncmp(argv[1], "l", 1) == 0) {
     if (REF_EMPTY == help_pos) {
-      RSS(loop(ref_mpi, argc, argv), "loop");
+      RSB(loop(ref_mpi, argc, argv), "loop", {
+        if (ref_mpi_once(ref_mpi)) loop_help(argv[0]);
+      });
     } else {
       if (ref_mpi_once(ref_mpi)) loop_help(argv[0]);
       goto shutdown;
