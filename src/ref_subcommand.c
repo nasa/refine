@@ -1528,6 +1528,121 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS locichem_field_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *initial_field,
+                                        const char *interpolant,
+                                        REF_DBL *scalar) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT node;
+  REF_BOOL recognized = REF_FALSE;
+
+  RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
+  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
+  if (0 == strcmp(interpolant, "mach")) {
+    recognized = REF_TRUE;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = initial_field[2 + ldim * node];
+    }
+  }
+  if (0 == strcmp(interpolant, "temperature")) {
+    recognized = REF_TRUE;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = initial_field[5 + ldim * node];
+    }
+  }
+  if (recognized) ref_mpi_stopwatch_stop(ref_mpi, "extract scalar");
+
+  if (!recognized) {
+    REF_INT solb_ldim;
+    REF_DBL *solb_scalar;
+    if (ref_mpi_once(ref_mpi))
+      printf("opening %s as multiscale interpolant\n", interpolant);
+    RSS(ref_part_scalar(ref_grid, &solb_ldim, &solb_scalar, interpolant),
+        "unable to load interpolant scalar");
+    REIS(1, solb_ldim, "expected one interpolant scalar");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = solb_scalar[node];
+    }
+    ref_free(solb_scalar);
+    ref_mpi_stopwatch_stop(ref_mpi, "read interpolant from file");
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS avm_field_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                   REF_DBL *initial_field,
+                                   const char *interpolant, REF_DBL *scalar) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT node;
+  REF_DBL gamma = 1.4;
+  REF_BOOL recognized = REF_FALSE;
+
+  RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
+  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
+  if ((strcmp(interpolant, "mach") == 0) ||
+      (strcmp(interpolant, "htot") == 0) ||
+      (strcmp(interpolant, "pressure") == 0) ||
+      (strcmp(interpolant, "density") == 0) ||
+      (strcmp(interpolant, "temperature") == 0)) {
+    RAS(5 <= ldim, "expected 5 or more variables per vertex for compressible");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho, u, v, w, press, temp, u2, mach2;
+      rho = initial_field[0 + ldim * node];
+      u = initial_field[1 + ldim * node];
+      v = initial_field[2 + ldim * node];
+      w = initial_field[3 + ldim * node];
+      temp = initial_field[4 + ldim * node];
+      press = rho * temp / gamma;
+      u2 = u * u + v * v + w * w;
+      RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+               u, v, w, press, temp);
+      });
+      mach2 = u2 / temp;
+      RAB(mach2 >= 0, "negative mach2", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+               u, v, w, press, temp);
+      });
+      if (strcmp(interpolant, "mach") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = sqrt(mach2);
+      } else if (strcmp(interpolant, "htot") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
+      } else if (strcmp(interpolant, "pressure") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = press;
+      } else if (strcmp(interpolant, "density") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = rho;
+      } else if (strcmp(interpolant, "temperature") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] = temp;
+      }
+    }
+    if (recognized)
+      ref_mpi_stopwatch_stop(ref_mpi, "compute compressible scalar");
+  }
+
+  if (!recognized) {
+    REF_INT solb_ldim;
+    REF_DBL *solb_scalar;
+    if (ref_mpi_once(ref_mpi))
+      printf("opening %s as multiscale interpolant\n", interpolant);
+    RSS(ref_part_scalar(ref_grid, &solb_ldim, &solb_scalar, interpolant),
+        "unable to load interpolant scalar");
+    REIS(1, solb_ldim, "expected one interpolant scalar");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = solb_scalar[node];
+    }
+    ref_free(solb_scalar);
+    ref_mpi_stopwatch_stop(ref_mpi, "read interpolant from file");
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS fun3d_field_scalar(REF_GRID ref_grid, REF_INT ldim,
                                      REF_DBL *initial_field,
                                      const char *interpolant, REF_DBL *scalar) {
@@ -2309,8 +2424,22 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     if (ref_mpi_once(ref_mpi))
       printf("computing interpolant %s for multiscale metric\n", interpolant);
-    RSS(fun3d_field_scalar(ref_grid, ldim, initial_field, interpolant, scalar),
-        "field metric");
+    if (0 == strcmp(soln_import_extension, locichem_soln)) {
+      if (ref_mpi_once(ref_mpi)) printf("assuming Loci/CHEM format\n");
+      RSS(locichem_field_scalar(ref_grid, ldim, initial_field, interpolant,
+                                scalar),
+          "Loci/CHEM scalar field reduction");
+    } else if (0 == strcmp(soln_import_extension, avm_soln)) {
+      if (ref_mpi_once(ref_mpi)) printf("assuming AVM (COFFE) format\n");
+      RSS(avm_field_scalar(ref_grid, ldim, initial_field, interpolant, scalar),
+          "AVM scalar field reduction");
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("assuming FUN3D equivalent format and nondimensional\n");
+      RSS(fun3d_field_scalar(ref_grid, ldim, initial_field, interpolant,
+                             scalar),
+          "FUN3D scalar field reduction");
+    }
 
     RXS(ref_args_find(argc, argv, "--deforming", &pos), REF_NOT_FOUND,
         "arg search");
