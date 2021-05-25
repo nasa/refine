@@ -1537,7 +1537,7 @@ static REF_STATUS locichem_field_scalar(REF_GRID ref_grid, REF_INT ldim,
   REF_BOOL recognized = REF_FALSE;
 
   RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
-  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
+  if (ref_mpi_once(ref_mpi)) printf("extract %s\n", interpolant);
   if (0 == strcmp(interpolant, "mach")) {
     recognized = REF_TRUE;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
