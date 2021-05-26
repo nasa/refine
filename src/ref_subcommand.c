@@ -2116,7 +2116,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     soln_export_extension = i_like_restart;
   }
 
-  RXS(ref_args_find(argc, argv, "--avm", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--av", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     mesh_export_extension = avm_grid;
     soln_import_extension = avm_soln;
@@ -2442,9 +2442,9 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
                                 scalar),
           "Loci/CHEM scalar field reduction");
     } else if (0 == strcmp(soln_import_extension, avm_soln)) {
-      if (ref_mpi_once(ref_mpi)) printf("assuming AVM (COFFE) format\n");
+      if (ref_mpi_once(ref_mpi)) printf("assuming AV (COFFE) format\n");
       RSS(avm_field_scalar(ref_grid, ldim, initial_field, interpolant, scalar),
-          "AVM scalar field reduction");
+          "AV scalar field reduction");
     } else {
       if (ref_mpi_once(ref_mpi))
         printf("assuming FUN3D equivalent format and nondimensional\n");
