@@ -1759,6 +1759,14 @@ static REF_STATUS fixed_point_metric(
   REF_INT im, node;
   REF_INT fixed_point_ldim;
 
+  REF_DBL *min_scalar, *max_scalar;
+  REF_BOOL first = REF_TRUE;
+
+  ref_malloc_init(min_scalar, 1 * ref_node_max(ref_grid_node(ref_grid)),
+                  REF_DBL, 0);
+  ref_malloc_init(max_scalar, 1 * ref_node_max(ref_grid_node(ref_grid)),
+                  REF_DBL, 0);
+
   ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   total_timesteps = 0;
   for (timestep = first_timestep; timestep <= last_timestep;
@@ -1771,6 +1779,18 @@ static REF_STATUS fixed_point_metric(
         "unable to load scalar");
     REIS(1, fixed_point_ldim, "expected one scalar");
     RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+    if (first) {
+      first = REF_FALSE;
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        min_scalar[node] = scalar[node];
+        max_scalar[node] = scalar[node];
+      }
+    } else {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        min_scalar[node] = MIN(min_scalar[node], scalar[node]);
+        max_scalar[node] = MAX(max_scalar[node], scalar[node]);
+      }
+    }
     ref_free(scalar);
     total_timesteps++;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -1798,6 +1818,17 @@ static REF_STATUS fixed_point_metric(
                                          complexity),
       "gradation at complexity");
   ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    max_scalar[node] -= min_scalar[node];
+  }
+  RSS(ref_gather_scalar_by_extension(ref_grid, 1, max_scalar, NULL,
+                                     "max-scalar.plt"),
+      "gather recept");
+
+  ref_free(min_scalar);
+  ref_free(max_scalar);
+
   return REF_SUCCESS;
 }
 
