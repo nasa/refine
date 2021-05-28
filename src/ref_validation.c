@@ -321,7 +321,14 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
     for (node = 0; node < 4; node++) {
       nodes[node] = ref_cell_c2n(ref_cell, node, cell);
     }
-    RSS(ref_face_with(ref_face, nodes, &face), "find qua");
+    code = ref_face_with(ref_face, nodes, &face);
+    if (REF_SUCCESS != code) {
+      ref_node_location(ref_grid_node(ref_grid), nodes[0]);
+      ref_node_location(ref_grid_node(ref_grid), nodes[1]);
+      ref_node_location(ref_grid_node(ref_grid), nodes[2]);
+      ref_node_location(ref_grid_node(ref_grid), nodes[3]);
+    }
+    RSS(code, "find qua");
     hits[face]++;
   }
 
