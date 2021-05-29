@@ -1109,28 +1109,59 @@ REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_shard_verify_faces(REF_GRID ref_grid, REF_CELL ref_cell) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face_nodes[4];
+  REF_INT i, cell_face, cell0, cell1;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      for (i = 0; i < 4; i++) {
+        face_nodes[i] = ref_cell_f2n(ref_cell, i, cell_face, cell);
+      }
+      RSB(ref_cell_with_face(ref_cell, face_nodes, &cell0, &cell1),
+          "cell face check", {
+            ref_node_location(ref_node, face_nodes[0]);
+            ref_node_location(ref_node, face_nodes[1]);
+            ref_node_location(ref_node, face_nodes[2]);
+            ref_node_location(ref_node, face_nodes[3]);
+          });
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL ref_cell;
   REF_BOOL check_volume = REF_FALSE;
+  REF_BOOL check_faces = REF_FALSE;
+
+  if (check_faces)
+    RSS(ref_shard_verify_faces(ref_grid, ref_grid_tet(ref_grid)), "orig tet");
 
   RSS(ref_cell_deep_copy(ref_cell_ptr, ref_grid_tet(ref_grid)),
       "deep tri copy");
   ref_cell = *ref_cell_ptr;
+  if (check_faces)
+    RSS(ref_shard_verify_faces(ref_grid, ref_cell), "deep copy tet");
   each_ref_cell_valid_cell_with_nodes(ref_grid_pyr(ref_grid), cell, nodes) {
     RSS(ref_shard_add_pyr_as_tet(ref_grid_node(ref_grid), ref_cell, nodes,
                                  check_volume),
         "converts pyr to tets");
   }
+  if (check_faces) RSS(ref_shard_verify_faces(ref_grid, ref_cell), "add pyr");
   each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
     RSS(ref_shard_add_pri_as_tet(ref_grid_node(ref_grid), ref_cell, nodes,
                                  check_volume),
         "converts pri to tets");
   }
+  if (check_faces) RSS(ref_shard_verify_faces(ref_grid, ref_cell), "add pri");
   each_ref_cell_valid_cell_with_nodes(ref_grid_hex(ref_grid), cell, nodes) {
     RSS(ref_shard_add_hex_as_tet(ref_grid_node(ref_grid), ref_cell, nodes),
         "converts hex to tets");
   }
+  if (check_faces) RSS(ref_shard_verify_faces(ref_grid, ref_cell), "add hex");
 
   return REF_SUCCESS;
 }
