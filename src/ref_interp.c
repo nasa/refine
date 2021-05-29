@@ -513,7 +513,13 @@ static REF_STATUS ref_update_agent_tet_seed(REF_INTERP ref_interp, REF_INT id,
   face_nodes[2] = node2;
   face_nodes[3] = node0;
 
-  RSS(ref_cell_with_face(tets, face_nodes, &cell0, &cell1), "next");
+  RSB(ref_cell_with_face(tets, face_nodes, &cell0, &cell1),
+      "cells with walk face", {
+        ref_node_location(ref_node, face_nodes[0]);
+        ref_node_location(ref_node, face_nodes[1]);
+        ref_node_location(ref_node, face_nodes[2]);
+        ref_node_location(ref_node, face_nodes[3]);
+      });
   if (REF_EMPTY == cell0) THROW("bary update missing first");
   if (REF_EMPTY == cell1) {
     /* if it is off proc */

@@ -580,8 +580,22 @@ static REF_STATUS ref_shard_add_pri_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+#define check_pyr_tet_volume()                                                 \
+  {                                                                            \
+    REF_DBL vol;                                                               \
+    RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol), "tet vol");               \
+    if (vol <= 0.0) {                                                          \
+      printf("tet vol %e\n", vol);                                             \
+      printf("nodes %d %d %d %d %d\n", nodes[0], nodes[1], nodes[2], nodes[3], \
+             nodes[4]);                                                        \
+      printf("tet %d %d %d %d\n", tet_nodes[0], tet_nodes[1], tet_nodes[2],    \
+             tet_nodes[3]);                                                    \
+    }                                                                          \
+  }
+
 static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
-                                           REF_INT *nodes) {
+                                           REF_INT *nodes,
+                                           REF_BOOL check_volume) {
   REF_INT node;
   REF_GLOB global[REF_CELL_MAX_SIZE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
@@ -599,11 +613,13 @@ static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
     tet_nodes[2] = nodes[1];
     tet_nodes[3] = nodes[2];
     RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+    if (check_volume) check_pyr_tet_volume();
     tet_nodes[0] = nodes[0];
     tet_nodes[1] = nodes[3];
     tet_nodes[2] = nodes[4];
     tet_nodes[3] = nodes[2];
     RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+    if (check_volume) check_pyr_tet_volume();
   } else { /* 3-1 diag split of quad */
            /* 4-1\
               |/| 2
@@ -613,11 +629,13 @@ static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
     tet_nodes[2] = nodes[1];
     tet_nodes[3] = nodes[2];
     RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+    if (check_volume) check_pyr_tet_volume();
     tet_nodes[0] = nodes[1];
     tet_nodes[1] = nodes[3];
     tet_nodes[2] = nodes[4];
     tet_nodes[3] = nodes[2];
     RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+    if (check_volume) check_pyr_tet_volume();
   }
   return REF_SUCCESS;
 }
@@ -974,7 +992,8 @@ REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
       continue;
 
     RSS(ref_cell_remove(pyr, cell), "remove qua");
-    RSS(ref_shard_add_pyr_as_tet(ref_node, tet, orig), "converts to tets");
+    RSS(ref_shard_add_pyr_as_tet(ref_node, tet, orig, REF_TRUE),
+        "converts to tets");
   }
 
   each_ref_cell_valid_cell_with_nodes(qua, cell, qua_nodes) {
@@ -1090,26 +1109,59 @@ REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_shard_verify_faces(REF_GRID ref_grid, REF_CELL ref_cell) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face_nodes[4];
+  REF_INT i, cell_face, cell0, cell1;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      for (i = 0; i < 4; i++) {
+        face_nodes[i] = ref_cell_f2n(ref_cell, i, cell_face, cell);
+      }
+      RSB(ref_cell_with_face(ref_cell, face_nodes, &cell0, &cell1),
+          "cell face check", {
+            ref_node_location(ref_node, face_nodes[0]);
+            ref_node_location(ref_node, face_nodes[1]);
+            ref_node_location(ref_node, face_nodes[2]);
+            ref_node_location(ref_node, face_nodes[3]);
+          });
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL ref_cell;
+  REF_BOOL check_volume = REF_FALSE;
+  REF_BOOL check_faces = REF_FALSE;
+
+  if (check_faces)
+    RSS(ref_shard_verify_faces(ref_grid, ref_grid_tet(ref_grid)), "orig tet");
 
   RSS(ref_cell_deep_copy(ref_cell_ptr, ref_grid_tet(ref_grid)),
       "deep tri copy");
   ref_cell = *ref_cell_ptr;
+  if (check_faces)
+    RSS(ref_shard_verify_faces(ref_grid, ref_cell), "deep copy tet");
   each_ref_cell_valid_cell_with_nodes(ref_grid_pyr(ref_grid), cell, nodes) {
-    RSS(ref_shard_add_pyr_as_tet(ref_grid_node(ref_grid), ref_cell, nodes),
+    RSS(ref_shard_add_pyr_as_tet(ref_grid_node(ref_grid), ref_cell, nodes,
+                                 check_volume),
         "converts pyr to tets");
   }
+  if (check_faces) RSS(ref_shard_verify_faces(ref_grid, ref_cell), "add pyr");
   each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
     RSS(ref_shard_add_pri_as_tet(ref_grid_node(ref_grid), ref_cell, nodes,
-                                 REF_FALSE),
+                                 check_volume),
         "converts pri to tets");
   }
+  if (check_faces) RSS(ref_shard_verify_faces(ref_grid, ref_cell), "add pri");
   each_ref_cell_valid_cell_with_nodes(ref_grid_hex(ref_grid), cell, nodes) {
     RSS(ref_shard_add_hex_as_tet(ref_grid_node(ref_grid), ref_cell, nodes),
         "converts hex to tets");
   }
+  if (check_faces) RSS(ref_shard_verify_faces(ref_grid, ref_cell), "add hex");
 
   return REF_SUCCESS;
 }
@@ -1118,6 +1170,7 @@ REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
+  REF_BOOL check_volume = REF_FALSE;
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_qua(ref_grid), cell, nodes) {
     RSS(ref_shard_add_qua_as_tri(ref_node, ref_grid_tri(ref_grid), nodes),
@@ -1127,7 +1180,8 @@ REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
   RSS(ref_cell_create(&ref_grid_qua(ref_grid), REF_CELL_QUA), "qua create");
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_pyr(ref_grid), cell, nodes) {
-    RSS(ref_shard_add_pyr_as_tet(ref_node, ref_grid_tet(ref_grid), nodes),
+    RSS(ref_shard_add_pyr_as_tet(ref_node, ref_grid_tet(ref_grid), nodes,
+                                 check_volume),
         "add pyr tet");
   }
   RSS(ref_cell_free(ref_grid_pyr(ref_grid)), "free pyr");
@@ -1135,7 +1189,7 @@ REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
     RSS(ref_shard_add_pri_as_tet(ref_node, ref_grid_tet(ref_grid), nodes,
-                                 REF_FALSE),
+                                 check_volume),
         "add pri tet");
   }
   RSS(ref_cell_free(ref_grid_pri(ref_grid)), "free pri");

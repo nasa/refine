@@ -447,6 +447,24 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
       for (cell = 0; cell < section_size; cell++)
         for (node = 0; node < node_per; node++) c2n[node + size_per * cell]--;
 
+      if (REF_CELL_PYR == ref_cell_type(ref_cell)) {
+        REF_GLOB n0, n1, n2, n3, n4;
+        /* convention: square basis is 0-1-2-3
+           (oriented counter clockwise like trias) and top vertex is 4 */
+        for (cell = 0; cell < section_size; cell++) {
+          n0 = c2n[0 + size_per * cell];
+          n1 = c2n[1 + size_per * cell];
+          n2 = c2n[2 + size_per * cell];
+          n3 = c2n[3 + size_per * cell];
+          n4 = c2n[4 + size_per * cell];
+          c2n[0 + size_per * cell] = n0;
+          c2n[3 + size_per * cell] = n1;
+          c2n[4 + size_per * cell] = n2;
+          c2n[1 + size_per * cell] = n3;
+          c2n[2 + size_per * cell] = n4;
+        }
+      }
+
       ncell_read += section_size;
 
       for (cell = 0; cell < section_size; cell++)
