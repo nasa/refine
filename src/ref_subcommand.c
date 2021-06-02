@@ -1750,7 +1750,7 @@ static REF_STATUS fixed_point_metric(
     REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
     REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
     const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
-    REF_DBL gradation, REF_DBL complexity) {
+    REF_DBL gradation, REF_DBL complexity, REF_BOOL iles) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL *hess, *scalar;
   REF_INT timestep, total_timesteps;
@@ -1758,6 +1758,17 @@ static REF_STATUS fixed_point_metric(
   REF_DBL inv_total;
   REF_INT im, node;
   REF_INT fixed_point_ldim;
+
+  REF_DBL *min_scalar = NULL;
+  REF_DBL *max_scalar = NULL;
+  REF_BOOL first = REF_TRUE;
+
+  if (iles) {
+    ref_malloc_init(min_scalar, 1 * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 0);
+    ref_malloc_init(max_scalar, 1 * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 0);
+  }
 
   ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   total_timesteps = 0;
@@ -1771,6 +1782,20 @@ static REF_STATUS fixed_point_metric(
         "unable to load scalar");
     REIS(1, fixed_point_ldim, "expected one scalar");
     RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+    if (NULL != min_scalar && NULL != max_scalar) {
+      if (first) {
+        first = REF_FALSE;
+        each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+          min_scalar[node] = scalar[node];
+          max_scalar[node] = scalar[node];
+        }
+      } else {
+        each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+          min_scalar[node] = MIN(min_scalar[node], scalar[node]);
+          max_scalar[node] = MAX(max_scalar[node], scalar[node]);
+        }
+      }
+    }
     ref_free(scalar);
     total_timesteps++;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -1794,10 +1819,41 @@ static REF_STATUS fixed_point_metric(
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
       "local lp norm scaling");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+  if (NULL != min_scalar && NULL != max_scalar) {
+    REF_DBL threshold, local;
+    threshold = REF_DBL_MIN;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      threshold = MAX(threshold, max_scalar[node]);
+    }
+    local = threshold;
+    RSS(ref_mpi_max(ref_mpi, &local, &threshold, REF_DBL_TYPE), "max thresh");
+    RSS(ref_mpi_bcast(ref_mpi, &threshold, 1, REF_DBL_TYPE), "thresh bcast");
+    threshold = 0.01 * threshold;
+    if (ref_mpi_once(ref_mpi)) printf("iles threshold %f\n", threshold);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      if (max_scalar[node] - min_scalar[node] > threshold) {
+        REF_DBL diag_system[12];
+        RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "diag");
+        if (ref_grid_twod(ref_grid)) {
+          RSS(ref_matrix_ascending_eig_twod(diag_system), "2D ascend");
+          ref_matrix_eig(diag_system, 1) = ref_matrix_eig(diag_system, 0);
+        } else {
+          RSS(ref_matrix_ascending_eig(diag_system), "3D ascend");
+          ref_matrix_eig(diag_system, 1) = ref_matrix_eig(diag_system, 0);
+          ref_matrix_eig(diag_system, 2) = ref_matrix_eig(diag_system, 0);
+        }
+        RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "form m");
+      }
+    }
+  }
+  ref_free(min_scalar);
+  ref_free(max_scalar);
+
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "gradation at complexity");
   ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+
   return REF_SUCCESS;
 }
 
@@ -2420,9 +2476,13 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RXS(ref_args_find(argc, argv, "--deforming", &deforming_pos), REF_NOT_FOUND,
         "arg search");
     if (REF_EMPTY == deforming_pos) {
+      REF_BOOL iles = REF_FALSE;
+      RXS(ref_args_find(argc, argv, "--iles", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos) iles = REF_TRUE;
       RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
                              timestep_increment, in_project, solb_middle,
-                             reconstruction, p, gradation, complexity),
+                             reconstruction, p, gradation, complexity, iles),
           "fixed point");
     } else {
       RSS(moving_fixed_point_metric(metric, ref_grid, first_timestep,
