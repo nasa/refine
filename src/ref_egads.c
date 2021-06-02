@@ -3895,6 +3895,62 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
+REF_STATUS ref_egads_get_real_attribute(REF_GEOM ref_geom, REF_INT type,
+                                        REF_INT id, const char *name,
+                                        const REF_DBL **value,
+                                        REF_INT *length) {
+#ifdef HAVE_EGADS
+  ego object = NULL;
+  int attribute_type;
+  const int *ints;
+  const char *strings;
+  int egads_status;
+
+  *value = NULL;
+
+  switch (type) {
+    case (REF_GEOM_NODE):
+      if (NULL == ref_geom->nodes) return REF_INVALID;
+      if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+      object = ((ego *)(ref_geom->nodes))[id - 1];
+      break;
+    case (REF_GEOM_EDGE):
+      if (NULL == ref_geom->edges) return REF_INVALID;
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      object = ((ego *)(ref_geom->edges))[id - 1];
+      break;
+    case (REF_GEOM_FACE):
+      if (NULL == ref_geom->faces) return REF_INVALID;
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      object = ((ego *)(ref_geom->faces))[id - 1];
+      break;
+    case (REF_GEOM_BODY):
+      if (NULL == ref_geom->body) return REF_INVALID;
+      object = (ego)(ref_geom->body);
+      break;
+    default:
+      RSS(REF_FAILURE, "unknown type");
+  }
+
+  egads_status = EG_attributeRet(object, name, &attribute_type, length, &ints,
+                                 value, &strings);
+  if (EGADS_NOTFOUND == egads_status) return REF_NOT_FOUND;
+  REIS(EGADS_SUCCESS, egads_status, "get/return attribute");
+  if (ATTRREAL != attribute_type) return REF_NOT_FOUND;
+
+  return REF_SUCCESS;
+#else
+  *value = NULL;
+  *length = 0;
+  printf("no-op, EGADS not linked with HAVE_EGADS_EFFECTIVE %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  SUPRESS_UNUSED_COMPILER_WARNING(name);
+  return REF_SUCCESS;
+#endif
+}
+
 REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
   FILE *file;
   file = fopen(mapbc, "w");
