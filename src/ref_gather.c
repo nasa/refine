@@ -2345,6 +2345,16 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
+    if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+      const char *coord_system;
+      REF_STATUS ref_status;
+      ref_status = ref_egads_get_attribute(
+          ref_grid_geom(ref_grid), REF_GEOM_BODY, REF_EMPTY,
+          "av:coordinate_system", &coord_system);
+      if (REF_SUCCESS == ref_status)
+        RSS(ref_grid_parse_coordinate_system(ref_grid, coord_system),
+            "parse av coor sys");
+    }
     switch (ref_grid_coordinate_system(ref_grid)) {
       case REF_GRID_XBYRZU:
         sprintf(coordinate_system, "xByRzU");
@@ -2367,6 +2377,15 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
     REIS(1, fwrite(&model_scale, sizeof(model_scale), 1, file), "model_scale");
+    if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+      const char *unit;
+      REF_STATUS ref_status;
+      ref_status =
+          ref_egads_get_attribute(ref_grid_geom(ref_grid), REF_GEOM_BODY,
+                                  REF_EMPTY, "av:mesh_units", &unit);
+      if (REF_SUCCESS == ref_status)
+        RSS(ref_grid_parse_unit(ref_grid, unit), "parse unit");
+    }
     switch (ref_grid_unit(ref_grid)) {
       case REF_GRID_IN:
         sprintf(mesh_units, "in");
@@ -2389,6 +2408,18 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     length = 128 - length;
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
+    }
+    if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+      const REF_DBL *reference;
+      REF_STATUS ref_status;
+      ref_status = ref_egads_get_real_attribute(
+          ref_grid_geom(ref_grid), REF_GEOM_BODY, REF_EMPTY, "av:reference",
+          &reference, &length);
+      if (REF_SUCCESS == ref_status && 7 == length) {
+        for (i = 0; i < length; i++) {
+          ref_grid_reference(ref_grid, i) = reference[i];
+        }
+      }
     }
     REIS(7, fwrite(&ref_grid_reference(ref_grid, 0), sizeof(double), 7, file),
          "reference");
