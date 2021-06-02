@@ -1846,20 +1846,13 @@ static REF_STATUS fixed_point_metric(
       }
     }
   }
+  ref_free(min_scalar);
+  ref_free(max_scalar);
+
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "gradation at complexity");
   ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
-
-  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    max_scalar[node] -= min_scalar[node];
-  }
-  RSS(ref_gather_scalar_by_extension(ref_grid, 1, max_scalar, NULL,
-                                     "max-scalar.plt"),
-      "gather recept");
-
-  ref_free(min_scalar);
-  ref_free(max_scalar);
 
   return REF_SUCCESS;
 }
