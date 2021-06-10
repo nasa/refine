@@ -11,7 +11,7 @@ pwd # echo path
 testname=$1
 
 # Get the best queue to submit to
-queues="K4-debug K3-debug K3a-debug K2-debug K2a-fun3d"
+queues="K4-debug K3-debug K3a-debug K2-debug K2-fun3d"
 for queue in $queues; do
 
     if [[ "$queue" == "K4-"* ]]; then
@@ -24,9 +24,6 @@ for queue in $queues; do
 	nprocs=16
 	walltime=50
     elif [[ "$queue" == "K2-"* ]]; then
-	nprocs=12
-	walltime=50
-    elif [[ "$queue" == "K2a-"* ]]; then
 	nprocs=12
 	walltime=50
     else
