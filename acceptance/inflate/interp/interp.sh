@@ -42,7 +42,7 @@ ${src}/ref_inflatable  \
 
 ${src}/ref translate inflated.b8.ugrid curve.meshb
 
-${src}/ref_acceptance -u 5 surf.meshb surf.solb
+${src}/ref_acceptance -u u5 surf.meshb surf.solb
 
 ${src}/ref interp surf.meshb surf.solb curve.meshb curve.solb
 
