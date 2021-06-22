@@ -193,7 +193,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     x = ref_node_xyz(ref_node, 0, node);
     y = ref_node_xyz(ref_node, 1, node);
     z = ref_node_xyz(ref_node, 2, node);
-    if (strcmp(function_name, "5") == 0) {
+    if (strcmp(function_name, "u5") == 0) {
       scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
     } else if (strcmp(function_name, "sin50xy") == 0) {
       REF_DBL xy;
