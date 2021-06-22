@@ -198,9 +198,9 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     } else if (strcmp(function_name, "sin50xy") == 0) {
       REF_DBL xy;
       xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);
-      if (xy <= (ref_math_pi / 50.0)) {
-        scalar[node] = 0.01 * sin(xy);
-      } else if (xy <= 2.0 * (ref_math_pi / 50.0)) {
+      if (ABS(xy) <= (ref_math_pi / 50.0)) {
+        scalar[node] = sin(50.0 * xy);
+      } else if (ABS(xy) <= 2.0 * (ref_math_pi / 50.0)) {
         scalar[node] = sin(50.0 * xy);
       } else {
         scalar[node] = 0.01 * sin(50.0 * xy);
