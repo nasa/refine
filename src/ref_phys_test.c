@@ -1399,7 +1399,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    char file[] = "ref_phys_test.mapbc";
+    char file[] = "ref_phys_test_fun3d.mapbc";
     FILE *f;
     REF_DICT ref_dict;
     REF_INT id, type;
@@ -1432,7 +1432,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    char file[] = "ref_phys_test.mapbc";
+    char file[] = "ref_phys_test_underscore.mapbc";
     FILE *f;
     REF_DICT ref_dict;
     REF_INT id, type;
