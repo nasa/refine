@@ -31,6 +31,7 @@
 #include "ref_geom.h"
 #include "ref_grid.h"
 #include "ref_import.h"
+#include "ref_inflate.h"
 #include "ref_iso.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -1177,6 +1178,9 @@ shutdown:
 static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *input_filename;
   REF_GRID ref_grid = NULL;
+  REF_INT nlayers;
+  REF_DBL first_thickness, total_thickness, mach, mach_angle_rad;
+  REF_DBL rate;
 
   if (argc < 7) goto shutdown;
   input_filename = argv[2];
@@ -1195,6 +1199,32 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi))
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
+
+  nlayers = atoi(argv[3]);
+  first_thickness = atof(argv[4]);
+  total_thickness = atof(argv[5]);
+  mach = atof(argv[6]);
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("layers %d\n", nlayers);
+    printf("first thickness %f\n", first_thickness);
+    printf("total thickness %f\n", total_thickness);
+    printf("mach %f\n", mach);
+  }
+  RAS(nlayers > 0 && first_thickness > 0.0 && total_thickness > 0.0 &&
+          mach > 1.0,
+      "inputs must be positive and supersonic");
+
+  mach_angle_rad = asin(1 / mach);
+  RSS(ref_inflate_rate(nlayers, first_thickness, total_thickness, &rate),
+      "compute rate");
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("mach angle %f rad %f deg\n", mach_angle_rad,
+           ref_math_in_degrees(mach_angle_rad));
+    printf("total thickness %f\n", total_thickness);
+    printf("rate %f\n", rate);
+  }
 
   RSS(ref_grid_free(ref_grid), "grid");
 
