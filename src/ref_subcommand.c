@@ -1831,19 +1831,28 @@ static REF_STATUS fixed_point_metric(
     threshold = 0.01 * threshold;
     if (ref_mpi_once(ref_mpi)) printf("iles threshold %f\n", threshold);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      if (max_scalar[node] - min_scalar[node] > threshold) {
-        REF_DBL diag_system[12];
-        RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "diag");
-        if (ref_grid_twod(ref_grid)) {
-          RSS(ref_matrix_ascending_eig_twod(diag_system), "2D ascend");
-          ref_matrix_eig(diag_system, 1) = ref_matrix_eig(diag_system, 0);
-        } else {
-          RSS(ref_matrix_ascending_eig(diag_system), "3D ascend");
-          ref_matrix_eig(diag_system, 1) = ref_matrix_eig(diag_system, 0);
-          ref_matrix_eig(diag_system, 2) = ref_matrix_eig(diag_system, 0);
-        }
-        RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "form m");
+      REF_DBL diag_system[12];
+      REF_DBL eiglimit, ds;
+      ds = max_scalar[node] - min_scalar[node];
+      eiglimit = ds / threshold;
+      eiglimit = MIN(1.0, eiglimit);
+      eiglimit = eiglimit * eiglimit;
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "diag");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_matrix_ascending_eig_twod(diag_system), "2D ascend");
+        ref_matrix_eig(diag_system, 1) =
+            MAX(ref_matrix_eig(diag_system, 0) * eiglimit,
+                ref_matrix_eig(diag_system, 1));
+      } else {
+        RSS(ref_matrix_ascending_eig(diag_system), "3D ascend");
+        ref_matrix_eig(diag_system, 1) =
+            MAX(ref_matrix_eig(diag_system, 0) * eiglimit,
+                ref_matrix_eig(diag_system, 1));
+        ref_matrix_eig(diag_system, 2) =
+            MAX(ref_matrix_eig(diag_system, 0) * eiglimit,
+                ref_matrix_eig(diag_system, 2));
       }
+      RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "form m");
     }
   }
   ref_free(min_scalar);
