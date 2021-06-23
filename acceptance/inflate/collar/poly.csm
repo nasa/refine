@@ -2,9 +2,22 @@
 set n 1
 
 box 0 -1 -1 4 2 2
+ select face
+ attribute bc_name $5000_inflate
+ select face 1
+ attribute bc_name $5000_inflow
+ select face 2
+ attribute bc_name $5000_outflow
+
 patbeg i n
   set angle 90/(n+1)*i
   box 0 -1 -1 4 2 2
+  select face
+  attribute bc_name $5000_inflate
+  select face 1
+  attribute bc_name $5000_inflow
+  select face 2
+  attribute bc_name $5000_outflow
   rotatex angle 0 0
   intersect
 patend
