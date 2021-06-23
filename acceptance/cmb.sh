@@ -326,12 +326,6 @@ cd ${source_dir}/acceptance/sphere-cube/tetgen
 ( ./accept-sphere-cube-init.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-3d-u5
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/u5
-( ./accept-3d-u5.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
 sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-inflate-normal
