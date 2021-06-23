@@ -1828,15 +1828,10 @@ static REF_STATUS fixed_point_metric(
     local = threshold;
     RSS(ref_mpi_max(ref_mpi, &local, &threshold, REF_DBL_TYPE), "max thresh");
     RSS(ref_mpi_bcast(ref_mpi, &threshold, 1, REF_DBL_TYPE), "thresh bcast");
-    threshold = 0.01 * threshold;
     if (ref_mpi_once(ref_mpi)) printf("iles threshold %f\n", threshold);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL diag_system[12];
-      REF_DBL eiglimit, ds;
-      ds = max_scalar[node] - min_scalar[node];
-      eiglimit = ds / threshold;
-      eiglimit = MIN(1.0, eiglimit);
-      eiglimit = eiglimit * eiglimit;
+      REF_DBL eiglimit = 1.0;
       RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "diag");
       if (ref_grid_twod(ref_grid)) {
         RSS(ref_matrix_ascending_eig_twod(diag_system), "2D ascend");
