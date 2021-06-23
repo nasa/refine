@@ -56,6 +56,7 @@ static void usage(const char *name) {
   printf("ref subcommands:\n");
   printf("  adapt        Adapt a mesh\n");
   printf("  bootstrap    Create initial mesh from EGADS file\n");
+  printf("  collar       Inflate surface to create swept mesh\n");
   printf("  distance     Calculate wall distance (for turbulence model)\n");
   printf("  examine      Report mesh or solution file meta data.\n");
   /*printf("  grow         Fills surface mesh with volume to debug
@@ -107,6 +108,15 @@ static void adapt_help(const char *name) {
   printf("      3: Zoltan graph partitioning.\n");
   printf("      4: Zoltan recursive bisection.\n");
   printf("      5: native recursive bisection.\n");
+  printf("\n");
+}
+static void collar_help(const char *name) {
+  printf(
+      "usage: \n %s collar input_mesh.extension"
+      "nlayers first_thickness total_thickness mach\n",
+      name);
+  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  -x  output_mesh.extension\n");
   printf("\n");
 }
 static void bootstrap_help(const char *name) {
@@ -1161,6 +1171,36 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *input_filename;
+  REF_GRID ref_grid = NULL;
+
+  if (argc < 7) goto shutdown;
+  input_filename = argv[2];
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", input_filename);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, input_filename), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "donor part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", input_filename);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, input_filename), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "donor import");
+  }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
+
+  RSS(ref_grid_free(ref_grid), "grid");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) collar_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -3459,6 +3499,13 @@ int main(int argc, char *argv[]) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
       if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "c", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(collar(ref_mpi, argc, argv), "collar");
+    } else {
+      if (ref_mpi_once(ref_mpi)) collar_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "d", 1) == 0) {
