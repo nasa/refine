@@ -1181,6 +1181,8 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT nlayers;
   REF_DBL first_thickness, total_thickness, mach, mach_angle_rad;
   REF_DBL rate;
+  REF_DICT faceids;
+  REF_INT pos;
 
   if (argc < 7) goto shutdown;
   input_filename = argv[2];
@@ -1225,6 +1227,28 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("total thickness %f\n", total_thickness);
     printf("rate %f\n", rate);
   }
+
+  RSS(ref_dict_create(&faceids), "create");
+
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading fun3d bc map %s\n", mapbc);
+      RSS(ref_phys_read_mapbc_token(faceids, mapbc, "inflate"),
+          "unable to read fun3d formatted mapbc");
+    }
+    RSS(ref_dict_bcast(faceids, ref_mpi), "bcast");
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("inflating %d faces\n", ref_dict_n(faceids));
+  }
+  RAS(ref_dict_n(faceids) > 0, "no faces to inflate, use --fun3d-mapbc");
+
+  RSS(ref_dict_free(faceids), "free");
 
   RSS(ref_grid_free(ref_grid), "grid");
 

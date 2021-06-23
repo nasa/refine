@@ -19,6 +19,7 @@ ${src}/ref collar  \
     10 \
     0.1 \
     2.0 \
-    1.68
+    1.68 \
+    --fun3d-mapbc poly-vol.mapbc
 
 exit
