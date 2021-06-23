@@ -109,6 +109,9 @@ REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
                               REF_DBL complexity);
 REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
                                   REF_GRID ref_grid, REF_INT p_norm);
+REF_STATUS ref_metric_scale_combine(REF_DBL *hess1, REF_DBL *hess2,
+                                    REF_DBL *metric, REF_GRID ref_grid,
+                                    REF_INT p_norm);
 REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
                                REF_INT nequations, REF_DBL *solution,
                                REF_RECON_RECONSTRUCTION reconstruction,
