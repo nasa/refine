@@ -20,6 +20,7 @@ ${src}/ref collar  \
     0.1 \
     2.0 \
     1.68 \
-    --fun3d-mapbc poly-vol.mapbc
+    --fun3d-mapbc poly-vol.mapbc \
+    -x poly-inf.meshb
 
 exit

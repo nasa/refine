@@ -1178,11 +1178,13 @@ shutdown:
 static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *input_filename;
   REF_GRID ref_grid = NULL;
-  REF_INT nlayers;
+  REF_INT nlayers, layer;
   REF_DBL first_thickness, total_thickness, mach, mach_angle_rad;
+  REF_DBL thickness, total, xshift;
   REF_DBL rate;
   REF_DICT faceids;
-  REF_INT pos;
+  REF_INT pos, opt;
+  REF_DBL origin[3];
 
   if (argc < 7) goto shutdown;
   input_filename = argv[2];
@@ -1247,6 +1249,42 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("inflating %d faces\n", ref_dict_n(faceids));
   }
   RAS(ref_dict_n(faceids) > 0, "no faces to inflate, use --fun3d-mapbc");
+
+  RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
+
+  total = 0.0;
+  for (layer = 0; layer < nlayers; layer++) {
+    thickness = first_thickness * pow(rate, layer);
+    total = total + thickness;
+    xshift = thickness / tan(mach_angle_rad);
+    RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
+        "inflate");
+
+    if (ref_mpi_once(ref_mpi))
+      printf("layer%5d of%5d thickness %10.3e total %10.3e " REF_GLOB_FMT
+             " nodes\n",
+             layer + 1, nlayers, thickness, total,
+             ref_node_n_global(ref_grid_node(ref_grid)));
+  }
+
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "inflate");
+
+  /* export via -x grid.ext and -f final-surf.tec and -q final-vol.plt */
+  for (opt = 0; opt < argc - 1; opt++) {
+    if (strcmp(argv[opt], "-x") == 0) {
+      if (ref_mpi_para(ref_mpi)) {
+        if (ref_mpi_once(ref_mpi))
+          printf("gather " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
+        RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
+      } else {
+        if (ref_mpi_once(ref_mpi))
+          printf("export " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
+        RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
+      }
+    }
+  }
 
   RSS(ref_dict_free(faceids), "free");
 
