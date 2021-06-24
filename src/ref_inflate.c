@@ -108,6 +108,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_BOOL problem_detected = REF_FALSE;
 
   REF_BOOL debug = REF_FALSE;
+  REF_BOOL verbose = REF_FALSE;
 
   ref_malloc_init(face_normal, 3 * ref_dict_n(faceids), REF_DBL, -1.0);
 
@@ -141,14 +142,14 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
-  printf("y %f %f\n", y0, y1);
+  if (verbose) printf("y %f %f\n", y0, y1);
   each_ref_dict_key_index(faceids, i) {
     if (y1 - ymax[i] > ymin[i] - y0) {
       orient[i] = -1.0;
     } else {
       orient[i] = 1.0;
     }
-    printf("%d z %f %f o %f\n", i, ymin[i], ymax[i], orient[i]);
+    if (verbose) printf("%d z %f %f o %f\n", i, ymin[i], ymax[i], orient[i]);
   }
 
   ref_malloc_init(tmin, ref_dict_n(faceids), REF_DBL, 4.0 * ref_math_pi);
@@ -197,7 +198,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
         printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
                face_normal[2 + 3 * i]);
       RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
-      if (ref_mpi_once(ref_mpi))
+      if (verbose && ref_mpi_once(ref_mpi))
         printf(
             "f=%5d n=(%7.4f,%7.4f,%7.4f) t=(%7.4f,%7.4f) angle %7.4f"
             " or %4.1f\n",
