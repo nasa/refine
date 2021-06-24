@@ -202,7 +202,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       scalar[node] = tanh(15.0 * xy - x3);
     } else if (strcmp(function_name, "combo2") == 0) {
       REF_DBL xy;
-      xy = x * y;
+      xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);
       scalar[node] = tanh(50.0 * (xy - 0.5));
     } else if (strcmp(function_name, "sin50xy") == 0) {
       REF_DBL xy;

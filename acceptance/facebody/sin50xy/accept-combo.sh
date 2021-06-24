@@ -25,7 +25,8 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field2} ${inproj}.meshb \
  	  ${inproj}-2.solb
 
-    ${src}/ref_metric_test ${inproj}.meshb ${inproj}-1.solb ${inproj}-2.solb \
+    ${src}/ref_metric_test --combine \
+	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-2.solb \
 	  2 -1 ${complexity} ${inproj}-metric.solb
 
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
