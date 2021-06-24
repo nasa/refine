@@ -475,7 +475,7 @@ int main(int argc, char *argv[]) {
     ref_free(scalar1);
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
-    RSS(ref_gather_metric(ref_grid, argv[7]), "export curve limit metric");
+    RSS(ref_gather_metric(ref_grid, argv[8]), "export curve limit metric");
     ref_mpi_stopwatch_stop(ref_mpi, "write metric");
 
     RSS(ref_grid_free(ref_grid), "free");
