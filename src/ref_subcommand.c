@@ -113,7 +113,7 @@ static void adapt_help(const char *name) {
 }
 static void collar_help(const char *name) {
   printf(
-      "usage: \n %s collar input_mesh.extension"
+      "usage: \n %s collar input_mesh.extension "
       "nlayers first_thickness total_thickness mach\n",
       name);
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
