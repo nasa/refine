@@ -279,7 +279,10 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
           dot = -ref_math_dot(normal, &(face_normal[3 * i]));
           RAS(face_normal[0 + 3 * i] > -0.1, "uninitialized face_normal");
           if (dot < 0.70 || dot > 1.01) {
-            /* printf("out-of-range dot %.15f\n",dot); */
+            printf("out-of-range dot %.15f at %f %f %f\n", dot,
+                   ref_node_xyz(ref_node, 0, node),
+                   ref_node_xyz(ref_node, 1, node),
+                   ref_node_xyz(ref_node, 2, node));
             problem_detected = REF_TRUE;
           }
           RAB(ref_math_divisible(normal[1], dot), "normal[1] /= dot", {
