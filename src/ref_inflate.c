@@ -97,7 +97,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, ref;
 
-  REF_DBL *ymin, *ymax, dy, y0, y1;
+  REF_DBL *ymin, *ymax, dy, y0, y1, temp;
   REF_DBL *orient;
   REF_DBL *tmin, *tmax;
   REF_INT *imin, *imax;
@@ -141,9 +141,21 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       }
     }
   }
+  temp = y0;
+  RSS(ref_mpi_min(ref_mpi, &temp, &y0, REF_DBL_TYPE), "max thresh");
+  RSS(ref_mpi_bcast(ref_mpi, &y0, 1, REF_DBL_TYPE), "bcast");
+  temp = y1;
+  RSS(ref_mpi_max(ref_mpi, &temp, &y1, REF_DBL_TYPE), "max thresh");
+  RSS(ref_mpi_bcast(ref_mpi, &y1, 1, REF_DBL_TYPE), "bcast");
 
   if (verbose) printf("y %f %f\n", y0, y1);
   each_ref_dict_key_index(faceids, i) {
+    temp = ymin[i];
+    RSS(ref_mpi_min(ref_mpi, &temp, &(ymin[i]), REF_DBL_TYPE), "max thresh");
+    RSS(ref_mpi_bcast(ref_mpi, &(ymin[i]), 1, REF_DBL_TYPE), "bcast");
+    temp = ymax[i];
+    RSS(ref_mpi_max(ref_mpi, &temp, &(ymax[i]), REF_DBL_TYPE), "max thresh");
+    RSS(ref_mpi_bcast(ref_mpi, &(ymax[i]), 1, REF_DBL_TYPE), "bcast");
     if (y1 - ymax[i] > ymin[i] - y0) {
       orient[i] = -1.0;
     } else {
