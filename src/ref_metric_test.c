@@ -87,6 +87,7 @@ int main(int argc, char *argv[]) {
   REF_INT wake_pos = REF_EMPTY;
   REF_INT decompose_pos = REF_EMPTY;
   REF_INT imply_pos = REF_EMPTY;
+  REF_INT eigs_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -141,6 +142,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--decompose", &decompose_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--imply", &imply_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--eigs", &eigs_pos), REF_NOT_FOUND,
       "arg search");
 
   if (curve_limit_pos != REF_EMPTY) {
@@ -1785,6 +1788,77 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("writing implied metric %s\n", argv[3]);
     RSS(ref_gather_metric(ref_grid, argv[3]), "export metric");
     ref_mpi_stopwatch_stop(ref_mpi, "write metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "done.");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (eigs_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *field, *hess1, *hess2, *eigs;
+    REF_INT ldim, node;
+
+    REIS(1, eigs_pos, "required args: --eigs grid.ext scalar.solb");
+    REIS(4, argc, "required args: --eigs grid.ext scalar.solb");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[2]);
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
+      ref_mpi_stopwatch_stop(ref_mpi, "part mesh");
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import mesh");
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
+        "unable to load solution in position 3");
+    if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
+    REIS(1, ldim, "expect scalar");
+
+    ref_malloc(hess1, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(hess2, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ldim = 3;
+    ref_malloc(eigs, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    RSS(ref_recon_hessian(ref_grid, field, hess1, REF_RECON_L2PROJECTION),
+        "hess");
+    RSS(ref_recon_hessian(ref_grid, field, hess2, REF_RECON_KEXACT), "hess");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL diag[12];
+      eigs[0 + ldim * node] = field[node];
+      RSS(ref_matrix_diag_m(&(hess1[6 * node]), diag), "decomp");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+      } else {
+        RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      }
+      eigs[1 + ldim * node] = ref_matrix_eig(diag, 0);
+      RSS(ref_matrix_diag_m(&(hess2[6 * node]), diag), "decomp");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+      } else {
+        RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      }
+      eigs[2 + ldim * node] = ref_matrix_eig(diag, 0);
+    }
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, eigs, NULL,
+                                       "ref_metric_test_eigs.plt"),
+        "export eigs");
+
+    ref_free(eigs);
+    ref_free(hess2);
+    ref_free(hess1);
+    ref_free(field);
 
     RSS(ref_grid_free(ref_grid), "free");
     ref_mpi_stopwatch_stop(ref_mpi, "done.");
