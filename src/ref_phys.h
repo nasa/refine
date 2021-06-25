@@ -51,6 +51,9 @@ REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
                                     REF_BOOL *replace, REF_INT ldim);
 
 REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename);
+REF_STATUS ref_phys_read_mapbc_token(REF_DICT ref_dict,
+                                     const char *mapbc_filename,
+                                     const char *token);
 REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags);
 REF_STATUS ref_phys_av_tag_attributes(REF_DICT ref_dict, REF_GEOM ref_geom);
 

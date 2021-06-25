@@ -1399,7 +1399,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    char file[] = "ref_phys_test.mapbc";
+    char file[] = "ref_phys_test_fun3d.mapbc";
     FILE *f;
     REF_DICT ref_dict;
     REF_INT id, type;
@@ -1432,7 +1432,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    char file[] = "ref_phys_test.mapbc";
+    char file[] = "ref_phys_test_underscore.mapbc";
     FILE *f;
     REF_DICT ref_dict;
     REF_INT id, type;
@@ -1454,6 +1454,37 @@ int main(int argc, char *argv[]) {
     id = 2;
     RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
     REIS(4000, type, "type");
+
+    RSS(ref_dict_free(ref_dict), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    char file[] = "ref_phys_test_inflate.mapbc";
+    char token[] = "inflate";
+    FILE *f;
+    REF_DICT ref_dict;
+    REF_INT id, type;
+
+    f = fopen(file, "w");
+    fprintf(f, "4\n");
+    fprintf(f, "1 5000 inflow\n");
+    fprintf(f, "2 5000 inflate\n");
+    fprintf(f, "3 5000 inflate\n");
+    fprintf(f, "4 5000 outflow\n");
+    fclose(f);
+
+    RSS(ref_dict_create(&ref_dict), "create");
+
+    RSS(ref_phys_read_mapbc_token(ref_dict, file, token), "read mapbc");
+
+    REIS(2, ref_dict_n(ref_dict), "lines");
+    id = 2;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(5000, type, "type");
+    id = 3;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(5000, type, "type");
 
     RSS(ref_dict_free(ref_dict), "free");
     REIS(0, remove(file), "test clean up");

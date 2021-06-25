@@ -97,7 +97,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, ref;
 
-  REF_DBL *ymin, *ymax, dy, y0, y1;
+  REF_DBL *ymin, *ymax, dy, y0, y1, temp;
   REF_DBL *orient;
   REF_DBL *tmin, *tmax;
   REF_INT *imin, *imax;
@@ -108,6 +108,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_BOOL problem_detected = REF_FALSE;
 
   REF_BOOL debug = REF_FALSE;
+  REF_BOOL verbose = REF_FALSE;
 
   ref_malloc_init(face_normal, 3 * ref_dict_n(faceids), REF_DBL, -1.0);
 
@@ -140,15 +141,27 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       }
     }
   }
+  temp = y0;
+  RSS(ref_mpi_min(ref_mpi, &temp, &y0, REF_DBL_TYPE), "max thresh");
+  RSS(ref_mpi_bcast(ref_mpi, &y0, 1, REF_DBL_TYPE), "bcast");
+  temp = y1;
+  RSS(ref_mpi_max(ref_mpi, &temp, &y1, REF_DBL_TYPE), "max thresh");
+  RSS(ref_mpi_bcast(ref_mpi, &y1, 1, REF_DBL_TYPE), "bcast");
 
-  printf("y %f %f\n", y0, y1);
+  if (verbose) printf("y %f %f\n", y0, y1);
   each_ref_dict_key_index(faceids, i) {
+    temp = ymin[i];
+    RSS(ref_mpi_min(ref_mpi, &temp, &(ymin[i]), REF_DBL_TYPE), "max thresh");
+    RSS(ref_mpi_bcast(ref_mpi, &(ymin[i]), 1, REF_DBL_TYPE), "bcast");
+    temp = ymax[i];
+    RSS(ref_mpi_max(ref_mpi, &temp, &(ymax[i]), REF_DBL_TYPE), "max thresh");
+    RSS(ref_mpi_bcast(ref_mpi, &(ymax[i]), 1, REF_DBL_TYPE), "bcast");
     if (y1 - ymax[i] > ymin[i] - y0) {
       orient[i] = -1.0;
     } else {
       orient[i] = 1.0;
     }
-    printf("%d z %f %f o %f\n", i, ymin[i], ymax[i], orient[i]);
+    if (verbose) printf("%d z %f %f o %f\n", i, ymin[i], ymax[i], orient[i]);
   }
 
   ref_malloc_init(tmin, ref_dict_n(faceids), REF_DBL, 4.0 * ref_math_pi);
@@ -197,7 +210,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
         printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
                face_normal[2 + 3 * i]);
       RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
-      if (ref_mpi_once(ref_mpi))
+      if (verbose && ref_mpi_once(ref_mpi))
         printf(
             "f=%5d n=(%7.4f,%7.4f,%7.4f) t=(%7.4f,%7.4f) angle %7.4f"
             " or %4.1f\n",
@@ -278,7 +291,10 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
           dot = -ref_math_dot(normal, &(face_normal[3 * i]));
           RAS(face_normal[0 + 3 * i] > -0.1, "uninitialized face_normal");
           if (dot < 0.70 || dot > 1.01) {
-            /* printf("out-of-range dot %.15f\n",dot); */
+            printf("out-of-range dot %.15f at %f %f %f\n", dot,
+                   ref_node_xyz(ref_node, 0, node),
+                   ref_node_xyz(ref_node, 1, node),
+                   ref_node_xyz(ref_node, 2, node));
             problem_detected = REF_TRUE;
           }
           RAB(ref_math_divisible(normal[1], dot), "normal[1] /= dot", {

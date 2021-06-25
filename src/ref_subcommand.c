@@ -31,6 +31,7 @@
 #include "ref_geom.h"
 #include "ref_grid.h"
 #include "ref_import.h"
+#include "ref_inflate.h"
 #include "ref_iso.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -56,6 +57,7 @@ static void usage(const char *name) {
   printf("ref subcommands:\n");
   printf("  adapt        Adapt a mesh\n");
   printf("  bootstrap    Create initial mesh from EGADS file\n");
+  printf("  collar       Inflate surface to create swept mesh\n");
   printf("  distance     Calculate wall distance (for turbulence model)\n");
   printf("  examine      Report mesh or solution file meta data.\n");
   /*printf("  grow         Fills surface mesh with volume to debug
@@ -107,6 +109,15 @@ static void adapt_help(const char *name) {
   printf("      3: Zoltan graph partitioning.\n");
   printf("      4: Zoltan recursive bisection.\n");
   printf("      5: native recursive bisection.\n");
+  printf("\n");
+}
+static void collar_help(const char *name) {
+  printf(
+      "usage: \n %s collar input_mesh.extension "
+      "nlayers first_thickness total_thickness mach\n",
+      name);
+  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  -x  output_mesh.extension\n");
   printf("\n");
 }
 static void bootstrap_help(const char *name) {
@@ -1161,6 +1172,127 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *input_filename;
+  REF_GRID ref_grid = NULL;
+  REF_INT nlayers, layer;
+  REF_DBL first_thickness, total_thickness, mach, mach_angle_rad;
+  REF_DBL thickness, total, xshift;
+  REF_DBL rate;
+  REF_DICT faceids;
+  REF_INT pos, opt;
+  REF_DBL origin[3];
+
+  if (argc < 7) goto shutdown;
+  input_filename = argv[2];
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", input_filename);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, input_filename), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "donor part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", input_filename);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, input_filename), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "donor import");
+  }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
+
+  nlayers = atoi(argv[3]);
+  first_thickness = atof(argv[4]);
+  total_thickness = atof(argv[5]);
+  mach = atof(argv[6]);
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("layers %d\n", nlayers);
+    printf("first thickness %f\n", first_thickness);
+    printf("total thickness %f\n", total_thickness);
+    printf("mach %f\n", mach);
+  }
+  RAS(nlayers > 0 && first_thickness > 0.0 && total_thickness > 0.0 &&
+          mach > 1.0,
+      "inputs must be positive and supersonic");
+
+  mach_angle_rad = asin(1 / mach);
+  RSS(ref_inflate_rate(nlayers, first_thickness, total_thickness, &rate),
+      "compute rate");
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("mach angle %f rad %f deg\n", mach_angle_rad,
+           ref_math_in_degrees(mach_angle_rad));
+    printf("total thickness %f\n", total_thickness);
+    printf("rate %f\n", rate);
+  }
+
+  RSS(ref_dict_create(&faceids), "create");
+
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading fun3d bc map %s\n", mapbc);
+      RSS(ref_phys_read_mapbc_token(faceids, mapbc, "inflate"),
+          "unable to read fun3d formatted mapbc");
+    }
+    RSS(ref_dict_bcast(faceids, ref_mpi), "bcast");
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("inflating %d faces\n", ref_dict_n(faceids));
+  }
+  RAS(ref_dict_n(faceids) > 0, "no faces to inflate, use --fun3d-mapbc");
+
+  RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
+
+  total = 0.0;
+  for (layer = 0; layer < nlayers; layer++) {
+    thickness = first_thickness * pow(rate, layer);
+    total = total + thickness;
+    xshift = thickness / tan(mach_angle_rad);
+    RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
+        "inflate");
+
+    if (ref_mpi_once(ref_mpi))
+      printf("layer%5d of%5d thickness %10.3e total %10.3e " REF_GLOB_FMT
+             " nodes\n",
+             layer + 1, nlayers, thickness, total,
+             ref_node_n_global(ref_grid_node(ref_grid)));
+  }
+
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "inflate");
+
+  /* export via -x grid.ext and -f final-surf.tec and -q final-vol.plt */
+  for (opt = 0; opt < argc - 1; opt++) {
+    if (strcmp(argv[opt], "-x") == 0) {
+      if (ref_mpi_para(ref_mpi)) {
+        if (ref_mpi_once(ref_mpi))
+          printf("gather " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
+        RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
+      } else {
+        if (ref_mpi_once(ref_mpi))
+          printf("export " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
+        RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
+      }
+    }
+  }
+
+  RSS(ref_dict_free(faceids), "free");
+
+  RSS(ref_grid_free(ref_grid), "grid");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) collar_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -3459,6 +3591,13 @@ int main(int argc, char *argv[]) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
       if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "c", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(collar(ref_mpi, argc, argv), "collar");
+    } else {
+      if (ref_mpi_once(ref_mpi)) collar_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "d", 1) == 0) {
