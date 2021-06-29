@@ -249,7 +249,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       gap = 0.1;
       center = -gap - radius;
       scale = 1.0e4;
-      hop = 0.0;
+      hop = 25.0;
       yplus0 = scale * ABS(y);
       RSS(ref_phys_spalding_uplus(yplus0, &uplus0), "uplus");
       r = sqrt(x * x + (y - center) * (y - center));
