@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
   REF_INT explore_pos = REF_EMPTY;
   REF_INT multigrad_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
+  REF_INT combine_pos = REF_EMPTY;
   REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT no_goal_pos = REF_EMPTY;
   REF_INT venditti_pos = REF_EMPTY;
@@ -103,6 +104,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--wlp", &wlp_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--combine", &combine_pos), REF_NOT_FOUND,
+      "arg search");
   RXS(ref_args_find(argc, argv, "--multigrad", &multigrad_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--moving", &moving_pos), REF_NOT_FOUND,
@@ -384,6 +387,98 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export curve limit metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "write metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (combine_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar1, *scalar2, *hess1, *hess2, *metric;
+    REF_INT p;
+    REF_DBL gradation, complexity, current_complexity;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim;
+    REIS(1, combine_pos,
+         "required args: --combine grid.meshb scalar1.solb scalar2.solb p "
+         "gradation "
+         "complexity output-metric.solb");
+    if (8 > argc) {
+      printf(
+          "required args: --combine grid.meshb scalar1.solb scalar2.solb p "
+          "gradation "
+          "complexity output-metric.solb\n");
+      return REF_FAILURE;
+    }
+
+    p = atoi(argv[5]);
+    gradation = atof(argv[6]);
+    complexity = atof(argv[7]);
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
+    }
+    if (ref_mpi_once(ref_mpi)) {
+      printf("Lp=%d\n", p);
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar1 %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar1, argv[3]),
+        "unable to load scalar1 in position 3");
+    REIS(1, ldim, "expected one scalar1");
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar1");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar2 %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar2, argv[4]),
+        "unable to load scalar2 in position 4");
+    REIS(1, ldim, "expected one scalar2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar2");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(hess1, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(hess2, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    RSS(ref_recon_hessian(ref_grid, scalar1, hess1, reconstruction), "recon");
+    RSS(ref_recon_hessian(ref_grid, scalar2, hess2, reconstruction), "recon");
+    RSS(ref_recon_roundoff_limit(hess1, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    ref_mpi_stopwatch_stop(ref_mpi, "recon hess1");
+    RSS(ref_recon_roundoff_limit(hess2, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    ref_mpi_stopwatch_stop(ref_mpi, "recon hess2");
+
+    RSS(ref_metric_scale_combine(hess1, hess2, metric, ref_grid, p),
+        "local scale lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "combine hess");
+
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "metric gradation");
+
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (ref_mpi_once(ref_mpi))
+      printf("actual complexity %e\n", current_complexity);
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+    ref_free(hess2);
+    ref_free(hess1);
+    ref_free(scalar2);
+    ref_free(scalar1);
+
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
+    RSS(ref_gather_metric(ref_grid, argv[8]), "export curve limit metric");
     ref_mpi_stopwatch_stop(ref_mpi, "write metric");
 
     RSS(ref_grid_free(ref_grid), "free");

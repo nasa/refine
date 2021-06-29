@@ -195,6 +195,15 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     z = ref_node_xyz(ref_node, 2, node);
     if (strcmp(function_name, "u5") == 0) {
       scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
+    } else if (strcmp(function_name, "combo1") == 0) {
+      REF_DBL xy, x3;
+      xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);
+      x3 = pow((2.0 * x - 1.0), 3);
+      scalar[node] = tanh(15.0 * xy - x3);
+    } else if (strcmp(function_name, "combo2") == 0) {
+      REF_DBL xy;
+      xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);
+      scalar[node] = tanh(50.0 * (xy - 0.5));
     } else if (strcmp(function_name, "sin50xy") == 0) {
       REF_DBL xy;
       xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);
