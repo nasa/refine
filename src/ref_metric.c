@@ -853,6 +853,7 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
 REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
                                           REF_GRID ref_grid,
                                           REF_DBL *interpolation_error) {
+  /* Corollary 3.4 CONTINUOUS MESH FRAMEWORK PART I DOI:10.1137/090754078 */
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_DBL error[6], m1half[6], m1neghalf[6];
@@ -868,7 +869,7 @@ REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
       if (ref_grid_twod(ref_grid)) {
         interpolation_error[node] = constant * (error[0] + error[3]);
       } else {
-        interpolation_error[node] =constant*error[0]+error[3]+error[5]);
+        interpolation_error[node] = constant * (error[0] + error[3] + error[5]);
       }
     }
   }
