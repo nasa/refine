@@ -76,6 +76,9 @@ REF_STATUS ref_metric_imply_non_tet(REF_DBL *metric, REF_GRID ref_grid);
 REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
                           REF_GRID ref_grid);
 
+REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
+                                          REF_GRID ref_grid,
+                                          REF_DBL *interpolation_error);
 REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                  REF_DBL *complexity);
 REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,

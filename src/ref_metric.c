@@ -850,6 +850,33 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
+                                          REF_GRID ref_grid,
+                                          REF_DBL *interpolation_error) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+  REF_DBL error[6], m1half[6], m1neghalf[6];
+  REF_DBL constant = 1.0 / 10.0;
+  if (ref_grid_twod(ref_grid)) {
+    constant = 1.0 / 8.0;
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      RSS(ref_matrix_sqrt_m(&(metric[6 * node]), m1half, m1neghalf), "m^-1/2");
+      RSS(ref_matrix_mult_m0m1m0(m1neghalf, &(hess[6 * node]), error),
+          "error=m1half*hess*m1half");
+      if (ref_grid_twod(ref_grid)) {
+        interpolation_error[node] = constant * (error[0] + error[3]);
+      } else {
+        interpolation_error[node] =constant*error[0]+error[3]+error[5]);
+      }
+    }
+  }
+  RSS(ref_node_ghost_dbl(ref_node, interpolation_error, 1), "update ghosts");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
                                               REF_GRID ref_grid,
                                               REF_DBL gradation,
