@@ -1968,6 +1968,7 @@ int main(int argc, char *argv[]) {
   if (error_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *field, *hess, *metric, *error;
+    REF_DBL total_error;
     REF_INT ldim;
 
     REIS(1, error_pos,
@@ -2009,6 +2010,9 @@ int main(int argc, char *argv[]) {
         "hess");
 
     RSS(ref_metric_interpolation_error(metric, hess, ref_grid, error), "error")
+
+    RSS(ref_metric_integrate_error(ref_grid, error, &total_error), "int")
+    if (ref_mpi_once(ref_mpi)) printf("total error %e\n", total_error);
 
     /*
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {

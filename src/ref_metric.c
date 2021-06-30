@@ -878,6 +878,42 @@ REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_integrate_error(REF_GRID ref_grid,
+                                      REF_DBL *interpolation_error,
+                                      REF_DBL *total_error) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL volume;
+  REF_BOOL have_tet;
+  REF_LONG ntet;
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "count");
+  have_tet = (0 < ntet);
+  if (have_tet) {
+    ref_cell = ref_grid_tet(ref_grid);
+  } else {
+    ref_cell = ref_grid_tri(ref_grid);
+  }
+  *total_error = 0.0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (have_tet) {
+      RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
+    } else {
+      RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
+    }
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      if (ref_node_owned(ref_node, nodes[cell_node])) {
+        (*total_error) += interpolation_error[nodes[cell_node]] * volume /
+                          ((REF_DBL)ref_cell_node_per(ref_cell));
+      }
+    }
+  }
+  RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), total_error, 1, REF_DBL_TYPE),
+      "dbl sum");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
                                               REF_GRID ref_grid,
                                               REF_DBL gradation,
