@@ -3016,8 +3016,11 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
                       gradation, complexity),
         "lp norm");
-    ref_free(scalar);
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
+                                    complexity),
+        "report error");
+    ref_free(scalar);
   }
 
   if (buffer) {
