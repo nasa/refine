@@ -49,6 +49,13 @@ function adapt_cycle {
 	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-2.solb \
 	  2 -1 ${complexity} ${inproj}-metric.solb
 
+    ${src}/ref_metric_test --error \
+	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-metric.solb
+    cp ref_metric_test_error.plt ${inproj}-metric-error1.plt
+    ${src}/ref_metric_test --error \
+	  ${inproj}.meshb ${inproj}-2.solb ${inproj}-metric.solb
+    cp ref_metric_test_error.plt ${inproj}-metric-error2.plt
+
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -f ${outproj}.tec
 
