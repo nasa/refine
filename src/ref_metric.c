@@ -2049,57 +2049,6 @@ REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_metric_scale_combine(REF_DBL *hess1, REF_DBL *hess2,
-                                    REF_DBL *metric, REF_GRID ref_grid,
-                                    REF_INT p_norm) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT i, node;
-  REF_INT dimension;
-  REF_DBL det1, det2, exponent;
-
-  dimension = 3;
-  if (ref_grid_twod(ref_grid)) {
-    dimension = 2;
-  }
-
-  if (ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      hess1[2 + 6 * node] = 0.0;
-      hess1[4 + 6 * node] = 0.0;
-      hess1[5 + 6 * node] = 1.0;
-    }
-  }
-  if (ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      hess2[2 + 6 * node] = 0.0;
-      hess2[4 + 6 * node] = 0.0;
-      hess2[5 + 6 * node] = 1.0;
-    }
-  }
-
-  /* local scaling */
-  exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
-  each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_matrix_det_m(&(hess1[6 * node]), &det1), "det_m local hess scale");
-    RSS(ref_matrix_det_m(&(hess2[6 * node]), &det2), "det_m local hess scale");
-    if (det1 > 0.0 && det2 > 0.0) {
-      for (i = 0; i < 6; i++) {
-        metric[i + 6 * node] = hess1[i + 6 * node] * pow(det1, exponent) +
-                               hess2[i + 6 * node] * pow(det2, exponent);
-      }
-    }
-  }
-
-  if (ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      metric[2 + 6 * node] = 0.0;
-      metric[4 + 6 * node] = 0.0;
-      metric[5 + 6 * node] = 1.0;
-    }
-  }
-
-  return REF_SUCCESS;
-}
 
 REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
                                REF_INT nequations, REF_DBL *solution,

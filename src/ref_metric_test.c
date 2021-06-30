@@ -400,11 +400,12 @@ int main(int argc, char *argv[]) {
 
   if (combine_pos != REF_EMPTY) {
     REF_GRID ref_grid;
-    REF_DBL *scalar1, *scalar2, *hess1, *hess2, *metric;
+    REF_NODE ref_node;
+    REF_DBL *scalar1, *scalar2, *metric1, *metric2, *metric;
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
-    REF_INT ldim;
+    REF_INT ldim, i, node;
     REIS(1, combine_pos,
          "required args: --combine grid.meshb scalar1.solb scalar2.solb p "
          "gradation "
@@ -434,6 +435,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+    ref_node = ref_grid_node(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar1 %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid, &ldim, &scalar1, argv[3]),
@@ -448,21 +450,29 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar2");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(hess1, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(hess2, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(metric1, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(metric2, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
-    RSS(ref_recon_hessian(ref_grid, scalar1, hess1, reconstruction), "recon");
-    RSS(ref_recon_hessian(ref_grid, scalar2, hess2, reconstruction), "recon");
-    RSS(ref_recon_roundoff_limit(hess1, ref_grid),
-        "floor metric eigenvalues based on grid size and solution jitter");
-    ref_mpi_stopwatch_stop(ref_mpi, "recon hess1");
-    RSS(ref_recon_roundoff_limit(hess2, ref_grid),
-        "floor metric eigenvalues based on grid size and solution jitter");
-    ref_mpi_stopwatch_stop(ref_mpi, "recon hess2");
+    RSS(ref_metric_lp(metric1, ref_grid, scalar1, NULL, reconstruction, p,
+                      gradation, complexity),
+        "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric1");
+    RSS(ref_metric_lp(metric2, ref_grid, scalar2, NULL, reconstruction, p,
+                      gradation, complexity),
+        "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric2");
 
-    RSS(ref_metric_scale_combine(hess1, hess2, metric, ref_grid, p),
-        "local scale lp norm");
-    ref_mpi_stopwatch_stop(ref_mpi, "combine hess");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL log_m1[6];
+      REF_DBL log_m2[6];
+      REF_DBL log_m[6];
+      REF_DBL s;
+      s = 0.5;
+      RSS(ref_matrix_log_m(&(metric1[6 * node]), log_m1), "log");
+      RSS(ref_matrix_log_m(&(metric2[6 * node]), log_m2), "log");
+      for (i = 0; i < 6; i++) log_m[i] = (1.0 - s) * log_m1[i] + s * log_m2[i];
+      RSS(ref_matrix_exp_m(log_m, &(metric[6 * node])), "exp");
+    }
 
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
@@ -475,8 +485,8 @@ int main(int argc, char *argv[]) {
       printf("actual complexity %e\n", current_complexity);
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
-    ref_free(hess2);
-    ref_free(hess1);
+    ref_free(metric2);
+    ref_free(metric1);
     ref_free(scalar2);
     ref_free(scalar1);
 
