@@ -400,7 +400,6 @@ int main(int argc, char *argv[]) {
 
   if (combine_pos != REF_EMPTY) {
     REF_GRID ref_grid;
-    REF_NODE ref_node;
     REF_DBL *scalar1, *scalar2, *metric1, *metric2, *metric;
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity;
@@ -435,7 +434,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
-    ref_node = ref_grid_node(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar1 %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid, &ldim, &scalar1, argv[3]),
