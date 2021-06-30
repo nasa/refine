@@ -850,6 +850,70 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
+                                          REF_GRID ref_grid,
+                                          REF_DBL *interpolation_error) {
+  /* Corollary 3.4 CONTINUOUS MESH FRAMEWORK PART I DOI:10.1137/090754078 */
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+  REF_DBL error[6], m1half[6], m1neghalf[6];
+  REF_DBL constant = 1.0 / 10.0;
+  if (ref_grid_twod(ref_grid)) {
+    constant = 1.0 / 8.0;
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      RSS(ref_matrix_sqrt_m(&(metric[6 * node]), m1half, m1neghalf), "m^-1/2");
+      RSS(ref_matrix_mult_m0m1m0(m1neghalf, &(hess[6 * node]), error),
+          "error=m1half*hess*m1half");
+      if (ref_grid_twod(ref_grid)) {
+        interpolation_error[node] = constant * (error[0] + error[3]);
+      } else {
+        interpolation_error[node] = constant * (error[0] + error[3] + error[5]);
+      }
+    }
+  }
+  RSS(ref_node_ghost_dbl(ref_node, interpolation_error, 1), "update ghosts");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_integrate_error(REF_GRID ref_grid,
+                                      REF_DBL *interpolation_error,
+                                      REF_DBL *total_error) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL volume;
+  REF_BOOL have_tet;
+  REF_LONG ntet;
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "count");
+  have_tet = (0 < ntet);
+  if (have_tet) {
+    ref_cell = ref_grid_tet(ref_grid);
+  } else {
+    ref_cell = ref_grid_tri(ref_grid);
+  }
+  *total_error = 0.0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (have_tet) {
+      RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
+    } else {
+      RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
+    }
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      if (ref_node_owned(ref_node, nodes[cell_node])) {
+        (*total_error) += interpolation_error[nodes[cell_node]] * volume /
+                          ((REF_DBL)ref_cell_node_per(ref_cell));
+      }
+    }
+  }
+  RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), total_error, 1, REF_DBL_TYPE),
+      "dbl sum");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
                                               REF_GRID ref_grid,
                                               REF_DBL gradation,
@@ -1980,57 +2044,6 @@ REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
         for (i = 0; i < 6; i++)
           metric[i + 6 * node] /= (weight[node] * weight[node]);
       }
-    }
-  }
-
-  return REF_SUCCESS;
-}
-REF_STATUS ref_metric_scale_combine(REF_DBL *hess1, REF_DBL *hess2,
-                                    REF_DBL *metric, REF_GRID ref_grid,
-                                    REF_INT p_norm) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT i, node;
-  REF_INT dimension;
-  REF_DBL det1, det2, exponent;
-
-  dimension = 3;
-  if (ref_grid_twod(ref_grid)) {
-    dimension = 2;
-  }
-
-  if (ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      hess1[2 + 6 * node] = 0.0;
-      hess1[4 + 6 * node] = 0.0;
-      hess1[5 + 6 * node] = 1.0;
-    }
-  }
-  if (ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      hess2[2 + 6 * node] = 0.0;
-      hess2[4 + 6 * node] = 0.0;
-      hess2[5 + 6 * node] = 1.0;
-    }
-  }
-
-  /* local scaling */
-  exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
-  each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_matrix_det_m(&(hess1[6 * node]), &det1), "det_m local hess scale");
-    RSS(ref_matrix_det_m(&(hess2[6 * node]), &det2), "det_m local hess scale");
-    if (det1 > 0.0 && det2 > 0.0) {
-      for (i = 0; i < 6; i++) {
-        metric[i + 6 * node] = hess1[i + 6 * node] * pow(det1, exponent) +
-                               hess2[i + 6 * node] * pow(det2, exponent);
-      }
-    }
-  }
-
-  if (ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      metric[2 + 6 * node] = 0.0;
-      metric[4 + 6 * node] = 0.0;
-      metric[5 + 6 * node] = 1.0;
     }
   }
 
