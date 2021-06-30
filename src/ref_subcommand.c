@@ -2217,6 +2217,24 @@ static REF_STATUS parse_p(int argc, char *argv[], REF_INT *p) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_subcommand_report_error(
+    REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
+    REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_DBL *hess, *error;
+  REF_DBL total_error;
+  ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(error, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+  RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+  RSS(ref_metric_interpolation_error(metric, hess, ref_grid, error), "error")
+  RSS(ref_metric_integrate_error(ref_grid, error, &total_error), "int")
+  ref_free(error);
+  ref_free(hess);
+  if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+    printf("interpolation error %e\n", total_error);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -2666,6 +2684,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
                         gradation, complexity),
           "lp norm");
       ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric");
+      RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction),
+          "report error");
     }
     ref_free(scalar);
   }
