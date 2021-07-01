@@ -47,7 +47,7 @@ function adapt_cycle {
 
     ${src}/ref_metric_test --combine \
 	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-2.solb \
-	  2 -1 ${complexity} ${inproj}-metric.solb
+	  2 -1 ${complexity} 0.5 ${inproj}-metric.solb
 
     ${src}/ref_metric_test --error \
 	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-metric.solb
