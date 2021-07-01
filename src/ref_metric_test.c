@@ -405,21 +405,23 @@ int main(int argc, char *argv[]) {
     REF_DBL gradation, complexity, current_complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim, i, node;
+    REF_DBL s;
     REIS(1, combine_pos,
          "required args: --combine grid.meshb scalar1.solb scalar2.solb p "
          "gradation "
-         "complexity output-metric.solb");
-    if (8 > argc) {
+         "complexity s output-metric.solb");
+    if (9 > argc) {
       printf(
           "required args: --combine grid.meshb scalar1.solb scalar2.solb p "
           "gradation "
-          "complexity output-metric.solb\n");
+          "complexity s output-metric.solb\n");
       return REF_FAILURE;
     }
 
     p = atoi(argv[5]);
     gradation = atof(argv[6]);
     complexity = atof(argv[7]);
+    s = atof(argv[8]);
     if (REF_EMPTY != kexact_pos) {
       reconstruction = REF_RECON_KEXACT;
     }
@@ -427,6 +429,7 @@ int main(int argc, char *argv[]) {
       printf("Lp=%d\n", p);
       printf("gradation %f\n", gradation);
       printf("complexity %f\n", complexity);
+      printf("s %f\n", s);
       printf("reconstruction %d\n", (int)reconstruction);
     }
 
@@ -464,8 +467,6 @@ int main(int argc, char *argv[]) {
       REF_DBL log_m1[6];
       REF_DBL log_m2[6];
       REF_DBL log_m[6];
-      REF_DBL s;
-      s = 0.5;
       RSS(ref_matrix_log_m(&(metric1[6 * node]), log_m1), "log");
       RSS(ref_matrix_log_m(&(metric2[6 * node]), log_m2), "log");
       for (i = 0; i < 6; i++) log_m[i] = (1.0 - s) * log_m1[i] + s * log_m2[i];
@@ -488,8 +489,8 @@ int main(int argc, char *argv[]) {
     ref_free(scalar2);
     ref_free(scalar1);
 
-    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
-    RSS(ref_gather_metric(ref_grid, argv[8]), "export curve limit metric");
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[9]);
+    RSS(ref_gather_metric(ref_grid, argv[9]), "export curve limit metric");
     ref_mpi_stopwatch_stop(ref_mpi, "write metric");
 
     RSS(ref_grid_free(ref_grid), "free");
