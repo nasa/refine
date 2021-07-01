@@ -2221,7 +2221,7 @@ static REF_STATUS ref_subcommand_report_error(
     REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
     REF_RECON_RECONSTRUCTION reconstruction, REF_DBL complexity) {
   REF_DBL *hess, *error;
-  REF_DBL total_error;
+  REF_DBL total_error, h, d;
   ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(error, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
@@ -2230,8 +2230,11 @@ static REF_STATUS ref_subcommand_report_error(
   RSS(ref_metric_integrate_error(ref_grid, error, &total_error), "int")
   ref_free(error);
   ref_free(hess);
+  d = 3.0;
+  if (ref_grid_twod(ref_grid)) d = 2.0;
+  h = pow(complexity, -1.0 / d);
   if (ref_mpi_once(ref_grid_mpi(ref_grid)))
-    printf("complexity and interpolation error %e %e\n", complexity,
+    printf("complexity, h=C^(-1/d), and error est. %e %e %e\n", complexity, h,
            total_error);
   return REF_SUCCESS;
 }
