@@ -2262,12 +2262,13 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GLOB nnode;
-  REF_LONG ntri, ntet;
+  REF_LONG nedg, ntri, ntet;
   REF_INT nfaceid, min_faceid, max_faceid;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
   nnode = ref_node_n_global(ref_node);
+  RSS(ref_cell_ncell(ref_grid_edg(ref_grid), ref_node, &nedg), "nedg");
   RSS(ref_cell_ncell(ref_grid_tri(ref_grid), ref_node, &ntri), "ntri");
   RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "ntet");
   RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
@@ -2345,28 +2346,32 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     for (i = 0; i < length; i++) {
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
-    if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
-      const char *coord_system;
-      REF_STATUS ref_status;
-      ref_status = ref_egads_get_attribute(
-          ref_grid_geom(ref_grid), REF_GEOM_BODY, REF_EMPTY,
-          "av:coordinate_system", &coord_system);
-      if (REF_SUCCESS == ref_status)
-        RSS(ref_grid_parse_coordinate_system(ref_grid, coord_system),
-            "parse av coor sys");
-    }
-    switch (ref_grid_coordinate_system(ref_grid)) {
-      case REF_GRID_XBYRZU:
-        sprintf(coordinate_system, "xByRzU");
-        break;
-      case REF_GRID_XBYUZL:
-        sprintf(coordinate_system, "xByUzL");
-        break;
-      case REF_GRID_XFYRZD:
-        sprintf(coordinate_system, "xFyRzD");
-        break;
-      case REF_GRID_COORDSYS_LAST:
-        THROW("REF_GRID_COORDSYS_LAST");
+    if (ref_grid_twod(ref_grid)) {
+      sprintf(coordinate_system, "xByUzL"); /* 2D: always xByUzL */
+    } else {
+      if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+        const char *coord_system;
+        REF_STATUS ref_status;
+        ref_status = ref_egads_get_attribute(
+            ref_grid_geom(ref_grid), REF_GEOM_BODY, REF_EMPTY,
+            "av:coordinate_system", &coord_system);
+        if (REF_SUCCESS == ref_status)
+          RSS(ref_grid_parse_coordinate_system(ref_grid, coord_system),
+              "parse av coor sys");
+      }
+      switch (ref_grid_coordinate_system(ref_grid)) {
+        case REF_GRID_XBYRZU:
+          sprintf(coordinate_system, "xByRzU");
+          break;
+        case REF_GRID_XBYUZL:
+          sprintf(coordinate_system, "xByUzL");
+          break;
+        case REF_GRID_XFYRZD:
+          sprintf(coordinate_system, "xFyRzD");
+          break;
+        case REF_GRID_COORDSYS_LAST:
+          THROW("REF_GRID_COORDSYS_LAST");
+      }
     }
     length = (int)strlen(coordinate_system);
     REIS(length,
@@ -2442,7 +2447,11 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     }
     n_int = (int)nnode;
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nodes");
-    n_int = ((int)ntri + 4 * (int)ntet) / 2;
+    if (ref_grid_twod(ref_grid)) {
+      n_int = ((int)nedg + 3 * (int)ntri) / 2;
+    } else {
+      n_int = ((int)ntri + 4 * (int)ntet) / 2;
+    }
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nfaces");
     n_int = (int)ntet;
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "ncells");
