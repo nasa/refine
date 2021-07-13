@@ -15,6 +15,10 @@ field1="-u combo1"
 field2="-u combo2"
 egads="-g square.egads"
 
+#   ${src}/ref_metric_test --error \
+#	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-metric.solb
+#    cp ref_metric_test_error.plt ${inproj}-metric-error1.plt
+
 function adapt_cycle {
     inproj=$1
     outproj=$2
@@ -25,37 +29,15 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field2} ${inproj}.meshb \
  	  ${inproj}-2.solb
 
-    ${src}/ref metric \
-	  ${inproj}.meshb ${inproj}-1.solb \
-	  ${complexity} ${inproj}-metric1.solb
-    ${src}/ref metric \
-	  ${inproj}.meshb ${inproj}-2.solb \
-	  ${complexity} ${inproj}-metric2.solb
-
-    ${src}/ref_metric_test --error \
-	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-metric1.solb
-    cp ref_metric_test_error.plt ${inproj}-metric1-error1.plt
-    ${src}/ref_metric_test --error \
-	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-metric2.solb
-    cp ref_metric_test_error.plt ${inproj}-metric2-error1.plt
-    ${src}/ref_metric_test --error \
-	  ${inproj}.meshb ${inproj}-2.solb ${inproj}-metric1.solb
-    cp ref_metric_test_error.plt ${inproj}-metric1-error2.plt
-    ${src}/ref_metric_test --error \
-	  ${inproj}.meshb ${inproj}-2.solb ${inproj}-metric2.solb
-    cp ref_metric_test_error.plt ${inproj}-metric2-error2.plt
-
     ${src}/ref_metric_test --combine \
 	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-2.solb \
 	  2 -1 ${complexity} 0.5 ${inproj}-metric.solb
 
-    ${src}/ref_metric_test --error \
-	  ${inproj}.meshb ${inproj}-1.solb ${inproj}-metric.solb
-    cp ref_metric_test_error.plt ${inproj}-metric-error1.plt
-    ${src}/ref_metric_test --error \
-	  ${inproj}.meshb ${inproj}-2.solb ${inproj}-metric.solb
-    cp ref_metric_test_error.plt ${inproj}-metric-error2.plt
-
+    ${src}/ref multiscale ${inproj}.meshb ${inproj}-1.solb \
+	  ${complexity} \
+	  ${inproj}-metric.solb \
+	  --combine ${inproj}-2.solb 0.5
+    
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -f ${outproj}.tec
 
