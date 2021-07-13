@@ -242,6 +242,7 @@ static void multiscale_help(const char *name) {
   option_uniform_help();
   printf("   --hessian expects hessian.* in place of scalar.{solb,snap}.\n");
   printf("   --pcd <project.pcd> exports isotropic spacing.\n");
+  printf("   --combine <scalar2.solb> <scalar2 ratio>.\n");
   printf("\n");
 }
 static void node_help(const char *name) {
@@ -3010,20 +3011,104 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
         "gradation at complexity");
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric from hessian");
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar);
-    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, in_scalar), "part scalar");
-    REIS(1, ldim, "expected one scalar");
-    ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+    RXS(ref_args_find(argc, argv, "--combine", &pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY != pos) {
+      char *in_scalar2;
+      REF_DBL *scalar1 = NULL;
+      REF_DBL *scalar2 = NULL;
+      REF_DBL *metric1 = NULL;
+      REF_DBL *metric2 = NULL;
+      REF_DBL s;
+      REF_INT i, node;
 
-    if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
-    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                      gradation, complexity),
-        "lp norm");
-    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
-    RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
-                                    complexity),
-        "report error");
-    ref_free(scalar);
+      RAS(pos < argc - 2, "--combine arguments missing");
+      in_scalar2 = argv[pos + 1];
+      s = atof(argv[pos + 2]);
+      if (ref_mpi_once(ref_mpi)) {
+        printf("scalar ratio %f scalar2 ratio %f\n", 1.0 - s, s);
+      }
+
+      if (ref_mpi_once(ref_mpi) && (s < 0 || 1 < s)) {
+        printf("scalar 2 ratio expected between 0 and 1, is %e\n", s);
+      }
+      if (ref_mpi_once(ref_mpi)) printf("part scalar1 %s\n", in_scalar);
+      RSS(ref_part_scalar(ref_grid, &ldim, &scalar1, in_scalar),
+          "part scalar1");
+      REIS(1, ldim, "expected one ldim for scalar1");
+      ref_mpi_stopwatch_stop(ref_mpi, "part scalar2");
+      if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar2);
+      RSS(ref_part_scalar(ref_grid, &ldim, &scalar2, in_scalar2),
+          "part scalar2");
+      REIS(1, ldim, "expected one ldim for scalar2");
+      ref_mpi_stopwatch_stop(ref_mpi, "part scalar2");
+
+      ref_malloc(metric1, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+      ref_malloc(metric2, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+      RSS(ref_metric_lp(metric1, ref_grid, scalar1, NULL, reconstruction, p,
+                        gradation, complexity),
+          "lp norm");
+      ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric1");
+      RSS(ref_metric_lp(metric2, ref_grid, scalar2, NULL, reconstruction, p,
+                        gradation, complexity),
+          "lp norm");
+      ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric2");
+
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        REF_DBL log_m1[6];
+        REF_DBL log_m2[6];
+        REF_DBL log_m[6];
+        RSS(ref_matrix_log_m(&(metric1[6 * node]), log_m1), "log");
+        RSS(ref_matrix_log_m(&(metric2[6 * node]), log_m2), "log");
+        for (i = 0; i < 6; i++)
+          log_m[i] = (1.0 - s) * log_m1[i] + s * log_m2[i];
+        RSS(ref_matrix_exp_m(log_m, &(metric[6 * node])), "exp");
+      }
+      ref_mpi_stopwatch_stop(ref_mpi, "log interpolate metric");
+
+      RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                             complexity),
+          "gradation at complexity");
+      ref_mpi_stopwatch_stop(ref_mpi, "metric gradation");
+
+      if (ref_mpi_once(ref_mpi)) printf("opt1: ");
+      RSS(ref_subcommand_report_error(metric1, ref_grid, scalar1,
+                                      reconstruction, complexity),
+          "report error");
+      if (ref_mpi_once(ref_mpi)) printf("opt2: ");
+      RSS(ref_subcommand_report_error(metric2, ref_grid, scalar2,
+                                      reconstruction, complexity),
+          "report error");
+      if (ref_mpi_once(ref_mpi)) printf("soln1: ");
+      RSS(ref_subcommand_report_error(metric, ref_grid, scalar1, reconstruction,
+                                      complexity),
+          "report error");
+      if (ref_mpi_once(ref_mpi)) printf("soln2: ");
+      RSS(ref_subcommand_report_error(metric, ref_grid, scalar2, reconstruction,
+                                      complexity),
+          "report error");
+      ref_free(scalar2);
+      ref_free(scalar1);
+      ref_free(metric2);
+      ref_free(metric1);
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar);
+      RSS(ref_part_scalar(ref_grid, &ldim, &scalar, in_scalar), "part scalar");
+      REIS(1, ldim, "expected one scalar");
+      ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+
+      if (ref_mpi_once(ref_mpi))
+        printf("reconstruct Hessian, compute metric\n");
+      RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                        gradation, complexity),
+          "lp norm");
+      ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+      RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
+                                      complexity),
+          "report error");
+      ref_free(scalar);
+    }
   }
 
   if (buffer) {
