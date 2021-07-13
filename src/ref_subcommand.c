@@ -3072,12 +3072,12 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
           "gradation at complexity");
       ref_mpi_stopwatch_stop(ref_mpi, "metric gradation");
 
-      if (ref_mpi_once(ref_mpi)) printf("scalar1 combined metric ");
+      if (ref_mpi_once(ref_mpi)) printf("s1: ");
       RSS(ref_subcommand_report_error(metric, ref_grid, scalar1, reconstruction,
                                       complexity),
           "report error");
-      if (ref_mpi_once(ref_mpi)) printf("scalar2 combined metric ");
-      RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
+      if (ref_mpi_once(ref_mpi)) printf("s2: ");
+      RSS(ref_subcommand_report_error(metric, ref_grid, scalar2, reconstruction,
                                       complexity),
           "report error");
       ref_free(scalar2);
