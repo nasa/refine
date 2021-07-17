@@ -2271,7 +2271,13 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
   RSS(ref_cell_ncell(ref_grid_edg(ref_grid), ref_node, &nedg), "nedg");
   RSS(ref_cell_ncell(ref_grid_tri(ref_grid), ref_node, &ntri), "ntri");
   RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "ntet");
-  RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_cell_id_range(ref_grid_edg(ref_grid), ref_mpi, &min_faceid,
+                          &max_faceid),
+        "range");
+  } else {
+    RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  }
   nfaceid = max_faceid - min_faceid + 1;
 
   file = NULL;
@@ -2453,7 +2459,11 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
       n_int = ((int)ntri + 4 * (int)ntet) / 2;
     }
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nfaces");
-    n_int = (int)ntet;
+    if (ref_grid_twod(ref_grid)) {
+      n_int = (int)ntri;
+    } else {
+      n_int = (int)ntet;
+    }
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "ncells");
     n_int = 3;
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per face");
@@ -2477,7 +2487,11 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "# boundary patches");
     n_int = 0;
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "nhex");
-    n_int = (int)ntet;
+    if (ref_grid_twod(ref_grid)) {
+      n_int = (int)ntri;
+    } else {
+      n_int = (int)ntet;
+    }
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "ntet");
     n_int = 0;
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "npri");
