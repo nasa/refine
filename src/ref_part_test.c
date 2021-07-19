@@ -319,7 +319,7 @@ int main(int argc, char *argv[]) {
 
   { /* part prism lb8.ugrid, world comm */
     REF_GRID export_grid, import_grid;
-    char grid_file[] = "ref_part_test.lb8.ugrid";
+    char grid_file[] = "ref_part_test_prism.lb8.ugrid";
 
     RSS(ref_fixture_pri_stack_grid(&export_grid, ref_mpi), "set up tet");
     if (ref_mpi_once(ref_mpi)) {
@@ -561,8 +561,8 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
-    char meshb[] = "ref_part_test.meshb";
-    char solb[] = "ref_part_test.solb";
+    char meshb[] = "ref_part_test_v2.meshb";
+    char solb[] = "ref_part_test_v2.solb";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     ref_grid_meshb_version(ref_grid) = 2;
     RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
@@ -587,8 +587,8 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
-    char meshb[] = "ref_part_test.meshb";
-    char solb[] = "ref_part_test.solb";
+    char meshb[] = "ref_part_test_v3.meshb";
+    char solb[] = "ref_part_test_v3.solb";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     ref_grid_meshb_version(ref_grid) = 3;
     RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
@@ -613,8 +613,8 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
-    char meshb[] = "ref_part_test.meshb";
-    char solb[] = "ref_part_test.solb";
+    char meshb[] = "ref_part_test_v4.meshb";
+    char solb[] = "ref_part_test_v4.solb";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     ref_grid_meshb_version(ref_grid) = 4;
     RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
