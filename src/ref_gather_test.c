@@ -425,6 +425,22 @@ int main(int argc, char *argv[]) {
       REIS(0, remove("ref_gather_test.b8.ugrid"), "test clean up");
   }
 
+  { /* recycle tet brick avm */
+    REF_GRID seq_grid = NULL, para_grid = NULL;
+    char seq_file[] = "ref_gather_test_seq.avm";
+    char para_file[] = "ref_gather_test_para.avm";
+    RSS(ref_fixture_tet_brick_grid(&seq_grid, ref_mpi), "set up tet");
+    RSS(ref_gather_by_extension(seq_grid, seq_file), "export");
+    RSS(ref_part_by_extension(&para_grid, ref_mpi, seq_file), "part");
+    RSS(ref_gather_by_extension(para_grid, para_file), "gather");
+    RSS(ref_grid_free(para_grid), "free");
+    RSS(ref_grid_free(seq_grid), "free");
+    if (ref_mpi_once(ref_mpi)) {
+      REIS(0, remove(seq_file), "test clean up");
+      REIS(0, remove(para_file), "test clean up");
+    }
+  }
+
   { /* recycle tet brick lb8.ugrid */
     REF_GRID seq_grid = NULL, para_grid;
     char seq_file[] = "ref_gather_test_seq.lb8.ugrid";
