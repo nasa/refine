@@ -1211,6 +1211,11 @@ REF_STATUS ref_fixture_hex_brick_args_grid(REF_GRID *ref_grid_ptr,
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
+  if (!ref_mpi_once(ref_grid_mpi(ref_grid))) {
+    RSS(ref_node_initialize_n_global(ref_node, l * m * n), "init glob");
+    return REF_SUCCESS;
+  }
+
 #define ijk2node(i, j, k, l, m, n) ((i) + (j) * (l) + (k) * (l) * (m))
 
   for (k = 0; k < n; k++)
@@ -1354,6 +1359,11 @@ REF_STATUS ref_fixture_tet_brick_args_grid(REF_GRID *ref_grid_ptr,
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
+
+  if (!ref_mpi_once(ref_grid_mpi(ref_grid))) {
+    RSS(ref_node_initialize_n_global(ref_node, l * m * n), "init glob");
+    return REF_SUCCESS;
+  }
 
 #define ijk2node(i, j, k, l, m, n) ((i) + (j) * (l) + (k) * (l) * (m))
 
@@ -1569,6 +1579,11 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   ref_node = ref_grid_node(ref_grid);
 
   ref_grid_twod(ref_grid) = REF_TRUE;
+
+  if (!ref_mpi_once(ref_grid_mpi(ref_grid))) {
+    RSS(ref_node_initialize_n_global(ref_node, m * n), "init glob");
+    return REF_SUCCESS;
+  }
 
   /*
   y   3 --- 2
