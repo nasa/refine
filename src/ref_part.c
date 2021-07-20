@@ -1665,7 +1665,8 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REF_FILEPOS conn_offset, faceid_offset;
     REF_BOOL swap_endian = REF_FALSE;
     REF_BOOL sixty_four_bit = REF_FALSE;
-    conn_offset = ftello(file);
+    conn_offset = 0;
+    if (ref_grid_once(ref_grid)) conn_offset = ftello(file);
     faceid_offset = 0;
     RSS(ref_part_bin_ugrid_cell(ref_grid_tet(ref_grid), ntet, ref_node, nnode,
                                 file, conn_offset, faceid_offset, swap_endian,
