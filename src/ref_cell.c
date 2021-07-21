@@ -673,9 +673,13 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
   /* set parts */
   for (cell = 0; cell < n; cell++) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      RSS(ref_node_local(
+      RSB(ref_node_local(
               ref_node, c2n[node + ref_cell_size_per(ref_cell) * cell], &local),
-          "local");
+          "local", {
+            printf("node %d %d cell %d %d global " REF_GLOB_FMT "\n", node,
+                   ref_cell_node_per(ref_cell), cell, n,
+                   c2n[node + ref_cell_size_per(ref_cell) * cell]);
+          });
       ref_node_part(ref_node, local) =
           part[node + ref_cell_size_per(ref_cell) * cell];
       local_nodes[node] = local;
