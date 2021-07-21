@@ -445,6 +445,10 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
                      sizeof(REF_INT), 1, file),
                "int c2n pad tag");
         }
+        for (cell = 0; cell < section_size; cell++)
+          for (node = 0; node < size_per; node++)
+            c2n[node + size_per * cell] =
+                (REF_GLOB)c2n_int[node + (node_per + 1) * cell];
       } else {
         if (version < 4) {
           REIS(nread, fread(c2n_int, sizeof(REF_INT), nread, file), "int c2n");
