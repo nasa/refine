@@ -3891,7 +3891,7 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   SUPRESS_UNUSED_COMPILER_WARNING(type);
   SUPRESS_UNUSED_COMPILER_WARNING(id);
   SUPRESS_UNUSED_COMPILER_WARNING(name);
-  return REF_SUCCESS;
+  return REF_NOT_FOUND;
 #endif
 }
 

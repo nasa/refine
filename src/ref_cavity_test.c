@@ -464,17 +464,19 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
     nnode = ref_node_n(ref_node);
 
-    node = 39;
-    ref_node_xyz(ref_node, 0, node) = 0.5;
-    RSS(ref_cavity_create(&ref_cavity), "create");
-    RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node), "insert first");
-    RSS(ref_cavity_enlarge_visible(ref_cavity), "insert first");
-    REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
-         "enlarge not successful");
-    RSS(ref_cavity_replace(ref_cavity), "free");
-    RSS(ref_cavity_free(ref_cavity), "free");
+    if (ref_mpi_once(ref_mpi)) {
+      node = 39;
+      ref_node_xyz(ref_node, 0, node) = 0.5;
+      RSS(ref_cavity_create(&ref_cavity), "create");
+      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node), "insert first");
+      RSS(ref_cavity_enlarge_visible(ref_cavity), "insert first");
+      REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
+           "enlarge not successful");
+      RSS(ref_cavity_replace(ref_cavity), "free");
+      RSS(ref_cavity_free(ref_cavity), "free");
 
-    RAS(nnode > ref_node_n(ref_node), "node count did not decrease");
+      RAS(nnode > ref_node_n(ref_node), "node count did not decrease");
+    }
 
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -488,14 +490,16 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
     ref_node = ref_grid_node(ref_grid);
 
-    node = 39;
-    ref_node_xyz(ref_node, 0, node) = -0.5;
-    RSS(ref_cavity_create(&ref_cavity), "create");
-    RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node), "insert first");
-    RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge");
-    REIS(REF_CAVITY_BOUNDARY_CONSTRAINED, ref_cavity_state(ref_cavity),
-         "enlarge wrong state");
-    RSS(ref_cavity_free(ref_cavity), "free");
+    if (ref_mpi_once(ref_mpi)) {
+      node = 39;
+      ref_node_xyz(ref_node, 0, node) = -0.5;
+      RSS(ref_cavity_create(&ref_cavity), "create");
+      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node), "insert first");
+      RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge");
+      REIS(REF_CAVITY_BOUNDARY_CONSTRAINED, ref_cavity_state(ref_cavity),
+           "enlarge wrong state");
+      RSS(ref_cavity_free(ref_cavity), "free");
+    }
 
     RSS(ref_grid_free(ref_grid), "free");
   }

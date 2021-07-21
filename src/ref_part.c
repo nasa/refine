@@ -390,7 +390,8 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
 
 static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
                                       REF_NODE ref_node, REF_LONG nnode,
-                                      REF_INT version, FILE *file) {
+                                      REF_INT version, REF_BOOL pad,
+                                      FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_LONG ncell_read;
   REF_INT chunk;
@@ -431,18 +432,38 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
     while (ncell_read < ncell) {
       section_size = MIN(chunk, (REF_INT)(ncell - ncell_read));
       nread = (size_t)(section_size * (1 + node_per));
-      if (version < 4) {
-        REIS(nread, fread(c2n_int, sizeof(REF_INT), nread, file), "int c2n");
+      if (pad) {
+        for (cell = 0; cell < section_size; cell++) {
+          REF_INT zero;
+          REIS(node_per,
+               fread(&(c2n_int[(node_per + 1) * cell]), sizeof(REF_INT),
+                     (size_t)node_per, file),
+               "int c2n pad node");
+          REIS(1, fread(&(zero), sizeof(REF_INT), 1, file), "int c2n pad zero");
+          REIS(1,
+               fread(&(c2n_int[node_per + (node_per + 1) * cell]),
+                     sizeof(REF_INT), 1, file),
+               "int c2n pad tag");
+        }
         for (cell = 0; cell < section_size; cell++)
           for (node = 0; node < size_per; node++)
             c2n[node + size_per * cell] =
                 (REF_GLOB)c2n_int[node + (node_per + 1) * cell];
       } else {
-        REIS(nread, fread(c2n_long, sizeof(REF_LONG), nread, file), "long c2n");
-        for (cell = 0; cell < section_size; cell++)
-          for (node = 0; node < size_per; node++)
-            c2n[node + size_per * cell] =
-                (REF_GLOB)c2n_long[node + (node_per + 1) * cell];
+        if (version < 4) {
+          REIS(nread, fread(c2n_int, sizeof(REF_INT), nread, file), "int c2n");
+          for (cell = 0; cell < section_size; cell++)
+            for (node = 0; node < size_per; node++)
+              c2n[node + size_per * cell] =
+                  (REF_GLOB)c2n_int[node + (node_per + 1) * cell];
+        } else {
+          REIS(nread, fread(c2n_long, sizeof(REF_LONG), nread, file),
+               "long c2n");
+          for (cell = 0; cell < section_size; cell++)
+            for (node = 0; node < size_per; node++)
+              c2n[node + size_per * cell] =
+                  (REF_GLOB)c2n_long[node + (node_per + 1) * cell];
+        }
       }
       for (cell = 0; cell < section_size; cell++)
         for (node = 0; node < node_per; node++) c2n[node + size_per * cell]--;
@@ -666,6 +687,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT type, geom_keyword;
   REF_LONG ngeom;
   REF_INT cad_data_keyword;
+  REF_BOOL pad = REF_FALSE;
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
@@ -719,7 +741,8 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
     if (available) {
       RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_LONG_TYPE), "bcast");
-      RSS(ref_part_meshb_cell(ref_cell, ncell, ref_node, nnode, version, file),
+      RSS(ref_part_meshb_cell(ref_cell, ncell, ref_node, nnode, version, pad,
+                              file),
           "part cell");
       if (ref_grid_once(ref_grid))
         REIS(next_position, ftello(file), "cell file location");
@@ -1062,9 +1085,9 @@ static REF_STATUS ref_part_bin_ugrid_pack_cell(
          fseeko(file, conn_offset + ibyte * node_per * (REF_FILEPOS)ncell_read,
                 SEEK_SET),
          "seek conn failed");
-    RES((size_t)(section_size * node_per),
-        fread(c2t, sizeof(REF_INT), (size_t)(section_size * node_per), file),
-        "cn");
+    REIS((size_t)(section_size * node_per),
+         fread(c2t, sizeof(REF_INT), (size_t)(section_size * node_per), file),
+         "cn");
     for (cell = 0; cell < section_size * node_per; cell++) {
       if (swap_endian) SWAP_INT(c2t[cell]);
     }
@@ -1457,13 +1480,13 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       if (verbose) printf("%c", letter);
     }
     if (verbose) printf("\n");
-    REIS(1, fread(&magic, sizeof(magic), 1, file), "dim");
+    REIS(1, fread(&magic, sizeof(magic), 1, file), "magic");
     if (verbose) printf("%d magic\n", magic);
     REIS(1, magic, "magic");
-    REIS(1, fread(&revision, sizeof(revision), 1, file), "dim");
+    REIS(1, fread(&revision, sizeof(revision), 1, file), "revision");
     if (verbose) printf("%d revision\n", revision);
     REIS(2, revision, "revision");
-    REIS(1, fread(&meshes, sizeof(meshes), 1, file), "dim");
+    REIS(1, fread(&meshes, sizeof(meshes), 1, file), "meshes");
     if (verbose) printf("%d meshes\n", meshes);
     REIS(1, meshes, "meshes");
     length = 128;
@@ -1472,16 +1495,16 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       if (verbose) printf("%c", letter);
     }
     if (verbose) printf("\n");
-    REIS(1, fread(&precision, sizeof(precision), 1, file), "dim");
+    REIS(1, fread(&precision, sizeof(precision), 1, file), "precision");
     if (verbose) printf("%d precision\n", precision);
     REIS(2, precision, "precision");
     REIS(1, fread(&dim, sizeof(dim), 1, file), "dim");
     if (verbose) printf("%d dim\n", dim);
     RAS(2 <= dim && dim <= 3, "dim");
-    REIS(1, fread(&length, sizeof(length), 1, file), "dim");
+    REIS(1, fread(&length, sizeof(length), 1, file), "length");
     if (verbose) printf("%d description length\n", length);
     for (i = 0; i < length; i++) {
-      REIS(1, fread(&letter, sizeof(letter), 1, file), "dim");
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
       if (verbose) printf("%c", letter);
     }
     if (verbose) printf("\n");
@@ -1626,6 +1649,9 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     }
     nnode = nnodes;
   }
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &dim, 1, REF_INT_TYPE), "dim");
+  ref_grid_twod(ref_grid) = (2 == dim);
+
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid),
                     &ref_grid_coordinate_system(ref_grid), 1, REF_INT_TYPE),
       "coordinate_system");
@@ -1648,24 +1674,47 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         "part node");
   }
 
-  {
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL ref_cell = ref_grid_edg(ref_grid);
     REF_INT version = 0;
     REF_INT cell;
-    RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ntri, ref_node, nnode,
-                            version, file),
+    REF_BOOL pad = REF_TRUE;
+    RSS(ref_part_meshb_cell(ref_cell, ntri, ref_node, nnode, version, pad,
+                            file),
+        "read edg as tri");
+    /* positive face ids */
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell) =
+          -ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
+    }
+  } else {
+    REF_CELL ref_cell = ref_grid_tri(ref_grid);
+    REF_INT version = 0;
+    REF_INT cell;
+    REF_BOOL pad = REF_FALSE;
+    RSS(ref_part_meshb_cell(ref_cell, ntri, ref_node, nnode, version, pad,
+                            file),
         "read tri");
     /* positive face ids */
-    each_ref_cell_valid_cell(ref_grid_tri(ref_grid), cell) {
-      ref_cell_c2n(ref_grid_tri(ref_grid), 3, cell) =
-          -ref_cell_c2n(ref_grid_tri(ref_grid), 3, cell);
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell) =
+          -ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
     }
   }
 
-  {
+  if (ref_grid_twod(ref_grid)) { /* use the zero pad as the faceid */
+    REF_CELL ref_cell = ref_grid_tri(ref_grid);
+    REF_INT version = 0;
+    REF_BOOL pad = REF_FALSE;
+    RSS(ref_part_meshb_cell(ref_cell, ntet, ref_node, nnode, version, pad,
+                            file),
+        "read tri");
+  } else {
     REF_FILEPOS conn_offset, faceid_offset;
     REF_BOOL swap_endian = REF_FALSE;
     REF_BOOL sixty_four_bit = REF_FALSE;
-    conn_offset = ftello(file);
+    conn_offset = 0;
+    if (ref_grid_once(ref_grid)) conn_offset = ftello(file);
     faceid_offset = 0;
     RSS(ref_part_bin_ugrid_cell(ref_grid_tet(ref_grid), ntet, ref_node, nnode,
                                 file, conn_offset, faceid_offset, swap_endian,
