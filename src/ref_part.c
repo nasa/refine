@@ -1702,7 +1702,14 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     }
   }
 
-  {
+  if (ref_grid_twod(ref_grid)) { /* use the zero pad as the faceid */
+    REF_CELL ref_cell = ref_grid_tri(ref_grid);
+    REF_INT version = 0;
+    REF_BOOL pad = REF_FALSE;
+    RSS(ref_part_meshb_cell(ref_cell, ntet, ref_node, nnode, version, pad,
+                            file),
+        "read tri");
+  } else {
     REF_FILEPOS conn_offset, faceid_offset;
     REF_BOOL swap_endian = REF_FALSE;
     REF_BOOL sixty_four_bit = REF_FALSE;
