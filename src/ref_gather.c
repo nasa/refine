@@ -2546,7 +2546,8 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
   {
     REF_BOOL swap_endian = REF_FALSE;
     REF_INT version = 0; /* meshb version, zero is no id */
-    REF_BOOL twod = ref_grid_twod(ref_grid);
+    /* twod still has 3 coordinates, with z coordinate ignored/set to zero */
+    REF_BOOL twod = REF_FALSE;
     RSS(ref_gather_node(ref_node, swap_endian, version, twod, file), "nodes");
   }
 
