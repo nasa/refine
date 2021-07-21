@@ -2529,7 +2529,9 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
       const char *unknown_patch_type = "unknown";
       char patch_label_index[33];
       REF_STATUS ref_status;
-      ref_status = ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, faceid,
+      REF_INT ref_geom_type = REF_GEOM_FACE;
+      if (ref_grid_twod(ref_grid)) ref_geom_type = REF_GEOM_EDGE;
+      ref_status = ref_egads_get_attribute(ref_geom, ref_geom_type, faceid,
                                            "av:patch_label", &patch_label);
       if (REF_SUCCESS != ref_status) patch_label = "unknown";
       snprintf(patch_label_index, 33, "%s-%d", patch_label, faceid);
@@ -2541,7 +2543,7 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
       for (i = 0; i < length; i++) {
         REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
       }
-      ref_status = ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, faceid,
+      ref_status = ref_egads_get_attribute(ref_geom, ref_geom_type, faceid,
                                            "av:patch_type", &patch_type);
       if (REF_SUCCESS != ref_status || NULL == patch_type)
         patch_type = unknown_patch_type;
