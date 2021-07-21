@@ -2573,14 +2573,16 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REF_BOOL pad = REF_TRUE;
     REF_INT cell;
     each_ref_cell_valid_cell(ref_cell, cell) {
-      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+      ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell) =
+          -ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, sixty_four_bit, select_faceid, faceid, pad,
                         file),
         "nodes");
     each_ref_cell_valid_cell(ref_cell, cell) {
-      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+      ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell) =
+          -ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
     }
   } else {
     REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -2593,14 +2595,16 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REF_BOOL pad = REF_FALSE;
     REF_INT cell;
     each_ref_cell_valid_cell(ref_cell, cell) {
-      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+      ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell) =
+          -ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, sixty_four_bit, select_faceid, faceid, pad,
                         file),
         "nodes");
     each_ref_cell_valid_cell(ref_cell, cell) {
-      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+      ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell) =
+          -ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
     }
   }
 
