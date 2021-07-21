@@ -3,7 +3,7 @@ find_library(ZOLTAN_LIBRARY zoltan)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-        ZOLTAN
+        Zoltan
         DEFAULT_MSG
         ZOLTAN_LIBRARY ZOLTAN_INCLUDE_DIR
 )
