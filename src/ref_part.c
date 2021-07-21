@@ -1476,13 +1476,13 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       if (verbose) printf("%c", letter);
     }
     if (verbose) printf("\n");
-    REIS(1, fread(&magic, sizeof(magic), 1, file), "dim");
+    REIS(1, fread(&magic, sizeof(magic), 1, file), "magic");
     if (verbose) printf("%d magic\n", magic);
     REIS(1, magic, "magic");
-    REIS(1, fread(&revision, sizeof(revision), 1, file), "dim");
+    REIS(1, fread(&revision, sizeof(revision), 1, file), "revision");
     if (verbose) printf("%d revision\n", revision);
     REIS(2, revision, "revision");
-    REIS(1, fread(&meshes, sizeof(meshes), 1, file), "dim");
+    REIS(1, fread(&meshes, sizeof(meshes), 1, file), "meshes");
     if (verbose) printf("%d meshes\n", meshes);
     REIS(1, meshes, "meshes");
     length = 128;
@@ -1491,16 +1491,16 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       if (verbose) printf("%c", letter);
     }
     if (verbose) printf("\n");
-    REIS(1, fread(&precision, sizeof(precision), 1, file), "dim");
+    REIS(1, fread(&precision, sizeof(precision), 1, file), "precision");
     if (verbose) printf("%d precision\n", precision);
     REIS(2, precision, "precision");
     REIS(1, fread(&dim, sizeof(dim), 1, file), "dim");
     if (verbose) printf("%d dim\n", dim);
     RAS(2 <= dim && dim <= 3, "dim");
-    REIS(1, fread(&length, sizeof(length), 1, file), "dim");
+    REIS(1, fread(&length, sizeof(length), 1, file), "length");
     if (verbose) printf("%d description length\n", length);
     for (i = 0; i < length; i++) {
-      REIS(1, fread(&letter, sizeof(letter), 1, file), "dim");
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "letter");
       if (verbose) printf("%c", letter);
     }
     if (verbose) printf("\n");
@@ -1645,6 +1645,9 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     }
     nnode = nnodes;
   }
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &dim, 1, REF_INT_TYPE), "dim");
+  ref_grid_twod(ref_grid) = (2 == dim);
+
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid),
                     &ref_grid_coordinate_system(ref_grid), 1, REF_INT_TYPE),
       "coordinate_system");
@@ -1674,7 +1677,7 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REF_BOOL pad = REF_TRUE;
     RSS(ref_part_meshb_cell(ref_cell, ntri, ref_node, nnode, version, pad,
                             file),
-        "read tri");
+        "read edg as tri");
     /* positive face ids */
     each_ref_cell_valid_cell(ref_cell, cell) {
       ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell) =
