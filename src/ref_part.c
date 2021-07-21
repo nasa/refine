@@ -1085,9 +1085,9 @@ static REF_STATUS ref_part_bin_ugrid_pack_cell(
          fseeko(file, conn_offset + ibyte * node_per * (REF_FILEPOS)ncell_read,
                 SEEK_SET),
          "seek conn failed");
-    RES((size_t)(section_size * node_per),
-        fread(c2t, sizeof(REF_INT), (size_t)(section_size * node_per), file),
-        "cn");
+    REIS((size_t)(section_size * node_per),
+         fread(c2t, sizeof(REF_INT), (size_t)(section_size * node_per), file),
+         "cn");
     for (cell = 0; cell < section_size * node_per; cell++) {
       if (swap_endian) SWAP_INT(c2t[cell]);
     }
