@@ -1835,7 +1835,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
                                   REF_BOOL always_id, REF_BOOL swap_endian,
                                   REF_BOOL sixty_four_bit,
                                   REF_BOOL select_faceid, REF_INT faceid,
-                                  FILE *file) {
+                                  REF_BOOL pad, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node, part;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -1897,6 +1897,11 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
               REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file),
                    "int cel node");
             }
+          }
+          if (pad) {
+            REF_INT zero = 0;
+            if (swap_endian) SWAP_INT(zero);
+            REIS(1, fwrite(&(zero), sizeof(REF_INT), 1, file), "zero pad");
           }
           if (always_id) {
             if (sixty_four_bit) {
@@ -1969,6 +1974,11 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
                 REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file),
                      "int cel node");
               }
+            }
+            if (pad) {
+              REF_INT zero = 0;
+              if (swap_endian) SWAP_INT(zero);
+              REIS(1, fwrite(&(zero), sizeof(REF_INT), 1, file), "zero pad");
             }
             if (always_id) {
               if (sixty_four_bit) {
@@ -2131,6 +2141,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   REF_BOOL sixty_four_bit = REF_FALSE;
   REF_BOOL select_faceid = REF_FALSE;
   REF_INT faceid = REF_EMPTY;
+  REF_BOOL pad = REF_FALSE;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
@@ -2204,7 +2215,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
       }
       RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                           swap_endian, sixty_four_bit, select_faceid, faceid,
-                          file),
+                          pad, file),
           "nodes");
       if (ref_grid_once(ref_grid))
         REIS(next_position, ftell(file), "cell inconsistent");
@@ -2551,7 +2562,27 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     RSS(ref_gather_node(ref_node, swap_endian, version, twod, file), "nodes");
   }
 
-  {
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL ref_cell = ref_grid_edg(ref_grid);
+    REF_BOOL faceid_insted_of_c2n = REF_FALSE;
+    REF_BOOL always_id = REF_TRUE;
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_BOOL sixty_four_bit = REF_FALSE;
+    REF_BOOL select_faceid = REF_FALSE;
+    REF_INT faceid = 0;
+    REF_BOOL pad = REF_TRUE;
+    REF_INT cell;
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+    }
+    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
+                        swap_endian, sixty_four_bit, select_faceid, faceid, pad,
+                        file),
+        "nodes");
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
+    }
+  } else {
     REF_CELL ref_cell = ref_grid_tri(ref_grid);
     REF_BOOL faceid_insted_of_c2n = REF_FALSE;
     REF_BOOL always_id = REF_TRUE;
@@ -2559,12 +2590,13 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REF_BOOL sixty_four_bit = REF_FALSE;
     REF_BOOL select_faceid = REF_FALSE;
     REF_INT faceid = 0;
+    REF_BOOL pad = REF_FALSE;
     REF_INT cell;
     each_ref_cell_valid_cell(ref_cell, cell) {
       ref_cell_c2n(ref_cell, 3, cell) = -ref_cell_c2n(ref_cell, 3, cell);
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
-                        swap_endian, sixty_four_bit, select_faceid, faceid,
+                        swap_endian, sixty_four_bit, select_faceid, faceid, pad,
                         file),
         "nodes");
     each_ref_cell_valid_cell(ref_cell, cell) {
@@ -2572,7 +2604,20 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     }
   }
 
-  {
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL ref_cell = ref_grid_tri(ref_grid);
+    REF_BOOL faceid_insted_of_c2n = REF_FALSE;
+    REF_BOOL always_id = REF_FALSE;
+    REF_BOOL swap_endian = REF_FALSE;
+    REF_BOOL sixty_four_bit = REF_FALSE;
+    REF_BOOL select_faceid = REF_FALSE;
+    REF_INT faceid = 0;
+    REF_BOOL pad = REF_TRUE;
+    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
+                        swap_endian, sixty_four_bit, select_faceid, faceid, pad,
+                        file),
+        "nodes");
+  } else {
     REF_CELL ref_cell = ref_grid_tet(ref_grid);
     REF_BOOL faceid_insted_of_c2n = REF_FALSE;
     REF_BOOL always_id = REF_FALSE;
@@ -2580,8 +2625,9 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REF_BOOL sixty_four_bit = REF_FALSE;
     REF_BOOL select_faceid = REF_FALSE;
     REF_INT faceid = 0;
+    REF_BOOL pad = REF_FALSE;
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
-                        swap_endian, sixty_four_bit, select_faceid, faceid,
+                        swap_endian, sixty_four_bit, select_faceid, faceid, pad,
                         file),
         "nodes");
   }
@@ -2604,6 +2650,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   REF_INT faceid, min_faceid, max_faceid;
   REF_BOOL version = 0; /* meshb version, zero is no id */
   REF_BOOL faceid_insted_of_c2n, select_faceid;
+  REF_BOOL pad = REF_FALSE;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
@@ -2684,24 +2731,24 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
                         version, swap_endian, sixty_four_bit, select_faceid,
-                        faceid, file),
+                        faceid, pad, file),
         "tri c2n");
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_qua(ref_grid), faceid_insted_of_c2n,
                         version, swap_endian, sixty_four_bit, select_faceid,
-                        faceid, file),
+                        faceid, pad, file),
         "qua c2n");
 
   faceid_insted_of_c2n = REF_TRUE;
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
                         version, swap_endian, sixty_four_bit, select_faceid,
-                        faceid, file),
+                        faceid, pad, file),
         "tri faceid");
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_qua(ref_grid), faceid_insted_of_c2n,
                         version, swap_endian, sixty_four_bit, select_faceid,
-                        faceid, file),
+                        faceid, pad, file),
         "qua faceid");
 
   faceid_insted_of_c2n = REF_FALSE;
@@ -2709,7 +2756,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   faceid = REF_EMPTY;
   each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, version,
-                        swap_endian, sixty_four_bit, select_faceid, faceid,
+                        swap_endian, sixty_four_bit, select_faceid, faceid, pad,
                         file),
         "cell c2n");
   }
