@@ -443,8 +443,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  RXS(ref_args_find(argc, argv, "--twod", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos) { /* recycle twod brick avm */
+  { /* recycle twod brick avm */
     REF_GRID seq_grid = NULL, para_grid = NULL;
     char seq_file[] = "ref_gather_test_twod_seq.avm";
     char para_file[] = "ref_gather_test_twod_para.avm";
