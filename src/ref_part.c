@@ -439,7 +439,7 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
                fread(&(c2n_int[size_per * cell]), sizeof(REF_INT),
                      (size_t)node_per, file),
                "int c2n pad node");
-          REIS(1, fread(&(zero), sizeof(REF_INT), 1, file), "int c2n");
+          REIS(1, fread(&(zero), sizeof(REF_INT), 1, file), "int c2n pad zero");
           if (size_per > node_per)
             REIS(size_per - node_per,
                  fread(&(c2n_int[node_per + size_per * cell]), sizeof(REF_INT),
