@@ -2508,7 +2508,11 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "npri");
     n_int = 0;
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "npyr");
-    n_int = (int)ntri;
+    if (ref_grid_twod(ref_grid)) {
+      n_int = (int)nedg;
+    } else {
+      n_int = (int)ntri;
+    }
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "# boundary tri faces");
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "# tri faces");
     n_int = 0;
