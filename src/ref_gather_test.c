@@ -329,30 +329,32 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (2 == argc && !transmesh) {
-    REF_GRID import_grid;
+  if (2 == argc) {
+    if (0 != strncmp(argv[1], "--", 2)) {
+      REF_GRID import_grid;
 
-    ref_mpi_stopwatch_start(ref_mpi);
-    RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read");
-    RSS(ref_migrate_to_balance(import_grid), "balance");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "balance");
+      ref_mpi_stopwatch_start(ref_mpi);
+      RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read");
+      RSS(ref_migrate_to_balance(import_grid), "balance");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "balance");
 
-    ref_mpi_stopwatch_start(ref_grid_mpi(import_grid));
-    RSS(ref_gather_by_extension(import_grid, "ref_gather_test.meshb"),
-        "gather");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "meshb");
+      ref_mpi_stopwatch_start(ref_grid_mpi(import_grid));
+      RSS(ref_gather_by_extension(import_grid, "ref_gather_test.meshb"),
+          "gather");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "meshb");
 
-    ref_mpi_stopwatch_start(ref_grid_mpi(import_grid));
-    RSS(ref_gather_by_extension(import_grid, "ref_gather_test.b8.ugrid"),
-        "gather");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "b8.ugrid");
+      ref_mpi_stopwatch_start(ref_grid_mpi(import_grid));
+      RSS(ref_gather_by_extension(import_grid, "ref_gather_test.b8.ugrid"),
+          "gather");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "b8.ugrid");
 
-    RSS(ref_grid_free(import_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "mpi free");
-    RSS(ref_mpi_stop(), "stop");
+      RSS(ref_grid_free(import_grid), "free");
+      RSS(ref_mpi_free(ref_mpi), "mpi free");
+      RSS(ref_mpi_stop(), "stop");
 
-    return 0;
+      return 0;
+    }
   }
 
   if (4 == argc) {
