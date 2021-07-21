@@ -436,15 +436,14 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
         for (cell = 0; cell < section_size; cell++) {
           REF_INT zero;
           REIS(node_per,
-               fread(&(c2n_int[size_per * cell]), sizeof(REF_INT),
+               fread(&(c2n_int[(node_per + 1) * cell]), sizeof(REF_INT),
                      (size_t)node_per, file),
                "int c2n pad node");
           REIS(1, fread(&(zero), sizeof(REF_INT), 1, file), "int c2n pad zero");
-          if (size_per > node_per)
-            REIS(size_per - node_per,
-                 fread(&(c2n_int[node_per + size_per * cell]), sizeof(REF_INT),
-                       (size_t)(size_per - node_per), file),
-                 "int c2n pad tag");
+          REIS(1,
+               fread(&(c2n_int[node_per + (node_per + 1) * cell]),
+                     sizeof(REF_INT), 1, file),
+               "int c2n pad tag");
         }
       } else {
         if (version < 4) {
