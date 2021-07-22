@@ -28,7 +28,12 @@ if(METIS_FOUND)
         add_library(ParMETIS::ParMETIS UNKNOWN IMPORTED)
         set_target_properties(ParMETIS::ParMETIS PROPERTIES
                 IMPORTED_LOCATION ${PARMETIS_LIBRARY}
-                INTERFACE_INCLUDE_DIRECTORIES ${PARMETIS_INCLUDE_DIR}
+                )
+        set_property(TARGET ParMETIS::ParMETIS PROPERTY
+                INTERFACE_LINK_LIBRARIES ${METIS_LIBRARIES}
+                )
+        set_property(TARGET ParMETIS::ParMETIS PROPERTY
+                INTERFACE_INCLUDE_DIRECTORIES ${PARMETIS_INCLUDE_DIRS}
                 )
     endif()
 else()
