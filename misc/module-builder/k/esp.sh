@@ -1,7 +1,7 @@
 #! /bin/bash -xue
 
 PACKAGE='ESP'
-VERSION='118'
+VERSION='119'
 
 if [ $# -gt 0 ] ; then
    . common.sh  $1
@@ -15,7 +15,7 @@ echo Build ${PACKAGE} ${VERSION}
 # https://acdl.mit.edu/ESP/archive/
 
 rm -f ESP${VERSION}Lin.tgz
-wget --no-check-certificate https://acdl.mit.edu/ESP/archive/ESP${VERSION}Lin.tgz
+wget --no-check-certificate https://acdl.mit.edu/ESP/PreBuilts/ESP${VERSION}Lin.tgz
 mkdir ${MODULE_DEST}
 tar xzf ESP${VERSION}Lin.tgz -C ${MODULE_DEST} --strip-components=1
 
