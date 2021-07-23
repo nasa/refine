@@ -21,5 +21,5 @@ export parmetis_path="${module_path}/ParMETIS/4.0.3-openmpi-2.1.1-intel_2017.2.1
 export zoltan_path="${module_path}/Zoltan/3.82-openmpi-1.10.7-intel_2017.2.174"
 
 export egads_path="${module_path}/ESP/119/EngSketchPad"
-export opencascade_path="${module_path}/ESP/119/OpenCASCADE-7.3.1"
+export opencascade_path="${module_path}/ESP/119/OpenCASCADE-7.4.1"
 
