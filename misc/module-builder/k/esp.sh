@@ -19,6 +19,9 @@ wget --no-check-certificate https://acdl.mit.edu/ESP/PreBuilts/ESP${VERSION}Lin.
 mkdir ${MODULE_DEST}
 tar xzf ESP${VERSION}Lin.tgz -C ${MODULE_DEST} --strip-components=1
 
+# insulate linking from OpenCASCADE path version
+(cd ${MODULE_DEST} && ln -s OpenCASCADE-* OpenCASCADE)
+
 mkdir -p ${MODFILE_BASE}
 cat > ${MODFILE_DEST} << EOF
 #%Module#
@@ -44,12 +47,12 @@ if { \$modmode != "switch3" } {
 }
 
 setenv ESP_ROOT \$base/\$version/EngSketchPad
-setenv CASROOT \$base/\$version/OpenCASCADE-7.3.1
+setenv CASROOT \$base/\$version/OpenCASCADE
 
 prepend-path PATH \$base/\$version/EngSketchPad/bin
 
 prepend-path LD_LIBRARY_PATH \$base/\$version/EngSketchPad/lib
-prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE-7.3.1/lib
+prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE/lib
 
 EOF
 
