@@ -11,5 +11,5 @@ export parmetis64_path="${module_path}/ParMETIS-64/4.0.3-mpt-2.23-intel_2018.3.2
 export zoltan_path="${module_path}/Zoltan/3.82-mpt-2.23-intel_2018.3.222"
 
 export egads_path="${module_path}/ESP/119/EngSketchPad"
-export opencascade_path="${module_path}/ESP/119/OpenCASCADE-7.4.1"
+export opencascade_path="${module_path}/ESP/119/OpenCASCADE"
 
