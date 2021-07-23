@@ -20,6 +20,6 @@ export mpi_path="/usr/local/pkgs-modules/openmpi_2.1.1_intel_2017"
 export parmetis_path="${module_path}/ParMETIS/4.0.3-openmpi-2.1.1-intel_2017.2.174"
 export zoltan_path="${module_path}/Zoltan/3.82-openmpi-1.10.7-intel_2017.2.174"
 
-export egads_path="${module_path}/ESP/119-beta.2021.05.05.1543/EngSketchPad"
-export opencascade_path="${module_path}/ESP/119-beta.2021.05.05.1543/OpenCASCADE-7.3.1"
+export egads_path="${module_path}/ESP/119/EngSketchPad"
+export opencascade_path="${module_path}/ESP/119/OpenCASCADE-7.3.1"
 
