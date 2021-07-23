@@ -16,7 +16,7 @@ set -x # echo commands
 log=`pwd`/../log-build.txt
 trap "cat $log" EXIT
 mkdir -p build
-export CMAKE_PREFIX_PATH=${mpi_path}:${egads_path}:${opencascade_path}
+export CMAKE_PREFIX_PATH="${mpi_path}:${parmetis_path}:${egads_path}:${opencascade_path}"
 ( cd build && \
       cmake \
 	  -DCMAKE_INSTALL_PREFIX=`pwd` \
@@ -34,3 +34,5 @@ export PATH=${PATH}:`pwd`/build/bin
       ./generate.sh >> $log 2>&1 ) || exit 1
 trap - EXIT
 
+cat `pwd`/../log-build.txt
+cat `pwd`/../log-bootstrap.txt
