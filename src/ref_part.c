@@ -1706,9 +1706,16 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REF_CELL ref_cell = ref_grid_tri(ref_grid);
     REF_INT version = 0;
     REF_BOOL pad = REF_FALSE;
+    REF_INT cell, temp_node;
     RSS(ref_part_meshb_cell(ref_cell, ntet, ref_node, nnode, version, pad,
                             file),
         "read tri");
+    /* avm winds tri different than EGADS */
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      temp_node = ref_cell_c2n(ref_cell, 2, cell);
+      ref_cell_c2n(ref_cell, 2, cell) = ref_cell_c2n(ref_cell, 1, cell);
+      ref_cell_c2n(ref_cell, 1, cell) = temp_node;
+    }
   } else {
     REF_FILEPOS conn_offset, faceid_offset;
     REF_BOOL swap_endian = REF_FALSE;
