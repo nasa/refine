@@ -1732,11 +1732,19 @@ static REF_STATUS avm_field_scalar(REF_GRID ref_grid, REF_INT ldim,
     RAS(5 <= ldim, "expected 5 or more variables per vertex for compressible");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL rho, u, v, w, press, temp, u2, mach2;
-      rho = initial_field[0 + ldim * node];
-      u = initial_field[1 + ldim * node];
-      v = initial_field[2 + ldim * node];
-      w = initial_field[3 + ldim * node];
-      temp = initial_field[4 + ldim * node];
+      if (ref_grid_twod(ref_grid)) {
+        rho = initial_field[0 + ldim * node];
+        u = initial_field[1 + ldim * node];
+        v = initial_field[2 + ldim * node];
+        w = 0.0;
+        temp = initial_field[3 + ldim * node];
+      } else {
+        rho = initial_field[0 + ldim * node];
+        u = initial_field[1 + ldim * node];
+        v = initial_field[2 + ldim * node];
+        w = initial_field[3 + ldim * node];
+        temp = initial_field[4 + ldim * node];
+      }
       press = rho * temp / gamma;
       u2 = u * u + v * v + w * w;
       RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
