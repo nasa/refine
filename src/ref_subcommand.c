@@ -1732,11 +1732,19 @@ static REF_STATUS avm_field_scalar(REF_GRID ref_grid, REF_INT ldim,
     RAS(5 <= ldim, "expected 5 or more variables per vertex for compressible");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL rho, u, v, w, press, temp, u2, mach2;
-      rho = initial_field[0 + ldim * node];
-      u = initial_field[1 + ldim * node];
-      v = initial_field[2 + ldim * node];
-      w = initial_field[3 + ldim * node];
-      temp = initial_field[4 + ldim * node];
+      if (ref_grid_twod(ref_grid)) {
+        rho = initial_field[0 + ldim * node];
+        u = initial_field[1 + ldim * node];
+        v = initial_field[2 + ldim * node];
+        w = 0.0;
+        temp = initial_field[3 + ldim * node];
+      } else {
+        rho = initial_field[0 + ldim * node];
+        u = initial_field[1 + ldim * node];
+        v = initial_field[2 + ldim * node];
+        w = initial_field[3 + ldim * node];
+        temp = initial_field[4 + ldim * node];
+      }
       press = rho * temp / gamma;
       u2 = u * u + v * v + w * w;
       RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
@@ -2503,7 +2511,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
   if (ref_grid_twod(ref_grid) &&
-      0 != strcmp(soln_import_extension, locichem_soln)) {
+      0 != strcmp(soln_import_extension, locichem_soln) &&
+      0 != strcmp(soln_import_extension, avm_soln)) {
     if (ref_mpi_once(ref_mpi)) printf("flip initial_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, initial_field), "flip");
   }
@@ -2788,7 +2797,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   sprintf(filename, "%s.%s", out_project, mesh_export_extension);
   RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
       "arg search");
-  if (strcmp(soln_export_extension, i_like_restart) != 0 &&
+  if (0 != strcmp(soln_export_extension, i_like_restart) &&
+      0 != strcmp(soln_export_extension, avm_restart) &&
       ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
@@ -2840,7 +2850,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
   if (ref_grid_twod(ref_grid) &&
-      0 != strcmp(soln_import_extension, locichem_soln)) {
+      0 != strcmp(soln_import_extension, locichem_soln) &&
+      0 != strcmp(soln_import_extension, avm_soln)) {
     if (ref_mpi_once(ref_mpi)) printf("flip ref_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, ref_field), "flip");
   }
