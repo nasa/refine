@@ -2623,10 +2623,23 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
     REF_BOOL select_faceid = REF_FALSE;
     REF_INT faceid = 0;
     REF_BOOL pad = REF_TRUE;
+    REF_INT cell, temp_node;
+    /* avm winds tri different than EGADS */
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      temp_node = ref_cell_c2n(ref_cell, 2, cell);
+      ref_cell_c2n(ref_cell, 2, cell) = ref_cell_c2n(ref_cell, 1, cell);
+      ref_cell_c2n(ref_cell, 1, cell) = temp_node;
+    }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, sixty_four_bit, select_faceid, faceid, pad,
                         file),
         "nodes");
+    /* wind back (flip) after write */
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      temp_node = ref_cell_c2n(ref_cell, 2, cell);
+      ref_cell_c2n(ref_cell, 2, cell) = ref_cell_c2n(ref_cell, 1, cell);
+      ref_cell_c2n(ref_cell, 1, cell) = temp_node;
+    }
   } else {
     REF_CELL ref_cell = ref_grid_tet(ref_grid);
     REF_BOOL faceid_insted_of_c2n = REF_FALSE;
