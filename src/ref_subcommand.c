@@ -2511,7 +2511,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
   if (ref_grid_twod(ref_grid) &&
-      0 != strcmp(soln_import_extension, locichem_soln)) {
+      0 != strcmp(soln_import_extension, locichem_soln) &&
+      0 != strcmp(soln_import_extension, avm_soln)) {
     if (ref_mpi_once(ref_mpi)) printf("flip initial_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, initial_field), "flip");
   }
@@ -2848,7 +2849,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
   if (ref_grid_twod(ref_grid) &&
-      0 != strcmp(soln_import_extension, locichem_soln)) {
+      0 != strcmp(soln_import_extension, locichem_soln) &&
+      0 != strcmp(soln_import_extension, avm_soln)) {
     if (ref_mpi_once(ref_mpi)) printf("flip ref_field v-w for twod\n");
     RSS(flip_twod_yz(ref_grid_node(ref_grid), ldim, ref_field), "flip");
   }
