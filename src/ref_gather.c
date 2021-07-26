@@ -2476,12 +2476,21 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
       n_int = (int)ntet;
     }
     REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "ncells");
-    n_int = 3;
-    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per face");
-    n_int = 4;
-    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per cell");
-    n_int = 4;
-    REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max faces per cell");
+    if (ref_grid_twod(ref_grid)) {
+      n_int = 2;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per face");
+      n_int = 3;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per cell");
+      n_int = 3;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max faces per cell");
+    }else{
+      n_int = 3;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per face");
+      n_int = 4;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per cell");
+      n_int = 4;
+      REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max faces per cell");
+    }
     length = (int)strlen(element_scheme);
     REIS(length,
          fwrite(element_scheme, sizeof(char), (unsigned long)length, file),
