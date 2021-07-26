@@ -2797,7 +2797,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   sprintf(filename, "%s.%s", out_project, mesh_export_extension);
   RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
       "arg search");
-  if (strcmp(soln_export_extension, i_like_restart) != 0 &&
+  if (0 != strcmp(soln_export_extension, i_like_restart) &&
+      0 != strcmp(soln_export_extension, avm_restart) &&
       ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
