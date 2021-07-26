@@ -115,6 +115,9 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_meshb_version(ref_grid) ((ref_grid)->meshb_version)
 #define ref_grid_coordinate_system(ref_grid) ((ref_grid)->coordinate_system)
 #define ref_grid_unit(ref_grid) ((ref_grid)->unit)
+/* 0-2: reference length in each direction.
+ *   3: reference area
+ * 4-6: moment center (all used for forces/moments calculations) */
 #define ref_grid_reference(ref_grid, ref_index) \
   ((ref_grid)->references[(ref_index)])
 
