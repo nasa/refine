@@ -2483,7 +2483,7 @@ static REF_STATUS ref_gather_avm(REF_GRID ref_grid, const char *filename) {
       REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per cell");
       n_int = 3;
       REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max faces per cell");
-    }else{
+    } else {
       n_int = 3;
       REIS(1, fwrite(&n_int, sizeof(n_int), 1, file), "max nodes per face");
       n_int = 4;
