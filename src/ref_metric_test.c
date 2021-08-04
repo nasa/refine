@@ -70,6 +70,16 @@ REF_STATUS ref_metric_test_constant_integrand(void *constant_double, REF_DBL t,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_test_linear_integrand(void *constant_ax_b, REF_DBL t,
+                                            REF_DBL *value);
+REF_STATUS ref_metric_test_linear_integrand(void *constant_ax_b, REF_DBL t,
+                                            REF_DBL *value) {
+  REF_DBL a = ((REF_DBL *)constant_ax_b)[0];
+  REF_DBL b = ((REF_DBL *)constant_ax_b)[1];
+  *value = a * t + b;
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT fixed_point_pos = REF_EMPTY;
   REF_INT curve_limit_pos = REF_EMPTY;
@@ -3130,7 +3140,18 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_integrate(ref_metric_test_constant_integrand, state,
                              &integral),
         "int");
-    RWDS(constant, integral, tol, "int");
+    RWDS(constant, integral, tol, "int const");
+  }
+
+  {
+    REF_DBL ax_b[] = {5.0, 2.0};
+    void *state = (void *)ax_b;
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate(ref_metric_test_linear_integrand, state,
+                             &integral),
+        "int");
+    RWDS(2.5 + 2, integral, tol, "int linear");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
