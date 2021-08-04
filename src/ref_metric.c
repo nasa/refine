@@ -3042,7 +3042,6 @@ REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
     t = 0.5 * tq[i] + 0.5;
     RSS(integrand(state, t, &value), "eval");
     *integral += 0.5 * wq[i] * value;
-    printf("%d %f %f %f %f\n", i, t, tq[i], wq[i], value);
   }
 
   return REF_SUCCESS;
