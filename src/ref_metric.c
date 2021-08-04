@@ -850,6 +850,67 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_hessian_gradation(REF_DBL *metric, REF_GRID ref_grid,
+                                            REF_DBL r) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_EDGE ref_edge;
+  REF_DBL *metric_orig;
+  REF_DBL limit_metric[6], limited[6];
+  REF_INT node, i;
+  REF_INT edge, node0, node1;
+
+  if (r < 1.0) r = 10.0;
+
+  RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+
+  ref_malloc(metric_orig, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 6; i++) metric_orig[i + 6 * node] = metric[i + 6 * node];
+  }
+
+  each_ref_edge(ref_edge, edge) {
+    node0 = ref_edge_e2n(ref_edge, 0, edge);
+    node1 = ref_edge_e2n(ref_edge, 1, edge);
+
+    for (i = 0; i < 6; i++) {
+      limit_metric[i] = metric_orig[i + 6 * node1] * r;
+    }
+
+    if (REF_SUCCESS == ref_matrix_bound(&(metric_orig[6 * node0]),
+                                            limit_metric, limited)) {
+      RSS(ref_matrix_bound(&(metric[6 * node0]), limited,
+                               &(metric[6 * node0])),
+          "update m0");
+    } else {
+      ref_node_location(ref_node, node0);
+      printf("RECOVER %s\n",__func__);
+    }
+
+    for (i = 0; i < 6; i++) {
+      limit_metric[i] = metric_orig[i + 6 * node0] * r;
+    }
+
+    if (REF_SUCCESS == ref_matrix_bound(&(metric_orig[6 * node1]),
+                                            limit_metric, limited)) {
+      RSS(ref_matrix_bound(&(metric[6 * node1]), limited,
+                               &(metric[6 * node1])),
+          "update m1");
+    } else {
+      ref_node_location(ref_node, node1);
+      printf("RECOVER %s\n",__func__);
+    }
+  }
+
+  ref_free(metric_orig);
+
+  ref_edge_free(ref_edge);
+
+  RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), metric, 6), "update ghosts");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
                                           REF_GRID ref_grid,
                                           REF_DBL *interpolation_error) {
@@ -1852,6 +1913,8 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_hessian_gradation(metric, ref_grid, -1.0),
+      "limit hessian gradation (i.e., shocks)");
   RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
       "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
