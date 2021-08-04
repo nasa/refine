@@ -3176,6 +3176,21 @@ int main(int argc, char *argv[]) {
     RWDS(1.0 + 2.5 + 2.0, integral, tol, "int linear");
   }
 
+  {
+    REF_DBL m_diag_sys_hess[18] = {1.0, 1.0, 1.0,                 /* eigvals */
+                                   1.0, 0.0, 0.0,                 /* eigvect */
+                                   0.0, 1.0, 0.0,                 /* eigvect */
+                                   1.0, 0.0, 1.0,                 /* eigvect */
+                                   1.0, 0.0, 0.0, 1.0, 0.0, 1.0}; /* hess */
+    void *state = (void *)m_diag_sys_hess;
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate(ref_metric_integrand_err2, state,
+                             &integral),
+        "int");
+    RWDS(0.5*ref_math_pi, integral, tol, "int linear");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

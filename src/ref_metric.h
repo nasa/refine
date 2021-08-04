@@ -161,6 +161,9 @@ REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
 
 typedef REF_STATUS (*ref_metric_integrand)(void *state, REF_DBL t,
                                            REF_DBL *value);
+REF_STATUS ref_metric_integrand_err2(void *m_diag_sys_hess,
+                                     REF_DBL theta_over_2pi,
+                                     REF_DBL *radial_error);
 REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
                                 REF_DBL *integral);
 

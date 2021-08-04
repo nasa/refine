@@ -3046,3 +3046,29 @@ REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_metric_integrand_err2(void *void_m_diag_sys_hess,
+                                     REF_DBL theta_over_2pi,
+                                     REF_DBL *radial_error){
+  REF_DBL *m_diag_sys_hess = void_m_diag_sys_hess;
+  REF_DBL theta = 2.0*ref_math_pi * theta_over_2pi;
+  REF_DBL xx, yy;
+  REF_DBL h0, h1;
+  REF_DBL xyz[3];
+  REF_DBL *hess;
+  REF_DBL val, r, derr_dr2;
+  xx = cos(theta);
+  yy = sin(theta);
+  h0 = 1.0/sqrt(m_diag_sys_hess[0]);
+  h1 = 1.0/sqrt(m_diag_sys_hess[1]);
+  xyz[0] = h0 * m_diag_sys_hess[3] * xx + h1 * m_diag_sys_hess[6] * yy;
+  xyz[1] = h0 * m_diag_sys_hess[4] * xx + h1 * m_diag_sys_hess[7] * yy;
+  xyz[2] = 0.0;
+  hess = &(m_diag_sys_hess[12]);
+  val = ref_matrix_vt_m_v(hess, xyz);
+  r = sqrt(ref_math_dot(xyz,xyz));
+  derr_dr2 = val/r/r;
+  *radial_error = 2 * ref_math_pi * derr_dr2 * pow(r,4) / 4.0;
+  /* printf("theta %f r %f derr_dr2 %f\n",theta,r,derr_dr2); */
+  return REF_SUCCESS;
+}
