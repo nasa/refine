@@ -61,6 +61,15 @@
   ../acceptance/2d/linear/two/accept-2d-two-08.metric
 */
 
+REF_STATUS ref_metric_test_constant_integrand(void *constant_double, REF_DBL t,
+                                              REF_DBL *value);
+REF_STATUS ref_metric_test_constant_integrand(void *constant_double, REF_DBL t,
+                                              REF_DBL *value) {
+  SUPRESS_UNUSED_COMPILER_WARNING(t);
+  *value = *((REF_DBL *)constant_double);
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT fixed_point_pos = REF_EMPTY;
   REF_INT curve_limit_pos = REF_EMPTY;
@@ -3111,6 +3120,17 @@ int main(int argc, char *argv[]) {
     ref_free(metric);
 
     RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  {
+    REF_DBL constant = 5.0;
+    void *state = (void *)(&constant);
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate(ref_metric_test_constant_integrand, state,
+                             &integral),
+        "int");
+    RWDS(constant, integral, tol, "int");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");

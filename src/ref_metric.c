@@ -3014,3 +3014,12 @@ REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
+                                REF_DBL *integral) {
+  REF_DBL t = 0.5;
+  REF_DBL value;
+  RSS(integrand(state, t, &value), "eval");
+  *integral = 1.0 * value;
+  return REF_SUCCESS;
+}

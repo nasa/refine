@@ -159,6 +159,12 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *xyz,
 REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
                                 REF_DBL *hh);
 
+typedef REF_STATUS (*ref_metric_integrand)(void *state, REF_DBL t,
+                                           REF_DBL *value);
+
+REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
+                                REF_DBL *integral);
+
 END_C_DECLORATION
 
 #endif /* REF_METRIC_H */
