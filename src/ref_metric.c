@@ -3015,11 +3015,35 @@ REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_INT nq = 5;
+static REF_DBL tq[] = {-9.061798459386640e-01, -5.384693101056830e-01, 0.0,
+                       5.384693101056830e-01, 9.061798459386640e-01};
+static REF_DBL wq[] = {2.369268850561891e-01, 4.786286704993665e-01,
+                       5.688888888888889e-01, 4.786286704993665e-01,
+                       2.369268850561891e-01};
+/*
+static REF_DBL tq[] = {-(1.0 / 3.0) * sqrt(5.0 + 2.0 * sqrt(10.0 / 7.0)),
+                       -(1.0 / 3.0) * sqrt(5.0 - 2.0 * sqrt(10.0 / 7.0)), 0.0,
+                       (1.0 / 3.0) * sqrt(5.0 - 2.0 * sqrt(10.0 / 7.0)),
+                       (1.0 / 3.0) * sqrt(5.0 + 2.0 * sqrt(10.0 / 7.0))};
+static REF_DBL wq[] = {(322.0 - 13.0 * sqrt(70)) / 900.0,
+                       (322.0 + 13.0 * sqrt(70)) / 900.0, 128.0 / 225.0,
+                       (322.0 + 13.0 * sqrt(70)) / 900.0,
+                       (322.0 - 13.0 * sqrt(70)) / 900.0};
+*/
+
 REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
                                 REF_DBL *integral) {
-  REF_DBL t = 0.5;
+  REF_INT i;
+  REF_DBL t;
   REF_DBL value;
-  RSS(integrand(state, t, &value), "eval");
-  *integral = 1.0 * value;
+  *integral = 0.0;
+  for (i = 0; i < nq; i++) {
+    t = 0.5 * tq[i] + 0.5;
+    RSS(integrand(state, t, &value), "eval");
+    *integral += 0.5 * wq[i] * value;
+    printf("%d %f %f %f %f\n", i, t, tq[i], wq[i], value);
+  }
+
   return REF_SUCCESS;
 }
