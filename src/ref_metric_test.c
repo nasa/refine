@@ -3162,7 +3162,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_integrate(ref_metric_test_linear_integrand, state,
                              &integral),
         "int");
-    RWDS(2.5 + 2, integral, tol, "int linear");
+    RWDS(2.5 + 2.0, integral, tol, "int linear");
   }
 
   {
@@ -3173,7 +3173,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_integrate(ref_metric_test_quadratic_integrand, state,
                              &integral),
         "int");
-    RWDS(1.0 + 2.5 + 2, integral, tol, "int linear");
+    RWDS(1.0 + 2.5 + 2.0, integral, tol, "int linear");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
