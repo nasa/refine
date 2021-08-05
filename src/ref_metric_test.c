@@ -3212,13 +3212,13 @@ int main(int argc, char *argv[]) {
                                    1.0,  0.0, 0.0, 1.0, 0.0, 1.0}; /* hess */
     void *state = (void *)m_diag_sys_hess;
     REF_DBL integral;
-    REF_DBL tol = -1.0;
+    REF_DBL tol = 1e-6;
     RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
         "int");
-    RWDS(13.19242245599832, integral, tol, "int linear");
+    RWDS(11.5830408, integral, tol, "int linear");
   }
 
-  if (-1 == argc) { /* ar=2 vert metric, identity hessian */
+  { /* ar=2 vert metric, identity hessian */
     REF_DBL m_diag_sys_hess[18] = {1.0, 0.25, 1.0,                 /* eigvals */
                                    1.0, 0.0,  0.0,                 /* eigvect */
                                    0.0, 1.0,  0.0,                 /* eigvect */
@@ -3226,10 +3226,10 @@ int main(int argc, char *argv[]) {
                                    1.0, 0.0,  0.0, 1.0, 0.0, 1.0}; /* hess */
     void *state = (void *)m_diag_sys_hess;
     REF_DBL integral;
-    REF_DBL tol = -1.0;
+    REF_DBL tol = 1e-6;
     RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
         "int");
-    RWDS(13.19242245599832, integral, tol, "int linear");
+    RWDS(11.5830408, integral, tol, "int linear");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
