@@ -3232,6 +3232,33 @@ int main(int argc, char *argv[]) {
     RWDS(11.5846229, integral, tol, "int linear");
   }
 
+  { /* ar=2 slant metric, identity hessian */
+    REF_DBL m_diag_sys_hess[18] = {1.0,
+                                   0.25,
+                                   1.0, /* eigvals */
+                                   0.5 * sqrt(2),
+                                   0.5 * sqrt(2),
+                                   0.0, /* eigvect */
+                                   -0.5 * sqrt(2),
+                                   0.5 * sqrt(2),
+                                   0.0, /* eigvect */
+                                   1.0,
+                                   0.0,
+                                   1.0, /* eigvect */
+                                   1.0,
+                                   0.0,
+                                   0.0,
+                                   1.0,
+                                   0.0,
+                                   1.0}; /* hess */
+    void *state = (void *)m_diag_sys_hess;
+    REF_DBL integral;
+    REF_DBL tol = 1e-6;
+    RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
+        "int");
+    RWDS(11.5846229, integral, tol, "int linear");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
