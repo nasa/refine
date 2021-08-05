@@ -3215,7 +3215,7 @@ int main(int argc, char *argv[]) {
     REF_DBL tol = 1e-6;
     RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
         "int");
-    RWDS(11.5830408, integral, tol, "int linear");
+    RWDS(11.5846229, integral, tol, "int linear");
   }
 
   { /* ar=2 vert metric, identity hessian */
@@ -3229,7 +3229,7 @@ int main(int argc, char *argv[]) {
     REF_DBL tol = 1e-6;
     RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
         "int");
-    RWDS(11.5830408, integral, tol, "int linear");
+    RWDS(11.5846229, integral, tol, "int linear");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
