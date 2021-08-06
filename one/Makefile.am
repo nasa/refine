@@ -1,24 +1,4 @@
 
-EXTRA_DIST = \
-	makeRubyExtension.rb RubyExtensionBuilder.rb \
-	adjMT.rb adj_ruby.c \
-	lineMT.rb line_ruby.c \
-	sortMT.rb sort_ruby.c \
-	tableauMT.rb tableau_ruby.c \
-	planMT.rb plan_ruby.c \
-	queueMT.rb queue_ruby.c \
-	gridMT.rb grid_ruby.c \
-	gridmathMT.rb gridmath_ruby.c \
-	gridmetricMT.rb gridmetric_ruby.c \
-	gridshapeMT.rb gridshape_ruby.c \
-	gridinsertMT.rb gridinsert_ruby.c \
-	gridswapMT.rb gridswap_ruby.c \
-	gridcadMT.rb gridcad_ruby.c \
-	FAKEGeom.c \
-	gridmpiMT.rb gridmpi_ruby.c \
-	gridmoveMT.rb gridmove_ruby.c \
-	faux_input
-
 lib_LIBRARIES =
 
 lib_LIBRARIES += librefine.a
