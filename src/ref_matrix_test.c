@@ -1627,15 +1627,28 @@ jac*m
     REF_DBL det, exponent, scale;
     REF_DBL hess[6] = {2, 0, 0, 2, 0, 2};
     REF_DBL m[6];
+    REF_DBL err[6];
+    REF_DBL mhalf[6];
+    REF_DBL mneghalf[6];
+    REF_DBL err_det, err_trace;
     REF_BOOL verbose = REF_FALSE;
     exponent = -1.0 / ((REF_DBL)(2 * p + dimension));
     RSS(ref_matrix_det_m(hess, &det), "det_m local hess scale");
     scale = pow(det, exponent);
     for (i = 0; i < 6; i++) m[i] = scale * hess[i];
+    RSS(ref_matrix_sqrt_m(m, mhalf, mneghalf), "split");
+    RSS(ref_matrix_mult_m0m1m0(mhalf, hess, err), "err=mhalf*hess*mhalf");
+    RSS(ref_matrix_det_m(err, &err_det), "err det");
+    err_trace = err[0] + err[3] + err[5];
     if (verbose) {
+      printf("hess:\n");
       ref_matrix_show_m(hess);
+      printf("m:\n");
       ref_matrix_show_m(m);
       printf("det %f exponent %f scale %f\n", det, exponent, scale);
+      printf("err:\n");
+      ref_matrix_show_m(err);
+      printf("err det %f err trace %f\n", err_det, err_trace);
     }
   }
 
