@@ -1622,5 +1622,22 @@ jac*m
     RWDS(3, e[2], tol, "e[2]");
   }
 
+  {
+    REF_INT dimension = 3, p = 1, i;
+    REF_DBL det, exponent, scale;
+    REF_DBL hess[6] = {2, 0, 0, 2, 0, 2};
+    REF_DBL m[6];
+    REF_BOOL verbose = REF_FALSE;
+    exponent = -1.0 / ((REF_DBL)(2 * p + dimension));
+    RSS(ref_matrix_det_m(hess, &det), "det_m local hess scale");
+    scale = pow(det, exponent);
+    for (i = 0; i < 6; i++) m[i] = scale * hess[i];
+    if (verbose) {
+      ref_matrix_show_m(hess);
+      ref_matrix_show_m(m);
+      printf("det %f exponent %f scale %f\n", det, exponent, scale);
+    }
+  }
+
   return 0;
 }
