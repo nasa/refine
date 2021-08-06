@@ -1639,5 +1639,18 @@ jac*m
     }
   }
 
+  {
+    REF_DBL hess[6] = {2, 0, 0, 2, 0, 2};
+    REF_DBL m1[6] = {0.5, 0, 0, 0.5, 0, 0.5};
+    REF_DBL err[6];
+    REF_DBL m1half[6];
+    REF_DBL m1neghalf[6];
+    REF_BOOL verbose = REF_FALSE;
+    RSS(ref_matrix_sqrt_m(m1, m1half, m1neghalf), "split");
+    RSS(ref_matrix_mult_m0m1m0(m1half, hess, err), "err=m1half*hess*m1half");
+    if (verbose) {
+      ref_matrix_show_m(err);
+    }
+  }
   return 0;
 }
