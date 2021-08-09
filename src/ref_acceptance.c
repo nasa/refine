@@ -185,6 +185,19 @@ static REF_STATUS ref_acceptance_primal_vortex(REF_DBL x, REF_DBL y,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_acceptance_u_lisbon(REF_DBL x, REF_DBL y,
+                                          REF_DBL *scalar) {
+  REF_DBL sigma, nu, u, v;
+  sigma = 4.0;
+  RAS(ref_math_divisible(y, x), "lisbon not defined for x=0");
+  nu = sigma * y / x;
+  u = erf(nu);
+  v = 1.0 / (sigma * sqrt(ref_math_pi)) * (1.0 - exp(-nu * nu));
+  *scalar = sqrt(u * u + v * v);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
                                    REF_DBL *scalar) {
   REF_INT node;
@@ -299,6 +312,10 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     } else if (strcmp(function_name, "half") == 0) {
       scalar[node] = 1.0;
       if (y < 0.5) scalar[node] = 0.5;
+    } else if (strcmp(function_name, "lisbon") == 0) {
+      REF_DBL vel;
+      RSS(ref_acceptance_u_lisbon(x, y, &vel), "lisbon");
+      scalar[node] = vel;
     } else if (strcmp(function_name, "trig") == 0) {
       REF_DBL rho, pressure, u, v, w, mach;
       REF_DBL primitive[5];
