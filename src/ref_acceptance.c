@@ -315,7 +315,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     } else if (strcmp(function_name, "lisbon") == 0) {
       REF_DBL vel;
       RSS(ref_acceptance_u_lisbon(x, y, &vel), "lisbon");
-      scalar[node] = 1.0;
+      scalar[node] = vel;
     } else if (strcmp(function_name, "trig") == 0) {
       REF_DBL rho, pressure, u, v, w, mach;
       REF_DBL primitive[5];
