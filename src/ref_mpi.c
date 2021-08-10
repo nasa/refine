@@ -234,6 +234,22 @@ REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_max_tag(REF_MPI ref_mpi, REF_INT *max_tag) {
+#ifdef HAVE_MPI
+  int is_set;
+  void *value;
+  REIS(MPI_SUCCESS,
+       MPI_Comm_get_attr(ref_mpi_comm(ref_mpi), MPI_TAG_UB, &value, &is_set),
+       "unable to query MPI environment MPI_TAG_UB");
+  RAS(is_set, "MPI environment MPI_TAG_UB not set");
+  *max_tag = *(int *)value;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
+  *max_tag = REF_EMPTY;
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_elapsed(REF_DBL *seconds) {
   clock_t ticks;
   ticks = clock();

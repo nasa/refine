@@ -73,6 +73,7 @@ REF_STATUS ref_mpi_start(int argc, char *argv[]);
 REF_STATUS ref_mpi_stop(void);
 
 REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type);
+REF_STATUS ref_mpi_max_tag(REF_MPI ref_mpi, REF_INT *max_tag);
 
 REF_STATUS ref_mpi_elapsed(REF_DBL *seconds);
 REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi);
