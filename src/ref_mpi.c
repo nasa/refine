@@ -73,6 +73,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
 
   ref_mpi->id = 0;
   ref_mpi->n = 1;
+  ref_mpi->max_tag = REF_EMPTY;
 
   ref_mpi->comm = NULL;
 
@@ -92,8 +93,21 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
     }
     REIS(MPI_SUCCESS, MPI_Initialized(&running), "running?");
     if (running) {
+      int is_set;
+      void *value;
       MPI_Comm_size(ref_mpi_comm(ref_mpi), &(ref_mpi->n));
       MPI_Comm_rank(ref_mpi_comm(ref_mpi), &(ref_mpi->id));
+      REIS(
+          MPI_SUCCESS,
+          MPI_Comm_get_attr(ref_mpi_comm(ref_mpi), MPI_TAG_UB, &value, &is_set),
+          "unable to query MPI environment MPI_TAG_UB from comm");
+      if (!is_set) {
+        REIS(MPI_SUCCESS,
+             MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &value, &is_set),
+             "unable to query MPI environment MPI_TAG_UB from world comm");
+      }
+      RAS(is_set, "MPI environment MPI_TAG_UB not set");
+      ref_mpi->max_tag = *(int *)value;
     }
   }
   ref_mpi->first_time = (REF_DBL)MPI_Wtime();
@@ -231,22 +245,6 @@ REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type) {
                (unsigned long)sizeof(REF_INT), (unsigned long)sizeof(REF_LONG));
       });
   }
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_mpi_max_tag(REF_MPI ref_mpi, REF_INT *max_tag) {
-#ifdef HAVE_MPI
-  int is_set;
-  void *value;
-  REIS(MPI_SUCCESS,
-       MPI_Comm_get_attr(ref_mpi_comm(ref_mpi), MPI_TAG_UB, &value, &is_set),
-       "unable to query MPI environment MPI_TAG_UB");
-  RAS(is_set, "MPI environment MPI_TAG_UB not set");
-  *max_tag = *(int *)value;
-#else
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
-  *max_tag = REF_EMPTY;
-#endif
   return REF_SUCCESS;
 }
 

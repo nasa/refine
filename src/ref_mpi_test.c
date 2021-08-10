@@ -26,15 +26,13 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_INT max_tag;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
-  RSS(ref_mpi_max_tag(ref_mpi, &max_tag), "max tag");
   if (ref_mpi_para(ref_mpi) && ref_mpi_once(ref_mpi))
     printf("%s number of processors %d max tag %d\n", argv[0],
-           ref_mpi_n(ref_mpi), max_tag);
+           ref_mpi_n(ref_mpi), ref_mpi_max_tag(ref_mpi));
 
   if (!ref_mpi_para(ref_mpi)) { /* no mpi or mpi with one proc */
     REIS(1, ref_mpi_n(ref_mpi), "n");
