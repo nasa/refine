@@ -14,6 +14,11 @@ meshlink_path="/u/mpark/local/pkgs/MeshLink"
 
 mpi_path="/opt/hpe/hpc/mpt/mpt-2.23"
 
+export openmpi_path="/usr/local/pkgs-modules/openmpi_2.1.1_intel_2017"
+
+export openmpi_parmetis_path="${module_path}/ParMETIS/4.0.3-openmpi-2.1.1-intel_2017.2.174"
+
+
 gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
 icc_flags="-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv"
 
@@ -41,6 +46,19 @@ mkdir -p parmetis
     --enable-lite \
     CC=mpicc \
     CFLAGS="-DHAVE_MPI ${gcc_flags}" \
+    ) \
+    || exit
+
+mkdir -p openmpi
+( cd openmpi && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-metis=${openmpi_parmetis_path} \
+    --with-parmetis=${openmpi_parmetis_path} \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CC=${openmpi_path}/bin/mpicc \
+    CFLAGS="-DHAVE_MPI ${icc_flags}" \
     ) \
     || exit
 
