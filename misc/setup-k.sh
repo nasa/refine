@@ -35,7 +35,7 @@ mkdir -p parmetis
 ( cd parmetis && \
     ../configure \
     --prefix=`pwd` \
-    --with-metis=${gcc_metis_path} \
+    --with-metis=${gcc_parmetis_path} \
     --with-parmetis=${gcc_parmetis_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
