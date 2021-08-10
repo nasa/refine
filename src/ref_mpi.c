@@ -97,15 +97,9 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
       void *value;
       MPI_Comm_size(ref_mpi_comm(ref_mpi), &(ref_mpi->n));
       MPI_Comm_rank(ref_mpi_comm(ref_mpi), &(ref_mpi->id));
-      REIS(
-          MPI_SUCCESS,
-          MPI_Comm_get_attr(ref_mpi_comm(ref_mpi), MPI_TAG_UB, &value, &is_set),
-          "unable to query MPI environment MPI_TAG_UB from comm");
-      if (!is_set) {
-        REIS(MPI_SUCCESS,
-             MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &value, &is_set),
-             "unable to query MPI environment MPI_TAG_UB from world comm");
-      }
+      REIS(MPI_SUCCESS,
+           MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &value, &is_set),
+           "unable to query MPI environment MPI_TAG_UB from world comm");
       RAS(is_set, "MPI environment MPI_TAG_UB not set");
       ref_mpi->max_tag = *(int *)value;
       RAB(ref_mpi->max_tag >= 0, "max tag negative",
