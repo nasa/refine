@@ -108,6 +108,8 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
       }
       RAS(is_set, "MPI environment MPI_TAG_UB not set");
       ref_mpi->max_tag = *(int *)value;
+      RAB(ref_mpi->max_tag >= 0, "max tag negative",
+          { printf("max tag %d\n", ref_mpi->max_tag); });
     }
   }
   ref_mpi->first_time = (REF_DBL)MPI_Wtime();
