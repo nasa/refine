@@ -1937,10 +1937,10 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_recon_hessian(ref_grid, field, hess1, REF_RECON_L2PROJECTION),
         "hess");
-   RSS(ref_recon_hessian(ref_grid, field, hess2, REF_RECON_L2PROJECTION),
+    RSS(ref_recon_hessian(ref_grid, field, hess2, REF_RECON_L2PROJECTION),
         "hess");
-     RSS(ref_metric_hessian_gradation(hess2, ref_grid, -1.0),
-      "limit hessian gradation (i.e., shocks)");
+    RSS(ref_metric_hessian_gradation(hess2, ref_grid, -1.0),
+        "limit hessian gradation (i.e., shocks)");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL diag[12];
