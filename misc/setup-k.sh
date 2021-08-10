@@ -9,7 +9,7 @@ parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.23-intel_2018.3.222"
 gcc_parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.23-gcc_6.2.0"
 egads_path="${module_path}/ESP/119/EngSketchPad"
 egads_svn_path="/u/mpark/local/pkgs/EGADS/trunk"
-occ_path="${module_path}/ESP/119/OpenCASCADE-7.4.1"
+occ_path="${module_path}/ESP/119/OpenCASCADE"
 meshlink_path="/u/mpark/local/pkgs/MeshLink"
 
 mpi_path="/opt/hpe/hpc/mpt/mpt-2.23"
@@ -22,7 +22,7 @@ mkdir -p egads
     ../configure \
     --prefix=`pwd` \
     --with-MeshLink=${meshlink_path} \
-    --with-EGADS=${egads_svn_path} \
+    --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${occ_path} \
     --with-mpi=${mpi_path} \
     --with-parmetis=${parmetis_path} \
