@@ -32,3 +32,17 @@ mkdir -p egads
     CFLAGS="${icc_flags}" \
     ) \
     || exit
+
+mkdir -p parmetis
+( cd parmetis && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-metis=${gcc_metis_path} \
+    --with-parmetis=${gcc_parmetis_path} \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CC=mpicc \
+    CFLAGS="-DHAVE_MPI ${gcc_flags}" \
+    ) \
+    || exit
+
