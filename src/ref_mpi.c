@@ -348,6 +348,9 @@ REF_STATUS ref_mpi_send(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
 
   tag = ref_mpi_n(ref_mpi) * dest + ref_mpi_rank(ref_mpi);
 
+  RAB(0 <= tag && tag <= ref_mpi_max_tag(ref_mpi), "mpi tag outside bound",
+      { printf("tag %d bound %d\n", tag, ref_mpi_max_tag(ref_mpi)); });
+
   MPI_Send(data, n, datatype, dest, tag, ref_mpi_comm(ref_mpi));
 
   return REF_SUCCESS;
@@ -371,6 +374,9 @@ REF_STATUS ref_mpi_recv(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
   ref_type_mpi_type(type, datatype);
 
   tag = ref_mpi_n(ref_mpi) * ref_mpi_rank(ref_mpi) + source;
+
+  RAB(0 <= tag && tag <= ref_mpi_max_tag(ref_mpi), "mpi tag outside bound",
+      { printf("tag %d bound %d\n", tag, ref_mpi_max_tag(ref_mpi)); });
 
   MPI_Recv(data, n, datatype, source, tag, ref_mpi_comm(ref_mpi), &status);
 
@@ -432,6 +438,8 @@ REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
   each_ref_mpi_part(ref_mpi, part) {
     if (0 < recv_size[part]) {
       tag = ref_mpi_n(ref_mpi) * ref_mpi_rank(ref_mpi) + part;
+      RAB(0 <= tag && tag <= ref_mpi_max_tag(ref_mpi), "mpi tag outside bound",
+          { printf("tag %d bound %d\n", tag, ref_mpi_max_tag(ref_mpi)); });
       switch (type) {
         case REF_INT_TYPE:
           MPI_Irecv(&(((REF_INT *)recv)[offset]), n * recv_size[part], datatype,
@@ -458,6 +466,8 @@ REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
   each_ref_mpi_part(ref_mpi, part) {
     if (0 < send_size[part]) {
       tag = ref_mpi_n(ref_mpi) * part + ref_mpi_rank(ref_mpi);
+      RAB(0 <= tag && tag <= ref_mpi_max_tag(ref_mpi), "mpi tag outside bound",
+          { printf("tag %d bound %d\n", tag, ref_mpi_max_tag(ref_mpi)); });
       switch (type) {
         case REF_INT_TYPE:
           MPI_Isend(&(((REF_INT *)send)[offset]), n * send_size[part], datatype,
