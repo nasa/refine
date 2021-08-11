@@ -61,6 +61,36 @@
   ../acceptance/2d/linear/two/accept-2d-two-08.metric
 */
 
+REF_STATUS ref_metric_test_constant_integrand(void *constant_double, REF_DBL t,
+                                              REF_DBL *value);
+REF_STATUS ref_metric_test_constant_integrand(void *constant_double, REF_DBL t,
+                                              REF_DBL *value) {
+  SUPRESS_UNUSED_COMPILER_WARNING(t);
+  *value = *((REF_DBL *)constant_double);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_test_linear_integrand(void *constant_ax_b, REF_DBL t,
+                                            REF_DBL *value);
+REF_STATUS ref_metric_test_linear_integrand(void *constant_ax_b, REF_DBL t,
+                                            REF_DBL *value) {
+  REF_DBL a = ((REF_DBL *)constant_ax_b)[0];
+  REF_DBL b = ((REF_DBL *)constant_ax_b)[1];
+  *value = a * t + b;
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_test_quadratic_integrand(void *constant_ax2_bx_c,
+                                               REF_DBL t, REF_DBL *value);
+REF_STATUS ref_metric_test_quadratic_integrand(void *constant_ax2_bx_c,
+                                               REF_DBL t, REF_DBL *value) {
+  REF_DBL a = ((REF_DBL *)constant_ax2_bx_c)[0];
+  REF_DBL b = ((REF_DBL *)constant_ax2_bx_c)[1];
+  REF_DBL c = ((REF_DBL *)constant_ax2_bx_c)[2];
+  *value = a * t * t + b * t + c;
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT fixed_point_pos = REF_EMPTY;
   REF_INT curve_limit_pos = REF_EMPTY;
@@ -3111,6 +3141,122 @@ int main(int argc, char *argv[]) {
     ref_free(metric);
 
     RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  {
+    REF_DBL constant = 5.0;
+    void *state = (void *)(&constant);
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate(ref_metric_test_constant_integrand, state,
+                             &integral),
+        "int");
+    RWDS(constant, integral, tol, "int const");
+  }
+
+  {
+    REF_DBL ax_b[] = {5.0, 2.0};
+    void *state = (void *)ax_b;
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate(ref_metric_test_linear_integrand, state,
+                             &integral),
+        "int");
+    RWDS(2.5 + 2.0, integral, tol, "int linear");
+  }
+
+  {
+    REF_DBL ax_b[] = {3.0, 5.0, 2.0};
+    void *state = (void *)ax_b;
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate(ref_metric_test_quadratic_integrand, state,
+                             &integral),
+        "int");
+    RWDS(1.0 + 2.5 + 2.0, integral, tol, "int linear");
+  }
+
+  { /* unit metric, identity hessian */
+    REF_DBL m_diag_sys_hess[18] = {1.0, 1.0, 1.0,                 /* eigvals */
+                                   1.0, 0.0, 0.0,                 /* eigvect */
+                                   0.0, 1.0, 0.0,                 /* eigvect */
+                                   1.0, 0.0, 1.0,                 /* eigvect */
+                                   1.0, 0.0, 0.0, 1.0, 0.0, 1.0}; /* hess */
+    void *state = (void *)m_diag_sys_hess;
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
+        "int");
+    RWDS(0.5 * ref_math_pi, integral, tol, "identity error");
+  }
+
+  { /* h=2 metric, identity hessian */
+    REF_DBL m_diag_sys_hess[18] = {0.25, 0.25, 1.0, /* eigvals */
+                                   1.0,  0.0,  0.0, /* eigvect */
+                                   0.0,  1.0,  0.0, /* eigvect */
+                                   1.0,  0.0,  1.0, /* eigvect */
+                                   1.0,  0.0,  0.0, 1.0, 0.0, 1.0}; /* hess */
+    void *state = (void *)m_diag_sys_hess;
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
+        "int");
+    RWDS(8 * ref_math_pi, integral, tol, "int linear");
+  }
+
+  { /* ar=2 horz metric, identity hessian */
+    REF_DBL m_diag_sys_hess[18] = {0.25, 1.0, 1.0,                 /* eigvals */
+                                   1.0,  0.0, 0.0,                 /* eigvect */
+                                   0.0,  1.0, 0.0,                 /* eigvect */
+                                   1.0,  0.0, 1.0,                 /* eigvect */
+                                   1.0,  0.0, 0.0, 1.0, 0.0, 1.0}; /* hess */
+    void *state = (void *)m_diag_sys_hess;
+    REF_DBL integral;
+    REF_DBL tol = 1e-6;
+    RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
+        "int");
+    RWDS(11.5846229, integral, tol, "int linear");
+  }
+
+  { /* ar=2 vert metric, identity hessian */
+    REF_DBL m_diag_sys_hess[18] = {1.0, 0.25, 1.0,                 /* eigvals */
+                                   1.0, 0.0,  0.0,                 /* eigvect */
+                                   0.0, 1.0,  0.0,                 /* eigvect */
+                                   1.0, 0.0,  1.0,                 /* eigvect */
+                                   1.0, 0.0,  0.0, 1.0, 0.0, 1.0}; /* hess */
+    void *state = (void *)m_diag_sys_hess;
+    REF_DBL integral;
+    REF_DBL tol = 1e-6;
+    RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
+        "int");
+    RWDS(11.5846229, integral, tol, "int linear");
+  }
+
+  { /* ar=2 slant metric, identity hessian */
+    REF_DBL m_diag_sys_hess[18] = {1.0,
+                                   0.25,
+                                   1.0, /* eigvals */
+                                   0.5 * sqrt(2),
+                                   0.5 * sqrt(2),
+                                   0.0, /* eigvect */
+                                   -0.5 * sqrt(2),
+                                   0.5 * sqrt(2),
+                                   0.0, /* eigvect */
+                                   1.0,
+                                   0.0,
+                                   1.0, /* eigvect */
+                                   1.0,
+                                   0.0,
+                                   0.0,
+                                   1.0,
+                                   0.0,
+                                   1.0}; /* hess */
+    void *state = (void *)m_diag_sys_hess;
+    REF_DBL integral;
+    REF_DBL tol = 1e-6;
+    RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
+        "int");
+    RWDS(11.5846229, integral, tol, "int linear");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
