@@ -851,7 +851,7 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_hessian_gradation(REF_DBL *metric, REF_GRID ref_grid,
-                                            REF_DBL r) {
+                                        REF_DBL r) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_DBL *metric_orig;
@@ -877,28 +877,26 @@ REF_STATUS ref_metric_hessian_gradation(REF_DBL *metric, REF_GRID ref_grid,
       limit_metric[i] = metric_orig[i + 6 * node1] * r;
     }
 
-    if (REF_SUCCESS == ref_matrix_bound(&(metric_orig[6 * node0]),
-                                            limit_metric, limited)) {
-      RSS(ref_matrix_bound(&(metric[6 * node0]), limited,
-                               &(metric[6 * node0])),
+    if (REF_SUCCESS ==
+        ref_matrix_bound(&(metric_orig[6 * node0]), limit_metric, limited)) {
+      RSS(ref_matrix_bound(&(metric[6 * node0]), limited, &(metric[6 * node0])),
           "update m0");
     } else {
       ref_node_location(ref_node, node0);
-      printf("RECOVER %s\n",__func__);
+      printf("RECOVER %s\n", __func__);
     }
 
     for (i = 0; i < 6; i++) {
       limit_metric[i] = metric_orig[i + 6 * node0] * r;
     }
 
-    if (REF_SUCCESS == ref_matrix_bound(&(metric_orig[6 * node1]),
-                                            limit_metric, limited)) {
-      RSS(ref_matrix_bound(&(metric[6 * node1]), limited,
-                               &(metric[6 * node1])),
+    if (REF_SUCCESS ==
+        ref_matrix_bound(&(metric_orig[6 * node1]), limit_metric, limited)) {
+      RSS(ref_matrix_bound(&(metric[6 * node1]), limited, &(metric[6 * node1])),
           "update m1");
     } else {
       ref_node_location(ref_node, node1);
-      printf("RECOVER %s\n",__func__);
+      printf("RECOVER %s\n", __func__);
     }
   }
 

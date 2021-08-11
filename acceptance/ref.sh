@@ -96,6 +96,8 @@ cd ${zoltan_dir}
 
 LOG=${root_dir}/log.zoltan-configure
 trap "cat $LOG" EXIT
+which mpicc
+which mpicc >> $LOG 2>&1
 ${source_dir}/configure \
     --prefix=${zoltan_dir} \
     --with-zoltan=${zoltan_path} \
@@ -122,6 +124,8 @@ cd ${parmetis_dir}
 
 LOG=${root_dir}/log.parmetis-configure
 trap "cat $LOG" EXIT
+which mpicc
+which mpicc >> $LOG 2>&1
 ${source_dir}/configure \
     --prefix=${parmetis_dir} \
     --with-parmetis=${parmetis_path} \
@@ -147,6 +151,8 @@ LOG=${root_dir}/log.zoltan-unit
 trap "cat $LOG" EXIT
 cd ${zoltan_dir}/src
 echo para-unit > $LOG 2>&1
+which mpiexec
+which mpiexec >> $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_dict_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
@@ -185,6 +191,8 @@ LOG=${root_dir}/log.parmetis-unit
 trap "cat $LOG" EXIT
 cd ${parmetis_dir}/src
 echo para-unit > $LOG 2>&1
+which mpiexec
+which mpiexec >> $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1

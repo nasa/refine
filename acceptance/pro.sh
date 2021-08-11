@@ -32,6 +32,8 @@ cd ${build32}
 
 LOG=${root_dir}/log.build32-configure
 trap "cat $LOG" EXIT
+which mpicc
+which mpicc >> $LOG 2>&1
 ${source_dir}/configure \
     --prefix=${build32} \
     --with-parmetis=${parmetis32_path} \
@@ -62,6 +64,8 @@ LOG=${root_dir}/log.build32-unit
 trap "cat $LOG" EXIT
 cd ${build32}/src
 echo para-unit > $LOG 2>&1
+which mpiexec
+which mpiexec >> $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1
@@ -126,6 +130,8 @@ LOG=${root_dir}/log.build64-unit
 trap "cat $LOG" EXIT
 cd ${build64}/src
 echo para-unit > $LOG 2>&1
+which mpiexec
+which mpiexec >> $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1

@@ -371,9 +371,11 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
+      RSS(ref_mpi_gather_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc),
+          "recv ncell");
       ref_malloc(c2n, ncell * node_per, REF_GLOB);
-      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
+      RSS(ref_mpi_gather_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE,
+                              proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
         if (binary) {
@@ -399,7 +401,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) == part) ncell++;
     }
-    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+    RSS(ref_mpi_gather_send(ref_mpi, &ncell, 1, REF_INT_TYPE), "send ncell");
     ref_malloc(c2n, ncell * node_per, REF_GLOB);
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -410,7 +412,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
         ncell++;
       }
     }
-    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, 0),
+    RSS(ref_mpi_gather_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE),
         "send c2n");
 
     ref_free(c2n);
@@ -530,9 +532,11 @@ static REF_STATUS ref_gather_brick_tec(REF_NODE ref_node, REF_CELL ref_cell,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
+      RSS(ref_mpi_gather_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc),
+          "recv ncell");
       ref_malloc(c2n, ncell * node_per, REF_GLOB);
-      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
+      RSS(ref_mpi_gather_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE,
+                              proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
         switch (ref_cell_node_per(ref_cell)) {
@@ -575,7 +579,7 @@ static REF_STATUS ref_gather_brick_tec(REF_NODE ref_node, REF_CELL ref_cell,
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) == part) ncell++;
     }
-    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+    RSS(ref_mpi_gather_send(ref_mpi, &ncell, 1, REF_INT_TYPE), "send ncell");
     ref_malloc(c2n, ncell * node_per, REF_GLOB);
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -586,7 +590,7 @@ static REF_STATUS ref_gather_brick_tec(REF_NODE ref_node, REF_CELL ref_cell,
         ncell++;
       }
     }
-    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, 0),
+    RSS(ref_mpi_gather_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE),
         "send c2n");
 
     ref_free(c2n);
@@ -643,9 +647,11 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
+      RSS(ref_mpi_gather_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc),
+          "recv ncell");
       ref_malloc(c2n, ncell * node_per, REF_GLOB);
-      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
+      RSS(ref_mpi_gather_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE,
+                              proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
         if (binary) {
@@ -673,7 +679,7 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
         if (ref_mpi_rank(ref_mpi) == part) ncell++;
       }
     }
-    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+    RSS(ref_mpi_gather_send(ref_mpi, &ncell, 1, REF_INT_TYPE), "send ncell");
     ref_malloc(c2n, ncell * node_per, REF_GLOB);
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -686,7 +692,7 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
         }
       }
     }
-    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, 0),
+    RSS(ref_mpi_gather_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE),
         "send c2n");
 
     ref_free(c2n);
@@ -737,9 +743,11 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
+      RSS(ref_mpi_gather_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc),
+          "recv ncell");
       ref_malloc(c2n, ncell * node_per, REF_GLOB);
-      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
+      RSS(ref_mpi_gather_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE,
+                              proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
         for (node = 0; node < node_per; node++) {
@@ -760,7 +768,7 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
         if (quality < min_quality) ncell++;
       }
     }
-    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+    RSS(ref_mpi_gather_send(ref_mpi, &ncell, 1, REF_INT_TYPE), "send ncell");
     ref_malloc(c2n, ncell * node_per, REF_GLOB);
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -774,7 +782,7 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
         }
       }
     }
-    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, 0),
+    RSS(ref_mpi_gather_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE),
         "send c2n");
     ref_free(c2n);
   }
@@ -1922,10 +1930,12 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
+      RSS(ref_mpi_gather_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc),
+          "recv ncell");
       if (ncell > 0) {
         ref_malloc(c2n, ncell * size_per, REF_GLOB);
-        RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE, proc),
+        RSS(ref_mpi_gather_recv(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE,
+                                proc),
             "recv c2n");
         for (cell = 0; cell < ncell; cell++) {
           for (node = 0; node < node_per; node++)
@@ -2005,7 +2015,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
           (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid))
         ncell++;
     }
-    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+    RSS(ref_mpi_gather_send(ref_mpi, &ncell, 1, REF_INT_TYPE), "send ncell");
     if (ncell > 0) {
       ref_malloc(c2n, ncell * size_per, REF_GLOB);
       ncell = 0;
@@ -2021,7 +2031,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
           ncell++;
         }
       }
-      RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE, 0),
+      RSS(ref_mpi_gather_send(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE),
           "send c2n");
       ref_free(c2n);
     }
@@ -2063,13 +2073,15 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_recv(ref_mpi, &ngeom, 1, REF_INT_TYPE, proc), "recv ngeom");
+      RSS(ref_mpi_gather_recv(ref_mpi, &ngeom, 1, REF_INT_TYPE, proc),
+          "recv ngeom");
       if (ngeom > 0) {
         ref_malloc(node_id, 3 * ngeom, REF_GLOB);
         ref_malloc(param, 2 * ngeom, REF_DBL);
-        RSS(ref_mpi_recv(ref_mpi, node_id, 3 * ngeom, REF_GLOB_TYPE, proc),
+        RSS(ref_mpi_gather_recv(ref_mpi, node_id, 3 * ngeom, REF_GLOB_TYPE,
+                                proc),
             "recv node_id");
-        RSS(ref_mpi_recv(ref_mpi, param, 2 * ngeom, REF_DBL_TYPE, proc),
+        RSS(ref_mpi_gather_recv(ref_mpi, param, 2 * ngeom, REF_DBL_TYPE, proc),
             "recv param");
         for (geom = 0; geom < ngeom; geom++) {
           node = node_id[0 + 3 * geom] + 1;
@@ -2095,7 +2107,7 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
         continue;
       ngeom++;
     }
-    RSS(ref_mpi_send(ref_mpi, &ngeom, 1, REF_INT_TYPE, 0), "send ngeom");
+    RSS(ref_mpi_gather_send(ref_mpi, &ngeom, 1, REF_INT_TYPE), "send ngeom");
     if (ngeom > 0) {
       ref_malloc(node_id, 3 * ngeom, REF_GLOB);
       ref_malloc_init(param, 2 * ngeom, REF_DBL, 0.0); /* prevent uninit */
@@ -2112,9 +2124,9 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
           param[i + 2 * ngeom] = ref_geom_param(ref_geom, i, geom);
         ngeom++;
       }
-      RSS(ref_mpi_send(ref_mpi, node_id, 3 * ngeom, REF_GLOB_TYPE, 0),
+      RSS(ref_mpi_gather_send(ref_mpi, node_id, 3 * ngeom, REF_GLOB_TYPE),
           "send node_id");
-      RSS(ref_mpi_send(ref_mpi, param, 2 * ngeom, REF_DBL_TYPE, 0),
+      RSS(ref_mpi_gather_send(ref_mpi, param, 2 * ngeom, REF_DBL_TYPE),
           "send param");
       ref_free(param);
       ref_free(node_id);
@@ -3139,12 +3151,12 @@ REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
       }
     }
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_recv(ref_mpi, &ncell_recv, 1, REF_LONG_TYPE, proc),
+      RSS(ref_mpi_gather_recv(ref_mpi, &ncell_recv, 1, REF_LONG_TYPE, proc),
           "recv ncell");
       if (ncell_recv > 0) {
         ref_malloc(data, ldim * ncell_recv, REF_DBL);
-        RSS(ref_mpi_recv(ref_mpi, data, (REF_INT)(ldim * ncell_recv),
-                         REF_DBL_TYPE, proc),
+        RSS(ref_mpi_gather_recv(ref_mpi, data, (REF_INT)(ldim * ncell_recv),
+                                REF_DBL_TYPE, proc),
             "send data");
         REIS((size_t)(ldim * ncell_recv),
              fwrite(data, sizeof(REF_DBL), (size_t)(ldim * ncell_recv), file),
@@ -3153,7 +3165,8 @@ REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
       }
     }
   } else {
-    RSS(ref_mpi_send(ref_mpi, &ncell_local, 1, REF_LONG_TYPE, 0), "send ncell");
+    RSS(ref_mpi_gather_send(ref_mpi, &ncell_local, 1, REF_LONG_TYPE),
+        "send ncell");
     if (ncell_local > 0) {
       ref_malloc(data, ldim * ncell_local, REF_DBL);
       j = 0;
@@ -3171,8 +3184,8 @@ REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
           j++;
         }
       }
-      RSS(ref_mpi_send(ref_mpi, data, (REF_INT)(ldim * ncell_local),
-                       REF_DBL_TYPE, 0),
+      RSS(ref_mpi_gather_send(ref_mpi, data, (REF_INT)(ldim * ncell_local),
+                              REF_DBL_TYPE),
           "send data");
       ref_free(data);
     }
