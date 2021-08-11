@@ -223,8 +223,9 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
       for (geom = 0; geom < section_size; geom++) geom_to_send[dest[geom]]++;
 
       start_to_send[0] = 0;
-      each_ref_mpi_worker(ref_mpi, part) start_to_send[part] =
-          start_to_send[part - 1] + geom_to_send[part - 1];
+      each_ref_mpi_worker(ref_mpi, part) {
+        start_to_send[part] = start_to_send[part - 1] + geom_to_send[part - 1];
+      }
 
       each_ref_mpi_part(ref_mpi, part) geom_to_send[part] = 0;
       for (geom = 0; geom < section_size; geom++) {
@@ -250,21 +251,24 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
       }
 
       /* ship it! */
-      each_ref_mpi_worker(ref_mpi, part) if (0 < geom_to_send[part]) {
-        RSS(ref_mpi_send(ref_mpi, &(geom_to_send[part]), 1, REF_INT_TYPE, part),
-            "send");
-        RSS(ref_mpi_send(ref_mpi, &(sent_node[start_to_send[part]]),
-                         geom_to_send[part], REF_INT_TYPE, part),
-            "send");
-        RSS(ref_mpi_send(ref_mpi, &(sent_id[start_to_send[part]]),
-                         geom_to_send[part], REF_INT_TYPE, part),
-            "send");
-        RSS(ref_mpi_send(ref_mpi, &(sent_gref[start_to_send[part]]),
-                         geom_to_send[part], REF_INT_TYPE, part),
-            "send");
-        RSS(ref_mpi_send(ref_mpi, &(sent_param[2 * start_to_send[part]]),
-                         2 * geom_to_send[part], REF_DBL_TYPE, part),
-            "send");
+      each_ref_mpi_worker(ref_mpi, part) {
+        if (0 < geom_to_send[part]) {
+          RSS(ref_mpi_send(ref_mpi, &(geom_to_send[part]), 1, REF_INT_TYPE,
+                           part),
+              "send");
+          RSS(ref_mpi_send(ref_mpi, &(sent_node[start_to_send[part]]),
+                           geom_to_send[part], REF_INT_TYPE, part),
+              "send");
+          RSS(ref_mpi_send(ref_mpi, &(sent_id[start_to_send[part]]),
+                           geom_to_send[part], REF_INT_TYPE, part),
+              "send");
+          RSS(ref_mpi_send(ref_mpi, &(sent_gref[start_to_send[part]]),
+                           geom_to_send[part], REF_INT_TYPE, part),
+              "send");
+          RSS(ref_mpi_send(ref_mpi, &(sent_param[2 * start_to_send[part]]),
+                           2 * geom_to_send[part], REF_DBL_TYPE, part),
+              "send");
+        }
       }
     }
 
@@ -277,9 +281,10 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
     ref_free(geom_to_send);
 
     /* signal we are done */
-    each_ref_mpi_worker(ref_mpi, part) RSS(
-        ref_mpi_send(ref_mpi, &end_of_message, 1, REF_INT_TYPE, part), "send");
-
+    each_ref_mpi_worker(ref_mpi, part) {
+      RSS(ref_mpi_send(ref_mpi, &end_of_message, 1, REF_INT_TYPE, part),
+          "send");
+    }
   } else {
     do {
       RSS(ref_mpi_recv(ref_mpi, &geom_to_receive, 1, REF_INT_TYPE, 0), "recv");
@@ -497,8 +502,10 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
         elements_to_send[dest[cell]]++;
 
       start_to_send[0] = 0;
-      each_ref_mpi_worker(ref_mpi, part) start_to_send[part] =
-          start_to_send[part - 1] + elements_to_send[part - 1];
+      each_ref_mpi_worker(ref_mpi, part) {
+        start_to_send[part] =
+            start_to_send[part - 1] + elements_to_send[part - 1];
+      }
 
       each_ref_mpi_part(ref_mpi, part) elements_to_send[part] = 0;
       for (cell = 0; cell < section_size; cell++) {
@@ -527,14 +534,16 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
         ref_free(sent_part);
       }
 
-      each_ref_mpi_worker(ref_mpi, part) if (0 < elements_to_send[part]) {
-        RSS(ref_mpi_send(ref_mpi, &(elements_to_send[part]), 1, REF_INT_TYPE,
-                         part),
-            "send");
-        RSS(ref_mpi_send(ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
-                         size_per * elements_to_send[part], REF_GLOB_TYPE,
-                         part),
-            "send");
+      each_ref_mpi_worker(ref_mpi, part) {
+        if (0 < elements_to_send[part]) {
+          RSS(ref_mpi_send(ref_mpi, &(elements_to_send[part]), 1, REF_INT_TYPE,
+                           part),
+              "send");
+          RSS(ref_mpi_send(ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
+                           size_per * elements_to_send[part], REF_GLOB_TYPE,
+                           part),
+              "send");
+        }
       }
     }
 
@@ -546,9 +555,10 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
     ref_free(elements_to_send);
 
     /* signal we are done */
-    each_ref_mpi_worker(ref_mpi, part) RSS(
-        ref_mpi_send(ref_mpi, &end_of_message, 1, REF_INT_TYPE, part), "send");
-
+    each_ref_mpi_worker(ref_mpi, part) {
+      RSS(ref_mpi_send(ref_mpi, &end_of_message, 1, REF_INT_TYPE, part),
+          "send");
+    }
   } else {
     do {
       RSS(ref_mpi_recv(ref_mpi, &elements_to_receive, 1, REF_INT_TYPE, 0),
@@ -1175,9 +1185,10 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
         elements_to_send[dest[cell]]++;
 
       start_to_send[0] = 0;
-      each_ref_mpi_worker(ref_mpi, part) start_to_send[part] =
-          start_to_send[part - 1] + elements_to_send[part - 1];
-
+      each_ref_mpi_worker(ref_mpi, part) {
+        start_to_send[part] =
+            start_to_send[part - 1] + elements_to_send[part - 1];
+      }
       each_ref_mpi_part(ref_mpi, part) elements_to_send[part] = 0;
       for (cell = 0; cell < section_size; cell++) {
         new_location = start_to_send[dest[cell]] + elements_to_send[dest[cell]];
@@ -1205,14 +1216,16 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
         ref_free(sent_part);
       }
 
-      each_ref_mpi_worker(ref_mpi, part) if (0 < elements_to_send[part]) {
-        RSS(ref_mpi_send(ref_mpi, &(elements_to_send[part]), 1, REF_INT_TYPE,
-                         part),
-            "send");
-        RSS(ref_mpi_send(ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
-                         size_per * elements_to_send[part], REF_GLOB_TYPE,
-                         part),
-            "send");
+      each_ref_mpi_worker(ref_mpi, part) {
+        if (0 < elements_to_send[part]) {
+          RSS(ref_mpi_send(ref_mpi, &(elements_to_send[part]), 1, REF_INT_TYPE,
+                           part),
+              "send");
+          RSS(ref_mpi_send(ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
+                           size_per * elements_to_send[part], REF_GLOB_TYPE,
+                           part),
+              "send");
+        }
       }
     }
 
@@ -1222,9 +1235,10 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
     ref_free(elements_to_send);
 
     /* signal we are done */
-    each_ref_mpi_worker(ref_mpi, part) RSS(
-        ref_mpi_send(ref_mpi, &end_of_message, 1, REF_INT_TYPE, part), "send");
-
+    each_ref_mpi_worker(ref_mpi, part) {
+      RSS(ref_mpi_send(ref_mpi, &end_of_message, 1, REF_INT_TYPE, part),
+          "send");
+    }
   } else {
     do {
       RSS(ref_mpi_recv(ref_mpi, &elements_to_receive, 1, REF_INT_TYPE, 0),
