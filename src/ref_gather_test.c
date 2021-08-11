@@ -404,9 +404,6 @@ int main(int argc, char *argv[]) {
   { /* gather prism lb8 */
     REF_GRID ref_grid;
 
-    printf("%s processor %d of %d max tag %d\n", argv[0], ref_mpi_rank(ref_mpi),
-           ref_mpi_n(ref_mpi), ref_mpi_max_tag(ref_mpi));
-
     RSS(ref_fixture_pri_stack_grid(&ref_grid, ref_mpi), "set up tet");
 
     RSS(ref_gather_by_extension(ref_grid, "ref_gather_test.lb8.ugrid"),
