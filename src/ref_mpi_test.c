@@ -75,6 +75,42 @@ int main(int argc, char *argv[]) {
     RSS(ref_mpi_free(deep_copy), "mpi free");
   }
 
+  /* scatter send/recv */
+  {
+    REF_INT part, scatter = REF_EMPTY;
+    REF_INT n;
+    n = 1;
+    if (ref_mpi_once(ref_mpi)) {
+      each_ref_mpi_worker(ref_mpi, part) {
+        scatter = part;
+        RSS(ref_mpi_scatter_send(ref_mpi, &scatter, n, REF_INT_TYPE, part),
+            "scatter send");
+      }
+    } else {
+      RSS(ref_mpi_scatter_recv(ref_mpi, &scatter, n, REF_INT_TYPE),
+          "scatter recv");
+      REIS(ref_mpi_rank(ref_mpi), scatter, "scatter match rank");
+    }
+  }
+
+  /* gather send/recv */
+  {
+    REF_INT part, gather = REF_EMPTY;
+    REF_INT n;
+    n = 1;
+    if (ref_mpi_once(ref_mpi)) {
+      each_ref_mpi_worker(ref_mpi, part) {
+        RSS(ref_mpi_gather_recv(ref_mpi, &gather, n, REF_INT_TYPE, part),
+            "gather send");
+        REIS(part, gather, "gather match part");
+      }
+    } else {
+      gather = ref_mpi_rank(ref_mpi);
+      RSS(ref_mpi_gather_send(ref_mpi, &gather, n, REF_INT_TYPE),
+          "gather send");
+    }
+  }
+
   /* alltoall */
   {
     REF_INT part;

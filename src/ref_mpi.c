@@ -337,6 +337,112 @@ REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_scatter_send(REF_MPI ref_mpi, void *data, REF_INT n,
+                                REF_TYPE type, REF_INT dest) {
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+  REF_INT tag;
+
+  ref_type_mpi_type(type, datatype);
+
+  tag = dest;
+
+  RAB(0 <= tag && tag <= ref_mpi_max_tag(ref_mpi), "mpi tag outside bound",
+      { printf("tag %d bound %d\n", tag, ref_mpi_max_tag(ref_mpi)); });
+
+  MPI_Send(data, n, datatype, dest, tag, ref_mpi_comm(ref_mpi));
+
+  return REF_SUCCESS;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
+  SUPRESS_UNUSED_COMPILER_WARNING(data);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(dest);
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_mpi_scatter_recv(REF_MPI ref_mpi, void *data, REF_INT n,
+                                REF_TYPE type) {
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+  REF_INT tag;
+  MPI_Status status;
+  REF_INT source = 0;
+
+  ref_type_mpi_type(type, datatype);
+
+  tag = ref_mpi_rank(ref_mpi);
+
+  RAB(0 <= tag && tag <= ref_mpi_max_tag(ref_mpi), "mpi tag outside bound",
+      { printf("tag %d bound %d\n", tag, ref_mpi_max_tag(ref_mpi)); });
+
+  MPI_Recv(data, n, datatype, source, tag, ref_mpi_comm(ref_mpi), &status);
+
+  return REF_SUCCESS;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
+  SUPRESS_UNUSED_COMPILER_WARNING(data);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_mpi_gather_send(REF_MPI ref_mpi, void *data, REF_INT n,
+                               REF_TYPE type) {
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+  REF_INT tag;
+  REF_INT dest = 0;
+
+  ref_type_mpi_type(type, datatype);
+
+  tag = ref_mpi_rank(ref_mpi);
+
+  RAB(0 <= tag && tag <= ref_mpi_max_tag(ref_mpi), "mpi tag outside bound",
+      { printf("tag %d bound %d\n", tag, ref_mpi_max_tag(ref_mpi)); });
+
+  MPI_Send(data, n, datatype, dest, tag, ref_mpi_comm(ref_mpi));
+
+  return REF_SUCCESS;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
+  SUPRESS_UNUSED_COMPILER_WARNING(data);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_mpi_gather_recv(REF_MPI ref_mpi, void *data, REF_INT n,
+                               REF_TYPE type, REF_INT source) {
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+  REF_INT tag;
+  MPI_Status status;
+
+  ref_type_mpi_type(type, datatype);
+
+  tag = source;
+
+  RAB(0 <= tag && tag <= ref_mpi_max_tag(ref_mpi), "mpi tag outside bound",
+      { printf("tag %d bound %d\n", tag, ref_mpi_max_tag(ref_mpi)); });
+
+  MPI_Recv(data, n, datatype, source, tag, ref_mpi_comm(ref_mpi), &status);
+
+  return REF_SUCCESS;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
+  SUPRESS_UNUSED_COMPILER_WARNING(data);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(source);
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_mpi_send(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
                         REF_INT dest) {
 #ifdef HAVE_MPI

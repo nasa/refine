@@ -83,6 +83,14 @@ REF_STATUS ref_mpi_stopwatch_delta(REF_MPI ref_mpi, REF_DBL *delta);
 
 REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type);
 
+REF_STATUS ref_mpi_scatter_send(REF_MPI ref_mpi, void *data, REF_INT n,
+                                REF_TYPE type, REF_INT dest);
+REF_STATUS ref_mpi_scatter_recv(REF_MPI ref_mpi, void *data, REF_INT n,
+                                REF_TYPE type);
+REF_STATUS ref_mpi_gather_send(REF_MPI ref_mpi, void *data, REF_INT n,
+                               REF_TYPE type);
+REF_STATUS ref_mpi_gather_recv(REF_MPI ref_mpi, void *data, REF_INT n,
+                               REF_TYPE type, REF_INT source);
 REF_STATUS ref_mpi_send(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
                         REF_INT dest);
 REF_STATUS ref_mpi_recv(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
