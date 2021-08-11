@@ -883,13 +883,13 @@ static REF_STATUS ref_migrate_metis_subset(
       partdist[i] = part[i];
     }
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_send(ref_mpi, &(part[vtxdist[proc]]), count[proc], parm_type,
-                       proc),
+      RSS(ref_mpi_scatter_send(ref_mpi, &(part[vtxdist[proc]]), count[proc],
+                               parm_type, proc),
           "send part");
     }
   } else {
     proc = ref_mpi_rank(ref_mpi);
-    RSS(ref_mpi_recv(ref_mpi, partdist, count[proc], parm_type, 0),
+    RSS(ref_mpi_scatter_recv(ref_mpi, partdist, count[proc], parm_type),
         "recv part");
   }
 
