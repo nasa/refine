@@ -431,6 +431,12 @@ REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
   ref_malloc(request, 2 * ref_mpi_n(ref_mpi), MPI_Request);
   ref_type_mpi_type(type, datatype);
 
+  if (ref_mpi_n(ref_mpi) * ref_mpi_n(ref_mpi) > ref_mpi_max_tag(ref_mpi)) {
+    printf("IMPLEMENT nproc %d nproc^2 %d tag bound %d\n", ref_mpi_n(ref_mpi),
+           ref_mpi_n(ref_mpi) * ref_mpi_n(ref_mpi), ref_mpi_max_tag(ref_mpi));
+    return REF_IMPLEMENT;
+  }
+
   nreq = 0;
 
   offset = 0;
