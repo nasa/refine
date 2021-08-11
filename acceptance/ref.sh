@@ -147,6 +147,8 @@ LOG=${root_dir}/log.zoltan-unit
 trap "cat $LOG" EXIT
 cd ${zoltan_dir}/src
 echo para-unit > $LOG 2>&1
+which mpiexec
+which mpiexec >> $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_dict_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
@@ -185,6 +187,8 @@ LOG=${root_dir}/log.parmetis-unit
 trap "cat $LOG" EXIT
 cd ${parmetis_dir}/src
 echo para-unit > $LOG 2>&1
+which mpiexec
+which mpiexec >> $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1
