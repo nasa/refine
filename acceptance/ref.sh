@@ -96,6 +96,8 @@ cd ${zoltan_dir}
 
 LOG=${root_dir}/log.zoltan-configure
 trap "cat $LOG" EXIT
+which mpicc
+which mpicc >> $LOG 2>&1
 ${source_dir}/configure \
     --prefix=${zoltan_dir} \
     --with-zoltan=${zoltan_path} \
@@ -122,6 +124,8 @@ cd ${parmetis_dir}
 
 LOG=${root_dir}/log.parmetis-configure
 trap "cat $LOG" EXIT
+which mpicc
+which mpicc >> $LOG 2>&1
 ${source_dir}/configure \
     --prefix=${parmetis_dir} \
     --with-parmetis=${parmetis_path} \

@@ -32,6 +32,8 @@ cd ${build32}
 
 LOG=${root_dir}/log.build32-configure
 trap "cat $LOG" EXIT
+which mpicc
+which mpicc >> $LOG 2>&1
 ${source_dir}/configure \
     --prefix=${build32} \
     --with-parmetis=${parmetis32_path} \
