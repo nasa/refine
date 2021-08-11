@@ -191,6 +191,7 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
 
   ref_mpi->id = original->id;
   ref_mpi->n = original->n;
+  ref_mpi->max_tag = original->max_tag;
 
   ref_mpi->comm = NULL;
 #ifdef HAVE_MPI
