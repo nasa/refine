@@ -2546,10 +2546,12 @@ static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
 
   if (ref_node_n_global(ref_node) != dof) {
     if (ref_mpi_once(ref_mpi)) {
-      printf("file %d ref_node " REF_GLOB_FMT " %s\n", dof,
+      printf("file dof %d ref_node " REF_GLOB_FMT " %s\n", dof,
              ref_node_n_global(ref_node), filename);
     }
-    THROW("ERROR: global count mismatch");
+    if (ref_node_n_global(ref_node) > dof) {
+      THROW("ERROR: too small global dof");
+    }
   }
 
   *ldim = variables * steps;
