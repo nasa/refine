@@ -97,7 +97,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
       void *value;
       MPI_Comm_size(ref_mpi_comm(ref_mpi), &(ref_mpi->n));
       MPI_Comm_rank(ref_mpi_comm(ref_mpi), &(ref_mpi->id));
-      *value = NULL;
+      value = NULL;
       REIS(MPI_SUCCESS,
            MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, &value, &is_set),
            "unable to query MPI environment MPI_TAG_UB from world comm");
