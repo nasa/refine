@@ -1568,11 +1568,11 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "donor part solution");
 
   if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("part %s\n", donor_meshb);
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", receipt_meshb);
     RSS(ref_part_by_extension(&receipt_grid, ref_mpi, receipt_meshb), "part");
     ref_mpi_stopwatch_stop(ref_mpi, "receptor part");
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("import %s\n", donor_meshb);
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", receipt_meshb);
     RSS(ref_import_by_extension(&receipt_grid, ref_mpi, receipt_meshb),
         "import");
     ref_mpi_stopwatch_stop(ref_mpi, "receptor import");
