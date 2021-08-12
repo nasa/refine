@@ -2759,7 +2759,27 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* step esp */
+  { /* step esp plt */
+    REF_DBL s;
+    REF_DBL h;
+    REF_DBL h0 = 0.1;
+    REF_DBL h1 = 0.5;
+    REF_DBL h2 = 10.0;
+    REF_DBL s1 = 2.0;
+    REF_DBL s2 = 100.0;
+    REF_DBL width = 0.1;
+    REF_INT i, n = 1000;
+    FILE *f;
+    f = fopen("ref_metric_test_h.dat", "w");
+    for (i = 0; i <= n; i++) {
+      s = s2 * ((REF_DBL)i / n);
+      RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+      fprintf(f, "%f %f\n", s, h);
+    }
+    fclose(f);
+  }
+
+  if(-1 == argc){ /* plot step esp DISABLED */
     REF_DBL s;
     REF_DBL h;
     REF_DBL h0 = 0.1;
