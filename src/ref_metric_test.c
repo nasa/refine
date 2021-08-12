@@ -2772,9 +2772,12 @@ int main(int argc, char *argv[]) {
     s = 0.0;
     RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
     RWDS(h0, h, tol, "h(s=0)");
+    s = s1;
+    RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+    RWDS(0.5 * (h0 + h1), h, tol, "h(s=s2)");
     s = s2;
     RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
-    RWDS(h0, h, tol, "h(s=s2)");
+    RWDS(h2, h, tol, "h(s=s2)");
   }
 
   { /* parse interior box floor spacing */
