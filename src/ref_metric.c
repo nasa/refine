@@ -2711,7 +2711,7 @@ REF_STATUS ref_metric_step_exp(REF_DBL s, REF_DBL *h, REF_DBL h0, REF_DBL h1,
   REF_DBL blend, x, e;
   blend = 0.5 * (1.0 + tanh((s - s1) / width));
   x = (s - s1) / (s2 - s1);
-  e = h1 * pow(h2 / h1, x);
+  e = h1 + (h2-h1)*(exp(x)-1.0);
   *h = (1.0 - blend) * h0 + (blend)*e;
   /* printf("s %f blend %f x %f e %f h %f\n",s,blend,x,e,*h); */
   return REF_SUCCESS;
