@@ -2759,6 +2759,24 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* step esp */
+    REF_DBL s;
+    REF_DBL h;
+    REF_DBL h0 = 0.1;
+    REF_DBL h1 = 0.5;
+    REF_DBL h2 = 10.0;
+    REF_DBL s1 = 2.0;
+    REF_DBL s2 = 100.0;
+    REF_DBL width = 0.01;
+    REF_DBL tol = -1.0;
+    s = 0.0;
+    RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+    RWDS(h0, h, tol, "h(s=0)");
+    s = s2;
+    RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+    RWDS(h0, h, tol, "h(s=s2)");
+  }
+
   { /* parse interior box floor spacing */
     char *args[] = {
         "--uniform", "box", "floor", "2", "-1", "0", "0", "0", "1", "1", "1",

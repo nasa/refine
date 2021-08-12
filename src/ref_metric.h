@@ -151,6 +151,10 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
 REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
                                 const char *filename);
 
+REF_STATUS ref_metric_step_exp(REF_DBL s, REF_DBL *h, REF_DBL h0, REF_DBL h1,
+                               REF_DBL h2, REF_DBL s1, REF_DBL s2,
+                               REF_DBL width);
+
 REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
                             char *args[]);
 REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *xyz,
