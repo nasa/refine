@@ -116,6 +116,7 @@ int main(int argc, char *argv[]) {
   REF_INT gradation_pos = REF_EMPTY;
   REF_INT cloud_pos = REF_EMPTY;
   REF_INT wake_pos = REF_EMPTY;
+  REF_INT stepexp_pos = REF_EMPTY;
   REF_INT decompose_pos = REF_EMPTY;
   REF_INT imply_pos = REF_EMPTY;
   REF_INT eigs_pos = REF_EMPTY;
@@ -172,6 +173,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--cloud", &cloud_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--wake", &wake_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--stepexp", &stepexp_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--decompose", &decompose_pos), REF_NOT_FOUND,
       "arg search");
@@ -1846,6 +1849,78 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (stepexp_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *dist, *metric, m[6];
+    REF_INT ldim;
+    REF_DBL h0;
+    REF_DBL h1;
+    REF_DBL h2;
+    REF_DBL s1;
+    REF_DBL s2;
+    REF_DBL width;
+    REF_INT i, node;
+
+    REIS(1, stepexp_pos,
+         "required args: --stepexp grid.ext distance.solb "
+         "metric.solb h0 h1 h2 s1 s2 width");
+    REIS(11, argc,
+         "required args: --stepexp grid.ext distance.solb "
+         "metric.solb h0 h1 h2 s1 s2 width");
+    if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to part grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &dist, argv[3]),
+        "unable to load distance in position 3");
+    if (ref_mpi_once(ref_mpi)) printf("distance ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read dist");
+    REIS(1, ldim, "expect [distance]");
+    h0 = atof(argv[5]);
+    h1 = atof(argv[6]);
+    h2 = atof(argv[7]);
+    s1 = atof(argv[8]);
+    s2 = atof(argv[9]);
+    width = atof(argv[10]);
+    if (ref_mpi_once(ref_mpi))
+      printf("h0 %f h1 %f h2 %f s1 %f s2 %f width %f\n", h0, h1, h2, s1, s2,
+             width);
+
+    if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL h;
+      REF_DBL s = dist[node];
+      RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+      m[0] = 1.0 / (h * h);
+      m[1] = 0.0;
+      m[2] = 0.0;
+      m[3] = 1.0 / (h * h);
+      m[4] = 0.0;
+      m[5] = 1.0 / (h * h);
+      if (ref_grid_twod(ref_grid)) m[5] = 1.0;
+      for (i = 0; i < 6; i++) metric[i + 6 * node] = m[i];
+    }
+    RSS(ref_metric_to_node(metric, ref_node), "set node");
+    ref_free(metric);
+    ref_free(dist);
+
+    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+      printf("writing metric %s\n", argv[4]);
+    RSS(ref_gather_metric(ref_grid, argv[4]), "export scaled metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "dump metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "done.");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   if (decompose_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
@@ -2779,7 +2854,7 @@ int main(int argc, char *argv[]) {
     fclose(f);
   }
 
-  if(-1 == argc){ /* plot step esp DISABLED */
+  if (-1 == argc) { /* plot step esp DISABLED */
     REF_DBL s;
     REF_DBL h;
     REF_DBL h0 = 0.1;
