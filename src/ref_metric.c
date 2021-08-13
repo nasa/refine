@@ -2699,6 +2699,25 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 /*
+ *  h2          ----
+ *  h1     /----
+ *  h0 ---/
+ *     0  s1       s2
+ */
+
+REF_STATUS ref_metric_step_exp(REF_DBL s, REF_DBL *h, REF_DBL h0, REF_DBL h1,
+                               REF_DBL h2, REF_DBL s1, REF_DBL s2,
+                               REF_DBL width) {
+  REF_DBL blend, x, e;
+  blend = 0.5 * (1.0 + tanh((s - s1) / width));
+  x = (s - s1) / (s2 - s1);
+  e = h1 + (h2-h1)*(exp(x)-1.0)/(exp(1.0)-1.0);
+  *h = (1.0 - blend) * h0 + (blend)*e;
+  /* printf("s %f blend %f x %f e %f h %f\n",s,blend,x,e,*h); */
+  return REF_SUCCESS;
+}
+
+/*
 @article{barbier-galin-fast-dist-cyl-cone-swept-sphere,
 author = {Aurelien Barbier and Eric Galin},
 title = {Fast Distance Computation Between a Point and
