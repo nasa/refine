@@ -2834,7 +2834,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* step esp plt */
+  if (-1 == argc) { /* step esp plt DISABLED */
     REF_DBL s;
     REF_DBL h;
     REF_DBL h0 = 0.1;
@@ -2854,7 +2854,7 @@ int main(int argc, char *argv[]) {
     fclose(f);
   }
 
-  if (-1 == argc) { /* plot step esp DISABLED */
+  { /* plot step esp */
     REF_DBL s;
     REF_DBL h;
     REF_DBL h0 = 0.1;
