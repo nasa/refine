@@ -279,6 +279,7 @@ static void visualize_help(const char *name) {
       "output_solution.extension\n",
       name);
   printf("\n");
+  printf("   --surface extracts surface elements (deletes volume).\n");
   printf(
       "   --subtract <baseline_solution.extension> "
       "computes (input-baseline).\n");
@@ -3479,6 +3480,21 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
   if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
   ref_mpi_stopwatch_stop(ref_mpi, "read solution");
+
+  RXS(ref_args_find(argc, argv, "--surface", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_INT group;
+    REF_CELL ref_cell;
+    if (ref_mpi_once(ref_mpi)) printf("  --surface deleting 3D cells\n");
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+      RSS(ref_cell_free(ref_cell), "free cell");
+      RSS(ref_cell_create(&ref_grid_cell(ref_grid, group),
+                          (REF_CELL_TYPE)group),
+          "empty cell create");
+      ref_cell = ref_grid_cell(ref_grid, group);
+    }
+  }
 
   RXS(ref_args_find(argc, argv, "--boom", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos + 4 < argc) {
