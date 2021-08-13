@@ -3486,6 +3486,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos) {
     REF_INT group;
     REF_CELL ref_cell;
+    if (ref_mpi_once(ref_mpi)) printf("  --surface deleting 3D cells\n");
     each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
       RSS(ref_cell_free(ref_grid_cell(ref_grid, group)), "free cell");
       RSS(ref_cell_create(&ref_grid_cell(ref_grid, group),
