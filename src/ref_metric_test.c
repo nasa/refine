@@ -142,6 +142,7 @@ int main(int argc, char *argv[]) {
   REF_INT imply_pos = REF_EMPTY;
   REF_INT eigs_pos = REF_EMPTY;
   REF_INT error_pos = REF_EMPTY;
+  REF_INT error2_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -204,6 +205,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--eigs", &eigs_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--error", &error_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--error2", &error2_pos), REF_NOT_FOUND,
       "arg search");
 
   if (curve_limit_pos != REF_EMPTY) {
@@ -2166,6 +2169,46 @@ int main(int argc, char *argv[]) {
     ref_free(error);
     ref_free(hess);
     ref_free(metric);
+    ref_free(field);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "done.");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (error2_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *field;
+    REF_INT ldim;
+
+    REIS(1, error2_pos,
+         "required args: --error2 grid-enrich2.ext scalar-enrich2.solb");
+    REIS(4, argc,
+         "required args: --error2 grid-enrich2.ext scalar-enrich2.solb");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[2]);
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
+      ref_mpi_stopwatch_stop(ref_mpi, "part mesh");
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import mesh");
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
+        "unable to load solution in position 3");
+    if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
+    REIS(1, ldim, "expect scalar");
+
+    RSS(ref_metric_interpolation_error2(ref_grid, field), "error")
+
     ref_free(field);
 
     RSS(ref_grid_free(ref_grid), "free");

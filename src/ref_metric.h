@@ -176,6 +176,8 @@ typedef REF_STATUS (*ref_metric_integrand2)(void *state, REF_DBL *bary,
 REF_STATUS ref_metric_integrate2(ref_metric_integrand2 integrand, void *state,
                                  REF_DBL *integral);
 
+REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar);
+
 END_C_DECLORATION
 
 #endif /* REF_METRIC_H */
