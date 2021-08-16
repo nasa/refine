@@ -2711,7 +2711,7 @@ REF_STATUS ref_metric_step_exp(REF_DBL s, REF_DBL *h, REF_DBL h0, REF_DBL h1,
   REF_DBL blend, x, e;
   blend = 0.5 * (1.0 + tanh((s - s1) / width));
   x = (s - s1) / (s2 - s1);
-  e = h1 + (h2-h1)*(exp(x)-1.0)/(exp(1.0)-1.0);
+  e = h1 + (h2 - h1) * (exp(x) - 1.0) / (exp(1.0) - 1.0);
   *h = (1.0 - blend) * h0 + (blend)*e;
   /* printf("s %f blend %f x %f e %f h %f\n",s,blend,x,e,*h); */
   return REF_SUCCESS;
@@ -3139,5 +3139,31 @@ REF_STATUS ref_metric_integrand_err2(void *void_m_diag_sys_hess,
   /* integrate 2 * pi * r * error or 2 * pi * r^4/4 * derr_dr2 */
   *radial_error = 2 * ref_math_pi * derr_dr2 * pow(r, 4) / 4.0;
   /* printf("theta %f r %f derr_dr2 %f\n",theta,r,derr_dr2); */
+  return REF_SUCCESS;
+}
+
+static REF_INT nq2 = 7;
+static REF_DBL baryq2[7][3] = {
+    {1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0},
+    {0.797426985353087, 0.101286507323456, 0.101286507323456},
+    {0.101286507323456, 0.797426985353087, 0.101286507323456},
+    {0.101286507323456, 0.101286507323456, 0.797426985353087},
+    {0.470142064105115, 0.470142064105115, 0.059715871789770},
+    {0.470142064105115, 0.059715871789770, 0.470142064105115},
+    {0.059715871789770, 0.470142064105115, 0.470142064105115}};
+static REF_DBL weightq2[7] = {
+    0.225000000000000, 0.125939180544827, 0.125939180544827, 0.125939180544827,
+    0.132394152785506, 0.132394152785506, 0.132394152785506};
+
+REF_STATUS ref_metric_integrate2(ref_metric_integrand2 integrand, void *state,
+                                 REF_DBL *integral) {
+  REF_INT i;
+  REF_DBL value;
+  *integral = 0.0;
+  for (i = 0; i < nq2; i++) {
+    RSS(integrand(state, baryq2[i], &value), "eval");
+    *integral += weightq2[i] * value;
+  }
+
   return REF_SUCCESS;
 }

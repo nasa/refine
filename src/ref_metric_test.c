@@ -91,6 +91,17 @@ REF_STATUS ref_metric_test_quadratic_integrand(void *constant_ax2_bx_c,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_test_constant_integrand2(void *constant_area,
+                                               REF_DBL *bary, REF_DBL *value);
+REF_STATUS ref_metric_test_constant_integrand2(void *constant_area,
+                                               REF_DBL *bary, REF_DBL *value) {
+  REF_DBL constant = ((REF_DBL *)constant_area)[0];
+  REF_DBL area = ((REF_DBL *)constant_area)[1];
+  SUPRESS_UNUSED_COMPILER_WARNING(bary);
+  *value = constant * area;
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT fixed_point_pos = REF_EMPTY;
   REF_INT curve_limit_pos = REF_EMPTY;
@@ -3373,6 +3384,17 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_integrate(ref_metric_integrand_err2, state, &integral),
         "int");
     RWDS(11.5846229, integral, tol, "int linear");
+  }
+
+  {
+    REF_DBL constant[] = {5.0, 0.5}; /* constant, triangle area */
+    void *state = (void *)(constant);
+    REF_DBL integral;
+    REF_DBL tol = -1.0;
+    RSS(ref_metric_integrate2(ref_metric_test_constant_integrand2, state,
+                              &integral),
+        "int");
+    RWDS(constant[0] * constant[1], integral, tol, "int const");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
