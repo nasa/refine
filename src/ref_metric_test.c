@@ -102,6 +102,16 @@ REF_STATUS ref_metric_test_constant_integrand2(void *constant_area,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_test_xy2(void *state, REF_DBL *bary, REF_DBL *value);
+REF_STATUS ref_metric_test_xy2(void *state, REF_DBL *bary, REF_DBL *value) {
+  REF_DBL area = 1.0;
+  REF_DBL x = 2.0 * (1.0 - bary[0]);
+  REF_DBL y = bary[2];
+  SUPRESS_UNUSED_COMPILER_WARNING(state);
+  *value = x * y * y * area;
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT fixed_point_pos = REF_EMPTY;
   REF_INT curve_limit_pos = REF_EMPTY;
@@ -3390,11 +3400,21 @@ int main(int argc, char *argv[]) {
     REF_DBL constant[] = {5.0, 0.5}; /* constant, triangle area */
     void *state = (void *)(constant);
     REF_DBL integral;
-    REF_DBL tol = -1.0;
+    REF_DBL tol = 1.0e-10;
     RSS(ref_metric_integrate2(ref_metric_test_constant_integrand2, state,
                               &integral),
         "int");
     RWDS(constant[0] * constant[1], integral, tol, "int const");
+  }
+
+  { /* x*y^2 */
+    /*        /(2,1)
+     *   (0,0)-(2,0) */
+    void *state = NULL;
+    REF_DBL integral;
+    REF_DBL tol = 1.0e-11;
+    RSS(ref_metric_integrate2(ref_metric_test_xy2, state, &integral), "int");
+    RWDS(4.0 / 15.0, integral, tol, "int const");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
