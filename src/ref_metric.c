@@ -3207,12 +3207,36 @@ REF_STATUS ref_metric_integrate2(ref_metric_integrand2 integrand, void *state,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_metric_integrand_quad_err2(void *void_node_area,
+                                                 REF_DBL *bary,
+                                                 REF_DBL *error) {
+  REF_DBL *node_area = void_node_area;
+  REF_DBL shape[REF_CELL_MAX_SIZE_PER];
+  REF_INT i;
+  REF_DBL quadratic, linear;
+  REF_INT p = 1;
+
+  RSS(ref_cell_shape(REF_CELL_TR3, bary, shape), "shape");
+
+  quadratic = 0.0;
+  for (i = 0; i < 6; i++) {
+    quadratic += shape[i] * node_area[i];
+  }
+  linear = 0.0;
+  for (i = 0; i < 3; i++) {
+    linear += bary[i] * node_area[i];
+  }
+  *error = pow(ABS(quadratic - linear), p) * node_area[6];
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tr2(ref_grid);
   REF_INT cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL node_area[7];
+  REF_DBL integral;
 
   SUPRESS_UNUSED_COMPILER_WARNING(scalar);
   printf("ntr2 %d\n", ref_cell_n(ref_cell));
@@ -3221,6 +3245,9 @@ REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar) {
       node_area[cell_node] = scalar[nodes[cell_node]];
     }
     RSS(ref_node_tri_area(ref_node, nodes, &(node_area[6])), "area");
+    RSS(ref_metric_integrate2(ref_metric_integrand_quad_err2, node_area,
+                              &integral),
+        "intg");
   }
   return REF_SUCCESS;
 }
