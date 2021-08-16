@@ -3400,7 +3400,7 @@ int main(int argc, char *argv[]) {
     REF_DBL constant[] = {5.0, 0.5}; /* constant, triangle area */
     void *state = (void *)(constant);
     REF_DBL integral;
-    REF_DBL tol = 1.0e-10;
+    REF_DBL tol = -1;
     RSS(ref_metric_integrate2(ref_metric_test_constant_integrand2, state,
                               &integral),
         "int");
@@ -3412,7 +3412,7 @@ int main(int argc, char *argv[]) {
      *   (0,0)-(2,0) */
     void *state = NULL;
     REF_DBL integral;
-    REF_DBL tol = 1.0e-11;
+    REF_DBL tol = -1;
     RSS(ref_metric_integrate2(ref_metric_test_xy2, state, &integral), "int");
     RWDS(4.0 / 15.0, integral, tol, "int const");
   }
