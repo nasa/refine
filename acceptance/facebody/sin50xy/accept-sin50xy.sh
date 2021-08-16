@@ -34,6 +34,14 @@ function adapt_cycle {
     ${src}/ref visualize ${outproj}.meshb ${outproj}.solb ${outproj}.plt
 }
 
+function disc_interp_error {
+    proj=$1
+    ${src}/ref_geom_test --enrich2 ${proj}.meshb square.egads
+    mv ref_geom_enrich2.meshb ${proj}-enrich2.meshb
+    ${src}/ref_acceptance ${field} ${proj}-enrich2.meshb \
+	  ${proj}-enrich2.solb
+}
+
 cp square.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01 1000
