@@ -44,6 +44,7 @@ function disc_interp_error {
     ${src}/ref_metric_test --imply ${proj}.meshb ${proj}-imply.solb
     ${src}/ref_acceptance ${field} ${proj}.meshb ${proj}.solb
     ${src}/ref_metric_test --error ${proj}.meshb ${proj}.solb ${proj}-imply.solb
+    cp ref_metric_test_error.plt ${proj}-cont-err.plt
 }
 
 cp square.meshb cycle00.meshb
