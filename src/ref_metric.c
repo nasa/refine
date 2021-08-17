@@ -3238,7 +3238,9 @@ REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar) {
   REF_DBL node_area[7];
   REF_DBL integral;
   REF_DBL error;
+  REF_DBL *dist;
 
+  ref_malloc_init(dist, ref_node_max(ref_node), REF_DBL, 0.0);
   error = 0.0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     each_ref_cell_cell_node(ref_cell, cell_node) {
@@ -3249,7 +3251,23 @@ REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar) {
                               &integral),
         "intg");
     error += integral;
+    {
+      REF_CELL tri_cell = ref_grid_tri(ref_grid);
+      REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+      tri_nodes[0] = nodes[0];
+      tri_nodes[1] = nodes[1];
+      tri_nodes[2] = nodes[2];
+      tri_nodes[3] = nodes[6];
+      RSS(ref_cell_add(tri_cell, tri_nodes, &new_cell), "add tri");
+      dist[tri_nodes[0]] += integral / 3.0;
+      dist[tri_nodes[1]] += integral / 3.0;
+      dist[tri_nodes[2]] += integral / 3.0;
+    }
   }
-  printf("interpolation error %e\n",error);
+  printf("interpolation error %e\n", error);
+  RSS(ref_gather_scalar_by_extension(ref_grid, 1, dist, NULL,
+                                     "ref_metric_test_dist.plt"),
+      "dump");
+
   return REF_SUCCESS;
 }
