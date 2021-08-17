@@ -40,14 +40,19 @@ function disc_interp_error {
     mv ref_geom_enrich2.meshb ${proj}-enrich2.meshb
     ${src}/ref_acceptance ${field} ${proj}-enrich2.meshb \
 	  ${proj}-enrich2.solb
+    ${src}/ref_metric_test --error2 ${proj}-enrich2.meshb ${proj}-enrich2.solb
 }
 
 cp square.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01 1000
+disc_interp_error cycle00
 adapt_cycle cycle01 cycle02 1000
+disc_interp_error cycle01
 adapt_cycle cycle02 cycle03 2000
+disc_interp_error cycle02
 adapt_cycle cycle03 cycle04 4000
+disc_interp_error cycle04
 adapt_cycle cycle04 cycle05 8000
 
 

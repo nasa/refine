@@ -3237,9 +3237,9 @@ REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL node_area[7];
   REF_DBL integral;
+  REF_DBL error;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(scalar);
-  printf("ntr2 %d\n", ref_cell_n(ref_cell));
+  error = 0.0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     each_ref_cell_cell_node(ref_cell, cell_node) {
       node_area[cell_node] = scalar[nodes[cell_node]];
@@ -3248,6 +3248,8 @@ REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar) {
     RSS(ref_metric_integrate2(ref_metric_integrand_quad_err2, node_area,
                               &integral),
         "intg");
+    error += integral;
   }
+  printf("interpolation error %e\n",error);
   return REF_SUCCESS;
 }
