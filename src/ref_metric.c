@@ -2711,7 +2711,7 @@ REF_STATUS ref_metric_step_exp(REF_DBL s, REF_DBL *h, REF_DBL h0, REF_DBL h1,
   REF_DBL blend, x, e;
   blend = 0.5 * (1.0 + tanh((s - s1) / width));
   x = (s - s1) / (s2 - s1);
-  e = h1 + (h2-h1)*(exp(x)-1.0)/(exp(1.0)-1.0);
+  e = h1 + (h2 - h1) * (exp(x) - 1.0) / (exp(1.0) - 1.0);
   *h = (1.0 - blend) * h0 + (blend)*e;
   /* printf("s %f blend %f x %f e %f h %f\n",s,blend,x,e,*h); */
   return REF_SUCCESS;
@@ -3139,5 +3139,135 @@ REF_STATUS ref_metric_integrand_err2(void *void_m_diag_sys_hess,
   /* integrate 2 * pi * r * error or 2 * pi * r^4/4 * derr_dr2 */
   *radial_error = 2 * ref_math_pi * derr_dr2 * pow(r, 4) / 4.0;
   /* printf("theta %f r %f derr_dr2 %f\n",theta,r,derr_dr2); */
+  return REF_SUCCESS;
+}
+
+/*
+static REF_INT nq2 = 7;
+static REF_DBL baryq2[7][3] = {
+    {1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0},
+    {0.797426985353087, 0.101286507323456, 0.101286507323456},
+    {0.101286507323456, 0.797426985353087, 0.101286507323456},
+    {0.101286507323456, 0.101286507323456, 0.797426985353087},
+    {0.470142064105115, 0.470142064105115, 0.059715871789770},
+    {0.470142064105115, 0.059715871789770, 0.470142064105115},
+    {0.059715871789770, 0.470142064105115, 0.470142064105115}};
+static REF_DBL weightq2[7] = {
+    0.225000000000000, 0.125939180544827, 0.125939180544827, 0.125939180544827,
+    0.132394152785506, 0.132394152785506, 0.132394152785506};
+*/
+static REF_INT nq2 = 25;
+static REF_DBL baryq2[25][3] = {
+    {0.3333333333333333, 0.3333333333333333, 0.3333333333333334},
+    {0.4272731788467755, 0.1454536423064490, 0.4272731788467755},
+    {0.1454536423064490, 0.4272731788467755, 0.4272731788467755},
+    {0.4272731788467755, 0.4272731788467755, 0.1454536423064490},
+    {0.1830992224486750, 0.6338015551026499, 0.1830992224486750},
+    {0.6338015551026499, 0.1830992224486750, 0.1830992224486751},
+    {0.1830992224486750, 0.1830992224486750, 0.6338015551026499},
+    {0.4904340197011306, 0.0191319605977388, 0.4904340197011307},
+    {0.0191319605977388, 0.4904340197011306, 0.4904340197011306},
+    {0.4904340197011306, 0.4904340197011306, 0.0191319605977389},
+    {0.0125724455515805, 0.9748551088968389, 0.0125724455515805},
+    {0.9748551088968389, 0.0125724455515805, 0.0125724455515806},
+    {0.0125724455515805, 0.0125724455515805, 0.9748551088968389},
+    {0.3080460016852477, 0.0376853303946862, 0.6542686679200660},
+    {0.0376853303946862, 0.3080460016852477, 0.6542686679200660},
+    {0.6542686679200661, 0.0376853303946862, 0.3080460016852477},
+    {0.0376853303946862, 0.6542686679200661, 0.3080460016852477},
+    {0.6542686679200661, 0.3080460016852477, 0.0376853303946862},
+    {0.3080460016852477, 0.6542686679200661, 0.0376853303946861},
+    {0.0333718337393048, 0.8438235891921360, 0.1228045770685593},
+    {0.8438235891921360, 0.0333718337393048, 0.1228045770685593},
+    {0.1228045770685593, 0.8438235891921360, 0.0333718337393047},
+    {0.8438235891921360, 0.1228045770685593, 0.0333718337393048},
+    {0.1228045770685593, 0.0333718337393048, 0.8438235891921360},
+    {0.0333718337393048, 0.1228045770685593, 0.8438235891921360}};
+static REF_DBL weightq2[25] = {
+    0.0809374287976229, 0.0772985880029631, 0.0772985880029631,
+    0.0772985880029631, 0.0784576386123717, 0.0784576386123717,
+    0.0784576386123717, 0.0174691679959295, 0.0174691679959295,
+    0.0174691679959295, 0.0042923741848328, 0.0042923741848328,
+    0.0042923741848328, 0.0374688582104676, 0.0374688582104676,
+    0.0374688582104676, 0.0374688582104676, 0.0374688582104676,
+    0.0374688582104676, 0.0269493525918800, 0.0269493525918800,
+    0.0269493525918800, 0.0269493525918800, 0.0269493525918800,
+    0.0269493525918800};
+
+REF_STATUS ref_metric_integrate2(ref_metric_integrand2 integrand, void *state,
+                                 REF_DBL *integral) {
+  REF_INT i;
+  REF_DBL value;
+  *integral = 0.0;
+  for (i = 0; i < nq2; i++) {
+    RSS(integrand(state, baryq2[i], &value), "eval");
+    *integral += weightq2[i] * value;
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_metric_integrand_quad_err2(void *void_node_area,
+                                                 REF_DBL *bary,
+                                                 REF_DBL *error) {
+  REF_DBL *node_area = void_node_area;
+  REF_DBL shape[REF_CELL_MAX_SIZE_PER];
+  REF_INT i;
+  REF_DBL quadratic, linear;
+  REF_INT p = 1;
+
+  RSS(ref_cell_shape(REF_CELL_TR3, bary, shape), "shape");
+
+  quadratic = 0.0;
+  for (i = 0; i < 6; i++) {
+    quadratic += shape[i] * node_area[i];
+  }
+  linear = 0.0;
+  for (i = 0; i < 3; i++) {
+    linear += bary[i] * node_area[i];
+  }
+  *error = pow(ABS(quadratic - linear), p) * node_area[6];
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tr2(ref_grid);
+  REF_INT cell, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL node_area[7];
+  REF_DBL integral;
+  REF_DBL error;
+  REF_DBL *dist;
+
+  ref_malloc_init(dist, ref_node_max(ref_node), REF_DBL, 0.0);
+  error = 0.0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      node_area[cell_node] = scalar[nodes[cell_node]];
+    }
+    RSS(ref_node_tri_area(ref_node, nodes, &(node_area[6])), "area");
+    RSS(ref_metric_integrate2(ref_metric_integrand_quad_err2, node_area,
+                              &integral),
+        "intg");
+    error += integral;
+    {
+      REF_CELL tri_cell = ref_grid_tri(ref_grid);
+      REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+      tri_nodes[0] = nodes[0];
+      tri_nodes[1] = nodes[1];
+      tri_nodes[2] = nodes[2];
+      tri_nodes[3] = nodes[6];
+      RSS(ref_cell_add(tri_cell, tri_nodes, &new_cell), "add tri");
+      dist[tri_nodes[0]] += integral / 3.0;
+      dist[tri_nodes[1]] += integral / 3.0;
+      dist[tri_nodes[2]] += integral / 3.0;
+    }
+  }
+  printf("interpolation error %e\n", error);
+  RSS(ref_gather_scalar_by_extension(ref_grid, 1, dist, NULL,
+                                     "ref_metric_test_dist.plt"),
+      "dump");
+
   return REF_SUCCESS;
 }
