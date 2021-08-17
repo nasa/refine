@@ -23,7 +23,7 @@ function adapt_cycle {
 	  ${inproj}.solb
 
     ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
-	  ${complexity} ${inproj}-metric.solb
+	  ${complexity} ${inproj}-metric.solb --norm-power 1
 
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -f ${outproj}.tec
@@ -59,5 +59,6 @@ disc_interp_error cycle02
 adapt_cycle cycle03 cycle04 4000
 disc_interp_error cycle04
 adapt_cycle cycle04 cycle05 8000
+disc_interp_error cycle05
 
 
