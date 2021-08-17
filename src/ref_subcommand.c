@@ -101,6 +101,10 @@ static void adapt_help(const char *name) {
   printf("      construct a multiscale metric to control interpolation\n");
   printf("      error in u+ of Spalding's Law. Requires boundary conditions\n");
   printf("      via the --fun3d-mapbc or --viscous-tags options.\n");
+  printf("  --stepexp [h0] [h1] [h2] [s1] [s2] [width]\n");
+  printf("      construct an isotropic metric of constant then exponential\n");
+  printf("      Requires boundary conditions via the --fun3d-mapbc or\n");
+  printf("      --viscous-tags options.\n");
   option_uniform_help();
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
@@ -345,12 +349,61 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   return REF_SUCCESS;
 }
 
+static REF_STATUS stepexp_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
+                                      int argc, char *argv[]) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *distance;
+  REF_INT node;
+  REF_INT pos;
+  REF_DBL h0, h1, h2, s1, s2, width;
+
+  RSS(ref_args_find(argc, argv, "--stepexp", &pos), "arg search");
+  RAS(pos + 6 < argc, "not enough --stepexp args");
+  h0 = atof(argv[pos + 1]);
+  h1 = atof(argv[pos + 2]);
+  h2 = atof(argv[pos + 3]);
+  s1 = atof(argv[pos + 4]);
+  s2 = atof(argv[pos + 5]);
+  width = atof(argv[pos + 6]);
+  if (ref_mpi_once(ref_mpi))
+    printf("h0 %f h1 %f h2 %f s1 %f s2 %f width %f\n", h0, h1, h2, s1, s2,
+           width);
+  RAS(h0 > 0.0, "positive h0");
+  RAS(h1 > 0.0, "positive h1");
+  RAS(h2 > 0.0, "positive h2");
+  RAS(s1 > 0.0, "positive s1");
+  RAS(s2 > 0.0, "positive s2");
+  RAS(width > 0.0, "positive width");
+
+  ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
+  ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    REF_DBL m[6];
+    REF_DBL h;
+    REF_DBL s = distance[node];
+    RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+    m[0] = 1.0 / (h * h);
+    m[1] = 0.0;
+    m[2] = 0.0;
+    m[3] = 1.0 / (h * h);
+    m[4] = 0.0;
+    m[5] = 1.0 / (h * h);
+    if (ref_grid_twod(ref_grid)) m[5] = 1.0;
+    RSS(ref_node_metric_set(ref_node, node, m), "set");
+  }
+  ref_free(distance);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_mesh = NULL;
   char *in_metric = NULL;
   char *in_egads = NULL;
   REF_GRID ref_grid = NULL;
   REF_MPI ref_mpi = ref_mpi_orig;
+  REF_BOOL stepexp_metric = REF_FALSE;
   REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
@@ -555,6 +608,21 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     curvature_metric = REF_TRUE;
   }
 
+  RXS(ref_args_find(argc, argv, "--stepexp", &pos), REF_NOT_FOUND,
+      "metric arg search");
+  if (REF_EMPTY != pos && pos < argc - 6) {
+    if (0 == ref_dict_n(ref_dict_bcs)) {
+      if (ref_mpi_once(ref_mpi))
+        printf(
+            "\nset viscous boundaries via --fun3d-mapbc or --viscous-tags "
+            "to use --stepexp\n\n");
+      goto shutdown;
+    }
+    if (ref_mpi_once(ref_mpi)) printf(" --stepexp metric\n");
+    stepexp_metric = REF_TRUE;
+    curvature_metric = REF_TRUE;
+  }
+
   RXS(ref_args_find(argc, argv, "--implied-complexity", &pos), REF_NOT_FOUND,
       "metric arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
@@ -575,20 +643,25 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   }
 
   if (curvature_metric) {
-    if (spalding_yplus > 0.0) {
-      RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
-                          argc, argv),
-          "spalding");
+    if (stepexp_metric) {
+      RSS(stepexp_metric_fill(ref_grid, ref_dict_bcs, argc, argv), "stepexp");
     } else {
-      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-      ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
-      RXS(ref_args_find(argc, argv, "--facelift-metric", &pos), REF_NOT_FOUND,
-          "arg search");
-      if (REF_EMPTY != pos && pos < argc - 1) {
-        complexity = atof(argv[pos + 1]);
-        if (ref_mpi_once(ref_mpi)) printf("--facelift-metric %f\n", complexity);
-        RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
-        ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
+      if (spalding_yplus > 0.0) {
+        RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
+                            argc, argv),
+            "spalding");
+      } else {
+        RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+        ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+        RXS(ref_args_find(argc, argv, "--facelift-metric", &pos), REF_NOT_FOUND,
+            "arg search");
+        if (REF_EMPTY != pos && pos < argc - 1) {
+          complexity = atof(argv[pos + 1]);
+          if (ref_mpi_once(ref_mpi))
+            printf("--facelift-metric %f\n", complexity);
+          RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
+          ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
+        }
       }
     }
   } else {
@@ -616,19 +689,23 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
     if (curvature_metric) {
-      if (spalding_yplus > 0.0) {
-        RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
-                            argc, argv),
-            "spalding");
+      if (stepexp_metric) {
+        RSS(stepexp_metric_fill(ref_grid, ref_dict_bcs, argc, argv), "stepexp");
       } else {
-        RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-        ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
-        if (REF_EMPTY != pos && pos < argc - 1) {
-          complexity = atof(argv[pos + 1]);
-          if (ref_mpi_once(ref_mpi))
-            printf("--facelift-metric %f\n", complexity);
-          RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
-          ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
+        if (spalding_yplus > 0.0) {
+          RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus,
+                              complexity, argc, argv),
+              "spalding");
+        } else {
+          RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+          ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+          if (REF_EMPTY != pos && pos < argc - 1) {
+            complexity = atof(argv[pos + 1]);
+            if (ref_mpi_once(ref_mpi))
+              printf("--facelift-metric %f\n", complexity);
+            RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
+            ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
+          }
         }
       }
     } else {
