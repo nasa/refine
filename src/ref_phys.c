@@ -745,21 +745,17 @@ static REF_BOOL ref_phys_wall_distance_bc(REF_INT bc) {
           bc == 6210);   /* filter */
 }
 
-REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
-                                  REF_DBL *distance) {
-  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+static REF_STATUS ref_phys_local_wall(REF_GRID ref_grid, REF_DICT ref_dict,
+                                      REF_INT *node_per_ptr,
+                                      REF_INT *local_ncell_ptr,
+                                      REF_DBL **local_xyz_ptr) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT local_ncell, ncell, local_total, *counts;
-  REF_DBL *local_xyz, *xyz;
+  REF_INT local_ncell;
+  REF_DBL *local_xyz;
   REF_INT node_per;
   REF_CELL ref_cell;
   REF_INT i, node, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT bc;
-  REF_SEARCH ref_search;
-  REF_LIST ref_list;
-  REF_INT item, candidate;
-  REF_DBL center[3], radius, dist;
-  REF_DBL scale = 1.0 + 1.0e-8;
 
   if (ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_edg(ref_grid);
@@ -833,6 +829,31 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     }
     ref_cell = ref_grid_tri(ref_grid);
   }
+
+  *node_per_ptr = node_per;
+  *local_ncell_ptr = local_ncell;
+  *local_xyz_ptr = local_xyz;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
+                                  REF_DBL *distance) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT local_ncell, ncell, local_total, *counts;
+  REF_DBL *local_xyz, *xyz;
+  REF_INT node_per;
+  REF_INT node, cell;
+  REF_SEARCH ref_search;
+  REF_LIST ref_list;
+  REF_INT item, candidate;
+  REF_DBL center[3], radius, dist;
+  REF_DBL scale = 1.0 + 1.0e-8;
+
+  RSS(ref_phys_local_wall(ref_grid, ref_dict, &node_per, &local_ncell,
+                          &local_xyz),
+      "local wall");
 
   ncell = local_ncell;
   RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_INT_TYPE), "allsum ncell");
