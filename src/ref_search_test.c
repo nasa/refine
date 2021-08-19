@@ -263,7 +263,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_search_free(ref_search), "search free");
   }
 
-  { /* nearest candidate closer then */
+  { /* nearest candidate closer than */
     REF_SEARCH ref_search;
     REF_LIST ref_list;
     REF_INT item;
