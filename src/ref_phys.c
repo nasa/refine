@@ -891,9 +891,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
 
     RSS(ref_list_create(&ref_list), "create list");
     each_ref_node_valid_node(ref_node, node) {
-      RSS(ref_search_nearest_candidates(
+      RSS(ref_search_nearest_candidates_closer_than(
               ref_search, ref_list,
-              ref_node_xyz_ptr(ref_grid_node(ref_grid), node)),
+              ref_node_xyz_ptr(ref_grid_node(ref_grid), node), distance[node]),
           "candidates");
       each_ref_list_item(ref_list, item) {
         candidate = ref_list_value(ref_list, item);
