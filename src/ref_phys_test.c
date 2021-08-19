@@ -1857,7 +1857,7 @@ int main(int argc, char *argv[]) {
     REF_DICT ref_dict;
     REF_DBL *distance;
     REF_INT node;
-    char grid_file[] = "ref_phys_test.lb8.ugrid";
+    char grid_file[] = "ref_phys_test_brick_wall_dist.lb8.ugrid";
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "set up tet");
       RSS(ref_export_by_extension(ref_grid, grid_file), "export");
