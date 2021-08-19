@@ -337,6 +337,27 @@ REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_bcast_from_rank(REF_MPI ref_mpi, void *data, REF_INT n,
+                                   REF_TYPE type, REF_INT rank) {
+#ifdef HAVE_MPI
+  MPI_Datatype datatype;
+
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+
+  ref_type_mpi_type(type, datatype);
+
+  MPI_Bcast(data, n, datatype, rank, ref_mpi_comm(ref_mpi));
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
+  SUPRESS_UNUSED_COMPILER_WARNING(data);
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(rank);
+#endif
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_scatter_send(REF_MPI ref_mpi, void *data, REF_INT n,
                                 REF_TYPE type, REF_INT dest) {
 #ifdef HAVE_MPI
