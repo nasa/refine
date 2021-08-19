@@ -1528,7 +1528,7 @@ int main(int argc, char *argv[]) {
   { /* brick zeroth */
     REF_GRID ref_grid;
     FILE *f;
-    REF_INT i, node, ldim;
+    REF_INT i, node, ldim = 10;
     REF_DBL *field;
     REF_DICT ref_dict;
     REF_BOOL *replace;
@@ -1536,6 +1536,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
       RSS(ref_export_by_extension(ref_grid, "ref_phys_test.meshb"), "export");
+      RSS(ref_grid_free(ref_grid), "free");
       f = fopen("ref_phys_test.mapbc", "w");
       fprintf(f, "6\n");
       fprintf(f, "1 5000\n");
@@ -1545,25 +1546,18 @@ int main(int argc, char *argv[]) {
       fprintf(f, "5 4000\n"); /* z = 0 */
       fprintf(f, "6 5000\n");
       fclose(f);
-      ref_malloc(field, 10 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-        if (ref_node_xyz(ref_grid_node(ref_grid), 2, node) < 0.01) {
-          for (i = 0; i < 10; i++) field[i + 10 * node] = -1.0;
-        } else {
-          for (i = 0; i < 10; i++) field[i + 10 * node] = (REF_DBL)i;
-        }
-      }
-      RSS(ref_gather_scalar_by_extension(ref_grid, 10, field, NULL,
-                                         "ref_phys_test.solb"),
-          "gather");
-      ref_free(field);
-      RSS(ref_grid_free(ref_grid), "free");
     }
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, "ref_phys_test.meshb"),
         "import");
-    RSS(ref_part_scalar(ref_grid, &ldim, &field, "ref_phys_test.solb"),
-        "part field");
+    ref_malloc(field, 10 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      if (ref_node_xyz(ref_grid_node(ref_grid), 2, node) < 0.01) {
+        for (i = 0; i < 10; i++) field[i + 10 * node] = -1.0;
+      } else {
+        for (i = 0; i < 10; i++) field[i + 10 * node] = (REF_DBL)i;
+      }
+    }
 
     RSS(ref_dict_create(&ref_dict), "create");
     RSS(ref_phys_read_mapbc(ref_dict, "ref_phys_test.mapbc"),
@@ -1580,14 +1574,14 @@ int main(int argc, char *argv[]) {
         RWDS((REF_DBL)i, field[i + 10 * node], -1.0, "not replaced");
       }
     }
-    if (ref_mpi_once(ref_mpi)) {
-      REIS(0, remove("ref_phys_test.meshb"), "meshb clean up");
-      REIS(0, remove("ref_phys_test.mapbc"), "mapbc clean up");
-      REIS(0, remove("ref_phys_test.solb"), "solb clean up");
-    }
 
     ref_free(field);
     RSS(ref_grid_free(ref_grid), "free");
+
+    if (ref_mpi_once(ref_mpi)) {
+      REIS(0, remove("ref_phys_test.meshb"), "meshb clean up");
+      REIS(0, remove("ref_phys_test.mapbc"), "mapbc clean up");
+    }
   }
 
   {
@@ -1784,7 +1778,7 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
-  { /* two tri signed dist */
+  if (!ref_mpi_para(ref_mpi)) { /* two tri signed dist */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node;
