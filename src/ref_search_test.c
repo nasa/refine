@@ -263,6 +263,72 @@ int main(int argc, char *argv[]) {
     RSS(ref_search_free(ref_search), "search free");
   }
 
+  { /* nearest candidate closer then */
+    REF_SEARCH ref_search;
+    REF_LIST ref_list;
+    REF_INT item;
+    REF_DBL xyz[3], r, distance;
+
+    RSS(ref_search_create(&ref_search, 10), "make search");
+    RSS(ref_list_create(&ref_list), "make list");
+
+    item = 28;
+    xyz[0] = 2.8;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    r = 0.1;
+    RSS(ref_search_insert(ref_search, item, xyz, r), "make search");
+
+    item = 32;
+    xyz[0] = 3.2;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    r = 0.1;
+    RSS(ref_search_insert(ref_search, item, xyz, r), "make search");
+
+    item = 31;
+    xyz[0] = 3.1;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    r = 0.25;
+    RSS(ref_search_insert(ref_search, item, xyz, r), "make search");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    distance = 2.75;
+    RSS(ref_search_nearest_candidates_closer_than(ref_search, ref_list, xyz,
+                                                  distance),
+        "cand");
+    REIS(1, ref_list_n(ref_list), "should gather");
+    REIS(28, ref_list_value(ref_list, 0), "should item");
+    RSS(ref_list_erase(ref_list), "reset");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    distance = 2.9;
+    RSS(ref_search_nearest_candidates_closer_than(ref_search, ref_list, xyz,
+                                                  distance),
+        "cand");
+    REIS(2, ref_list_n(ref_list), "should gather");
+    REIS(28, ref_list_value(ref_list, 0), "should item");
+    REIS(31, ref_list_value(ref_list, 1), "should item");
+    RSS(ref_list_erase(ref_list), "reset");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_search_nearest_candidates(ref_search, ref_list, xyz), "cand");
+    REIS(2, ref_list_n(ref_list), "should gather");
+    REIS(28, ref_list_value(ref_list, 0), "should item");
+    REIS(31, ref_list_value(ref_list, 1), "should item");
+    RSS(ref_list_erase(ref_list), "reset");
+
+    RSS(ref_list_free(ref_list), "list free");
+    RSS(ref_search_free(ref_search), "search free");
+  }
+
   { /* selection half */
     REF_DBL *elements, median, value;
     REF_INT n;

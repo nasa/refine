@@ -232,6 +232,20 @@ REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
+                                                     REF_LIST ref_list,
+                                                     REF_DBL *position,
+                                                     REF_DBL distance) {
+  REF_DBL trim_radius;
+  REF_INT parent;
+  parent = 0;
+  trim_radius = distance;
+  RSS(ref_search_trim(ref_search, parent, position, &trim_radius), "trim");
+  RSS(ref_search_touching(ref_search, ref_list, position, trim_radius),
+      "touches");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
                                 REF_LONG position, REF_DBL *value) {
   REF_INT i, bisection;
