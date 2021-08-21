@@ -850,10 +850,15 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   REF_INT item, candidate;
   REF_DBL center[3], radius, dist;
   REF_DBL scale = 1.0 + 1.0e-8;
+  REF_BOOL timing = REF_FALSE;
+
+  if (timing) ref_mpi_stopwatch_start(ref_mpi);
 
   each_ref_node_valid_node(ref_node, node) { distance[node] = REF_DBL_MAX; }
 
   each_ref_mpi_part(ref_mpi, part) {
+    if (timing && ref_mpi_once(ref_mpi))
+      printf("part %d of %d\n", part, ref_mpi_n(ref_mpi));
     node_per = 0;
     xyz = NULL;
     if (part == ref_mpi_rank(ref_mpi)) {
@@ -881,6 +886,8 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
       }
     }
 
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "form-scatter");
+
     RSS(ref_search_create(&ref_search, ncell), "make search");
     for (cell = 0; cell < ncell; cell++) {
       RSS(ref_node_bounding_sphere_xyz(&(xyz[3 * node_per * cell]), node_per,
@@ -888,6 +895,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
           "bound");
       RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
     }
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "create-insert");
 
     RSS(ref_list_create(&ref_list), "create list");
     each_ref_node_valid_node(ref_node, node) {
@@ -918,6 +926,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     RSS(ref_search_free(ref_search), "free");
 
     ref_free(xyz);
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
   }
 
   return REF_SUCCESS;
