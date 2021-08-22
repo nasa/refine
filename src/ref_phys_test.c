@@ -982,7 +982,10 @@ int main(int argc, char *argv[]) {
     RSS(ref_dict_create(&ref_dict), "dict");
     ref_malloc_init(distance, ref_node_max(ref_node), REF_DBL, -1.0);
     RSS(ref_dict_store(ref_dict, 5, 4000), "store");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
     RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
+    ref_mpi_stopwatch_stop(ref_mpi, "complete wall dist");
 
     each_ref_node_valid_node(ref_node, node) {
       RWDS(ref_node_xyz(ref_node, 2, node), distance[node], -1, "dist=z");
