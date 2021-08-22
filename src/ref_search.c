@@ -291,7 +291,6 @@ REF_STATUS ref_search_nearest_tri(REF_SEARCH ref_search, REF_DBL *xyz,
                                   REF_DBL *position, REF_DBL *distance) {
   REF_INT parent;
   parent = 0;
-  RSS(ref_search_trim(ref_search, parent, position, distance), "trim");
   RSS(ref_search_gather_tri(ref_search, xyz, parent, position, distance),
       "touches");
   return REF_SUCCESS;
