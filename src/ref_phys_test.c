@@ -985,7 +985,7 @@ int main(int argc, char *argv[]) {
 
     ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
     RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
-    ref_mpi_stopwatch_stop(ref_mpi, "complete wall dist");
+    ref_mpi_stopwatch_stop(ref_mpi, "complete list wall dist");
 
     each_ref_node_valid_node(ref_node, node) {
       RWDS(ref_node_xyz(ref_node, 2, node), distance[node], -1, "dist=z");
@@ -995,7 +995,44 @@ int main(int argc, char *argv[]) {
     ref_dict_free(ref_dict);
     ref_grid_free(ref_grid);
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
 
+  if (timing_pos != REF_EMPTY) { /* timing large brick wall dist direct */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DICT ref_dict;
+    REF_DBL *distance;
+    REF_INT node;
+    char grid_file[] = "ref_phys_test_brick_wall_dist.lb8.ugrid";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_args_grid(&ref_grid, ref_mpi, 0, 1, 0, 1, 0, 1,
+                                          50, 50, 50),
+          "set up tet");
+      RSS(ref_export_by_extension(ref_grid, grid_file), "export");
+      RSS(ref_grid_free(ref_grid), "free");
+    }
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, grid_file), "import");
+    ref_node = ref_grid_node(ref_grid);
+
+    RSS(ref_dict_create(&ref_dict), "dict");
+    ref_malloc_init(distance, ref_node_max(ref_node), REF_DBL, -1.0);
+    RSS(ref_dict_store(ref_dict, 5, 4000), "store");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
+    ref_mpi_stopwatch_stop(ref_mpi, "complete tri wall dist");
+
+    each_ref_node_valid_node(ref_node, node) {
+      RWDS(ref_node_xyz(ref_node, 2, node), distance[node], -1, "dist=z");
+    }
+
+    ref_free(distance);
+    ref_dict_free(ref_dict);
+    ref_grid_free(ref_grid);
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  if (timing_pos != REF_EMPTY) { /* stop when --timing */
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
