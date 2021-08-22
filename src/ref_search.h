@@ -59,6 +59,8 @@ REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
                                                      REF_LIST ref_list,
                                                      REF_DBL *position,
                                                      REF_DBL distance);
+REF_STATUS ref_search_nearest_tri(REF_SEARCH ref_search, REF_DBL *xyz,
+                                  REF_DBL *position, REF_DBL *distance);
 
 REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
                                 REF_LONG position, REF_DBL *value);

@@ -175,6 +175,48 @@ static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
+                                        REF_INT parent, REF_DBL *position,
+                                        REF_DBL *distance) {
+  REF_INT i;
+  REF_DBL dist;
+
+  if (0 == ref_search->n) return REF_SUCCESS;  /* tree empty */
+  if (REF_EMPTY == parent) return REF_SUCCESS; /* finished traversing */
+  RAB(0 <= parent && parent < ref_search->n, "parent invalid",
+      { printf("%d n %d parent\n", ref_search->n, parent); })
+  /* finished traversing */
+  if (REF_EMPTY == ref_search->item[parent]) return REF_SUCCESS;
+
+  dist = 0.0;
+  for (i = 0; i < ref_search->d; i++)
+    dist += pow(position[i] - ref_search->pos[i + ref_search->d * parent], 2);
+  dist = sqrt(dist);
+
+  /* if the distance between me and the target are less than combined radii */
+  if (dist - ref_search->radius[parent] <= *distance) {
+    REF_INT tri = ref_search->item[parent];
+    REF_DBL tri_dist;
+    RSS(ref_search_distance3(&(xyz[0 + 9 * tri]), &(xyz[3 + 9 * tri]),
+                             &(xyz[6 + 9 * tri]), position, &tri_dist),
+        "tri dist");
+    *distance = MIN(*distance, tri_dist);
+  }
+
+  /* if the distance between me and the target are less than children
+   * children_ball includes child radii, so only subtract target radius */
+  if (*distance >= dist - ref_search->children_ball[parent]) {
+    RSS(ref_search_gather_tri(ref_search, xyz, ref_search->left[parent],
+                              position, distance),
+        "gthr");
+    RSS(ref_search_gather_tri(ref_search, xyz, ref_search->right[parent],
+                              position, distance),
+        "gthr");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
                                REF_DBL *position, REF_DBL radius) {
   RSS(ref_search_gather(ref_search, ref_list, 0, position, radius), "gthr");
@@ -242,6 +284,15 @@ REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
   trim_radius = distance;
   RSS(ref_search_trim(ref_search, parent, position, &trim_radius), "trim");
   RSS(ref_search_touching(ref_search, ref_list, position, trim_radius),
+      "touches");
+  return REF_SUCCESS;
+}
+REF_STATUS ref_search_nearest_tri(REF_SEARCH ref_search, REF_DBL *xyz,
+                                  REF_DBL *position, REF_DBL *distance) {
+  REF_INT parent;
+  parent = 0;
+  RSS(ref_search_trim(ref_search, parent, position, distance), "trim");
+  RSS(ref_search_gather_tri(ref_search, xyz, parent, position, distance),
       "touches");
   return REF_SUCCESS;
 }
