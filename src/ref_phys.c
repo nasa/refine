@@ -841,9 +841,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
                                   REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT part, ncell, total;
-  REF_DBL *xyz;
-  REF_INT node_per;
+  REF_INT part, ncell, total, local_ncell;
+  REF_DBL *local_xyz, *xyz;
+  REF_INT local_node_per, node_per;
   REF_INT node, cell;
   REF_SEARCH ref_search;
   REF_LIST ref_list;
@@ -854,37 +854,46 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
 
   if (timing) ref_mpi_stopwatch_start(ref_mpi);
 
+  if (ref_grid_twod(ref_grid)) {
+    node_per = 2;
+  } else {
+    node_per = 3;
+  }
+
   each_ref_node_valid_node(ref_node, node) { distance[node] = REF_DBL_MAX; }
 
+  RSS(ref_phys_local_wall(ref_grid, ref_dict, &local_node_per, &local_ncell,
+                          &local_xyz),
+      "local wall");
+  REIS(node_per, local_node_per, "node_per miss match");
+
+  if (timing) ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
+
   each_ref_mpi_part(ref_mpi, part) {
-    if (timing && ref_mpi_once(ref_mpi))
-      printf("part %d of %d\n", part, ref_mpi_n(ref_mpi));
-    node_per = 0;
     xyz = NULL;
     if (part == ref_mpi_rank(ref_mpi)) {
-      RSS(ref_phys_local_wall(ref_grid, ref_dict, &node_per, &ncell, &xyz),
-          "local wall");
-      RSS(ref_mpi_bcast_from_rank(ref_mpi, &ncell, 1, REF_INT_TYPE, part),
+      RSS(ref_mpi_bcast_from_rank(ref_mpi, &local_ncell, 1, REF_INT_TYPE, part),
           "bcast ncell");
-      if (ncell > 0) {
-        RSS(ref_mpi_bcast_from_rank(ref_mpi, &node_per, 1, REF_INT_TYPE, part),
-            "bcast ncell");
+      ncell = local_ncell;
+      if (local_ncell > 0) {
         total = 3 * node_per * ncell;
-        RSS(ref_mpi_bcast_from_rank(ref_mpi, xyz, total, REF_DBL_TYPE, part),
+        RSS(ref_mpi_bcast_from_rank(ref_mpi, local_xyz, total, REF_DBL_TYPE,
+                                    part),
             "bcast ncell");
+        xyz = local_xyz;
       }
     } else {
       RSS(ref_mpi_bcast_from_rank(ref_mpi, &ncell, 1, REF_INT_TYPE, part),
           "bcast ncell");
       if (ncell > 0) {
-        RSS(ref_mpi_bcast_from_rank(ref_mpi, &node_per, 1, REF_INT_TYPE, part),
-            "bcast ncell");
         total = 3 * node_per * ncell;
         ref_malloc(xyz, total, REF_DBL);
         RSS(ref_mpi_bcast_from_rank(ref_mpi, xyz, total, REF_DBL_TYPE, part),
             "bcast ncell");
       }
     }
+    if (timing && ref_mpi_once(ref_mpi))
+      printf("part %d of %d with %d\n", part, ref_mpi_n(ref_mpi), ncell);
 
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "form-scatter");
 
@@ -925,9 +934,10 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     RSS(ref_list_free(ref_list), "free");
     RSS(ref_search_free(ref_search), "free");
 
-    ref_free(xyz);
+    if (part != ref_mpi_rank(ref_mpi)) ref_free(xyz);
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
   }
 
+  ref_free(local_xyz);
   return REF_SUCCESS;
 }
