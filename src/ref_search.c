@@ -547,9 +547,9 @@ REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
     RAS(ref_math_divisible((d4 - d3), ((d4 - d3) + (d5 - d6))),
         "div zero (d4 - d3) / ((d4 - d3) + (d5 - d6))");
     v = (d4 - d3) / ((d4 - d3) + (d5 - d6));
-    proj[0] = a[0] + v * ac[0];
-    proj[1] = a[1] + v * ac[1];
-    proj[2] = a[2] + v * ac[2];
+    proj[0] = b[0] + v * (c[0] - b[0]);
+    proj[1] = b[1] + v * (c[1] - b[1]);
+    proj[2] = b[2] + v * (c[2] - b[2]);
     *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
                      (p[1] - proj[1]) * (p[1] - proj[1]) +
                      (p[2] - proj[2]) * (p[2] - proj[2]));
