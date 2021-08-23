@@ -968,7 +968,7 @@ int main(int argc, char *argv[]) {
     REF_DICT ref_dict;
     REF_DBL *distance;
     REF_INT node;
-    char grid_file[] = "ref_phys_test_brick_wall_dist.lb8.ugrid";
+    char grid_file[] = "ref_phys_test_brick_wall_dist1.lb8.ugrid";
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_args_grid(&ref_grid, ref_mpi, 0, 1, 0, 1, 0, 1,
                                           50, 50, 50),
@@ -1003,7 +1003,7 @@ int main(int argc, char *argv[]) {
     REF_DICT ref_dict;
     REF_DBL *distance;
     REF_INT node;
-    char grid_file[] = "ref_phys_test_brick_wall_dist.lb8.ugrid";
+    char grid_file[] = "ref_phys_test_brick_wall_dist2.lb8.ugrid";
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_args_grid(&ref_grid, ref_mpi, 0, 1, 0, 1, 0, 1,
                                           50, 50, 50),
