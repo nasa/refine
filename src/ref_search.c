@@ -461,7 +461,8 @@ REF_STATUS ref_search_dist3(REF_DBL *p, REF_DBL *a, REF_DBL *b, REF_DBL *c,
   REF_DBL proj[3];
   REF_DBL cp[3];
   REF_DBL d5, d6;
-  REF_DBL vb;
+  REF_DBL vb, va;
+  REF_DBL denom, w;
 
   /* Check if P in vertex region outside A */
   ab[0] = b[0] - a[0];
@@ -539,6 +540,32 @@ REF_STATUS ref_search_dist3(REF_DBL *p, REF_DBL *a, REF_DBL *b, REF_DBL *c,
                      (p[2] - proj[2]) * (p[2] - proj[2]));
     return REF_SUCCESS;
   }
+
+  /* Check if P in edge region of BC, if so return projection of P onto BC */
+  va = d3 * d6 - d5 * d4;
+  if (va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0) {
+    RAS(ref_math_divisible((d4 - d3), ((d4 - d3) + (d5 - d6))),
+        "div zero (d4 - d3) / ((d4 - d3) + (d5 - d6))");
+    v = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+    proj[0] = a[0] + v * ac[0];
+    proj[1] = a[1] + v * ac[1];
+    proj[2] = a[2] + v * ac[2];
+    *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
+                     (p[1] - proj[1]) * (p[1] - proj[1]) +
+                     (p[2] - proj[2]) * (p[2] - proj[2]));
+    return REF_SUCCESS;
+  }
+
+  RAS(ref_math_divisible(1.0, (va + vb + vc)), "div zero 1.0 / (va + vb + vc)");
+  denom = 1.0 / (va + vb + vc);
+  v = vb * denom;
+  w = vc * denom;
+  proj[0] = a[0] + v * ab[0] + w * ac[0];
+  proj[1] = a[1] + v * ab[1] + w * ac[1];
+  proj[2] = a[2] + v * ab[2] + w * ac[2];
+  *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
+                   (p[1] - proj[1]) * (p[1] - proj[1]) +
+                   (p[2] - proj[2]) * (p[2] - proj[2]));
 
   return REF_SUCCESS;
 }
