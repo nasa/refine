@@ -981,11 +981,10 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
 
     if (part != ref_mpi_rank(ref_mpi)) ref_free(xyz);
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
-
-    if (ref_mpi_once(ref_mpi))
-      printf("form %lu eval %lu elem %lu\n", (unsigned long)form_time,
-             (unsigned long)eval_time, (unsigned long)elem_time);
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("form %lu eval %lu elem %lu\n", (unsigned long)form_time,
+           (unsigned long)eval_time, (unsigned long)elem_time);
 
   ref_free(local_xyz);
   return REF_SUCCESS;
