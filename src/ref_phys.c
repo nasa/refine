@@ -941,3 +941,86 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   ref_free(local_xyz);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_phys_wall_direct(REF_GRID ref_grid, REF_DICT ref_dict,
+                                REF_DBL *distance) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT part, ncell, total, local_ncell;
+  REF_DBL *local_xyz, *xyz;
+  REF_INT local_node_per, node_per;
+  REF_INT node, cell;
+  REF_SEARCH ref_search;
+  REF_DBL center[3], radius;
+  REF_DBL scale = 1.0 + 1.0e-8;
+  REF_BOOL timing = REF_FALSE;
+
+  if (timing) ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_grid_twod(ref_grid)) {
+    node_per = 2;
+  } else {
+    node_per = 3;
+  }
+
+  each_ref_node_valid_node(ref_node, node) { distance[node] = REF_DBL_MAX; }
+
+  RSS(ref_phys_local_wall(ref_grid, ref_dict, &local_node_per, &local_ncell,
+                          &local_xyz),
+      "local wall");
+  REIS(node_per, local_node_per, "node_per miss match");
+
+  if (timing) ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
+
+  each_ref_mpi_part(ref_mpi, part) {
+    xyz = NULL;
+    if (part == ref_mpi_rank(ref_mpi)) {
+      RSS(ref_mpi_bcast_from_rank(ref_mpi, &local_ncell, 1, REF_INT_TYPE, part),
+          "bcast ncell");
+      ncell = local_ncell;
+      if (local_ncell > 0) {
+        total = 3 * node_per * ncell;
+        RSS(ref_mpi_bcast_from_rank(ref_mpi, local_xyz, total, REF_DBL_TYPE,
+                                    part),
+            "bcast ncell");
+        xyz = local_xyz;
+      }
+    } else {
+      RSS(ref_mpi_bcast_from_rank(ref_mpi, &ncell, 1, REF_INT_TYPE, part),
+          "bcast ncell");
+      if (ncell > 0) {
+        total = 3 * node_per * ncell;
+        ref_malloc(xyz, total, REF_DBL);
+        RSS(ref_mpi_bcast_from_rank(ref_mpi, xyz, total, REF_DBL_TYPE, part),
+            "bcast ncell");
+      }
+    }
+    if (timing && ref_mpi_once(ref_mpi))
+      printf("part %d of %d with %d\n", part, ref_mpi_n(ref_mpi), ncell);
+
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "form-scatter");
+
+    RSS(ref_search_create(&ref_search, ncell), "make search");
+    for (cell = 0; cell < ncell; cell++) {
+      RSS(ref_node_bounding_sphere_xyz(&(xyz[3 * node_per * cell]), node_per,
+                                       center, &radius),
+          "bound");
+      RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
+    }
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "create-insert");
+
+    each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_search_nearest_tri(
+              ref_search, xyz, ref_node_xyz_ptr(ref_grid_node(ref_grid), node),
+              &(distance[node])),
+          "candidates");
+    }
+    RSS(ref_search_free(ref_search), "free");
+
+    if (part != ref_mpi_rank(ref_mpi)) ref_free(xyz);
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
+  }
+
+  ref_free(local_xyz);
+  return REF_SUCCESS;
+}
