@@ -451,7 +451,7 @@ REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   return REF_SUCCESS;
 }
 /* Ericson Real Time Collision Detection p141 */
-REF_STATUS ref_search_dist3(REF_DBL *p, REF_DBL *a, REF_DBL *b, REF_DBL *c,
+REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
                             REF_DBL *distance) {
   REF_DBL ab[3], ac[3], ap[3];
   REF_DBL d1, d2;
