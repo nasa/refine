@@ -69,6 +69,8 @@ REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz,
                                 REF_DBL *distance);
 REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
                                 REF_DBL *xyz, REF_DBL *distance);
+REF_STATUS ref_search_dist3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
+                            REF_DBL *xyz, REF_DBL *distance);
 END_C_DECLORATION
 
 #endif /* REF_SEARCH_H */

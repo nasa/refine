@@ -450,3 +450,46 @@ REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
 
   return REF_SUCCESS;
 }
+/* Ericson Real Time Collision Detection p141 */
+REF_STATUS ref_search_dist3(REF_DBL *p, REF_DBL *a, REF_DBL *b, REF_DBL *c,
+                            REF_DBL *distance) {
+  REF_DBL ab[3], ac[3], ap[3];
+  REF_DBL d1, d2;
+  REF_DBL bp[3];
+  REF_DBL d3, d4;
+  ab[0] = b[0] - a[0];
+  ab[1] = b[1] - a[1];
+  ab[2] = b[2] - a[2];
+
+  ac[0] = c[0] - a[0];
+  ac[1] = c[1] - a[1];
+  ac[2] = c[2] - a[2];
+
+  ap[0] = p[0] - a[0];
+  ap[1] = p[1] - a[1];
+  ap[2] = p[2] - a[2];
+
+  d1 = ab[0] * ap[0] + ab[1] * ap[1] + ab[2] * ap[2];
+  d2 = ac[0] * ap[0] + ac[1] * ap[1] + ac[2] * ap[2];
+  if (d1 <= 0.0 && d2 <= 0.0) {
+    *distance =
+        sqrt((p[0] - a[0]) * (p[0] - a[0]) + (p[1] - a[1]) * (p[1] - a[1]) +
+             (p[2] - a[2]) * (p[2] - a[2]));
+    return REF_SUCCESS;
+  }
+
+  bp[0] = p[0] - b[0];
+  bp[1] = p[1] - b[1];
+  bp[2] = p[2] - b[2];
+
+  d3 = ab[0] * bp[0] + ab[1] * bp[1] + ab[2] * bp[2];
+  d4 = ac[0] * bp[0] + ac[1] * bp[1] + ac[2] * bp[2];
+  if (d3 >= 0.0 && d4 <= d3) {
+    *distance =
+        sqrt((p[0] - b[0]) * (p[0] - b[0]) + (p[1] - b[1]) * (p[1] - b[1]) +
+             (p[2] - b[2]) * (p[2] - a[2]));
+    return REF_SUCCESS;
+  }
+
+  return REF_SUCCESS;
+}
