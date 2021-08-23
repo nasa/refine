@@ -457,6 +457,13 @@ REF_STATUS ref_search_dist3(REF_DBL *p, REF_DBL *a, REF_DBL *b, REF_DBL *c,
   REF_DBL d1, d2;
   REF_DBL bp[3];
   REF_DBL d3, d4;
+  REF_DBL vc, v;
+  REF_DBL proj[3];
+  REF_DBL cp[3];
+  REF_DBL d5, d6;
+  REF_DBL vb;
+
+  /* Check if P in vertex region outside A */
   ab[0] = b[0] - a[0];
   ab[1] = b[1] - a[1];
   ab[2] = b[2] - a[2];
@@ -478,6 +485,7 @@ REF_STATUS ref_search_dist3(REF_DBL *p, REF_DBL *a, REF_DBL *b, REF_DBL *c,
     return REF_SUCCESS;
   }
 
+  /* Check if P in vertex region outside B */
   bp[0] = p[0] - b[0];
   bp[1] = p[1] - b[1];
   bp[2] = p[2] - b[2];
@@ -487,7 +495,48 @@ REF_STATUS ref_search_dist3(REF_DBL *p, REF_DBL *a, REF_DBL *b, REF_DBL *c,
   if (d3 >= 0.0 && d4 <= d3) {
     *distance =
         sqrt((p[0] - b[0]) * (p[0] - b[0]) + (p[1] - b[1]) * (p[1] - b[1]) +
-             (p[2] - b[2]) * (p[2] - a[2]));
+             (p[2] - b[2]) * (p[2] - b[2]));
+    return REF_SUCCESS;
+  }
+
+  /* Check if P in edge region of AB, if so return projection of P onto AB */
+  vc = d1 * d4 - d3 * d2;
+  if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0) {
+    RAS(ref_math_divisible(d1, (d1 - d3)), "div zero d1/(d1-d3)");
+    v = d1 / (d1 - d3);
+    proj[0] = a[0] + v * ab[0];
+    proj[1] = a[1] + v * ab[1];
+    proj[2] = a[2] + v * ab[2];
+    *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
+                     (p[1] - proj[1]) * (p[1] - proj[1]) +
+                     (p[2] - proj[2]) * (p[2] - proj[2]));
+    return REF_SUCCESS;
+  }
+
+  /* Check if P in vertex region outside C */
+  cp[0] = p[0] - c[0];
+  cp[1] = p[1] - c[1];
+  cp[2] = p[2] - c[2];
+  d5 = ab[0] * cp[0] + ab[1] * cp[1] + ab[2] * cp[2];
+  d6 = ac[0] * cp[0] + ac[1] * cp[1] + ac[2] * cp[2];
+  if (d6 >= 0.0 && d5 <= d6) {
+    *distance =
+        sqrt((p[0] - c[0]) * (p[0] - c[0]) + (p[1] - c[1]) * (p[1] - c[1]) +
+             (p[2] - c[2]) * (p[2] - c[2]));
+    return REF_SUCCESS;
+  }
+
+  /* Check if P in edge region of AC, if so return projection of P onto AC */
+  vb = d5 * d2 - d1 * d6;
+  if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0) {
+    RAS(ref_math_divisible(d1, (d1 - d3)), "div zero d1/(d1-d3)");
+    v = d2 / (d2 - d6);
+    proj[0] = a[0] + v * ac[0];
+    proj[1] = a[1] + v * ac[1];
+    proj[2] = a[2] + v * ac[2];
+    *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
+                     (p[1] - proj[1]) * (p[1] - proj[1]) +
+                     (p[2] - proj[2]) * (p[2] - proj[2]));
     return REF_SUCCESS;
   }
 
