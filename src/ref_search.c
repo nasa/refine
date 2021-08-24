@@ -223,9 +223,10 @@ static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
-                                        REF_INT parent, REF_DBL *position,
-                                        REF_DBL *distance) {
+static REF_STATUS ref_search_gather_element(REF_SEARCH ref_search,
+                                            REF_INT node_per, REF_DBL *xyz,
+                                            REF_INT parent, REF_DBL *position,
+                                            REF_DBL *distance) {
   REF_INT i;
   REF_DBL dist;
 
@@ -243,23 +244,31 @@ static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
 
   /* if the distance between me and the target are less than combined radii */
   if (dist - ref_search->radius[parent] <= *distance) {
-    REF_INT tri = ref_search->item[parent];
-    REF_DBL tri_dist;
-    RSS(ref_search_distance3(&(xyz[0 + 9 * tri]), &(xyz[3 + 9 * tri]),
-                             &(xyz[6 + 9 * tri]), position, &tri_dist),
-        "tri dist");
-    *distance = MIN(*distance, tri_dist);
+    REF_INT element = ref_search->item[parent];
+    REF_DBL element_dist;
+    if (2 == node_per) {
+      RSS(ref_search_distance2(&(xyz[0 + 6 * element]), &(xyz[3 + 6 * element]),
+                               position, &element_dist),
+          "dist2");
+    } else {
+      RSS(ref_search_distance3(&(xyz[0 + 9 * element]), &(xyz[3 + 9 * element]),
+                               &(xyz[6 + 9 * element]), position,
+                               &element_dist),
+          "tri dist");
+    }
+    *distance = MIN(*distance, element_dist);
   }
 
   /* if the distance between me and the target are less than children
    * children_ball includes child radii, so only subtract target radius */
   if (*distance >= dist - ref_search->children_ball[parent]) {
-    RSS(ref_search_gather_tri(ref_search, xyz, ref_search->left[parent],
-                              position, distance),
-        "gthr");
-    RSS(ref_search_gather_tri(ref_search, xyz, ref_search->right[parent],
-                              position, distance),
-        "gthr");
+    RSS(ref_search_gather_element(ref_search, node_per, xyz,
+                                  ref_search->left[parent], position, distance),
+        "gthr left");
+    RSS(ref_search_gather_element(ref_search, node_per, xyz,
+                                  ref_search->right[parent], position,
+                                  distance),
+        "gthr right");
   }
 
   return REF_SUCCESS;
@@ -337,11 +346,13 @@ REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_search_nearest_tri(REF_SEARCH ref_search, REF_DBL *xyz,
-                                  REF_DBL *position, REF_DBL *distance) {
+REF_STATUS ref_search_nearest_element(REF_SEARCH ref_search, REF_INT node_per,
+                                      REF_DBL *xyz, REF_DBL *position,
+                                      REF_DBL *distance) {
   REF_INT parent;
   parent = 0;
-  RSS(ref_search_gather_tri(ref_search, xyz, parent, position, distance),
+  RSS(ref_search_gather_element(ref_search, node_per, xyz, parent, position,
+                                distance),
       "touches");
   return REF_SUCCESS;
 }

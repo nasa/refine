@@ -1047,8 +1047,9 @@ REF_STATUS ref_phys_wall_direct(REF_GRID ref_grid, REF_DICT ref_dict,
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "create-insert");
 
     each_ref_node_valid_node(ref_node, node) {
-      RSS(ref_search_nearest_tri(
-              ref_search, xyz, ref_node_xyz_ptr(ref_grid_node(ref_grid), node),
+      RSS(ref_search_nearest_element(
+              ref_search, node_per, xyz,
+              ref_node_xyz_ptr(ref_grid_node(ref_grid), node),
               &(distance[node])),
           "candidates");
     }
