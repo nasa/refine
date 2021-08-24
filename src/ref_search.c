@@ -137,6 +137,27 @@ REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
   return REF_SUCCESS;
 }
 
+static REF_INT ref_search_depth_tree(REF_SEARCH ref_search, REF_INT self) {
+  REF_INT depth, right, left;
+  depth = 0;
+  if (REF_EMPTY == self) return depth;
+  if (self < 0 || ref_search->n <= self) {
+    printf("self invalid %d n %d self\n", ref_search->n, self);
+    return REF_EMPTY;
+  }
+  if (REF_EMPTY == ref_search->item[self]) return depth;
+  left = ref_search_depth_tree(ref_search, ref_search->left[self]);
+  right = ref_search_depth_tree(ref_search, ref_search->right[self]);
+  depth = 1 + MAX(left, right);
+  return depth;
+}
+
+REF_STATUS ref_search_depth(REF_SEARCH ref_search, REF_INT *depth) {
+  REF_INT self = 0;
+  *depth = ref_search_depth_tree(ref_search, self);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
                                     REF_INT parent, REF_DBL *position,
                                     REF_DBL radius) {

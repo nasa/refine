@@ -47,6 +47,7 @@ REF_STATUS ref_search_free(REF_SEARCH ref_search);
 
 REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
                              REF_DBL *position, REF_DBL radius);
+REF_STATUS ref_search_depth(REF_SEARCH ref_search, REF_INT *depth);
 
 REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
                                REF_DBL *position, REF_DBL radius);
