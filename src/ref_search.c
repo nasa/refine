@@ -287,7 +287,7 @@ static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
   if (dist - ref_search->radius[parent] <= *distance) {
     REF_INT element = ref_search->item[parent];
     REF_DBL element_dist;
-    RSS(ref_search_distance3(&(xyz[0 + 9 * element]), &(xyz[3 + 9 * element]),
+    RSS(ref_search_dist3(&(xyz[0 + 9 * element]), &(xyz[3 + 9 * element]),
                              &(xyz[6 + 9 * element]), position, &element_dist),
         "tri dist");
     *distance = MIN(*distance, element_dist);
