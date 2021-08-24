@@ -45,10 +45,6 @@ REF_STATUS ref_search_create(REF_SEARCH *ref_search_ptr, REF_INT n) {
   ref_malloc(ref_search->radius, ref_search->n, REF_DBL);
   ref_malloc_init(ref_search->children_ball, ref_search->n, REF_DBL, 0.0);
 
-  ref_search->form_time = 0;
-  ref_search->eval_time = 0;
-  ref_search->elem_time = 0;
-
   return REF_SUCCESS;
 }
 
