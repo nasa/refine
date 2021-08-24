@@ -1464,7 +1464,7 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   -1.0);
-  RXS(ref_args_find(argc, argv, "--av", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--alt", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY == pos) {
     RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "store");
     ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
