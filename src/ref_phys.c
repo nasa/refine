@@ -838,7 +838,7 @@ static REF_STATUS ref_phys_local_wall(REF_GRID ref_grid, REF_DICT ref_dict,
 }
 
 REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
-                                REF_DBL *distance) {
+                                  REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT part, ncell, total, local_ncell;
