@@ -853,7 +853,6 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   REF_DBL scale = 1.0 + 1.0e-8;
   REF_BOOL timing = REF_FALSE;
   REF_BOOL debug = REF_FALSE;
-  clock_t tic, form_time = 0, eval_time = 0, elem_time = 0;
 
   if (timing) ref_mpi_stopwatch_start(ref_mpi);
 
@@ -901,25 +900,21 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "form-scatter");
 
     RSS(ref_search_create(&ref_search, ncell), "make search");
-    tic = clock();
     for (cell = 0; cell < ncell; cell++) {
       RSS(ref_node_bounding_sphere_xyz(&(xyz[3 * node_per * cell]), node_per,
                                        center, &radius),
           "bound");
       RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
     }
-    form_time += (clock() - tic);
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "create-insert");
 
     RSS(ref_list_create(&ref_list), "create list");
     each_ref_node_valid_node(ref_node, node) {
-      tic = clock();
       RSS(ref_search_nearest_candidates_closer_than(
               ref_search, ref_list,
               ref_node_xyz_ptr(ref_grid_node(ref_grid), node), distance[node]),
           "candidates");
-      eval_time += (clock() - tic);
-      tic = clock();
+      ref_search->tic = clock();
       each_ref_list_item(ref_list, item) {
         candidate = ref_list_value(ref_list, item);
         RAS(2 == node_per || 3 == node_per, "2,3 node_per implemented");
@@ -937,7 +932,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
         }
         distance[node] = MIN(distance[node], dist);
       }
-      elem_time += (clock() - tic);
+      ref_search->elem_time += (clock() - ref_search->tic);
       if (debug && 3 == node_per) {
         FILE *f;
         char filename[1024];
@@ -977,14 +972,14 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
       RSS(ref_list_erase(ref_list), "reset list");
     }
     RSS(ref_list_free(ref_list), "free");
+    if (0 == part && ref_mpi_once(ref_mpi))
+      printf("form %lu eval %lu elem %lu\n", ref_search->form_time,
+             ref_search->eval_time, ref_search->elem_time);
     RSS(ref_search_free(ref_search), "free");
 
     if (part != ref_mpi_rank(ref_mpi)) ref_free(xyz);
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
   }
-  if (ref_mpi_once(ref_mpi))
-    printf("form %lu eval %lu elem %lu\n", (unsigned long)form_time,
-           (unsigned long)eval_time, (unsigned long)elem_time);
 
   ref_free(local_xyz);
   return REF_SUCCESS;

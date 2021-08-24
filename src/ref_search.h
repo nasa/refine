@@ -39,6 +39,10 @@ struct REF_SEARCH_STRUCT {
   REF_DBL *pos;
   REF_DBL *radius;
   REF_DBL *children_ball;
+  REF_ULONG tic;
+  REF_ULONG form_time;
+  REF_ULONG eval_time;
+  REF_ULONG elem_time;
 };
 
 REF_STATUS ref_search_create(REF_SEARCH *ref_search, REF_INT n);
