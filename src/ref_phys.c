@@ -20,7 +20,6 @@
 
 #include <math.h>
 #include <string.h>
-#include <time.h>
 
 #include "ref_egads.h"
 #include "ref_malloc.h"
@@ -914,7 +913,6 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
               ref_search, ref_list,
               ref_node_xyz_ptr(ref_grid_node(ref_grid), node), distance[node]),
           "candidates");
-      ref_search->tic = clock();
       each_ref_list_item(ref_list, item) {
         candidate = ref_list_value(ref_list, item);
         RAS(2 == node_per || 3 == node_per, "2,3 node_per implemented");
@@ -932,7 +930,6 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
         }
         distance[node] = MIN(distance[node], dist);
       }
-      ref_search->elem_time += (clock() - ref_search->tic);
       if (debug && 3 == node_per) {
         FILE *f;
         char filename[1024];
@@ -972,9 +969,6 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
       RSS(ref_list_erase(ref_list), "reset list");
     }
     RSS(ref_list_free(ref_list), "free");
-    if (0 == part && ref_mpi_once(ref_mpi))
-      printf("form %lu eval %lu elem %lu\n", ref_search->form_time,
-             ref_search->eval_time, ref_search->elem_time);
     RSS(ref_search_free(ref_search), "free");
 
     if (part != ref_mpi_rank(ref_mpi)) ref_free(xyz);

@@ -21,7 +21,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -129,8 +128,6 @@ REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
 
   if (item < 0) RSS(REF_INVALID, "item can not be negative");
 
-  ref_search->tic = clock();
-
   location = ref_search->empty;
   (ref_search->empty)++;
 
@@ -140,8 +137,6 @@ REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
   ref_search->radius[location] = radius;
 
   RSS(ref_search_home(ref_search, location, 0), "top level home");
-
-  ref_search->form_time += (clock() - ref_search->tic);
 
   return REF_SUCCESS;
 }
@@ -290,15 +285,11 @@ REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
   REF_DBL trim_radius;
   REF_INT parent;
 
-  ref_search->tic = clock();
-
   parent = 0;
   trim_radius = distance;
   RSS(ref_search_trim(ref_search, parent, position, &trim_radius), "trim");
   RSS(ref_search_touching(ref_search, ref_list, position, trim_radius),
       "touches");
-
-  ref_search->eval_time += (clock() - ref_search->tic);
 
   return REF_SUCCESS;
 }
