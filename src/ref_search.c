@@ -158,6 +158,33 @@ REF_STATUS ref_search_depth(REF_SEARCH ref_search, REF_INT *depth) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_search_stats(REF_SEARCH ref_search) {
+  REF_INT i, empty, two, one, zero;
+  empty = 0;
+  two = 0;
+  one = 0;
+  zero = 0;
+  for (i = 0; i < ref_search->n; i++) {
+    if (REF_EMPTY == ref_search->item[i]) {
+      empty += 1;
+      continue;
+    }
+    if (REF_EMPTY == ref_search->left[i] && REF_EMPTY == ref_search->right[i]) {
+      zero += 1;
+      continue;
+    }
+    if (REF_EMPTY != ref_search->left[i] && REF_EMPTY != ref_search->right[i]) {
+      two += 1;
+      continue;
+    }
+    one += 1;
+  }
+  printf("n %d empty %d zero %d one %d two %d\n", ref_search->n, empty, zero,
+         one, two);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
                                     REF_INT parent, REF_DBL *position,
                                     REF_DBL radius) {
