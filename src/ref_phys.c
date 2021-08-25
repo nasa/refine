@@ -24,6 +24,7 @@
 #include "ref_egads.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_part.h"
 #include "ref_recon.h"
 #include "ref_sort.h"
 
@@ -970,5 +971,163 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
 
   ref_free(part_ncell);
   ref_free(local_xyz);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
+                                           REF_DBL *distance);
+REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
+                                           REF_DBL *distance) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT ncell, local_ncell, *part_ncell, part_complete, max_ncell;
+  REF_INT nnode, part;
+  REF_INT a_total, b_total;
+  REF_INT *a_size, *b_size;
+  REF_INT *a_next;
+  REF_DBL *a_xyz, *b_xyz;
+  REF_DBL *a_dist, *b_dist;
+  REF_DBL *local_xyz, *xyz;
+  REF_INT local_node_per, node_per;
+  REF_INT node, cell;
+  REF_INT *permutation, i;
+  REF_SEARCH ref_search;
+  REF_DBL center[3], radius;
+  REF_DBL scale = 1.0 + 1.0e-8;
+  REF_BOOL timing = REF_FALSE;
+
+  if (timing) ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_grid_twod(ref_grid)) {
+    node_per = 2;
+  } else {
+    node_per = 3;
+  }
+
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    part = ref_part_implicit(ref_node_n(ref_node), ref_mpi_n(ref_mpi), nnode);
+    a_size[part]++;
+    nnode++;
+  }
+
+  RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
+      "alltoall sizes");
+
+  a_total = 0;
+  each_ref_mpi_part(ref_mpi, part) { a_total += a_size[part]; }
+  ref_malloc(a_xyz, 3 * a_total, REF_DBL);
+  ref_malloc(a_dist, a_total, REF_DBL);
+
+  b_total = 0;
+  each_ref_mpi_part(ref_mpi, part) { b_total += b_size[part]; }
+  ref_malloc(b_xyz, 3 * b_total, REF_DBL);
+  ref_malloc(b_dist, b_total, REF_DBL);
+
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
+  a_next[0] = 0;
+  each_ref_mpi_worker(ref_mpi, part) {
+    a_next[part] = a_next[part - 1] + a_size[part - 1];
+  }
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    part = ref_part_implicit(ref_node_n(ref_node), ref_mpi_n(ref_mpi), nnode);
+    for (i = 0; i < 3; i++) {
+      a_xyz[i + 3 * a_next[part]] = ref_node_xyz(ref_node, i, node);
+    }
+    a_next[part]++;
+    nnode++;
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, a_xyz, a_size, b_xyz, b_size, 3, REF_DBL_TYPE),
+      "alltoallv xyz");
+
+  for (node = 0; node < b_total; node++) {
+    b_dist[node] = REF_DBL_MAX;
+  }
+
+  RSS(ref_phys_local_wall(ref_grid, ref_dict, &local_node_per, &local_ncell,
+                          &local_xyz),
+      "local wall");
+  REIS(node_per, local_node_per, "node_per miss match");
+
+  ref_malloc(part_ncell, ref_mpi_n(ref_mpi), REF_INT);
+  RSS(ref_mpi_allgather(ref_mpi, &local_ncell, part_ncell, REF_INT_TYPE),
+      "allgather part ncell");
+  if (timing && ref_mpi_once(ref_mpi)) {
+    for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
+      printf("%d part %d ncell\n", i, part_ncell[i]);
+    }
+  }
+  if (timing) ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
+
+  max_ncell = 1000000; /* (8 * 3 * node_per) bytes per element */
+
+  part_complete = 0;
+  while (part_complete < ref_mpi_n(ref_mpi)) {
+    xyz = NULL;
+    ncell = 0;
+    RSS(ref_phys_bcast_parts(ref_mpi, &part_complete, part_ncell, max_ncell,
+                             node_per, local_xyz, &ncell, &xyz),
+        "bcast part");
+
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "form-scatter");
+
+    RSS(ref_search_create(&ref_search, ncell), "make search");
+    ref_malloc(permutation, ncell, REF_INT);
+    RSS(ref_sort_shuffle(ncell, permutation), "shuffle");
+    for (i = 0; i < ncell; i++) {
+      cell = permutation[i];
+      RSS(ref_node_bounding_sphere_xyz(&(xyz[3 * node_per * cell]), node_per,
+                                       center, &radius),
+          "bound");
+      RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
+    }
+    ref_free(permutation);
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "create-insert");
+    if (timing && ref_mpi_once(ref_mpi)) {
+      REF_INT depth;
+      RSS(ref_search_depth(ref_search, &depth), "depth");
+      printf("ncell %d depth %d\n", ncell, depth);
+    }
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "depth");
+
+    for (node = 0; node < b_total; node++) {
+      RSS(ref_search_nearest_element(ref_search, node_per, xyz,
+                                     &(b_xyz[3 * node]), &(b_dist[node])),
+          "candidates");
+    }
+    RSS(ref_search_free(ref_search), "free");
+
+    ref_free(xyz);
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
+  }
+
+  ref_free(part_ncell);
+  ref_free(local_xyz);
+
+  RSS(ref_mpi_alltoallv(ref_mpi, b_dist, b_size, a_dist, a_size, 1,
+                        REF_DBL_TYPE),
+      "alltoallv dist");
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    part = ref_part_implicit(ref_node_n(ref_node), ref_mpi_n(ref_mpi), nnode);
+    distance[node] = a_dist[a_next[part]];
+    a_next[part]++;
+    nnode++;
+  }
+
+  ref_free(b_dist);
+  ref_free(b_xyz);
+  ref_free(a_dist);
+  ref_free(a_xyz);
+  ref_free(a_next);
+  ref_free(b_size);
+  ref_free(a_size);
   return REF_SUCCESS;
 }
