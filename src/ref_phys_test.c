@@ -967,6 +967,7 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_DICT ref_dict;
     REF_DBL *distance;
+    REF_DBL *distance2;
     REF_INT node;
     char grid_file[] = "ref_phys_test_brick_wall_dist1.lb8.ugrid";
     if (argc <= 2) {
@@ -985,11 +986,17 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_dict_create(&ref_dict), "dict");
     ref_malloc_init(distance, ref_node_max(ref_node), REF_DBL, -1.0);
+    ref_malloc_init(distance2, ref_node_max(ref_node), REF_DBL, -1.0);
     RSS(ref_dict_store(ref_dict, 5, 4000), "store");
 
     ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
     RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
-    ref_mpi_stopwatch_stop(ref_mpi, "complete list wall dist");
+    ref_mpi_stopwatch_stop(ref_mpi, "natural wall dist");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
+    RSS(ref_phys_wall_distance_alltoall(ref_grid, ref_dict, distance2),
+        "store");
+    ref_mpi_stopwatch_stop(ref_mpi, "alltoall wall dist");
 
     if (argc <= 2) {
       each_ref_node_valid_node(ref_node, node) {
