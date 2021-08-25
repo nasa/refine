@@ -917,7 +917,11 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   ref_malloc(part_ncell, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, &local_ncell, part_ncell, REF_INT_TYPE),
       "allgather part ncell");
-
+  if (timing && ref_mpi_once(ref_mpi)) {
+    for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
+      printf("%d part %d ncell", i, part_ncell[i]);
+    }
+  }
   if (timing) ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
 
   max_byte = 100000000;
