@@ -837,31 +837,45 @@ static REF_STATUS ref_phys_local_wall(REF_GRID ref_grid, REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_phys_bcast_part(REF_MPI ref_mpi, REF_INT part,
-                                      REF_INT node_per, REF_INT local_ncell,
-                                      REF_DBL *local_xyz, REF_INT *ncell,
-                                      REF_DBL **xyz) {
+static REF_STATUS ref_phys_bcast_parts(REF_MPI ref_mpi, REF_INT *part_complete,
+                                       REF_INT *part_ncell, REF_INT max_ncell,
+                                       REF_INT node_per, REF_DBL *local_xyz,
+                                       REF_INT *ncell, REF_DBL **xyz) {
   REF_INT total;
-  if (part == ref_mpi_rank(ref_mpi)) {
-    RSS(ref_mpi_bcast_from_rank(ref_mpi, &local_ncell, 1, REF_INT_TYPE, part),
-        "bcast ncell");
-    *ncell = local_ncell;
-    if (local_ncell > 0) {
-      total = 3 * node_per * (*ncell);
-      RSS(ref_mpi_bcast_from_rank(ref_mpi, local_xyz, total, REF_DBL_TYPE,
-                                  part),
-          "bcast ncell");
-      *xyz = local_xyz;
+  REF_INT first_part, last_part;
+  REF_INT offset, part, i;
+  RAS(*part_complete < ref_mpi_n(ref_mpi), "already complete");
+  first_part = *part_complete;
+  last_part = *part_complete;
+  (*ncell) = part_ncell[first_part];
+  for (part = first_part + 1; part < ref_mpi_n(ref_mpi); part++) {
+    if ((*ncell) + part_ncell[part] > max_ncell) break;
+    last_part = part;
+    (*ncell) += part_ncell[first_part];
+  }
+  (*part_complete) = last_part + 1;
+
+  total = 3 * node_per * (*ncell);
+  ref_malloc(*xyz, total, REF_DBL);
+
+  offset = 0;
+  for (part = first_part; part <= last_part; part++) {
+    total = 3 * node_per * part_ncell[part];
+    if (part == ref_mpi_rank(ref_mpi)) {
+      if (part_ncell[part] > 0) {
+        RSS(ref_mpi_bcast_from_rank(ref_mpi, local_xyz, total, REF_DBL_TYPE,
+                                    part),
+            "bcast ncell");
+        for (i = 0; i < total; i++) (*xyz)[i + offset] = local_xyz[i];
+      }
+    } else {
+      if (part_ncell[part] > 0) {
+        RSS(ref_mpi_bcast_from_rank(ref_mpi, &((*xyz)[offset]), total,
+                                    REF_DBL_TYPE, part),
+            "bcast ncell");
+      }
     }
-  } else {
-    RSS(ref_mpi_bcast_from_rank(ref_mpi, ncell, 1, REF_INT_TYPE, part),
-        "bcast ncell");
-    if (*ncell > 0) {
-      total = 3 * node_per * (*ncell);
-      ref_malloc(*xyz, total, REF_DBL);
-      RSS(ref_mpi_bcast_from_rank(ref_mpi, *xyz, total, REF_DBL_TYPE, part),
-          "bcast ncell");
-    }
+    offset += total;
   }
   return REF_SUCCESS;
 }
@@ -870,7 +884,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
                                   REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT part, ncell, local_ncell, *part_ncell;
+  REF_INT ncell, local_ncell, *part_ncell, part_complete, max_ncell, max_byte;
   REF_DBL *local_xyz, *xyz;
   REF_INT local_node_per, node_per;
   REF_INT node, cell;
@@ -895,19 +909,21 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   REIS(node_per, local_node_per, "node_per miss match");
 
   ref_malloc(part_ncell, ref_mpi_n(ref_mpi), REF_INT);
-  RSS(ref_mpi_allgather(ref_mpi, &ncell, part_ncell, REF_INT_TYPE),
+  RSS(ref_mpi_allgather(ref_mpi, &local_ncell, part_ncell, REF_INT_TYPE),
       "allgather part ncell");
 
   if (timing) ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
 
-  each_ref_mpi_part(ref_mpi, part) {
+  max_byte = 100000000;
+  max_ncell = max_byte / (8 * 3 * node_per);
+
+  part_complete = 0;
+  while (part_complete < ref_mpi_n(ref_mpi)) {
     xyz = NULL;
     ncell = 0;
-    RSS(ref_phys_bcast_part(ref_mpi, part, node_per, local_ncell, local_xyz,
-                            &ncell, &xyz),
+    RSS(ref_phys_bcast_parts(ref_mpi, &part_complete, part_ncell, max_ncell,
+                             node_per, local_xyz, &ncell, &xyz),
         "bcast part");
-    if (timing && ref_mpi_once(ref_mpi))
-      printf("part %d of %d with %d\n", part, ref_mpi_n(ref_mpi), ncell);
 
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "form-scatter");
 
@@ -929,7 +945,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     }
     RSS(ref_search_free(ref_search), "free");
 
-    if (part != ref_mpi_rank(ref_mpi)) ref_free(xyz);
+    ref_free(xyz);
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
   }
 
