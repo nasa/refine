@@ -939,6 +939,12 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
       RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
     }
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "create-insert");
+    if (ref_mpi_once(ref_mpi)) {
+      REF_INT depth;
+      RSS(ref_search_depth(ref_search, &depth), "depth");
+      printf("ncell %d depth %d\n", ncell, depth);
+    }
+    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "depth");
 
     each_ref_node_valid_node(ref_node, node) {
       RSS(ref_search_nearest_element(
