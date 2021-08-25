@@ -274,7 +274,7 @@ static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
   if (0 == ref_search->n) return REF_SUCCESS;  /* tree empty */
   if (REF_EMPTY == parent) return REF_SUCCESS; /* finished traversing */
   RAB(0 <= parent && parent < ref_search->n, "parent invalid",
-      { printf("%d n %d parent\n", ref_search->n, parent); })
+      { printf("%d n %d parent\n", ref_search->n, parent); });
   /* finished traversing */
   if (REF_EMPTY == ref_search->item[parent]) return REF_SUCCESS;
 
@@ -288,7 +288,7 @@ static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
     REF_INT element = ref_search->item[parent];
     REF_DBL element_dist;
     RSS(ref_search_dist3(&(xyz[0 + 9 * element]), &(xyz[3 + 9 * element]),
-                             &(xyz[6 + 9 * element]), position, &element_dist),
+                         &(xyz[6 + 9 * element]), position, &element_dist),
         "tri dist");
     *distance = MIN(*distance, element_dist);
   }
