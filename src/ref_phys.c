@@ -848,10 +848,11 @@ static REF_STATUS ref_phys_bcast_parts(REF_MPI ref_mpi, REF_INT *part_complete,
   first_part = *part_complete;
   last_part = *part_complete;
   (*ncell) = part_ncell[first_part];
+
   for (part = first_part + 1; part < ref_mpi_n(ref_mpi); part++) {
     if ((*ncell) + part_ncell[part] > max_ncell) break;
     last_part = part;
-    (*ncell) += part_ncell[first_part];
+    (*ncell) += part_ncell[part];
   }
   (*part_complete) = last_part + 1;
 
@@ -877,6 +878,9 @@ static REF_STATUS ref_phys_bcast_parts(REF_MPI ref_mpi, REF_INT *part_complete,
     }
     offset += total;
   }
+  total = 3 * node_per * (*ncell);
+  REIS(total, offset, "miscount");
+
   return REF_SUCCESS;
 }
 
