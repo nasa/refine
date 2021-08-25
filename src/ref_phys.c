@@ -889,7 +889,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
                                   REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT ncell, local_ncell, *part_ncell, part_complete, max_ncell, max_byte;
+  REF_INT ncell, local_ncell, *part_ncell, part_complete, max_ncell;
   REF_DBL *local_xyz, *xyz;
   REF_INT local_node_per, node_per;
   REF_INT node, cell;
@@ -924,8 +924,8 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   }
   if (timing) ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
 
-  max_byte = 100000000;
-  max_ncell = max_byte / (8 * 3 * node_per);
+  max_ncell = 100000; /* (8 * 3 * node_per) bytes per element */
+  ;
 
   part_complete = 0;
   while (part_complete < ref_mpi_n(ref_mpi)) {
