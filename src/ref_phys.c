@@ -1114,6 +1114,10 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
                         REF_DBL_TYPE),
       "alltoallv dist");
 
+  a_next[0] = 0;
+  each_ref_mpi_worker(ref_mpi, part) {
+    a_next[part] = a_next[part - 1] + a_size[part - 1];
+  }
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
     part = ref_part_implicit(ref_node_n(ref_node), ref_mpi_n(ref_mpi), nnode);

@@ -1001,6 +1001,7 @@ int main(int argc, char *argv[]) {
     if (argc <= 2) {
       each_ref_node_valid_node(ref_node, node) {
         RWDS(ref_node_xyz(ref_node, 2, node), distance[node], -1, "dist=z");
+        RWDS(ref_node_xyz(ref_node, 2, node), distance2[node], -1, "dist=z2");
       }
     }
 
