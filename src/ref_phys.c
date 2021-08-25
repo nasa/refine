@@ -870,7 +870,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
                                   REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT part, ncell, local_ncell;
+  REF_INT part, ncell, local_ncell, *part_ncell;
   REF_DBL *local_xyz, *xyz;
   REF_INT local_node_per, node_per;
   REF_INT node, cell;
@@ -893,6 +893,10 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
                           &local_xyz),
       "local wall");
   REIS(node_per, local_node_per, "node_per miss match");
+
+  ref_malloc(part_ncell, ref_mpi_n(ref_mpi), REF_INT);
+  RSS(ref_mpi_allgather(ref_mpi, &ncell, part_ncell, REF_INT_TYPE),
+      "allgather part ncell");
 
   if (timing) ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
 
@@ -929,6 +933,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
   }
 
+  ref_free(part_ncell);
   ref_free(local_xyz);
   return REF_SUCCESS;
 }
