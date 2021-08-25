@@ -25,6 +25,7 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_recon.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive) {
   REF_DBL rho, u, v, w, p, e;
@@ -892,6 +893,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   REF_DBL *local_xyz, *xyz;
   REF_INT local_node_per, node_per;
   REF_INT node, cell;
+  REF_INT *permutation, i;
   REF_SEARCH ref_search;
   REF_DBL center[3], radius;
   REF_DBL scale = 1.0 + 1.0e-8;
@@ -932,12 +934,16 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "form-scatter");
 
     RSS(ref_search_create(&ref_search, ncell), "make search");
-    for (cell = 0; cell < ncell; cell++) {
+    ref_malloc(permutation, ncell, REF_INT);
+    RSS(ref_sort_shuffle(ncell, permutation), "shuffle");
+    for (i = 0; i < ncell; i++) {
+      cell = permutation[i];
       RSS(ref_node_bounding_sphere_xyz(&(xyz[3 * node_per * cell]), node_per,
                                        center, &radius),
           "bound");
       RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
     }
+    ref_free(permutation);
     if (timing) ref_mpi_stopwatch_stop(ref_mpi, "create-insert");
     if (ref_mpi_once(ref_mpi)) {
       REF_INT depth;
