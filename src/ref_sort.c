@@ -331,3 +331,25 @@ REF_STATUS ref_sort_search_glob(REF_INT n, REF_GLOB *ascending_list,
 
   return REF_NOT_FOUND;
 }
+
+REF_INT ref_sort_rand_in_range(REF_INT min, REF_INT max) {
+  return rand() % (max - min + 1) + min;
+}
+
+/* Durstenfeld, R. (July 1964). "Algorithm 235: Random permutation".
+ * Communications of the ACM. 7 (7): 420. doi:10.1145/364520.364540
+ * Fisher, Ronald A.; Yates, Frank (1948) [1938].
+ * Statistical tables for biological, agricultural and medical research
+ * (3rd ed.). London: Oliver & Boyd. pp. 26–27. */
+REF_STATUS ref_sort_shuffle(REF_INT n, REF_INT *permutation) {
+  REF_INT i, j, temp;
+  for (i = 0; i < n; i++) permutation[i] = i;
+  for (i = 0; i < n - 1; i++) {
+    j = rand() % (n - 1 - i + 1) + i; /* i <= j < n */
+    j = MAX(i, MIN(j, n - 1));        /* not needed, but don't trust myself */
+    temp = permutation[j];
+    permutation[j] = permutation[i];
+    permutation[i] = temp;
+  }
+  return REF_SUCCESS;
+}

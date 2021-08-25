@@ -308,5 +308,29 @@ int main(void) {
     REIS(1, sorted_index[3], "sorted_index[3]");
   }
 
+  { /* rand range */
+    REF_INT min = 1, max = 14;
+    REF_INT count[16], m = 16;
+    REF_INT i, j, n = 1000000;
+    for (j = 0; j < m; j++) count[j] = 0;
+    for (i = 0; i < n; i++) {
+      j = ref_sort_rand_in_range(min, max);
+      count[j]++;
+    }
+    REIS(0, count[min - 1], "min off-by-one");
+    RAS(0 != count[min], "zero min");
+    RAS(0 != count[max], "zero max");
+    REIS(0, count[max + 1], "max off-by-one");
+  }
+
+  { /* rand range */
+    REF_INT n = 1000000, permutation[1000000], count[1000000];
+    REF_INT i;
+    RSS(ref_sort_shuffle(n, permutation), "shuffle");
+    for (i = 0; i < n; i++) count[i] = 0;
+    for (i = 0; i < n; i++) count[permutation[i]]++;
+    for (i = 0; i < n; i++) REIS(1, count[i], "missing/dup entry");
+  }
+
   return 0;
 }
