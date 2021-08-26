@@ -1016,14 +1016,16 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   nnode = 0;
   nstationary = 0;
   each_ref_node_valid_node(ref_node, node) {
-    if (nnode < nbalance) {
-      part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
-      if (ref_mpi_rank(ref_mpi) == part) {
-        nstationary++;
-      } else {
-        a_size[part]++;
+    if (ref_node_owned(ref_node, node)) {
+      if (nnode < nbalance) {
+        part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
+        if (ref_mpi_rank(ref_mpi) == part) {
+          nstationary++;
+        } else {
+          a_size[part]++;
+        }
+        nnode++;
       }
-      nnode++;
     }
   }
   ref_malloc_init(stationary, nstationary, REF_INT, REF_EMPTY);
@@ -1051,18 +1053,20 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   nnode = 0;
   nstationary = 0;
   each_ref_node_valid_node(ref_node, node) {
-    if (nnode < nbalance) {
-      part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
-      if (ref_mpi_rank(ref_mpi) == part) {
-        stationary[nstationary] = node;
-        nstationary++;
-      } else {
-        for (i = 0; i < 3; i++) {
-          a_xyz[i + 3 * a_next[part]] = ref_node_xyz(ref_node, i, node);
+    if (ref_node_owned(ref_node, node)) {
+      if (nnode < nbalance) {
+        part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
+        if (ref_mpi_rank(ref_mpi) == part) {
+          stationary[nstationary] = node;
+          nstationary++;
+        } else {
+          for (i = 0; i < 3; i++) {
+            a_xyz[i + 3 * a_next[part]] = ref_node_xyz(ref_node, i, node);
+          }
+          a_next[part]++;
         }
-        a_next[part]++;
+        nnode++;
       }
-      nnode++;
     }
   }
 
@@ -1137,14 +1141,16 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   }
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-    if (nnode < nbalance) {
-      part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
-      if (ref_mpi_rank(ref_mpi) == part) {
-      } else {
-        distance[node] = a_dist[a_next[part]];
-        a_next[part]++;
+    if (ref_node_owned(ref_node, node)) {
+      if (nnode < nbalance) {
+        part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
+        if (ref_mpi_rank(ref_mpi) == part) {
+        } else {
+          distance[node] = a_dist[a_next[part]];
+          a_next[part]++;
+        }
+        nnode++;
       }
-      nnode++;
     }
   }
 
