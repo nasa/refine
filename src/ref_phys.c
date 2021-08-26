@@ -992,9 +992,6 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
   REF_SEARCH ref_search;
   REF_DBL center[3], radius;
   REF_DBL scale = 1.0 + 1.0e-8;
-  REF_BOOL timing = REF_FALSE;
-
-  if (timing) ref_mpi_stopwatch_start(ref_mpi);
 
   if (ref_grid_twod(ref_grid)) {
     node_per = 2;
@@ -1056,12 +1053,6 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
   ref_malloc(part_ncell, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, &local_ncell, part_ncell, REF_INT_TYPE),
       "allgather part ncell");
-  if (timing && ref_mpi_once(ref_mpi)) {
-    for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
-      printf("%d part %d ncell\n", i, part_ncell[i]);
-    }
-  }
-  if (timing) ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
 
   max_ncell = 1000000; /* (8 * 3 * node_per) bytes per element */
 
@@ -1072,8 +1063,6 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
     RSS(ref_phys_bcast_parts(ref_mpi, &part_complete, part_ncell, max_ncell,
                              node_per, local_xyz, &ncell, &xyz),
         "bcast part");
-
-    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "form-scatter");
 
     RSS(ref_search_create(&ref_search, ncell), "make search");
     ref_malloc(permutation, ncell, REF_INT);
@@ -1086,13 +1075,6 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
       RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
     }
     ref_free(permutation);
-    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "create-insert");
-    if (timing && ref_mpi_once(ref_mpi)) {
-      REF_INT depth;
-      RSS(ref_search_depth(ref_search, &depth), "depth");
-      printf("ncell %d depth %d\n", ncell, depth);
-    }
-    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "depth");
 
     for (node = 0; node < b_total; node++) {
       RSS(ref_search_nearest_element(ref_search, node_per, xyz,
@@ -1102,7 +1084,6 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
     RSS(ref_search_free(ref_search), "free");
 
     ref_free(xyz);
-    if (timing) ref_mpi_stopwatch_stop(ref_mpi, "min(dist)");
   }
 
   ref_free(part_ncell);
