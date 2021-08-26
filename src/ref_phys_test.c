@@ -990,13 +990,12 @@ int main(int argc, char *argv[]) {
     RSS(ref_dict_store(ref_dict, 5, 4000), "store");
 
     ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
-    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
+    RSS(ref_phys_wall_distance_static(ref_grid, ref_dict, distance), "store");
     ref_mpi_stopwatch_stop(ref_mpi, "natural wall dist");
 
     ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
-    RSS(ref_phys_wall_distance_alltoall(ref_grid, ref_dict, distance2),
-        "store");
-    ref_mpi_stopwatch_stop(ref_mpi, "alltoall wall dist");
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance2), "store");
+    ref_mpi_stopwatch_stop(ref_mpi, "alltoall balanced wall dist");
 
     if (argc <= 2) {
       each_ref_node_valid_node(ref_node, node) {

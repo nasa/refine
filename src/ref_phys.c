@@ -886,8 +886,8 @@ static REF_STATUS ref_phys_bcast_parts(REF_MPI ref_mpi, REF_INT *part_complete,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
-                                  REF_DBL *distance) {
+REF_STATUS ref_phys_wall_distance_static(REF_GRID ref_grid, REF_DICT ref_dict,
+                                         REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ncell, local_ncell, *part_ncell, part_complete, max_ncell;
@@ -974,8 +974,8 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
-                                           REF_DBL *distance) {
+REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
+                                  REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nowned, nbalance, nstationary, *stationary;
