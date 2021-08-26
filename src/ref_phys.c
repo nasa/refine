@@ -978,6 +978,7 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
                                            REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nowned, nbalance, nstationary, *stationary;
   REF_INT ncell, local_ncell, *part_ncell, part_complete, max_ncell;
   REF_INT nnode, part;
   REF_INT a_total, b_total;
@@ -1002,12 +1003,30 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
   ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
-  nnode = 0;
+  nowned = 0;
   each_ref_node_valid_node(ref_node, node) {
-    part = ref_part_implicit(ref_node_n(ref_node), ref_mpi_n(ref_mpi), nnode);
-    a_size[part]++;
-    nnode++;
+    if (ref_node_owned(ref_node, node)) {
+      nowned++;
+    }
   }
+  /* limit the nodes that are balanced to prevent all2all overload */
+  nbalance = MIN(nowned, REF_INT_MAX / ref_mpi_n(ref_mpi));
+
+  /* count the balanced nodes based on destination, count stationary */
+  nnode = 0;
+  nstationary = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (nnode < nbalance) {
+      part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
+      if (ref_mpi_rank(ref_mpi) == part) {
+        nstationary++;
+      } else {
+        a_size[part]++;
+      }
+      nnode++;
+    }
+  }
+  ref_malloc_init(stationary, nstationary, REF_INT, REF_EMPTY);
 
   RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
       "alltoall sizes");
@@ -1028,14 +1047,23 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
     a_next[part] = a_next[part - 1] + a_size[part - 1];
   }
 
+  /* fill the balanced nodes based on destination, fill stationary */
   nnode = 0;
+  nstationary = 0;
   each_ref_node_valid_node(ref_node, node) {
-    part = ref_part_implicit(ref_node_n(ref_node), ref_mpi_n(ref_mpi), nnode);
-    for (i = 0; i < 3; i++) {
-      a_xyz[i + 3 * a_next[part]] = ref_node_xyz(ref_node, i, node);
+    if (nnode < nbalance) {
+      part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
+      if (ref_mpi_rank(ref_mpi) == part) {
+        stationary[nstationary] = node;
+        nstationary++;
+      } else {
+        for (i = 0; i < 3; i++) {
+          a_xyz[i + 3 * a_next[part]] = ref_node_xyz(ref_node, i, node);
+        }
+        a_next[part]++;
+      }
+      nnode++;
     }
-    a_next[part]++;
-    nnode++;
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_xyz, a_size, b_xyz, b_size, 3, REF_DBL_TYPE),
@@ -1044,6 +1072,7 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
   for (node = 0; node < b_total; node++) {
     b_dist[node] = REF_DBL_MAX;
   }
+  each_ref_node_valid_node(ref_node, node) { distance[node] = REF_DBL_MAX; }
 
   RSS(ref_phys_local_wall(ref_grid, ref_dict, &local_node_per, &local_ncell,
                           &local_xyz),
@@ -1066,6 +1095,7 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
 
     RSS(ref_search_create(&ref_search, ncell), "make search");
     ref_malloc(permutation, ncell, REF_INT);
+    /* permutation randomizes tree insertion to improve balance/reduce depth */
     RSS(ref_sort_shuffle(ncell, permutation), "shuffle");
     for (i = 0; i < ncell; i++) {
       cell = permutation[i];
@@ -1076,10 +1106,18 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
     }
     ref_free(permutation);
 
-    for (node = 0; node < b_total; node++) {
-      RSS(ref_search_nearest_element(ref_search, node_per, xyz,
-                                     &(b_xyz[3 * node]), &(b_dist[node])),
-          "candidates");
+    for (i = 0; i < b_total; i++) {
+      RSS(ref_search_nearest_element(ref_search, node_per, xyz, &(b_xyz[3 * i]),
+                                     &(b_dist[i])),
+          "balanced candidates");
+    }
+    for (i = 0; i < nstationary; i++) {
+      node = stationary[i];
+      RSS(ref_search_nearest_element(
+              ref_search, node_per, xyz,
+              ref_node_xyz_ptr(ref_grid_node(ref_grid), node),
+              &(distance[node])),
+          "stationary candidates");
     }
     RSS(ref_search_free(ref_search), "free");
 
@@ -1099,17 +1137,25 @@ REF_STATUS ref_phys_wall_distance_alltoall(REF_GRID ref_grid, REF_DICT ref_dict,
   }
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-    part = ref_part_implicit(ref_node_n(ref_node), ref_mpi_n(ref_mpi), nnode);
-    distance[node] = a_dist[a_next[part]];
-    a_next[part]++;
-    nnode++;
+    if (nnode < nbalance) {
+      part = ref_part_implicit(nbalance, ref_mpi_n(ref_mpi), nnode);
+      if (ref_mpi_rank(ref_mpi) == part) {
+      } else {
+        distance[node] = a_dist[a_next[part]];
+        a_next[part]++;
+      }
+      nnode++;
+    }
   }
+
+  RSS(ref_node_ghost_dbl(ref_node, distance, 1), "ghost distance");
 
   ref_free(b_dist);
   ref_free(b_xyz);
   ref_free(a_dist);
   ref_free(a_xyz);
   ref_free(a_next);
+  ref_free(stationary);
   ref_free(b_size);
   ref_free(a_size);
   return REF_SUCCESS;
