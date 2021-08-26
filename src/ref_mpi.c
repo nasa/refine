@@ -647,14 +647,26 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
 
   return REF_SUCCESS;
 #else
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
-  SUPRESS_UNUSED_COMPILER_WARNING(send);
-  SUPRESS_UNUSED_COMPILER_WARNING(send_size);
-  SUPRESS_UNUSED_COMPILER_WARNING(recv);
-  SUPRESS_UNUSED_COMPILER_WARNING(recv_size);
-  SUPRESS_UNUSED_COMPILER_WARNING(n);
-  SUPRESS_UNUSED_COMPILER_WARNING(type);
-  return REF_IMPLEMENT;
+  REF_INT i;
+  REIS(1, ref_mpi_n(ref_mpi), "expected 1 part without mpi");
+  REIS(send_size[0], recv_size[0], "without mpi, send and recv should match");
+  switch (type) {
+    case REF_INT_TYPE:
+      for (i = 0; i < send_size[0] * n; i++)
+        ((REF_INT *)recv)[i] = ((REF_INT *)send)[i];
+      break;
+    case REF_LONG_TYPE:
+      for (i = 0; i < send_size[0] * n; i++)
+        ((REF_LONG *)recv)[i] = ((REF_LONG *)send)[i];
+      break;
+    case REF_DBL_TYPE:
+      for (i = 0; i < send_size[0] * n; i++)
+        ((REF_DBL *)recv)[i] = ((REF_DBL *)send)[i];
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "data type");
+  }
+  return REF_SUCCESS;
 #endif
 }
 

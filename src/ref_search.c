@@ -137,6 +137,54 @@ REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
   return REF_SUCCESS;
 }
 
+static REF_INT ref_search_depth_tree(REF_SEARCH ref_search, REF_INT self) {
+  REF_INT depth, right, left;
+  depth = 0;
+  if (REF_EMPTY == self) return depth;
+  if (self < 0 || ref_search->n <= self) {
+    printf("self invalid %d n %d self\n", ref_search->n, self);
+    return REF_EMPTY;
+  }
+  if (REF_EMPTY == ref_search->item[self]) return depth;
+  left = ref_search_depth_tree(ref_search, ref_search->left[self]);
+  right = ref_search_depth_tree(ref_search, ref_search->right[self]);
+  depth = 1 + MAX(left, right);
+  return depth;
+}
+
+REF_STATUS ref_search_depth(REF_SEARCH ref_search, REF_INT *depth) {
+  REF_INT self = 0;
+  *depth = ref_search_depth_tree(ref_search, self);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_search_stats(REF_SEARCH ref_search) {
+  REF_INT i, empty, two, one, zero;
+  empty = 0;
+  two = 0;
+  one = 0;
+  zero = 0;
+  for (i = 0; i < ref_search->n; i++) {
+    if (REF_EMPTY == ref_search->item[i]) {
+      empty += 1;
+      continue;
+    }
+    if (REF_EMPTY == ref_search->left[i] && REF_EMPTY == ref_search->right[i]) {
+      zero += 1;
+      continue;
+    }
+    if (REF_EMPTY != ref_search->left[i] && REF_EMPTY != ref_search->right[i]) {
+      two += 1;
+      continue;
+    }
+    one += 1;
+  }
+  printf("n %d empty %d zero %d one %d two %d\n", ref_search->n, empty, zero,
+         one, two);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
                                     REF_INT parent, REF_DBL *position,
                                     REF_DBL radius) {
@@ -170,6 +218,90 @@ static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
     RSS(ref_search_gather(ref_search, ref_list, ref_search->right[parent],
                           position, radius),
         "gthr");
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_search_gather_seg(REF_SEARCH ref_search, REF_DBL *xyz,
+                                        REF_INT parent, REF_DBL *position,
+                                        REF_DBL *distance) {
+  REF_INT i;
+  REF_DBL dist;
+
+  if (0 == ref_search->n) return REF_SUCCESS;  /* tree empty */
+  if (REF_EMPTY == parent) return REF_SUCCESS; /* finished traversing */
+  RAB(0 <= parent && parent < ref_search->n, "parent invalid",
+      { printf("%d n %d parent\n", ref_search->n, parent); })
+  /* finished traversing */
+  if (REF_EMPTY == ref_search->item[parent]) return REF_SUCCESS;
+
+  dist = 0.0;
+  for (i = 0; i < ref_search->d; i++)
+    dist += pow(position[i] - ref_search->pos[i + ref_search->d * parent], 2);
+  dist = sqrt(dist);
+
+  /* if the distance between me and the target are less than combined radii */
+  if (dist - ref_search->radius[parent] <= *distance) {
+    REF_INT element = ref_search->item[parent];
+    REF_DBL element_dist;
+    RSS(ref_search_distance2(&(xyz[0 + 6 * element]), &(xyz[3 + 6 * element]),
+                             position, &element_dist),
+        "dist2");
+    *distance = MIN(*distance, element_dist);
+  }
+
+  /* if the distance between me and the target are less than children
+   * children_ball includes child radii, so only subtract target radius */
+  if (*distance >= dist - ref_search->children_ball[parent]) {
+    RSS(ref_search_gather_seg(ref_search, xyz, ref_search->left[parent],
+                              position, distance),
+        "gthr left");
+    RSS(ref_search_gather_seg(ref_search, xyz, ref_search->right[parent],
+                              position, distance),
+        "gthr right");
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
+                                        REF_INT parent, REF_DBL *position,
+                                        REF_DBL *distance) {
+  REF_INT i;
+  REF_DBL dist;
+
+  if (0 == ref_search->n) return REF_SUCCESS;  /* tree empty */
+  if (REF_EMPTY == parent) return REF_SUCCESS; /* finished traversing */
+  RAB(0 <= parent && parent < ref_search->n, "parent invalid",
+      { printf("%d n %d parent\n", ref_search->n, parent); });
+  /* finished traversing */
+  if (REF_EMPTY == ref_search->item[parent]) return REF_SUCCESS;
+
+  dist = 0.0;
+  for (i = 0; i < ref_search->d; i++)
+    dist += pow(position[i] - ref_search->pos[i + ref_search->d * parent], 2);
+  dist = sqrt(dist);
+
+  /* if the distance between me and the target are less than combined radii */
+  if (dist - ref_search->radius[parent] <= *distance) {
+    REF_INT element = ref_search->item[parent];
+    REF_DBL element_dist;
+    RSS(ref_search_dist3(&(xyz[0 + 9 * element]), &(xyz[3 + 9 * element]),
+                         &(xyz[6 + 9 * element]), position, &element_dist),
+        "tri dist");
+    *distance = MIN(*distance, element_dist);
+  }
+
+  /* if the distance between me and the target are less than children
+   * children_ball includes child radii, so only subtract target radius */
+  if (*distance >= dist - ref_search->children_ball[parent]) {
+    RSS(ref_search_gather_tri(ref_search, xyz, ref_search->left[parent],
+                              position, distance),
+        "gthr left");
+    RSS(ref_search_gather_tri(ref_search, xyz, ref_search->right[parent],
+                              position, distance),
+        "gthr right");
   }
 
   return REF_SUCCESS;
@@ -238,11 +370,27 @@ REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
                                                      REF_DBL distance) {
   REF_DBL trim_radius;
   REF_INT parent;
+
   parent = 0;
   trim_radius = distance;
   RSS(ref_search_trim(ref_search, parent, position, &trim_radius), "trim");
   RSS(ref_search_touching(ref_search, ref_list, position, trim_radius),
       "touches");
+
+  return REF_SUCCESS;
+}
+REF_STATUS ref_search_nearest_element(REF_SEARCH ref_search, REF_INT node_per,
+                                      REF_DBL *xyz, REF_DBL *position,
+                                      REF_DBL *distance) {
+  REF_INT parent;
+  parent = 0;
+  if (2 == node_per) {
+    RSS(ref_search_gather_seg(ref_search, xyz, parent, position, distance),
+        "touches");
+  } else {
+    RSS(ref_search_gather_tri(ref_search, xyz, parent, position, distance),
+        "touches");
+  }
   return REF_SUCCESS;
 }
 
@@ -397,6 +545,125 @@ REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   *distance = MIN(*distance, dist);
   RSS(ref_search_distance2(xyz2, xyz0, xyz, &dist), "e20");
   *distance = MIN(*distance, dist);
+
+  return REF_SUCCESS;
+}
+/* Ericson Real Time Collision Detection p141 */
+REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
+                            REF_DBL *distance) {
+  REF_DBL ab[3], ac[3], ap[3];
+  REF_DBL d1, d2;
+  REF_DBL bp[3];
+  REF_DBL d3, d4;
+  REF_DBL vc, v;
+  REF_DBL proj[3];
+  REF_DBL cp[3];
+  REF_DBL d5, d6;
+  REF_DBL vb, va;
+  REF_DBL denom, w;
+
+  /* Check if P in vertex region outside A */
+  ab[0] = b[0] - a[0];
+  ab[1] = b[1] - a[1];
+  ab[2] = b[2] - a[2];
+
+  ac[0] = c[0] - a[0];
+  ac[1] = c[1] - a[1];
+  ac[2] = c[2] - a[2];
+
+  ap[0] = p[0] - a[0];
+  ap[1] = p[1] - a[1];
+  ap[2] = p[2] - a[2];
+
+  d1 = ab[0] * ap[0] + ab[1] * ap[1] + ab[2] * ap[2];
+  d2 = ac[0] * ap[0] + ac[1] * ap[1] + ac[2] * ap[2];
+  if (d1 <= 0.0 && d2 <= 0.0) {
+    *distance =
+        sqrt((p[0] - a[0]) * (p[0] - a[0]) + (p[1] - a[1]) * (p[1] - a[1]) +
+             (p[2] - a[2]) * (p[2] - a[2]));
+    return REF_SUCCESS;
+  }
+
+  /* Check if P in vertex region outside B */
+  bp[0] = p[0] - b[0];
+  bp[1] = p[1] - b[1];
+  bp[2] = p[2] - b[2];
+
+  d3 = ab[0] * bp[0] + ab[1] * bp[1] + ab[2] * bp[2];
+  d4 = ac[0] * bp[0] + ac[1] * bp[1] + ac[2] * bp[2];
+  if (d3 >= 0.0 && d4 <= d3) {
+    *distance =
+        sqrt((p[0] - b[0]) * (p[0] - b[0]) + (p[1] - b[1]) * (p[1] - b[1]) +
+             (p[2] - b[2]) * (p[2] - b[2]));
+    return REF_SUCCESS;
+  }
+
+  /* Check if P in edge region of AB, if so return projection of P onto AB */
+  vc = d1 * d4 - d3 * d2;
+  if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0) {
+    RAS(ref_math_divisible(d1, (d1 - d3)), "div zero d1/(d1-d3)");
+    v = d1 / (d1 - d3);
+    proj[0] = a[0] + v * ab[0];
+    proj[1] = a[1] + v * ab[1];
+    proj[2] = a[2] + v * ab[2];
+    *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
+                     (p[1] - proj[1]) * (p[1] - proj[1]) +
+                     (p[2] - proj[2]) * (p[2] - proj[2]));
+    return REF_SUCCESS;
+  }
+
+  /* Check if P in vertex region outside C */
+  cp[0] = p[0] - c[0];
+  cp[1] = p[1] - c[1];
+  cp[2] = p[2] - c[2];
+  d5 = ab[0] * cp[0] + ab[1] * cp[1] + ab[2] * cp[2];
+  d6 = ac[0] * cp[0] + ac[1] * cp[1] + ac[2] * cp[2];
+  if (d6 >= 0.0 && d5 <= d6) {
+    *distance =
+        sqrt((p[0] - c[0]) * (p[0] - c[0]) + (p[1] - c[1]) * (p[1] - c[1]) +
+             (p[2] - c[2]) * (p[2] - c[2]));
+    return REF_SUCCESS;
+  }
+
+  /* Check if P in edge region of AC, if so return projection of P onto AC */
+  vb = d5 * d2 - d1 * d6;
+  if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0) {
+    RAS(ref_math_divisible(d1, (d1 - d3)), "div zero d1/(d1-d3)");
+    v = d2 / (d2 - d6);
+    proj[0] = a[0] + v * ac[0];
+    proj[1] = a[1] + v * ac[1];
+    proj[2] = a[2] + v * ac[2];
+    *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
+                     (p[1] - proj[1]) * (p[1] - proj[1]) +
+                     (p[2] - proj[2]) * (p[2] - proj[2]));
+    return REF_SUCCESS;
+  }
+
+  /* Check if P in edge region of BC, if so return projection of P onto BC */
+  va = d3 * d6 - d5 * d4;
+  if (va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0) {
+    RAS(ref_math_divisible((d4 - d3), ((d4 - d3) + (d5 - d6))),
+        "div zero (d4 - d3) / ((d4 - d3) + (d5 - d6))");
+    v = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+    proj[0] = b[0] + v * (c[0] - b[0]);
+    proj[1] = b[1] + v * (c[1] - b[1]);
+    proj[2] = b[2] + v * (c[2] - b[2]);
+    *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
+                     (p[1] - proj[1]) * (p[1] - proj[1]) +
+                     (p[2] - proj[2]) * (p[2] - proj[2]));
+    return REF_SUCCESS;
+  }
+
+  RAS(ref_math_divisible(1.0, (va + vb + vc)), "div zero 1.0 / (va + vb + vc)");
+  denom = 1.0 / (va + vb + vc);
+  v = vb * denom;
+  w = vc * denom;
+  proj[0] = a[0] + v * ab[0] + w * ac[0];
+  proj[1] = a[1] + v * ab[1] + w * ac[1];
+  proj[2] = a[2] + v * ab[2] + w * ac[2];
+  *distance = sqrt((p[0] - proj[0]) * (p[0] - proj[0]) +
+                   (p[1] - proj[1]) * (p[1] - proj[1]) +
+                   (p[2] - proj[2]) * (p[2] - proj[2]));
 
   return REF_SUCCESS;
 }

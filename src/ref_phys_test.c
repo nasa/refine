@@ -186,6 +186,7 @@ int main(int argc, char *argv[]) {
   REF_INT uplus_pos = REF_EMPTY;
   REF_INT turb1_pos = REF_EMPTY;
   REF_INT entropy_output_pos = REF_EMPTY;
+  REF_INT timing_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -207,6 +208,8 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--entropy-output", &entropy_output_pos),
       REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--timing", &timing_pos), REF_NOT_FOUND,
+      "arg search");
 
   if (laminar_flux_pos != REF_EMPTY) {
     REF_GRID ref_grid;
@@ -954,6 +957,62 @@ int main(int argc, char *argv[]) {
     ref_free(volume);
 
     RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (timing_pos != REF_EMPTY) { /* timing large brick wall dist */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DICT ref_dict;
+    REF_DBL *distance;
+    REF_DBL *distance2;
+    REF_INT node;
+    char grid_file[] = "ref_phys_test_brick_wall_dist1.lb8.ugrid";
+    if (argc <= 2) {
+      if (ref_mpi_once(ref_mpi)) {
+        RSS(ref_fixture_tet_brick_args_grid(&ref_grid, ref_mpi, 0, 1, 0, 1, 0,
+                                            1, 50, 50, 50),
+            "set up tet");
+        RSS(ref_export_by_extension(ref_grid, grid_file), "export");
+        RSS(ref_grid_free(ref_grid), "free");
+      }
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, grid_file), "import");
+    } else {
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+    }
+    ref_node = ref_grid_node(ref_grid);
+
+    RSS(ref_dict_create(&ref_dict), "dict");
+    ref_malloc_init(distance, ref_node_max(ref_node), REF_DBL, -1.0);
+    ref_malloc_init(distance2, ref_node_max(ref_node), REF_DBL, -1.0);
+    RSS(ref_dict_store(ref_dict, 5, 4000), "store");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
+    RSS(ref_phys_wall_distance_static(ref_grid, ref_dict, distance), "store");
+    ref_mpi_stopwatch_stop(ref_mpi, "natural wall dist");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "wall dist init");
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance2), "store");
+    ref_mpi_stopwatch_stop(ref_mpi, "alltoall balanced wall dist");
+
+    if (argc <= 2) {
+      each_ref_node_valid_node(ref_node, node) {
+        RWDS(ref_node_xyz(ref_node, 2, node), distance[node], -1, "dist=z");
+        RWDS(ref_node_xyz(ref_node, 2, node), distance2[node], -1, "dist=z2");
+      }
+    }
+
+    ref_free(distance);
+    ref_dict_free(ref_dict);
+    ref_grid_free(ref_grid);
+    if (argc <= 2 && ref_mpi_once(ref_mpi)) {
+      REIS(0, remove(grid_file), "test clean up");
+    }
+  }
+
+  if (timing_pos != REF_EMPTY) { /* stop when --timing */
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
@@ -1851,7 +1910,7 @@ int main(int argc, char *argv[]) {
     REF_DICT ref_dict;
     REF_DBL *distance;
     REF_INT node;
-    char grid_file[] = "ref_phys_test_brick_wall_dist.lb8.ugrid";
+    char grid_file[] = "ref_phys_test_brick_wall_dist2.lb8.ugrid";
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "set up tet");
       RSS(ref_export_by_extension(ref_grid, grid_file), "export");
@@ -1873,6 +1932,53 @@ int main(int argc, char *argv[]) {
     ref_dict_free(ref_dict);
     ref_grid_free(ref_grid);
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* med brick wall dist check */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DICT ref_dict;
+    REF_DBL *distance;
+    REF_DBL *distance2;
+    REF_INT node;
+    REF_INT n = 13;
+    char grid_file[] = "ref_phys_test_brick_wall_dist3.lb8.ugrid";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_args_grid(&ref_grid, ref_mpi, 0, 2, 0, 3, 0, 10,
+                                          n, n, n),
+          "set up tet");
+      RSS(ref_export_by_extension(ref_grid, grid_file), "export");
+      RSS(ref_grid_free(ref_grid), "free");
+    }
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, grid_file), "import");
+    ref_node = ref_grid_node(ref_grid);
+
+    RSS(ref_dict_create(&ref_dict), "dict");
+    ref_malloc_init(distance, ref_node_max(ref_node), REF_DBL, -1.0);
+    ref_malloc_init(distance2, ref_node_max(ref_node), REF_DBL, -1.0);
+    RSS(ref_dict_store(ref_dict, 5, 4000), "store");
+
+    RSS(ref_phys_wall_distance_static(ref_grid, ref_dict, distance), "store");
+
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance2), "store");
+
+    each_ref_node_valid_node(ref_node, node) {
+      RWDS(ref_node_xyz(ref_node, 2, node), distance[node], -1, "dist=z");
+      RWDS(ref_node_xyz(ref_node, 2, node), distance2[node], -1, "dist=z2");
+    }
+
+    ref_free(distance);
+    ref_dict_free(ref_dict);
+    ref_grid_free(ref_grid);
+    if (ref_mpi_once(ref_mpi)) {
+      REIS(0, remove(grid_file), "test clean up");
+    }
+  }
+
+  if (timing_pos != REF_EMPTY) { /* stop when --timing */
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

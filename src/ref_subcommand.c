@@ -311,9 +311,12 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    RAS(ref_math_divisible(distance[node], spalding_yplus),
+    RAB(ref_math_divisible(distance[node], spalding_yplus),
         "\nare viscous boundarys set with --viscous-tags or --fun3d-mapbc?"
-        "\nwall distance not divisible by y+=1");
+        "\nwall distance not divisible by y+=1",
+        {
+          printf("distance %e yplus=1 %e\n", distance[node], spalding_yplus);
+        });
     yplus = distance[node] / spalding_yplus;
     RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
   }
@@ -1464,9 +1467,15 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   -1.0);
-  RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "store");
-  ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
-
+  RXS(ref_args_find(argc, argv, "--static", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY == pos) {
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "store");
+    ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+  } else {
+    RSS(ref_phys_wall_distance_static(ref_grid, ref_dict_bcs, distance),
+        "store");
+    ref_mpi_stopwatch_stop(ref_mpi, "wall distance not balanced");
+  }
   if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
   RSS(ref_gather_scalar_by_extension(ref_grid, 1, distance, NULL, out_file),
       "gather");
