@@ -3762,6 +3762,23 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_free(scalar);
   }
 
+  for (pos = 0; pos < argc - 1; pos++) {
+    if (strcmp(argv[pos], "--slice") == 0) {
+      REF_DBL nx, ny, nz, offset;
+      char *out_slice;
+      RAS(pos < argc - 5,
+          "not enough arguments for --slice nx ny nz offset slice.extension");
+      nx = atof(argv[pos + 1]);
+      ny = atof(argv[pos + 2]);
+      nz = atof(argv[pos + 3]);
+      offset = atof(argv[pos + 4]);
+      out_slice = argv[pos + 5];
+      if (ref_mpi_once(ref_mpi))
+        printf(" --slice %6.3f %6.3f %6.3f %.4e %s\n", nx, ny, nz, offset,
+               out_slice);
+    }
+  }
+
   RXS(ref_args_find(argc, argv, "--surface", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
