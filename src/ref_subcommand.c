@@ -3579,15 +3579,16 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
            ref_node_n_global(ref_grid_node(ref_grid)));
 
   if (strcmp(in_sol, "none") == 0) {
-    if (ref_mpi_once(ref_mpi)) printf("no solution proided: %s\n", in_sol);
     field = NULL;
     ldim = 0;
+    if (ref_mpi_once(ref_mpi))
+      printf("skipping read of %d ldim from %s\n", ldim, in_sol);
   } else {
     if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
     RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
+    if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
     ref_mpi_stopwatch_stop(ref_mpi, "read solution");
   }
-  if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
 
   RXS(ref_args_find(argc, argv, "--surface", &pos), REF_NOT_FOUND,
       "arg search");
@@ -3774,6 +3775,11 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
 
     ref_grid_free(iso_grid);
     ref_free(scalar);
+  }
+
+  if (strcmp(out_sol, "none") == 0) {
+    if (ref_mpi_once(ref_mpi))
+      printf("skipping write of %d ldim to %s\n", ldim, out_sol);
   } else {
     if (ref_mpi_once(ref_mpi))
       printf("write %d ldim solution %s\n", ldim, out_sol);
