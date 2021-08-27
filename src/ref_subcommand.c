@@ -3578,10 +3578,16 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
 
-  if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
-  RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
+  if (strcmp(in_sol, "none") == 0) {
+    if (ref_mpi_once(ref_mpi)) printf("no solution proided: %s\n", in_sol);
+    field = NULL;
+    ldim = 0;
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "read solution");
+  }
   if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
-  ref_mpi_stopwatch_stop(ref_mpi, "read solution");
 
   RXS(ref_args_find(argc, argv, "--surface", &pos), REF_NOT_FOUND,
       "arg search");
