@@ -53,6 +53,9 @@ REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid, REF_DBL *field,
                              REF_INT ldim, REF_DBL *center, REF_DBL aoa,
                              REF_DBL phi, REF_DBL h);
 
+REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *normal,
+                         REF_DBL offset);
+
 END_C_DECLORATION
 
 #endif /* REF_ISO_H */
