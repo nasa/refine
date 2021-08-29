@@ -3766,6 +3766,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (strcmp(argv[pos], "--slice") == 0) {
       REF_DBL normal[3], offset;
       char *out_slice;
+      REF_GRID slice_grid;
       RAS(pos < argc - 5,
           "not enough arguments for --slice nx ny nz offset slice.extension");
       normal[0] = atof(argv[pos + 1]);
@@ -3776,6 +3777,12 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
       if (ref_mpi_once(ref_mpi))
         printf(" --slice %6.3f %6.3f %6.3f %.4e %s\n", normal[0], normal[1],
                normal[2], offset, out_slice);
+      RSS(ref_iso_slice(&slice_grid, ref_grid, normal, offset), "slice");
+      ref_mpi_stopwatch_stop(ref_mpi, "insert slice");
+      RSS(ref_gather_scalar_by_extension(slice_grid, 0, NULL, NULL, out_slice),
+          "gather");
+      ref_mpi_stopwatch_stop(ref_mpi, "write slice");
+      ref_grid_free(slice_grid);
     }
   }
 
