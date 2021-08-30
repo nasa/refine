@@ -289,10 +289,10 @@ static void visualize_help(const char *name) {
       "   --subtract <baseline_solution.extension> "
       "computes (input-baseline).\n");
   printf(
-      "   --iso <0-based variable index> <threshold> "
+      "   --iso <0-based variable index> <threshold> <iso.extension>"
       "extracts an isosurface.\n");
   printf(
-      "   --slice nx ny nz offset slice.extension"
+      "   --slice <nx> <ny> <nz> <offset> <slice.extension>"
       "extracts a slice.\n");
   printf("\n");
 }
@@ -3742,27 +3742,34 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     field = coffe;
   }
 
-  RXS(ref_args_find(argc, argv, "--iso", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos && pos < argc - 2) {
-    REF_DBL *scalar;
-    REF_DBL threshold;
-    REF_GRID iso_grid;
-    REF_INT var;
-    REF_INT node;
-    var = atoi(argv[pos + 1]);
-    threshold = atof(argv[pos + 2]);
-    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      scalar[node] = field[var + ldim * node] - threshold;
-    }
-    RSS(ref_iso_insert(&iso_grid, ref_grid, scalar), "iso");
-    if (ref_mpi_once(ref_mpi))
-      printf("write isosurface geometry %s\n", out_sol);
-    RSS(ref_gather_by_extension(iso_grid, out_sol), "gather");
-    ref_mpi_stopwatch_stop(ref_mpi, "write isosurface geometry");
+  for (pos = 0; pos < argc - 1; pos++) {
+    if (strcmp(argv[pos], "--iso") == 0) {
+      REF_DBL *scalar;
+      REF_DBL threshold;
+      char *out_iso;
+      REF_GRID iso_grid;
+      REF_INT var;
+      REF_INT node;
+      RAS(pos < argc - 3,
+          "not enough arguments for --iso <index> <threshold> <iso.extension>");
+      var = atoi(argv[pos + 1]);
+      threshold = atof(argv[pos + 2]);
+      out_iso = argv[pos + 3];
+      if (ref_mpi_once(ref_mpi))
+        printf(" --iso %d %.4e %s\n", var, threshold, out_iso);
+      ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        scalar[node] = field[var + ldim * node] - threshold;
+      }
+      RSS(ref_iso_insert(&iso_grid, ref_grid, scalar), "iso");
+      if (ref_mpi_once(ref_mpi))
+        printf("write isosurface geometry %s\n", out_iso);
+      RSS(ref_gather_by_extension(iso_grid, out_iso), "gather");
+      ref_mpi_stopwatch_stop(ref_mpi, "write isosurface geometry");
 
-    ref_grid_free(iso_grid);
-    ref_free(scalar);
+      ref_grid_free(iso_grid);
+      ref_free(scalar);
+    }
   }
 
   for (pos = 0; pos < argc - 1; pos++) {
