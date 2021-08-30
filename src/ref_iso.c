@@ -81,6 +81,40 @@ static REF_STATUS ref_iso_ghost(REF_GRID iso_grid, REF_EDGE ref_edge,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_iso_interp(REF_GRID iso_grid, REF_EDGE ref_edge,
+                                 REF_INT *new_node, REF_DBL *field,
+                                 REF_INT ldim, REF_DBL *in, REF_DBL **out) {
+  REF_MPI ref_mpi = ref_grid_mpi(iso_grid);
+  REF_INT i, edge, part;
+  REF_INT node0, node1;
+  REF_DBL t1, t0, d;
+
+  if (ldim <= 0) return REF_SUCCESS;
+
+  ref_malloc(*out, ldim * ref_node_max(ref_grid_node(iso_grid)), REF_DBL);
+  each_ref_edge(ref_edge, edge) {
+    if (REF_EMPTY != new_node[edge]) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        d = field[node1] - field[node0];
+        t1 = 0.5;
+        if (ref_math_divisible(field[node0], d)) {
+          t1 = -field[node0] / d;
+        }
+        t0 = 1.0 - t1;
+        for (i = 0; i < ldim; i++) {
+          (*out)[i + ldim * new_node[edge]] =
+              t1 * in[i + ldim * node1] + t0 * in[i + ldim * node0];
+        }
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
                           REF_DBL *field, REF_INT ldim, REF_DBL *in,
                           REF_DBL **out) {
@@ -141,29 +175,8 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
 
   RSS(ref_iso_ghost(iso_grid, ref_edge, new_node), "new ghost");
 
-  if (ldim > 0) {
-    REF_INT i;
-    ref_malloc(*out, ldim * ref_node_max(ref_grid_node(iso_grid)), REF_DBL);
-    each_ref_edge(ref_edge, edge) {
-      if (REF_EMPTY != new_node[edge]) {
-        node0 = ref_edge_e2n(ref_edge, 0, edge);
-        node1 = ref_edge_e2n(ref_edge, 1, edge);
-        RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
-        if (ref_mpi_rank(ref_mpi) == part) {
-          d = field[node1] - field[node0];
-          t1 = 0.5;
-          if (ref_math_divisible(field[node0], d)) {
-            t1 = -field[node0] / d;
-          }
-          t0 = 1.0 - t1;
-          for (i = 0; i < ldim; i++) {
-            (*out)[i + ldim * new_node[edge]] =
-                t1 * in[i + ldim * node1] + t0 * in[i + ldim * node0];
-          }
-        }
-      }
-    }
-  }
+  RSS(ref_iso_interp(iso_grid, ref_edge, new_node, field, ldim, in, out),
+      "interp in to out");
 
   if (ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
