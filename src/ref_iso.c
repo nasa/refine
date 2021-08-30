@@ -133,6 +133,7 @@ static REF_STATUS ref_iso_interp(REF_GRID iso_grid, REF_EDGE ref_edge,
   }
 
   ref_free(edge_real);
+
   return REF_SUCCESS;
 }
 
