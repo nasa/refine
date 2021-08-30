@@ -3765,7 +3765,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         scalar[node] = field[var + ldim * node] - threshold;
       }
-      RSS(ref_iso_insert(&iso_grid, ref_grid, scalar), "iso");
+      RSS(ref_iso_insert(&iso_grid, ref_grid, scalar, 0, NULL, NULL), "iso");
       if (ref_mpi_once(ref_mpi))
         printf("write isosurface geometry %s\n", out_iso);
       RSS(ref_gather_by_extension(iso_grid, out_iso), "gather");

@@ -82,7 +82,8 @@ static REF_STATUS ref_iso_ghost(REF_GRID iso_grid, REF_EDGE ref_edge,
 }
 
 REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
-                          REF_DBL *field) {
+                          REF_DBL *field, REF_INT ldim, REF_DBL *in,
+                          REF_DBL **out) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GRID iso_grid;
   REF_EDGE ref_edge;
@@ -139,6 +140,30 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
   RSS(ref_node_shift_new_globals(ref_grid_node(iso_grid)), "shift iso glob");
 
   RSS(ref_iso_ghost(iso_grid, ref_edge, new_node), "new ghost");
+
+  if (ldim > 0) {
+    REF_INT i;
+    ref_malloc(*out, ldim * ref_node_max(ref_grid_node(iso_grid)), REF_DBL);
+    each_ref_edge(ref_edge, edge) {
+      if (REF_EMPTY != new_node[edge]) {
+        node0 = ref_edge_e2n(ref_edge, 0, edge);
+        node1 = ref_edge_e2n(ref_edge, 1, edge);
+        RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+        if (ref_mpi_rank(ref_mpi) == part) {
+          d = field[node1] - field[node0];
+          t1 = 0.5;
+          if (ref_math_divisible(field[node0], d)) {
+            t1 = -field[node0] / d;
+          }
+          t0 = 1.0 - t1;
+          for (i = 0; i < ldim; i++) {
+            (*out)[i + ldim * new_node[edge]] =
+                t1 * in[i + ldim * node1] + t0 * in[i + ldim * node0];
+          }
+        }
+      }
+    }
+  }
 
   if (ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -274,7 +299,7 @@ REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
   REF_LIST ref_list;
   REF_INT node, item, candidate;
 
-  RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+  RSS(ref_iso_insert(&iso_grid, ref_grid, field, 0, NULL, NULL), "iso");
 
   if (ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_edg(iso_grid);
@@ -669,7 +694,7 @@ REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *normal,
                   normal[1] * ref_node_xyz(ref_node, 1, node) +
                   normal[2] * ref_node_xyz(ref_node, 2, node) - offset;
   }
-  RSS(ref_iso_insert(iso_grid, ref_grid, field), "iso");
+  RSS(ref_iso_insert(iso_grid, ref_grid, field, 0, NULL, NULL), "iso");
   ref_free(field);
 
   return REF_SUCCESS;

@@ -29,8 +29,8 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_iso_insert(REF_GRID *iso_grid, REF_GRID ref_grid,
-                          REF_DBL *field);
+REF_STATUS ref_iso_insert(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *field,
+                          REF_INT ldim, REF_DBL *in, REF_DBL **out);
 
 REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                                    REF_DBL *distance);
