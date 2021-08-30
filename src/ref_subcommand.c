@@ -3754,6 +3754,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
       REF_GRID iso_grid;
       REF_INT var;
       REF_INT node;
+      REF_DBL *out = NULL;
       RAS(pos < argc - 3,
           "not enough arguments for --iso <index> <threshold> <iso.extension>");
       var = atoi(argv[pos + 1]);
@@ -3765,12 +3766,16 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         scalar[node] = field[var + ldim * node] - threshold;
       }
-      RSS(ref_iso_insert(&iso_grid, ref_grid, scalar, 0, NULL, NULL), "iso");
+      RSS(ref_iso_insert(&iso_grid, ref_grid, scalar, ldim, field, &out),
+          "iso");
+      ref_mpi_stopwatch_stop(ref_mpi, "insert iso");
       if (ref_mpi_once(ref_mpi))
-        printf("write isosurface geometry %s\n", out_iso);
-      RSS(ref_gather_by_extension(iso_grid, out_iso), "gather");
+        printf("write isosurface %d ldim %s\n", ldim, out_iso);
+      RSS(ref_gather_scalar_by_extension(iso_grid, ldim, out, NULL, out_iso),
+          "gather");
       ref_mpi_stopwatch_stop(ref_mpi, "write isosurface geometry");
 
+      ref_free(out);
       ref_grid_free(iso_grid);
       ref_free(scalar);
     }
@@ -3781,6 +3786,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
       REF_DBL normal[3], offset;
       char *out_slice;
       REF_GRID slice_grid;
+      REF_DBL *out = NULL;
       RAS(pos < argc - 5,
           "not enough arguments for --slice nx ny nz offset slice.extension");
       normal[0] = atof(argv[pos + 1]);
@@ -3791,11 +3797,17 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
       if (ref_mpi_once(ref_mpi))
         printf(" --slice %6.3f %6.3f %6.3f %.4e %s\n", normal[0], normal[1],
                normal[2], offset, out_slice);
-      RSS(ref_iso_slice(&slice_grid, ref_grid, normal, offset), "slice");
+      RSS(ref_iso_slice(&slice_grid, ref_grid, normal, offset, ldim, field,
+                        &out),
+          "slice");
       ref_mpi_stopwatch_stop(ref_mpi, "insert slice");
-      RSS(ref_gather_scalar_by_extension(slice_grid, 0, NULL, NULL, out_slice),
+      if (ref_mpi_once(ref_mpi))
+        printf("write slice %d ldim %s\n", ldim, out_slice);
+      RSS(ref_gather_scalar_by_extension(slice_grid, ldim, out, NULL,
+                                         out_slice),
           "gather");
       ref_mpi_stopwatch_stop(ref_mpi, "write slice");
+      ref_free(out);
       ref_grid_free(slice_grid);
     }
   }

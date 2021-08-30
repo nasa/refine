@@ -718,7 +718,8 @@ REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid, REF_DBL *field,
 }
 
 REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *normal,
-                         REF_DBL offset) {
+                         REF_DBL offset, REF_INT ldim, REF_DBL *in,
+                         REF_DBL **out) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *field;
   REF_INT node;
@@ -729,7 +730,7 @@ REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *normal,
                   normal[1] * ref_node_xyz(ref_node, 1, node) +
                   normal[2] * ref_node_xyz(ref_node, 2, node) - offset;
   }
-  RSS(ref_iso_insert(iso_grid, ref_grid, field, 0, NULL, NULL), "iso");
+  RSS(ref_iso_insert(iso_grid, ref_grid, field, ldim, in, out), "iso");
   ref_free(field);
 
   return REF_SUCCESS;
