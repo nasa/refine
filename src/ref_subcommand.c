@@ -291,6 +291,9 @@ static void visualize_help(const char *name) {
   printf(
       "   --iso <0-based variable index> <threshold> "
       "extracts an isosurface.\n");
+  printf(
+      "   --slice nx ny nz offset slice.extension"
+      "extracts a slice.\n");
   printf("\n");
 }
 
