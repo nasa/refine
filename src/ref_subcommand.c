@@ -284,15 +284,19 @@ static void visualize_help(const char *name) {
       "output_solution.extension\n",
       name);
   printf("\n");
+  printf(
+      "  input_solution.extension or output_solution.extension "
+      "can be 'none'\n");
+  printf("  options:\n");
   printf("   --surface extracts surface elements (deletes volume).\n");
   printf(
       "   --subtract <baseline_solution.extension> "
       "computes (input-baseline).\n");
   printf(
-      "   --iso <0-based variable index> <threshold> <iso.extension>"
+      "   --iso <0-based variable index> <threshold> <iso.extension> "
       "extracts an isosurface.\n");
   printf(
-      "   --slice <nx> <ny> <nz> <offset> <slice.extension>"
+      "   --slice <nx> <ny> <nz> <offset> <slice.extension> "
       "extracts a slice.\n");
   printf("\n");
 }
