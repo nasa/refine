@@ -284,13 +284,20 @@ static void visualize_help(const char *name) {
       "output_solution.extension\n",
       name);
   printf("\n");
+  printf(
+      "  input_solution.extension or output_solution.extension "
+      "can be 'none'\n");
+  printf("  options:\n");
   printf("   --surface extracts surface elements (deletes volume).\n");
   printf(
       "   --subtract <baseline_solution.extension> "
       "computes (input-baseline).\n");
   printf(
-      "   --iso <0-based variable index> <threshold> "
+      "   --iso <0-based variable index> <threshold> <iso.extension> "
       "extracts an isosurface.\n");
+  printf(
+      "   --slice <nx> <ny> <nz> <offset> <slice.extension> "
+      "extracts a slice.\n");
   printf("\n");
 }
 
@@ -3578,24 +3585,16 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
 
-  if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
-  RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
-  if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
-  ref_mpi_stopwatch_stop(ref_mpi, "read solution");
-
-  RXS(ref_args_find(argc, argv, "--surface", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    REF_INT group;
-    REF_CELL ref_cell;
-    if (ref_mpi_once(ref_mpi)) printf("  --surface deleting 3D cells\n");
-    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
-      RSS(ref_cell_free(ref_cell), "free cell");
-      RSS(ref_cell_create(&ref_grid_cell(ref_grid, group),
-                          (REF_CELL_TYPE)group),
-          "empty cell create");
-      ref_cell = ref_grid_cell(ref_grid, group);
-    }
+  if (strcmp(in_sol, "none") == 0) {
+    field = NULL;
+    ldim = 0;
+    if (ref_mpi_once(ref_mpi))
+      printf("skipping read of %d ldim from %s\n", ldim, in_sol);
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
+    if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read solution");
   }
 
   RXS(ref_args_find(argc, argv, "--boom", &pos), REF_NOT_FOUND, "arg search");
@@ -3747,27 +3746,90 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     field = coffe;
   }
 
-  RXS(ref_args_find(argc, argv, "--iso", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos && pos < argc - 2) {
-    REF_DBL *scalar;
-    REF_DBL threshold;
-    REF_GRID iso_grid;
-    REF_INT var;
-    REF_INT node;
-    var = atoi(argv[pos + 1]);
-    threshold = atof(argv[pos + 2]);
-    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      scalar[node] = field[var + ldim * node] - threshold;
-    }
-    RSS(ref_iso_insert(&iso_grid, ref_grid, scalar), "iso");
-    if (ref_mpi_once(ref_mpi))
-      printf("write isosurface geometry %s\n", out_sol);
-    RSS(ref_gather_by_extension(iso_grid, out_sol), "gather");
-    ref_mpi_stopwatch_stop(ref_mpi, "write isosurface geometry");
+  for (pos = 0; pos < argc - 1; pos++) {
+    if (strcmp(argv[pos], "--iso") == 0) {
+      REF_DBL *scalar;
+      REF_DBL threshold;
+      char *out_iso;
+      REF_GRID iso_grid;
+      REF_INT var;
+      REF_INT node;
+      REF_DBL *out = NULL;
+      RAS(pos < argc - 3,
+          "not enough arguments for --iso <index> <threshold> <iso.extension>");
+      var = atoi(argv[pos + 1]);
+      threshold = atof(argv[pos + 2]);
+      out_iso = argv[pos + 3];
+      if (ref_mpi_once(ref_mpi))
+        printf(" --iso %d %.4e %s\n", var, threshold, out_iso);
+      ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        scalar[node] = field[var + ldim * node] - threshold;
+      }
+      RSS(ref_iso_insert(&iso_grid, ref_grid, scalar, ldim, field, &out),
+          "iso");
+      ref_mpi_stopwatch_stop(ref_mpi, "insert iso");
+      if (ref_mpi_once(ref_mpi))
+        printf("write isosurface %d ldim %s\n", ldim, out_iso);
+      RSS(ref_gather_scalar_by_extension(iso_grid, ldim, out, NULL, out_iso),
+          "gather");
+      ref_mpi_stopwatch_stop(ref_mpi, "write isosurface geometry");
 
-    ref_grid_free(iso_grid);
-    ref_free(scalar);
+      ref_free(out);
+      ref_grid_free(iso_grid);
+      ref_free(scalar);
+    }
+  }
+
+  for (pos = 0; pos < argc - 1; pos++) {
+    if (strcmp(argv[pos], "--slice") == 0) {
+      REF_DBL normal[3], offset;
+      char *out_slice;
+      REF_GRID slice_grid;
+      REF_DBL *out = NULL;
+      RAS(pos < argc - 5,
+          "not enough arguments for --slice nx ny nz offset slice.extension");
+      normal[0] = atof(argv[pos + 1]);
+      normal[1] = atof(argv[pos + 2]);
+      normal[2] = atof(argv[pos + 3]);
+      offset = atof(argv[pos + 4]);
+      out_slice = argv[pos + 5];
+      if (ref_mpi_once(ref_mpi))
+        printf(" --slice %6.3f %6.3f %6.3f %.4e %s\n", normal[0], normal[1],
+               normal[2], offset, out_slice);
+      RSS(ref_iso_slice(&slice_grid, ref_grid, normal, offset, ldim, field,
+                        &out),
+          "slice");
+      ref_mpi_stopwatch_stop(ref_mpi, "insert slice");
+      if (ref_mpi_once(ref_mpi))
+        printf("write slice %d ldim %s\n", ldim, out_slice);
+      RSS(ref_gather_scalar_by_extension(slice_grid, ldim, out, NULL,
+                                         out_slice),
+          "gather");
+      ref_mpi_stopwatch_stop(ref_mpi, "write slice");
+      ref_free(out);
+      ref_grid_free(slice_grid);
+    }
+  }
+
+  RXS(ref_args_find(argc, argv, "--surface", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_INT group;
+    REF_CELL ref_cell;
+    if (ref_mpi_once(ref_mpi)) printf("  --surface deleting 3D cells\n");
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+      RSS(ref_cell_free(ref_cell), "free cell");
+      RSS(ref_cell_create(&ref_grid_cell(ref_grid, group),
+                          (REF_CELL_TYPE)group),
+          "empty cell create");
+      ref_cell = ref_grid_cell(ref_grid, group);
+    }
+  }
+
+  if (strcmp(out_sol, "none") == 0) {
+    if (ref_mpi_once(ref_mpi))
+      printf("skipping write of %d ldim to %s\n", ldim, out_sol);
   } else {
     if (ref_mpi_once(ref_mpi))
       printf("write %d ldim solution %s\n", ldim, out_sol);

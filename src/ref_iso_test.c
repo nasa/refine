@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_node, node) {
       field[node] = ref_node_xyz(ref_node, 0, node) - offset;
     }
-    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field, 0, NULL, NULL), "iso");
     if (!ref_mpi_para(ref_mpi)) {
       REIS(2, ref_node_n(ref_grid_node(iso_grid)), "two nodes");
       REIS(0, ref_cell_n(ref_grid_tri(iso_grid)), "no tri");
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_node, node) {
       field[node] = ref_node_xyz(ref_node, 0, node) - offset;
     }
-    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field, 0, NULL, NULL), "iso");
     if (!ref_mpi_para(ref_mpi)) {
       REIS(3, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
       REIS(1, ref_cell_n(ref_grid_tri(iso_grid)), "one tri");
@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
     field[1] = 1;
     field[2] = -1;
     field[3] = -1;
-    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field, 0, NULL, NULL), "iso");
     if (!ref_mpi_para(ref_mpi)) {
       REIS(4, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
       REIS(2, ref_cell_n(ref_grid_tri(iso_grid)), "one tri");
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
     field[1] = -1;
     field[2] = 1;
     field[3] = -1;
-    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field, 0, NULL, NULL), "iso");
     if (!ref_mpi_para(ref_mpi)) {
       REIS(4, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
       REIS(2, ref_cell_n(ref_grid_tri(iso_grid)), "one tri");
@@ -150,6 +150,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid, iso_grid;
     REF_NODE ref_node;
     REF_DBL *field;
+    REF_DBL *out;
+    REF_INT node;
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tri");
     ref_node = ref_grid_node(ref_grid);
@@ -158,12 +160,16 @@ int main(int argc, char *argv[]) {
     field[1] = -1;
     field[2] = -1;
     field[3] = 1;
-    RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    RSS(ref_iso_insert(&iso_grid, ref_grid, field, 1, field, &out), "iso");
     if (!ref_mpi_para(ref_mpi)) {
       REIS(4, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
       REIS(2, ref_cell_n(ref_grid_tri(iso_grid)), "one tri");
       REIS(0, ref_cell_n(ref_grid_edg(iso_grid)), "no edg");
     }
+    each_ref_node_valid_node(ref_grid_node(iso_grid), node) {
+      RWDS(0.0, out[node], -1, "interp");
+    }
+    ref_free(out);
     ref_grid_free(iso_grid);
     ref_free(field);
     ref_grid_free(ref_grid);

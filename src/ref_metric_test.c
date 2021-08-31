@@ -1791,7 +1791,7 @@ int main(int argc, char *argv[]) {
     ref_malloc(signed_distance, ref_node_max(ref_node), REF_DBL);
 
     /* for viz */
-    RSS(ref_iso_insert(&iso_grid, ref_grid, threshold), "iso");
+    RSS(ref_iso_insert(&iso_grid, ref_grid, threshold, 0, NULL, NULL), "iso");
     RSS(ref_gather_by_extension(iso_grid, "ref_metric_iso.tec"), "tec");
     RSS(ref_grid_free(iso_grid), "iso free");
 

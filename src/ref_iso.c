@@ -81,8 +81,65 @@ static REF_STATUS ref_iso_ghost(REF_GRID iso_grid, REF_EDGE ref_edge,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_iso_interp(REF_GRID iso_grid, REF_EDGE ref_edge,
+                                 REF_INT *new_node, REF_DBL *field,
+                                 REF_INT ldim, REF_DBL *in, REF_DBL **out) {
+  REF_MPI ref_mpi = ref_grid_mpi(iso_grid);
+  REF_INT i, edge, part;
+  REF_INT node0, node1;
+  REF_DBL t1, t0, d;
+  REF_DBL *edge_real;
+
+  if (ldim <= 0) return REF_SUCCESS;
+
+  ref_malloc(*out, ldim * ref_node_max(ref_grid_node(iso_grid)), REF_DBL);
+
+  ref_malloc_init(edge_real, ldim * ref_edge_n(ref_edge), REF_DBL, -999.0);
+
+  each_ref_edge(ref_edge, edge) {
+    if (REF_EMPTY != new_node[edge]) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        d = field[node1] - field[node0];
+        t1 = 0.5;
+        if (ref_math_divisible(field[node0], d)) {
+          t1 = -field[node0] / d;
+        }
+        t0 = 1.0 - t1;
+        for (i = 0; i < ldim; i++) {
+          (*out)[i + ldim * new_node[edge]] =
+              t1 * in[i + ldim * node1] + t0 * in[i + ldim * node0];
+          edge_real[i + ldim * edge] = (*out)[i + ldim * new_node[edge]];
+        }
+      }
+    }
+  }
+
+  RSS(ref_edge_ghost_dbl(ref_edge, ref_mpi, edge_real, ldim), "edge ghost");
+
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    if (REF_EMPTY != new_node[edge]) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+      if (ref_mpi_rank(ref_mpi) != part) {
+        for (i = 0; i < ldim; i++) {
+          (*out)[i + ldim * new_node[edge]] = edge_real[i + ldim * edge];
+        }
+      }
+    }
+  }
+
+  ref_free(edge_real);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
-                          REF_DBL *field) {
+                          REF_DBL *field, REF_INT ldim, REF_DBL *in,
+                          REF_DBL **out) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GRID iso_grid;
   REF_EDGE ref_edge;
@@ -139,6 +196,9 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
   RSS(ref_node_shift_new_globals(ref_grid_node(iso_grid)), "shift iso glob");
 
   RSS(ref_iso_ghost(iso_grid, ref_edge, new_node), "new ghost");
+
+  RSS(ref_iso_interp(iso_grid, ref_edge, new_node, field, ldim, in, out),
+      "interp in to out");
 
   if (ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -274,7 +334,7 @@ REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
   REF_LIST ref_list;
   REF_INT node, item, candidate;
 
-  RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+  RSS(ref_iso_insert(&iso_grid, ref_grid, field, 0, NULL, NULL), "iso");
 
   if (ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_edg(iso_grid);
@@ -653,6 +713,25 @@ REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid, REF_DBL *field,
     ref_free(t);
     ref_free(xyzf);
   }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *normal,
+                         REF_DBL offset, REF_INT ldim, REF_DBL *in,
+                         REF_DBL **out) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *field;
+  REF_INT node;
+
+  ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+  each_ref_node_valid_node(ref_node, node) {
+    field[node] = normal[0] * ref_node_xyz(ref_node, 0, node) +
+                  normal[1] * ref_node_xyz(ref_node, 1, node) +
+                  normal[2] * ref_node_xyz(ref_node, 2, node) - offset;
+  }
+  RSS(ref_iso_insert(iso_grid, ref_grid, field, ldim, in, out), "iso");
+  ref_free(field);
 
   return REF_SUCCESS;
 }
