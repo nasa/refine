@@ -1911,8 +1911,6 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_hessian_gradation(metric, ref_grid, -1.0),
-      "limit hessian gradation (i.e., shocks)");
   RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
       "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
