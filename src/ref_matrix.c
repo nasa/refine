@@ -506,6 +506,7 @@ REF_STATUS ref_matrix_log_m(REF_DBL *m_upper_tri, REF_DBL *log_m_upper_tri) {
 
   return REF_SUCCESS;
 }
+
 REF_STATUS ref_matrix_exp_m(REF_DBL *m_upper_tri, REF_DBL *exp_m_upper_tri) {
   REF_DBL d[12];
 
@@ -519,6 +520,7 @@ REF_STATUS ref_matrix_exp_m(REF_DBL *m_upper_tri, REF_DBL *exp_m_upper_tri) {
 
   return REF_SUCCESS;
 }
+
 REF_STATUS ref_matrix_sqrt_m(REF_DBL *m_upper_tri, REF_DBL *sqrt_m_upper_tri,
                              REF_DBL *inv_sqrt_m_upper_tri) {
   REF_DBL d[12];
@@ -532,6 +534,49 @@ REF_STATUS ref_matrix_sqrt_m(REF_DBL *m_upper_tri, REF_DBL *sqrt_m_upper_tri,
     ref_matrix_show_m(m_upper_tri);
     return REF_FAILURE;
   }
+  d[0] = sqrt(d[0]);
+  d[1] = sqrt(d[1]);
+  d[2] = sqrt(d[2]);
+
+  RSS(ref_matrix_form_m(d, sqrt_m_upper_tri), "form m");
+
+  if (!ref_math_divisible(1.0, d[0])) {
+    return REF_DIV_ZERO;
+  }
+  d[0] = 1.0 / d[0];
+
+  if (!ref_math_divisible(1.0, d[1])) {
+    return REF_DIV_ZERO;
+  }
+  d[1] = 1.0 / d[1];
+
+  if (!ref_math_divisible(1.0, d[2])) {
+    return REF_DIV_ZERO;
+  }
+  d[2] = 1.0 / d[2];
+
+  RSS(ref_matrix_form_m(d, inv_sqrt_m_upper_tri), "form inv m");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_matrix_sqrt_abs_m(REF_DBL *m_upper_tri,
+                                        REF_DBL *sqrt_m_upper_tri,
+                                        REF_DBL *inv_sqrt_m_upper_tri) {
+  REF_DBL d[12];
+
+  RSB(ref_matrix_diag_m(m_upper_tri, d), "diag",
+      { ref_matrix_show_m(m_upper_tri); });
+
+  if (d[0] < 0.0 || d[1] < 0.0 || d[2] < 0.0) {
+    REF_WHERE("ABS(eigenvalues)");
+    printf("eigs %24.15e %24.15e %24.15e\n", d[0], d[1], d[2]);
+    ref_matrix_show_m(m_upper_tri);
+  }
+  d[0] = ABS(d[0]);
+  d[1] = ABS(d[1]);
+  d[2] = ABS(d[2]);
+
   d[0] = sqrt(d[0]);
   d[1] = sqrt(d[1]);
   d[2] = sqrt(d[2]);
@@ -673,7 +718,7 @@ REF_STATUS ref_matrix_bound(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
   REF_DBL m12bar[6];
   REF_DBL m12bar_system[12];
   REF_STATUS sqrt_m1_status;
-  sqrt_m1_status = ref_matrix_sqrt_m(m1, m1half, m1neghalf);
+  sqrt_m1_status = ref_matrix_sqrt_abs_m(m1, m1half, m1neghalf);
   if (REF_DIV_ZERO == sqrt_m1_status) {
     REF_INT i;
     for (i = 0; i < 6; i++) m12[i] = m2[i];
