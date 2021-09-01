@@ -367,6 +367,16 @@ static REF_STATUS stepexp_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_INT node;
   REF_INT pos;
   REF_DBL h0, h1, h2, s1, s2, width;
+  REF_DBL aspect_ratio = 1.0;
+
+  RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    aspect_ratio = atof(argv[pos + 1]);
+    aspect_ratio = MAX(1.0, aspect_ratio);
+    if (ref_mpi_once(ref_mpi))
+      printf("limit --aspect-ratio to %f\n", aspect_ratio);
+  }
 
   RSS(ref_args_find(argc, argv, "--stepexp", &pos), "arg search");
   RAS(pos + 6 < argc, "not enough --stepexp args");
@@ -389,20 +399,57 @@ static REF_STATUS stepexp_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
-  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    REF_DBL m[6];
-    REF_DBL h;
-    REF_DBL s = distance[node];
-    RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
-    m[0] = 1.0 / (h * h);
-    m[1] = 0.0;
-    m[2] = 0.0;
-    m[3] = 1.0 / (h * h);
-    m[4] = 0.0;
-    m[5] = 1.0 / (h * h);
-    if (ref_grid_twod(ref_grid)) m[5] = 1.0;
-    RSS(ref_node_metric_set(ref_node, node, m), "set");
+
+  if (aspect_ratio > 1.0) {
+    REF_DBL *grad_dist;
+    REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
+    ref_malloc(grad_dist, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_recon_gradient(ref_grid, distance, grad_dist, recon), "grad dist");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL m[6];
+      REF_DBL d[12];
+      REF_DBL h;
+      REF_DBL s = distance[node];
+      RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+      ref_matrix_eig(d, 0) = 1.0 / (h * h);
+      ref_matrix_eig(d, 1) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
+      ref_matrix_eig(d, 2) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
+      ref_matrix_vec(d, 0, 0) = grad_dist[0 + 3 * node];
+      ref_matrix_vec(d, 1, 0) = grad_dist[1 + 3 * node];
+      ref_matrix_vec(d, 2, 0) = grad_dist[2 + 3 * node];
+      if (REF_SUCCESS == ref_math_normalize(&(d[3]))) {
+        RSS(ref_math_orthonormal_system(&(d[3]), &(d[6]), &(d[9])),
+            "ortho sys");
+        RSS(ref_matrix_form_m(d, m), "form m from d");
+      } else {
+        m[0] = 1.0 / (h * h);
+        m[1] = 0.0;
+        m[2] = 0.0;
+        m[3] = 1.0 / (h * h);
+        m[4] = 0.0;
+        m[5] = 1.0 / (h * h);
+      }
+      if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
+      RSS(ref_node_metric_set(ref_node, node, m), "set");
+    }
+    ref_free(grad_dist);
+  } else {
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL m[6];
+      REF_DBL h;
+      REF_DBL s = distance[node];
+      RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+      m[0] = 1.0 / (h * h);
+      m[1] = 0.0;
+      m[2] = 0.0;
+      m[3] = 1.0 / (h * h);
+      m[4] = 0.0;
+      m[5] = 1.0 / (h * h);
+      if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
+      RSS(ref_node_metric_set(ref_node, node, m), "set");
+    }
   }
+
   ref_free(distance);
   return REF_SUCCESS;
 }
