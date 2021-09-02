@@ -560,7 +560,7 @@ REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
   REF_DBL cp[3];
   REF_DBL d5, d6;
   REF_DBL vb, va;
-  REF_DBL denom, w;
+  REF_DBL w;
 
   /*
         printf("REF_DBL xyz0[]={%.15e, %.15e, %.15e};\n",a[0],a[1],a[2]);
@@ -661,10 +661,10 @@ REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
     return REF_SUCCESS;
   }
 
-  RAS(ref_math_divisible(1.0, (va + vb + vc)), "div zero 1.0 / (va + vb + vc)");
-  denom = 1.0 / (va + vb + vc);
-  v = vb * denom;
-  w = vc * denom;
+  RAS(ref_math_divisible(vb, (va + vb + vc)), "div zero vb / (va + vb + vc)");
+  v = vb / (va + vb + vc);
+  RAS(ref_math_divisible(vc, (va + vb + vc)), "div zero vc / (va + vb + vc)");
+  w = vc / (va + vb + vc);
   proj[0] = a[0] + v * ab[0] + w * ac[0];
   proj[1] = a[1] + v * ab[1] + w * ac[1];
   proj[2] = a[2] + v * ab[2] + w * ac[2];
