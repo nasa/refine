@@ -628,7 +628,7 @@ REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
   /* Check if P in edge region of AC, if so return projection of P onto AC */
   vb = d5 * d2 - d1 * d6;
   if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0) {
-    RAS(ref_math_divisible(d1, (d1 - d3)), "div zero d1/(d1-d3)");
+    RAS(ref_math_divisible(d2, (d2 - d6)), "div zero d2/(d2-d6)");
     v = d2 / (d2 - d6);
     proj[0] = a[0] + v * ac[0];
     proj[1] = a[1] + v * ac[1];
