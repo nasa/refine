@@ -1288,25 +1288,26 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       REF_CELL ref_cell = ref_grid_tet(ref_grid);
       max_degree = 0;
       each_ref_node_valid_node(ref_node, node) {
-	RSS(ref_adj_degree(ref_cell_adj(ref_cell), node, &degree), "cell degree");
-	max_degree = MAX(max_degree, degree);
+        RSS(ref_adj_degree(ref_cell_adj(ref_cell), node, &degree),
+            "cell degree");
+        max_degree = MAX(max_degree, degree);
       }
       degree = max_degree;
       RSS(ref_mpi_max(ref_mpi, &degree, &max_degree, REF_INT_TYPE), "mpi max");
       min_volume = REF_DBL_MAX;
       max_volume = REF_DBL_MIN;
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-	RSS(ref_node_tet_vol(ref_grid_node(ref_grid), nodes, &volume), "vol");
-      min_volume = MIN(min_volume, volume);
-      max_volume = MAX(max_volume, volume);
+        RSS(ref_node_tet_vol(ref_grid_node(ref_grid), nodes, &volume), "vol");
+        min_volume = MIN(min_volume, volume);
+        max_volume = MAX(max_volume, volume);
       }
       volume = min_volume;
       RSS(ref_mpi_min(ref_mpi, &volume, &min_volume, REF_DBL_TYPE), "mpi min");
       volume = max_volume;
       RSS(ref_mpi_max(ref_mpi, &volume, &max_volume, REF_DBL_TYPE), "mpi max");
       if (ref_mpi_once(ref_mpi)) {
-        printf("tet: max degree %d min volume %e max volume %e\n",
-	       max_degree,min_volume,max_volume);
+        printf("tet: max degree %d min volume %e max volume %e\n", max_degree,
+               min_volume, max_volume);
       }
     }
   } else {
@@ -2061,7 +2062,8 @@ static REF_STATUS fixed_point_metric(
     REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
     REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
     const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
-    REF_DBL gradation, REF_DBL complexity, REF_BOOL iles) {
+    REF_DBL gradation, REF_DBL complexity, REF_BOOL iles,
+    REF_DBL aspect_ratio) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL *hess, *scalar;
   REF_INT timestep, total_timesteps;
@@ -2163,6 +2165,12 @@ static REF_STATUS fixed_point_metric(
   }
   ref_free(min_scalar);
   ref_free(max_scalar);
+
+  if (aspect_ratio > 1.0) {
+    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
+        "limit aspect ratio");
+    ref_mpi_stopwatch_stop(ref_mpi, "limit aspect ratio");
+  }
 
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
@@ -2434,6 +2442,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   REF_DBL *displaced = NULL;
   REF_INT p = 2;
   REF_DBL gradation = -1.0, complexity;
+  REF_DBL aspect_ratio = -1.0;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_BOOL buffer = REF_FALSE;
   REF_BOOL multiscale_metric;
@@ -2480,6 +2489,18 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       goto shutdown;
     }
     gradation = atof(argv[pos + 1]);
+  }
+
+  aspect_ratio = -1.0;
+  RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 1) {
+      if (ref_mpi_once(ref_mpi))
+        printf("option missing value: --aspect-ratio <aspect-ratio>\n");
+      goto shutdown;
+    }
+    aspect_ratio = atof(argv[pos + 1]);
   }
 
   buffer = REF_FALSE;
@@ -2820,7 +2841,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       if (REF_EMPTY != pos) iles = REF_TRUE;
       RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
                              timestep_increment, in_project, solb_middle,
-                             reconstruction, p, gradation, complexity, iles),
+                             reconstruction, p, gradation, complexity, iles,
+                             aspect_ratio),
           "fixed point");
     } else {
       RSS(moving_fixed_point_metric(metric, ref_grid, first_timestep,
