@@ -602,6 +602,19 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  { /* dist3 poorly scaled denom = 1.0 / (va + vb + vc) */
+    REF_DBL xyz0[] = {-4.686250000000001e+02, -3.930128692229282e+01,
+                      -1.425000000000000e+02};
+    REF_DBL xyz1[] = {-4.686250000000370e+02, -3.930129685425510e+01,
+                      -1.425000000000020e+02};
+    REF_DBL xyz2[] = {-4.686249908433857e+02, -3.930128735419495e+01,
+                      -1.425000000000000e+02};
+    REF_DBL xyz[] = {-4.686249911945133e+02, -3.930128771849068e+01,
+                     -1.424999810171184e+02};
+    REF_DBL distance;
+    RSS(ref_search_dist3(xyz0, xyz1, xyz2, xyz, &distance), "dist");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

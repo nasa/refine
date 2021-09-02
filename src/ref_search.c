@@ -560,7 +560,14 @@ REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
   REF_DBL cp[3];
   REF_DBL d5, d6;
   REF_DBL vb, va;
-  REF_DBL denom, w;
+  REF_DBL w;
+
+  /*
+        printf("REF_DBL xyz0[]={%.15e, %.15e, %.15e};\n",a[0],a[1],a[2]);
+        printf("REF_DBL xyz1[]={%.15e, %.15e, %.15e};\n",b[0],b[1],b[2]);
+        printf("REF_DBL xyz2[]={%.15e, %.15e, %.15e};\n",c[0],c[1],c[2]);
+        printf("REF_DBL xyz[]={%.15e, %.15e, %.15e};\n",p[0],p[1],p[2]);
+   */
 
   /* Check if P in vertex region outside A */
   ab[0] = b[0] - a[0];
@@ -628,7 +635,7 @@ REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
   /* Check if P in edge region of AC, if so return projection of P onto AC */
   vb = d5 * d2 - d1 * d6;
   if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0) {
-    RAS(ref_math_divisible(d1, (d1 - d3)), "div zero d1/(d1-d3)");
+    RAS(ref_math_divisible(d2, (d2 - d6)), "div zero d2/(d2-d6)");
     v = d2 / (d2 - d6);
     proj[0] = a[0] + v * ac[0];
     proj[1] = a[1] + v * ac[1];
@@ -654,10 +661,10 @@ REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
     return REF_SUCCESS;
   }
 
-  RAS(ref_math_divisible(1.0, (va + vb + vc)), "div zero 1.0 / (va + vb + vc)");
-  denom = 1.0 / (va + vb + vc);
-  v = vb * denom;
-  w = vc * denom;
+  RAS(ref_math_divisible(vb, (va + vb + vc)), "div zero vb / (va + vb + vc)");
+  v = vb / (va + vb + vc);
+  RAS(ref_math_divisible(vc, (va + vb + vc)), "div zero vc / (va + vb + vc)");
+  w = vc / (va + vb + vc);
   proj[0] = a[0] + v * ab[0] + w * ac[0];
   proj[1] = a[1] + v * ab[1] + w * ac[1];
   proj[2] = a[2] + v * ab[2] + w * ac[2];
