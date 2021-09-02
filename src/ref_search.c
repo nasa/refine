@@ -563,10 +563,10 @@ REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
   REF_DBL denom, w;
 
   /*
-        printf("REF_INT a[]={%.15e, %.15e, %.15e};\n",a[0],a[1],a[2]);
-        printf("REF_INT b[]={%.15e, %.15e, %.15e};\n",b[0],b[1],b[2]);
-        printf("REF_INT c[]={%.15e, %.15e, %.15e};\n",c[0],c[1],c[2]);
-        printf("REF_INT p[]={%.15e, %.15e, %.15e};\n",p[0],p[1],p[2]);
+        printf("REF_DBL xyz0[]={%.15e, %.15e, %.15e};\n",a[0],a[1],a[2]);
+        printf("REF_DBL xyz1[]={%.15e, %.15e, %.15e};\n",b[0],b[1],b[2]);
+        printf("REF_DBL xyz2[]={%.15e, %.15e, %.15e};\n",c[0],c[1],c[2]);
+        printf("REF_DBL xyz[]={%.15e, %.15e, %.15e};\n",p[0],p[1],p[2]);
    */
 
   /* Check if P in vertex region outside A */
