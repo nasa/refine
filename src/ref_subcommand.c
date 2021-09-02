@@ -1278,9 +1278,37 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_validation_boundary_face(ref_grid),
         "boundary-interior connectivity");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "boundary-volume check");
-
     RSS(ref_split_edge_geometry(ref_grid), "split geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
+    {
+      REF_DBL volume, min_volume, max_volume;
+      REF_INT degree, max_degree;
+      REF_INT node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+      REF_NODE ref_node = ref_grid_node(ref_grid);
+      REF_CELL ref_cell = ref_grid_tet(ref_grid);
+      max_degree = 0;
+      each_ref_node_valid_node(ref_node, node) {
+	RSS(ref_adj_degree(ref_cell_adj(ref_cell), node, &degree), "cell degree");
+	max_degree = MAX(max_degree, degree);
+      }
+      degree = max_degree;
+      RSS(ref_mpi_max(ref_mpi, &degree, &max_degree, REF_INT_TYPE), "mpi max");
+      min_volume = REF_DBL_MAX;
+      max_volume = REF_DBL_MIN;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+	RSS(ref_node_tet_vol(ref_grid_node(ref_grid), nodes, &volume), "vol");
+      min_volume = MIN(min_volume, volume);
+      max_volume = MAX(max_volume, volume);
+      }
+      volume = min_volume;
+      RSS(ref_mpi_min(ref_mpi, &volume, &min_volume, REF_DBL_TYPE), "mpi min");
+      volume = max_volume;
+      RSS(ref_mpi_max(ref_mpi, &volume, &max_volume, REF_DBL_TYPE), "mpi max");
+      if (ref_mpi_once(ref_mpi)) {
+        printf("tet: max degree %d min volume %e max volume %e\n",
+	       max_degree,min_volume,max_volume);
+      }
+    }
   } else {
     REF_BOOL flat;
     RSS(ref_egads_twod_flat_z(ref_grid_geom(ref_grid), &flat), "flatness");
