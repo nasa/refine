@@ -71,7 +71,6 @@ S2S
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
  README and FUN3D doc update and sync
- rename and cleanup ref bootstrap IO
  tutorials
 
 split public/private ref_defs.h
@@ -224,6 +223,8 @@ structural
  ref_malloc struct to track heap
  no seqential code (import export validation)
  always strongly typed (mpi)
+ always namespace (ABS, MIN, MAX)
+ split public/private headers (defs)
 
 *****************
 
@@ -240,6 +241,7 @@ ooooooooooooooooo
 
 + move JSM NBNP bootstrap from c2s to boot
 + fun3d-intg test
++ rename and cleanup ref bootstrap IO
 
 + introduce file format groups in ref_subcommand loop
 
