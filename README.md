@@ -54,7 +54,7 @@ EGADS built with OpenCASCADE and `refmpi` includes EGADSlite.
 # Examples
 
 The following examples assume that `ref` is in your shell path.
-`mpiexec ... refmpi` or `mpiexec ... rempifull` can be substituted for
+`mpiexec ... refmpi` or `mpiexec ... refmpifull` can be substituted for
 `ref` in each of these examples if MPI and/or ESP is configured. The
 [.meshb and .solb file extensions](https://github.com/LoicMarechal/libMeshb)
 are used generically. Other formats are supported, e.g.,
