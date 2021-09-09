@@ -113,7 +113,7 @@ mpiexec ... refmpi interp donor-mesh.ext donor-field.solb receptor-mesh.ext rece
 ```
 where the output is `receptor-field.solb`.
 
-# Description
+# Introduction
 
 `refine` is a 2D and 3D mesh adaptation tool implemented in the C
 language.  Mesh adaptation mechanics are provided where the primary
