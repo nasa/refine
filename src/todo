@@ -4,8 +4,6 @@ https://libigl.github.io/
 https://github.com/jiangzhongshi/bichon
 https://github.com/Yixin-Hu/TetWild
 
-introduce a code enum in ref_subcommand loop
-
 optimize t to reduce eval t and eval uv in edgeUV
 
 use cached e2f
@@ -236,6 +234,8 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ introduce file format groups in ref_subcommand loop
 
 + effective egads
   + auto detect HAVE_EGADS_EFFECTIVE
