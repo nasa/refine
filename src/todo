@@ -86,8 +86,6 @@ reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
 
 improve CI test
  make check stack fuzz
- fun3d-intg test
- move JSM NBNP bootstrap from c2s to boot
  checks interp error for functions
  clean up ref_acceptance uses without a flag
  ref_acceptance should use two dashes
@@ -225,6 +223,7 @@ meshlink
 structural
  ref_malloc struct to track heap
  no seqential code (import export validation)
+ always strongly typed (mpi)
 
 *****************
 
@@ -238,6 +237,9 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ move JSM NBNP bootstrap from c2s to boot
++ fun3d-intg test
 
 + introduce file format groups in ref_subcommand loop
 
