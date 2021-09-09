@@ -222,6 +222,10 @@ meshlink
   - degeneracy mark and uv update (only supports uv area?)
   o discuss PW BC system
 
+structural
+ ref_malloc struct to track heap
+ no seqential code (import export validation)
+
 *****************
 
 - explore entropy adjoint in 2D and 3D
