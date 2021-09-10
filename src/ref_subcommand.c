@@ -475,6 +475,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   if (argc < 3) goto shutdown;
   in_mesh = argv[2];
 
+  RXS(ref_args_find(argc, argv, "--timing", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    ref_mpi_timing(ref_mpi) = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi)) printf("--timing %d\n", ref_mpi_timing(ref_mpi));
+  }
+
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_mesh), "part");
