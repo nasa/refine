@@ -1158,7 +1158,10 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
   REF_INT ncell_keep;
   REF_INT new_location;
 
-  chunk = MAX(1000000, (REF_INT)(ncell / ref_mpi_n(ref_node_mpi(ref_node))));
+  chunk = MAX(1000000, (REF_INT)(ncell / ref_mpi_n(ref_mpi)));
+
+  if (1 < ref_mpi_timing(ref_mpi) && ref_mpi_once(ref_mpi))
+    printf("chunk %d ncell %ld nproc %d\n", chunk, ncell, ref_mpi_n(ref_mpi));
 
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
