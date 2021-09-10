@@ -1291,7 +1291,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_NODE ref_node;
 
   REF_INT version = 0;
-  REF_BOOL instrument = REF_FALSE;
+  REF_BOOL instrument = (ref_mpi_timing(ref_mpi) > 0);
 
   REF_INT single;
   REF_FILEPOS ibyte;
@@ -1362,9 +1362,12 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_LONG_TYPE), "bcast");
 
+  if (instrument)
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid header");
+
   RSS(ref_part_node(file, swap_endian, version, REF_FALSE, ref_node, nnode),
       "part node");
-  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "nodes");
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid nodes");
 
   if (0 < ntri) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3);
@@ -1389,7 +1392,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         "qua");
   }
 
-  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "bound");
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid bound");
 
   if (0 < ntet) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
@@ -1400,6 +1403,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 sixty_four_bit),
         "tet");
   }
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid tet");
 
   if (0 < npyr) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
@@ -1411,6 +1415,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 sixty_four_bit),
         "pyr");
   }
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid pyr");
 
   if (0 < npri) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
@@ -1423,6 +1428,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 sixty_four_bit),
         "pri");
   }
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid pri");
 
   if (0 < nhex) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
@@ -1436,17 +1442,20 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 sixty_four_bit),
         "hex");
   }
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid hex");
 
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
 
   /* ghost xyz */
 
   RSS(ref_node_ghost_real(ref_node), "ghost real");
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid ghost");
 
   RSS(ref_grid_inward_boundary_orientation(ref_grid),
       "inward boundary orientation");
 
-  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "volume");
+  if (instrument)
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid volume");
 
   return REF_SUCCESS;
 }
