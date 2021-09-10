@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "ref_dict.h"
 #include "ref_endian.h"
@@ -1157,6 +1158,10 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
   REF_INT part, node;
   REF_INT ncell_keep;
   REF_INT new_location;
+  clock_t tic;
+  clock_t read_toc = 0;
+  clock_t mpi_toc = 0;
+  clock_t add_toc = 0;
 
   chunk = MAX(1000000, (REF_INT)(ncell / ref_mpi_n(ref_mpi)));
 
@@ -1178,11 +1183,12 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
     while (ncell_read < ncell) {
       section_size = (REF_INT)MIN((REF_LONG)chunk, ncell - ncell_read);
 
+      tic = clock();
       RSS(ref_part_bin_ugrid_pack_cell(file, swap_endian, sixty_four_bit,
                                        conn_offset, faceid_offset, section_size,
                                        ncell_read, node_per, size_per, c2n),
           "read c2n");
-
+      read_toc += (clock() - tic);
       ncell_read += section_size;
 
       for (cell = 0; cell < section_size; cell++)
@@ -1207,6 +1213,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
         elements_to_send[dest[cell]]++;
       }
 
+      tic = clock();
       each_ref_mpi_worker(ref_mpi, part) {
         if (0 < elements_to_send[part]) {
           RSS(ref_mpi_scatter_send(ref_mpi, &(elements_to_send[part]), 1,
@@ -1218,9 +1225,10 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
               "send");
         }
       }
-
+      mpi_toc += (clock() - tic);
       /* master keepers */
 
+      tic = clock();
       ncell_keep = elements_to_send[0];
       if (0 < ncell_keep) {
         ref_malloc_init(sent_part, size_per * ncell_keep, REF_INT, REF_EMPTY);
@@ -1236,6 +1244,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
 
         ref_free(sent_part);
       }
+      add_toc += (clock() - tic);
     }
 
     ref_free(dest);
@@ -1250,13 +1259,18 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
     }
   } else {
     do {
+      tic = clock();
       RSS(ref_mpi_scatter_recv(ref_mpi, &elements_to_receive, 1, REF_INT_TYPE),
           "recv");
+      mpi_toc += (clock() - tic);
       if (elements_to_receive > 0) {
+        tic = clock();
         RSS(ref_mpi_scatter_recv(ref_mpi, sent_c2n,
                                  size_per * elements_to_receive, REF_GLOB_TYPE),
             "send");
+        mpi_toc += (clock() - tic);
 
+        tic = clock();
         ref_malloc_init(sent_part, size_per * elements_to_receive, REF_INT,
                         REF_EMPTY);
         for (cell = 0; cell < elements_to_receive; cell++)
@@ -1271,13 +1285,17 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
 
         ref_free(sent_part);
       }
+      add_toc += (clock() - tic);
     } while (elements_to_receive != end_of_message);
   }
 
   free(sent_c2n);
 
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell read");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_cell), "fill ghosts");
-
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell shuffle");
   return REF_SUCCESS;
 }
 
