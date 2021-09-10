@@ -1305,8 +1305,8 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
     if (ref_mpi_once(ref_mpi))
       printf(" read %f mpi %f add %f\n",
              ((REF_DBL)read_toc) / ((REF_DBL)CLOCKS_PER_SEC),
-             ((REF_DBL)total_mpi) / ((REF_DBL)CLOCKS_PER_SEC),
-             ((REF_DBL)total_add) / ((REF_DBL)CLOCKS_PER_SEC));
+             ((REF_DBL)total_mpi) / ((REF_DBL)CLOCKS_PER_SEC)/ ((REF_DBL)ref_mpi_n(ref_mpi)),
+             ((REF_DBL)total_add) / ((REF_DBL)CLOCKS_PER_SEC)/ ((REF_DBL)ref_mpi_n(ref_mpi)));
   }
 
   return REF_SUCCESS;
