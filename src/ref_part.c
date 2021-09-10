@@ -1296,6 +1296,12 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
   RSS(ref_migrate_shufflin_cell(ref_node, ref_cell), "fill ghosts");
   if (1 < ref_mpi_timing(ref_mpi))
     ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell shuffle");
+
+  if (1 < ref_mpi_timing(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi))
+      printf(" read %f sec\n", ((REF_DBL)read_toc) / ((REF_DBL)CLOCKS_PER_SEC));
+  }
+
   return REF_SUCCESS;
 }
 
