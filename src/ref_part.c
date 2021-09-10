@@ -1288,7 +1288,6 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
       add_toc += (clock() - tic);
     } while (elements_to_receive != end_of_message);
   }
-
   free(sent_c2n);
 
   if (1 < ref_mpi_timing(ref_mpi))
@@ -1298,8 +1297,16 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
     ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell shuffle");
 
   if (1 < ref_mpi_timing(ref_mpi)) {
+    REF_INT total, total_mpi, total_add;
+    total = (REF_INT)mpi_toc;
+    RSS(ref_mpi_sum(ref_mpi, &total, &total_mpi, 1, REF_INT_TYPE), "sum");
+    total = (REF_INT)add_toc;
+    RSS(ref_mpi_sum(ref_mpi, &total, &total_add, 1, REF_INT_TYPE), "sum");
     if (ref_mpi_once(ref_mpi))
-      printf(" read %f sec\n", ((REF_DBL)read_toc) / ((REF_DBL)CLOCKS_PER_SEC));
+      printf(" read %f mpi %f add %f\n",
+             ((REF_DBL)read_toc) / ((REF_DBL)CLOCKS_PER_SEC),
+             ((REF_DBL)total_mpi) / ((REF_DBL)CLOCKS_PER_SEC),
+             ((REF_DBL)total_add) / ((REF_DBL)CLOCKS_PER_SEC));
   }
 
   return REF_SUCCESS;
