@@ -191,6 +191,8 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RES(1, fscanf(file, "%d", &npyr), "npyr");
   RES(1, fscanf(file, "%d", &npri), "npri");
   RES(1, fscanf(file, "%d", &nhex), "nhex");
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid header");
 
   for (node = 0; node < nnode; node++) {
     RSS(ref_node_add(ref_node, node, &new_node), "new_node");
@@ -204,6 +206,8 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   }
 
   RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid node");
 
   ref_cell = ref_grid_tri(ref_grid);
   nodes[3] = REF_EMPTY;
@@ -241,6 +245,7 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RES(1, fscanf(file, "%d", &face_id), "qua id");
     ref_cell_c2n(ref_cell, 4, qua) = face_id;
   }
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid tri");
 
   ref_cell = ref_grid_tet(ref_grid);
   for (cell = 0; cell < ntet; cell++) {
@@ -253,6 +258,7 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_cell_add(ref_cell, nodes, &new_cell), "new tet");
     RES(cell, new_cell, "tet index");
   }
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid tet");
 
   ref_cell = ref_grid_pyr(ref_grid);
   for (cell = 0; cell < npyr; cell++) {
@@ -266,6 +272,7 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_cell_add(ref_cell, nodes, &new_cell), "new pyr");
     RES(cell, new_cell, "pyr index");
   }
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid pyr");
 
   ref_cell = ref_grid_pri(ref_grid);
   for (cell = 0; cell < npri; cell++) {
@@ -285,6 +292,7 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
     RES(cell, new_cell, "pri index");
   }
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid pri");
 
   ref_cell = ref_grid_hex(ref_grid);
   for (cell = 0; cell < nhex; cell++) {
@@ -301,6 +309,7 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_cell_add(ref_cell, nodes, &new_cell), "new hex");
     RES(cell, new_cell, "hex index");
   }
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid hex");
 
   fclose(file);
 
@@ -496,6 +505,8 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &npyr), "npyr");
   RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &npri), "npri");
   RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &nhex), "nhex");
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid header");
 
   /* large block reads recommended for IO performance */
   max_chunk = MIN(1000000, nnode);
@@ -518,6 +529,8 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   ref_free(xyz);
 
   RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid node");
 
   RSS(ref_import_bin_ugrid_c2n(ref_grid_tri(ref_grid), ntri, file, swap, fat),
       "tri face nodes");
@@ -530,15 +543,20 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_import_bin_ugrid_bound_tag(ref_grid_qua(ref_grid), nqua, file, swap,
                                      fat),
       "tri face tags");
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid tri");
 
   RSS(ref_import_bin_ugrid_c2n(ref_grid_tet(ref_grid), ntet, file, swap, fat),
       "tet face nodes");
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid tet");
   RSS(ref_import_bin_ugrid_c2n(ref_grid_pyr(ref_grid), npyr, file, swap, fat),
       "pyr face nodes");
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid pyr");
   RSS(ref_import_bin_ugrid_c2n(ref_grid_pri(ref_grid), npri, file, swap, fat),
       "pri face nodes");
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid pri");
   RSS(ref_import_bin_ugrid_c2n(ref_grid_hex(ref_grid), nhex, file, swap, fat),
       "hex face nodes");
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "ugrid hex");
 
   fclose(file);
 
