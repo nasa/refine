@@ -1207,6 +1207,18 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
         elements_to_send[dest[cell]]++;
       }
 
+      each_ref_mpi_worker(ref_mpi, part) {
+        if (0 < elements_to_send[part]) {
+          RSS(ref_mpi_scatter_send(ref_mpi, &(elements_to_send[part]), 1,
+                                   REF_INT_TYPE, part),
+              "send");
+          RSS(ref_mpi_scatter_send(
+                  ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
+                  size_per * elements_to_send[part], REF_GLOB_TYPE, part),
+              "send");
+        }
+      }
+
       /* master keepers */
 
       ncell_keep = elements_to_send[0];
@@ -1223,18 +1235,6 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
             "glob");
 
         ref_free(sent_part);
-      }
-
-      each_ref_mpi_worker(ref_mpi, part) {
-        if (0 < elements_to_send[part]) {
-          RSS(ref_mpi_scatter_send(ref_mpi, &(elements_to_send[part]), 1,
-                                   REF_INT_TYPE, part),
-              "send");
-          RSS(ref_mpi_scatter_send(
-                  ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
-                  size_per * elements_to_send[part], REF_GLOB_TYPE, part),
-              "send");
-        }
       }
     }
 
