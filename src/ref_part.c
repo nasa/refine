@@ -1218,8 +1218,6 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
               "send");
         }
       }
-      if (1 < ref_mpi_timing(ref_mpi))
-        ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell read");
 
       /* master keepers */
 
@@ -1238,8 +1236,6 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
 
         ref_free(sent_part);
       }
-      if (1 < ref_mpi_timing(ref_mpi))
-        ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell add");
     }
 
     ref_free(dest);
@@ -1260,8 +1256,6 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
         RSS(ref_mpi_scatter_recv(ref_mpi, sent_c2n,
                                  size_per * elements_to_receive, REF_GLOB_TYPE),
             "send");
-        if (1 < ref_mpi_timing(ref_mpi))
-          ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell read");
 
         ref_malloc_init(sent_part, size_per * elements_to_receive, REF_INT,
                         REF_EMPTY);
@@ -1277,8 +1271,6 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
 
         ref_free(sent_part);
       }
-      if (1 < ref_mpi_timing(ref_mpi))
-        ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell add");
     } while (elements_to_receive != end_of_message);
   }
 
