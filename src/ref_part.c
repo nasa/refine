@@ -1284,8 +1284,8 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
             "glob");
 
         ref_free(sent_part);
+	add_toc += (clock() - tic);
       }
-      add_toc += (clock() - tic);
     } while (elements_to_receive != end_of_message);
   }
   free(sent_c2n);
