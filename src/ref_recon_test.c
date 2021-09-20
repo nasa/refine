@@ -82,24 +82,18 @@ int main(int argc, char *argv[]) {
       RSS(ref_recon_gradient(ref_grid, scalar, grad, reconstruction), "grad");
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         for (dir = 0; dir < 3; dir++) {
-          derivatives[dir + 3 * i + 3 * ldim * node] =
-              ABS(grad[dir + 3 * node]);
+          derivatives[dir + 3 * i + 3 * ldim * node] = grad[dir + 3 * node];
         }
       }
     }
-    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", "ref_recon_deriv.tec");
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", "ref_recon_deriv.plt");
     RSS(ref_gather_scalar_by_extension(ref_grid, 3 * ldim, derivatives, NULL,
-                                       "ref_recon_deriv.tec"),
+                                       "ref_recon_deriv.plt"),
         "export derivatives");
-    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", "ref_recon_grad.solb");
-    RSS(ref_gather_scalar_by_extension(ref_grid, 3 * ldim, grad, NULL,
-                                       "ref_recon_grad.solb"),
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", "ref_recon_deriv.solb");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 3 * ldim, derivatives, NULL,
+                                       "ref_recon_deriv.solb"),
         "export derivatives");
-    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", "ref_recon_grad.tec");
-    RSS(ref_gather_scalar_by_extension(ref_grid, 3 * ldim, grad, NULL,
-                                       "ref_recon_grad.tec"),
-        "export derivatives");
-
     ref_free(function);
     ref_free(derivatives);
     ref_free(scalar);
