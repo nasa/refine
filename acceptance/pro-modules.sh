@@ -10,6 +10,6 @@ export parmetis32_path="${module_path}/ParMETIS/4.0.3-mpt-2.23-intel_2018.3.222"
 export parmetis64_path="${module_path}/ParMETIS-64/4.0.3-mpt-2.23-intel_2018.3.222"
 export zoltan_path="${module_path}/Zoltan/3.82-mpt-2.23-intel_2018.3.222"
 
-export egads_path="${module_path}/ESP/119/EngSketchPad"
-export opencascade_path="${module_path}/ESP/119/OpenCASCADE"
+export egads_path="${module_path}/ESP/120-beta.2021.09.20.1202/EngSketchPad"
+export opencascade_path="${module_path}/ESP/120-beta.2021.09.20.1202/OpenCASCADE"
 
