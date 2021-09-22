@@ -7,9 +7,9 @@ set -x
 module_path="/u/shared/fun3d/fun3d_users/modules"
 parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.23-intel_2018.3.222"
 gcc_parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.23-gcc_6.2.0"
-egads_path="${module_path}/ESP/119/EngSketchPad"
+egads_path="${module_path}/ESP/120-beta.2021.09.20.1202/EngSketchPad"
 egads_svn_path="/u/mpark/local/pkgs/EGADS/trunk"
-occ_path="${module_path}/ESP/119/OpenCASCADE"
+occ_path="${module_path}/ESP/120-beta.2021.09.20.1202/OpenCASCADE"
 meshlink_path="/u/mpark/local/pkgs/MeshLink"
 
 mpi_path="/opt/hpe/hpc/mpt/mpt-2.23"
