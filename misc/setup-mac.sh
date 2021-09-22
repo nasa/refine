@@ -24,8 +24,8 @@ meshlink_path="/Users/mpark/local/pkgs/MeshLink"
 
 # production spack packages
 parmetis_path="/Users/mpark/local/pkgs/parmetis-4.0.3"
-metis_path="/Users/mpark/local/pkgs/parmetis-4.0.3"
-mpi_path="/Users/mpark/local/pkgs/openmpi-4.0.5/build"
+metis_path="/Users/mpark/local/pkgs/parmetis-4.0.3/metis"
+mpi_path="/Users/mpark/homebrew"
 
 mkdir -p egads
 ( cd egads && \
@@ -34,9 +34,8 @@ mkdir -p egads
     --with-mpi=${mpi_path} \
     --with-metis=${metis_path} \
     --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_svn_path} \
+    --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    --with-MeshLink=${meshlink_path} \
     CFLAGS="${clangflags}" \
     ) \
     || exit
@@ -61,3 +60,4 @@ mkdir -p all
 	    -DCMAKE_PREFIX_PATH="${mpi_path};${metis_path};${parmetis_path};${egads_path};${opencascade_path}/lib/cmake/opencascade"
 ) \
     || exit
+
