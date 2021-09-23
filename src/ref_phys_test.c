@@ -1773,6 +1773,17 @@ int main(int argc, char *argv[]) {
     RWDS(y, yplus, -1, "uplus");
   }
 
+  { /* minspac */
+    REF_DBL reynolds_number, yplus1;
+    reynolds_number = 20558.0; /* 5.67e6 / 275.8 */
+    RSS(ref_phys_minspac(reynolds_number, &yplus1), "minspac");
+    RWDS(0.000725875, yplus1, 1e-8, "yplus1");
+    /* assumes unit Re, i.e. */
+    reynolds_number = 5.67e6;
+    RSS(ref_phys_minspac(reynolds_number, &yplus1), "minspac");
+    RWDS(0.13 / 100.0 / 275.8, yplus1, 1e-8, "yplus1");
+  }
+
   { /* sa surrogate */
     REF_DBL wall_distance, nu_tilde;
     wall_distance = -1.0;
