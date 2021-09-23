@@ -2167,6 +2167,8 @@ static REF_STATUS fixed_point_metric(
   ref_free(max_scalar);
 
   if (aspect_ratio > 1.0) {
+    if (ref_mpi_once(ref_mpi))
+      printf("limit --aspect-ratio to %f\n", aspect_ratio);
     RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
         "limit aspect ratio");
     ref_mpi_stopwatch_stop(ref_mpi, "limit aspect ratio");
