@@ -636,6 +636,22 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_phys_minspac(REF_DBL reynolds_number, REF_DBL *yplus1) {
+  REF_DBL cf;
+  *yplus1 = -1.0;
+  /* laminar: 1.0 / ( sqrt(reynolds_number) *20.0 ); */
+  RAS(0.06 * reynolds_number > 0, "expected positive reynolds_number");
+  RAS(ref_math_divisible(0.445, pow(log(0.06 * reynolds_number), 2)),
+      "can not invert for cf");
+  cf = 0.455 / pow(log(0.06 * reynolds_number), 2);
+  RAS(ref_math_divisible(2.0, cf), "can not invert cf");
+  RAS(ref_math_divisible(sqrt(2.0 / cf), reynolds_number),
+      "can not invert reynolds_number for yplus1");
+
+  *yplus1 = sqrt(2.0 / cf) / reynolds_number;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance, REF_DBL *nu_tilde) {
   REF_DBL max_nu_tilde = 1000;
   REF_DBL freestream_nu_tilde = 3;

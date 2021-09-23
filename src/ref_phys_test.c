@@ -187,6 +187,7 @@ int main(int argc, char *argv[]) {
   REF_INT turb1_pos = REF_EMPTY;
   REF_INT entropy_output_pos = REF_EMPTY;
   REF_INT timing_pos = REF_EMPTY;
+  REF_INT minspac_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -209,6 +210,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--entropy-output", &entropy_output_pos),
       REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--timing", &timing_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--minspac", &minspac_pos), REF_NOT_FOUND,
       "arg search");
 
   if (laminar_flux_pos != REF_EMPTY) {
@@ -1018,6 +1021,19 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (minspac_pos != REF_EMPTY) {
+    REF_DBL reynolds_number, yplus1;
+    REIS(3, argc, "expected 3 args, usage : ref_phys_test --minspac 1e6");
+    reynolds_number = atof(argv[2]);
+    if (ref_mpi_once(ref_mpi))
+      printf("reynolds_number = %e\n", reynolds_number);
+    RSS(ref_phys_minspac(reynolds_number, &yplus1), "minspac");
+    if (ref_mpi_once(ref_mpi)) printf("yplus1 = %e\n", yplus1);
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   { /* converts primitive and conserved */
     REF_DBL state[5];
     REF_DBL primitive[5];
@@ -1771,6 +1787,17 @@ int main(int argc, char *argv[]) {
     RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
     RSS(ref_phys_spalding_yplus(uplus, &y), "y");
     RWDS(y, yplus, -1, "uplus");
+  }
+
+  { /* minspac */
+    REF_DBL reynolds_number, yplus1;
+    reynolds_number = 20558.0; /* 5.67e6 / 275.8 */
+    RSS(ref_phys_minspac(reynolds_number, &yplus1), "minspac");
+    RWDS(0.000725875, yplus1, 1e-8, "yplus1");
+    /* assumes unit Re, i.e. */
+    reynolds_number = 5.67e6;
+    RSS(ref_phys_minspac(reynolds_number, &yplus1), "minspac");
+    RWDS(0.13 / 100.0 / 275.8, yplus1, 1e-8, "yplus1");
   }
 
   { /* sa surrogate */
