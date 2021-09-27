@@ -123,9 +123,7 @@ int main(int argc, char *argv[]) {
       }
       if (4 == hits) four++;
     }
-    hits = four;
-    RSS(ref_mpi_sum(ref_mpi, &hits, &four, 1, REF_INT_TYPE), "sum");
-    RSS(ref_mpi_bcast(ref_mpi, &four, 1, REF_INT_TYPE), "bcast");
+    RSS(ref_mpi_allsum(ref_mpi, &four, 1, REF_INT_TYPE), "sum");
     if (ref_mpi_once(ref_mpi)) printf("locked tets %d\n", four);
 
     RSS(ref_grid_free(ref_grid), "free");
