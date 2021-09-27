@@ -592,6 +592,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("--zip-pcurve pcurve zipping\n");
   }
 
+  RXS(ref_args_find(argc, argv, "--unlock", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    ref_grid_adapt(ref_grid, unlock_tet) = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--unlock tets from geometry\n");
+  }
+
   RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     ref_grid_adapt(ref_grid, watch_topo) = REF_TRUE;
