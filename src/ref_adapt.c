@@ -67,6 +67,8 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->last_min_ratio = 0.5e-3;
   ref_adapt->last_max_ratio = 6.0;
 
+  ref_adapt->unlock_tet = REF_FALSE;
+
   ref_adapt->timing_level = 0;
   ref_adapt->watch_param = REF_FALSE;
   ref_adapt->watch_topo = REF_FALSE;
@@ -101,6 +103,8 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
 
   ref_adapt->last_min_ratio = original->last_min_ratio;
   ref_adapt->last_max_ratio = original->last_max_ratio;
+
+  ref_adapt->unlock_tet = original->unlock_tet;
 
   ref_adapt->timing_level = original->timing_level;
   ref_adapt->watch_param = original->watch_param;
