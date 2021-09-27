@@ -770,6 +770,12 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
       RSS(ref_adapt_topo(ref_grid), "topo");
   }
 
+  if (ref_grid_adapt(ref_grid, unlock_tet)) {
+    RSS(ref_split_edge_geometry(ref_grid), "split edge geom");
+    if (ref_grid_adapt(ref_grid, timing_level) > 1)
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt unlock");
+  }
+
   RSS(ref_adapt_tattle(ref_grid, "adapt"), "tattle");
 
   if (ngeom > 0)
