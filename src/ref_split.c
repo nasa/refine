@@ -946,17 +946,21 @@ REF_STATUS ref_split_edge_geometry(REF_GRID ref_grid) {
     RSS(ref_split_edge_mixed(ref_grid, node0, node1, &allowed), "mixed");
     if (!allowed) continue;
 
-    RSS(ref_cell_local_gem(ref_grid_tet(ref_grid), ref_node, node0, node1,
-                           &allowed),
-        "local tet");
-    if (!allowed) continue;
-
     RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &tri_side),
         "has side");
     allowed =
         (!ref_cell_node_empty(ref_grid_tri(ref_grid), node0) &&
          !ref_cell_node_empty(ref_grid_tri(ref_grid), node1) && !tri_side);
     if (!allowed) continue;
+
+    RSS(ref_cell_local_gem(ref_grid_tet(ref_grid), ref_node, node0, node1,
+                           &allowed),
+        "local tet");
+    if (!allowed) {
+      ref_node_age(ref_node, node0)++;
+      ref_node_age(ref_node, node1)++;
+      continue;
+    }
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
