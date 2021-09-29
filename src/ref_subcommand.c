@@ -3695,6 +3695,26 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ldim = 0;
     if (ref_mpi_once(ref_mpi))
       printf("skipping read of %d ldim from %s\n", ldim, in_sol);
+  } else if (strcmp(in_sol, "degree") == 0) {
+    REF_CELL ref_cell;
+    REF_INT node, group, degree;
+    ref_malloc_init(field, ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      if (ref_grid_twod(ref_grid)) {
+        each_ref_grid_2d_ref_cell(ref_grid, group, ref_cell) {
+          RSS(ref_adj_degree(ref_cell_adj(ref_cell), node, &degree), "deg");
+          field[node] += (REF_DBL)degree;
+        }
+      } else {
+        each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+          RSS(ref_adj_degree(ref_cell_adj(ref_cell), node, &degree), "deg");
+          field[node] += (REF_DBL)degree;
+        }
+      }
+    }
+    ldim = 1;
+    if (ref_mpi_once(ref_mpi))
+      printf("%d ldim for %s (degree)\n", ldim, in_sol);
   } else {
     if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
     RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
