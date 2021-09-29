@@ -286,7 +286,7 @@ static void visualize_help(const char *name) {
   printf("\n");
   printf(
       "  input_solution.extension or output_solution.extension "
-      "can be 'none'\n");
+      "can be 'none'.\n  input_solution.extension can be 'degree'.\n");
   printf("  options:\n");
   printf("   --surface extracts surface elements (deletes volume).\n");
   printf(
