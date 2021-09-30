@@ -87,6 +87,64 @@
     (vtk_nodes)[5] = ugrid_nodes[5];  \
   }
 
+static REF_STATUS ref_import_tri(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                 const char *filename) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  FILE *file;
+  REF_INT nnode, ntri;
+  REF_INT ixyz, node, new_node;
+  REF_DBL xyz[3];
+  REF_INT tri, new_tri;
+  REF_INT nodes[4];
+  REF_INT face_id;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
+  ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  RES(2, fscanf(file, "%d %d", &nnode, &ntri), "nnode ntri");
+
+  for (node = 0; node < nnode; node++) {
+    RSS(ref_node_add(ref_node, node, &new_node), "new_node");
+    RES(node, new_node, "node index");
+  }
+
+  RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
+
+  for (node = 0; node < nnode; node++) {
+    RES(3, fscanf(file, "%lf %lf %lf", &(xyz[0]), &(xyz[1]), &(xyz[2])), "xyz");
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      ref_node_xyz(ref_node, ixyz, node) = xyz[ixyz];
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  nodes[3] = REF_EMPTY;
+  for (tri = 0; tri < ntri; tri++) {
+    for (node = 0; node < 3; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "tri");
+    nodes[0]--;
+    nodes[1]--;
+    nodes[2]--;
+    RSS(ref_cell_add(ref_cell, nodes, &new_tri), "new tri");
+    RES(tri, new_tri, "tri index");
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  for (tri = 0; tri < ntri; tri++) {
+    RES(1, fscanf(file, "%d", &face_id), "tri id");
+    ref_cell_c2n(ref_cell, 3, tri) = face_id;
+  }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
 static REF_STATUS ref_import_fgrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                    const char *filename) {
   REF_GRID ref_grid;
@@ -1481,6 +1539,8 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         "r8_ugrid failed");
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_import_ugrid(ref_grid_ptr, ref_mpi, filename), "ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".tri") == 0) {
+    RSS(ref_import_tri(ref_grid_ptr, ref_mpi, filename), "tri failed");
   } else if (strcmp(&filename[end_of_string - 5], ".surf") == 0) {
     RSS(ref_import_surf(ref_grid_ptr, ref_mpi, filename), "surf failed");
   } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {

@@ -698,6 +698,32 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
+  { /* read ASCII .tri */
+    REF_GRID import_grid;
+    char file[] = "ref_import_test.tri";
+    FILE *f;
+    f = fopen(file, "w");
+    fprintf(f, "3 1\n");
+    fprintf(f, "12.0 14.0 16.0\n");
+    fprintf(f, "22.0 24.0 26.0\n");
+    fprintf(f, "32.0 34.0 36.0\n");
+    fprintf(f, "1 2 3\n");
+    fprintf(f, "5\n");
+    fclose(f);
+
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+
+    REIS(3, ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(1, ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(0, ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    RWDS(12.0, ref_node_xyz(ref_grid_node(import_grid), 0, 0), 1e-15, "x 0");
+    RWDS(36.0, ref_node_xyz(ref_grid_node(import_grid), 2, 2), 1e-15, "z 2");
+    REIS(5, ref_cell_c2n(ref_grid_tri(import_grid), 3, 0), "comp");
+    RSS(ref_grid_free(import_grid), "free");
+
+    REIS(0, remove(file), "test clean up");
+  }
+
   { /* read AFLR3 < 14 surf */
     REF_GRID import_grid;
     char file[] = "ref_import_test.surf";
