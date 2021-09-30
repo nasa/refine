@@ -225,6 +225,7 @@ static void loop_help(const char *name) {
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --deforming mesh flow solve, include xyz in *_volume.solb.\n");
+  printf("  --mixed implies multiscale metric from mixed elements.\n");
   printf("  --buffer coarsens the metric approaching the x max boundary.\n");
   option_uniform_help();
 
