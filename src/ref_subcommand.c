@@ -225,6 +225,7 @@ static void loop_help(const char *name) {
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --deforming mesh flow solve, include xyz in *_volume.solb.\n");
+  printf("  --mixed implies multiscale metric from mixed elements.\n");
   printf("  --buffer coarsens the metric approaching the x max boundary.\n");
   option_uniform_help();
 
@@ -2892,15 +2893,26 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
           "lp norm");
       ref_mpi_stopwatch_stop(ref_mpi, "deforming metric");
     } else {
-      if (ref_mpi_once(ref_mpi))
-        printf("reconstruct Hessian, compute metric\n");
-      RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                        gradation, complexity),
-          "lp norm");
-      ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric");
-      RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
-                                      complexity),
-          "report error");
+      RXS(ref_args_find(argc, argv, "--mixed", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos) {
+        if (ref_mpi_once(ref_mpi))
+          printf("reconstruct Hessian, metric from sensor and infer mixed\n");
+        RSS(ref_metric_lp_mixed(metric, ref_grid, scalar, reconstruction, p,
+                                gradation, complexity),
+            "lp norm");
+        ref_mpi_stopwatch_stop(ref_mpi, "mixed metric");
+      } else {
+        if (ref_mpi_once(ref_mpi))
+          printf("reconstruct Hessian, compute metric\n");
+        RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                          gradation, complexity),
+            "lp norm");
+        ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric");
+        RSS(ref_subcommand_report_error(metric, ref_grid, scalar,
+                                        reconstruction, complexity),
+            "report error");
+      }
     }
     ref_free(scalar);
   }
