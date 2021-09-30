@@ -18,7 +18,6 @@ AC_ARG_ENABLE(exec,
 AC_PROG_RANLIB
 
 AC_PROG_CC
-AC_HEADER_STDC
 AM_PROG_CC_C_O
 
 dnl mpi autostuff
