@@ -83,6 +83,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
 
   ref_mpi->native_alltoallv = REF_FALSE;
   ref_mpi->debug = REF_FALSE;
+  ref_mpi->timing = 0;
 
 #ifdef HAVE_MPI
   {
@@ -204,8 +205,9 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
   ref_mpi->first_time = original->first_time;
   ref_mpi->start_time = original->start_time;
 
-  ref_mpi->debug = original->debug;
   ref_mpi->native_alltoallv = original->native_alltoallv;
+  ref_mpi->debug = original->debug;
+  ref_mpi->timing = original->timing;
 
   return REF_SUCCESS;
 }

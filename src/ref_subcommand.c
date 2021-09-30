@@ -3981,13 +3981,14 @@ static void echo_argv(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT help_pos = REF_EMPTY;
+  REF_INT pos;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
   ref_mpi_stopwatch_start(ref_mpi);
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("refine %s, on or after 1.9.3\n", VERSION);
+    printf("refine %s on %d ranks\n", VERSION, ref_mpi_n(ref_mpi));
     echo_argv(argc, argv);
   }
 
@@ -4001,6 +4002,12 @@ int main(int argc, char *argv[]) {
   if (1 == argc || 1 == help_pos) {
     if (ref_mpi_once(ref_mpi)) usage(argv[0]);
     goto shutdown;
+  }
+
+  RXS(ref_args_find(argc, argv, "--timing", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    ref_mpi_timing(ref_mpi) = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi)) printf("--timing %d\n", ref_mpi_timing(ref_mpi));
   }
 
   if (strncmp(argv[1], "a", 1) == 0) {

@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "ref_malloc.h"
 #include "ref_sort.h"
@@ -651,12 +652,17 @@ REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell) {
 REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
                                     REF_INT n, REF_GLOB *c2n, REF_INT *part,
                                     REF_INT exclude_part_id) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_GLOB *global;
   REF_INT nnode;
   REF_INT node, cell;
   REF_INT local, local_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
+  clock_t tic = 0;
+  clock_t node_toc = 0;
+  clock_t cell_toc = 0;
 
+  if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
   ref_malloc(global, ref_cell_node_per(ref_cell) * n, REF_GLOB);
 
   nnode = 0;
@@ -669,7 +675,8 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
   RSS(ref_node_add_many(ref_node, nnode, global), "many nodes");
 
   ref_free(global);
-
+  if (1 < ref_mpi_timing(ref_mpi)) node_toc += (clock() - tic);
+  if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
   /* set parts */
   for (cell = 0; cell < n; cell++) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
@@ -688,12 +695,18 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
       local_nodes[ref_cell_size_per(ref_cell) - 1] =
           (REF_INT)c2n[(ref_cell_size_per(ref_cell) - 1) +
                        ref_cell_size_per(ref_cell) * cell];
-
     RXS(ref_cell_with(ref_cell, local_nodes, &new_cell), REF_NOT_FOUND,
         "with failed");
 
     if (REF_EMPTY == new_cell)
       RSS(ref_cell_add(ref_cell, local_nodes, &new_cell), "add cell");
+  }
+  if (1 < ref_mpi_timing(ref_mpi)) cell_toc += (clock() - tic);
+
+  if (1 < ref_mpi_timing(ref_mpi)) {
+    printf(" node %f cell %f\n",
+           ((REF_DBL)node_toc) / ((REF_DBL)CLOCKS_PER_SEC),
+           ((REF_DBL)cell_toc) / ((REF_DBL)CLOCKS_PER_SEC));
   }
 
   return REF_SUCCESS;

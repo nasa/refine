@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "ref_dict.h"
 #include "ref_endian.h"
@@ -1157,8 +1158,15 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
   REF_INT part, node;
   REF_INT ncell_keep;
   REF_INT new_location;
+  clock_t tic;
+  clock_t read_toc = 0;
+  clock_t mpi_toc = 0;
+  clock_t add_toc = 0;
 
-  chunk = MAX(1000000, (REF_INT)(ncell / ref_mpi_n(ref_node_mpi(ref_node))));
+  chunk = MAX(1000000, (REF_INT)(ncell / ref_mpi_n(ref_mpi)));
+
+  if (1 < ref_mpi_timing(ref_mpi) && ref_mpi_once(ref_mpi))
+    printf("chunk %d ncell %ld nproc %d\n", chunk, ncell, ref_mpi_n(ref_mpi));
 
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
@@ -1175,11 +1183,12 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
     while (ncell_read < ncell) {
       section_size = (REF_INT)MIN((REF_LONG)chunk, ncell - ncell_read);
 
+      tic = clock();
       RSS(ref_part_bin_ugrid_pack_cell(file, swap_endian, sixty_four_bit,
                                        conn_offset, faceid_offset, section_size,
                                        ncell_read, node_per, size_per, c2n),
           "read c2n");
-
+      read_toc += (clock() - tic);
       ncell_read += section_size;
 
       for (cell = 0; cell < section_size; cell++)
@@ -1204,8 +1213,22 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
         elements_to_send[dest[cell]]++;
       }
 
+      tic = clock();
+      each_ref_mpi_worker(ref_mpi, part) {
+        if (0 < elements_to_send[part]) {
+          RSS(ref_mpi_scatter_send(ref_mpi, &(elements_to_send[part]), 1,
+                                   REF_INT_TYPE, part),
+              "send");
+          RSS(ref_mpi_scatter_send(
+                  ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
+                  size_per * elements_to_send[part], REF_GLOB_TYPE, part),
+              "send");
+        }
+      }
+      mpi_toc += (clock() - tic);
       /* master keepers */
 
+      tic = clock();
       ncell_keep = elements_to_send[0];
       if (0 < ncell_keep) {
         ref_malloc_init(sent_part, size_per * ncell_keep, REF_INT, REF_EMPTY);
@@ -1221,18 +1244,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
 
         ref_free(sent_part);
       }
-
-      each_ref_mpi_worker(ref_mpi, part) {
-        if (0 < elements_to_send[part]) {
-          RSS(ref_mpi_scatter_send(ref_mpi, &(elements_to_send[part]), 1,
-                                   REF_INT_TYPE, part),
-              "send");
-          RSS(ref_mpi_scatter_send(
-                  ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
-                  size_per * elements_to_send[part], REF_GLOB_TYPE, part),
-              "send");
-        }
-      }
+      add_toc += (clock() - tic);
     }
 
     ref_free(dest);
@@ -1247,16 +1259,20 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
     }
   } else {
     do {
+      tic = clock();
       RSS(ref_mpi_scatter_recv(ref_mpi, &elements_to_receive, 1, REF_INT_TYPE),
           "recv");
+      mpi_toc += (clock() - tic);
       if (elements_to_receive > 0) {
+        tic = clock();
         RSS(ref_mpi_scatter_recv(ref_mpi, sent_c2n,
                                  size_per * elements_to_receive, REF_GLOB_TYPE),
             "send");
+        mpi_toc += (clock() - tic);
 
+        tic = clock();
         ref_malloc_init(sent_part, size_per * elements_to_receive, REF_INT,
                         REF_EMPTY);
-
         for (cell = 0; cell < elements_to_receive; cell++)
           for (node = 0; node < node_per; node++)
             sent_part[node + size_per * cell] = ref_part_implicit(
@@ -1268,13 +1284,32 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
             "glob");
 
         ref_free(sent_part);
+	add_toc += (clock() - tic);
       }
     } while (elements_to_receive != end_of_message);
   }
-
   free(sent_c2n);
 
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell read");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_cell), "fill ghosts");
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid cell shuffle");
+
+  if (1 < ref_mpi_timing(ref_mpi)) {
+    REF_INT total, total_mpi, total_add;
+    total = (REF_INT)mpi_toc;
+    RSS(ref_mpi_sum(ref_mpi, &total, &total_mpi, 1, REF_INT_TYPE), "sum");
+    total = (REF_INT)add_toc;
+    RSS(ref_mpi_sum(ref_mpi, &total, &total_add, 1, REF_INT_TYPE), "sum");
+    if (ref_mpi_once(ref_mpi))
+      printf(" read %f mpi %f add %f\n",
+             ((REF_DBL)read_toc) / ((REF_DBL)CLOCKS_PER_SEC),
+             ((REF_DBL)total_mpi) / ((REF_DBL)CLOCKS_PER_SEC) /
+                 ((REF_DBL)ref_mpi_n(ref_mpi)),
+             ((REF_DBL)total_add) / ((REF_DBL)CLOCKS_PER_SEC) /
+                 ((REF_DBL)ref_mpi_n(ref_mpi)));
+  }
 
   return REF_SUCCESS;
 }
@@ -1291,7 +1326,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_NODE ref_node;
 
   REF_INT version = 0;
-  REF_BOOL instrument = REF_FALSE;
+  REF_BOOL instrument = (ref_mpi_timing(ref_mpi) > 0);
 
   REF_INT single;
   REF_FILEPOS ibyte;
@@ -1362,9 +1397,12 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_LONG_TYPE), "bcast");
 
+  if (instrument)
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid header");
+
   RSS(ref_part_node(file, swap_endian, version, REF_FALSE, ref_node, nnode),
       "part node");
-  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "nodes");
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid nodes");
 
   if (0 < ntri) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3);
@@ -1389,7 +1427,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         "qua");
   }
 
-  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "bound");
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid bound");
 
   if (0 < ntet) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
@@ -1400,6 +1438,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 sixty_four_bit),
         "tet");
   }
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid tet");
 
   if (0 < npyr) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
@@ -1411,6 +1450,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 sixty_four_bit),
         "pyr");
   }
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid pyr");
 
   if (0 < npri) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
@@ -1423,6 +1463,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 sixty_four_bit),
         "pri");
   }
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid pri");
 
   if (0 < nhex) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
@@ -1436,17 +1477,20 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 sixty_four_bit),
         "hex");
   }
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid hex");
 
   if (ref_grid_once(ref_grid)) REIS(0, fclose(file), "close file");
 
   /* ghost xyz */
 
   RSS(ref_node_ghost_real(ref_node), "ghost real");
+  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid ghost");
 
   RSS(ref_grid_inward_boundary_orientation(ref_grid),
       "inward boundary orientation");
 
-  if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "volume");
+  if (instrument)
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ugrid volume");
 
   return REF_SUCCESS;
 }
