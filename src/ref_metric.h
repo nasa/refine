@@ -63,6 +63,10 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
                                               REF_GRID ref_grid,
                                               REF_DBL gradation,
                                               REF_DBL complexity);
+REF_STATUS ref_metric_gradation_at_complexity_mixed(REF_DBL *metric,
+                                                    REF_GRID ref_grid,
+                                                    REF_DBL gradation,
+                                                    REF_DBL complexity);
 
 REF_STATUS ref_metric_sanitize(REF_GRID ref_grid);
 REF_STATUS ref_metric_sanitize_threed(REF_GRID ref_grid);
@@ -108,6 +112,11 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_DBL *weight,
                          REF_RECON_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation, REF_DBL complexity);
+REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
+                               REF_DBL *scalar,
+                               REF_RECON_RECONSTRUCTION reconstruction,
+                               REF_INT p_norm, REF_DBL gradation,
+                               REF_DBL complexity);
 REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
                                         REF_DBL *displaced, REF_DBL *scalar,
                                         REF_RECON_RECONSTRUCTION reconstruction,

@@ -1038,6 +1038,75 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_gradation_at_complexity_mixed(REF_DBL *metric,
+                                                    REF_GRID ref_grid,
+                                                    REF_DBL gradation,
+                                                    REF_DBL complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT relaxations;
+  REF_DBL current_complexity;
+  REF_DBL complexity_scale;
+  REF_INT node, i;
+  REF_DBL *metric_imply;
+
+  ref_malloc(metric_imply, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+  complexity_scale = 2.0 / 3.0;
+  if (ref_grid_twod(ref_grid)) {
+    complexity_scale = 1.0;
+  }
+
+  for (relaxations = 0; relaxations < 20; relaxations++) {
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (!ref_math_divisible(complexity, current_complexity)) {
+      return REF_DIV_ZERO;
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      for (i = 0; i < 6; i++) {
+        metric[i + 6 * node] *=
+            pow(complexity / current_complexity, complexity_scale);
+      }
+      if (ref_grid_twod(ref_grid)) {
+        metric[2 + 6 * node] = 0.0;
+        metric[4 + 6 * node] = 0.0;
+        metric[5 + 6 * node] = 1.0;
+      }
+    }
+    RSS(ref_metric_imply_non_tet(metric, ref_grid), "imply non tet");
+    if (gradation < 1.0) {
+      RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
+          "gradation");
+    } else {
+      RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
+          "gradation");
+    }
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_node_valid_node(ref_node, node) {
+        metric[2 + 6 * node] = 0.0;
+        metric[4 + 6 * node] = 0.0;
+        metric[5 + 6 * node] = 1.0;
+      }
+    }
+  }
+  RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+  if (!ref_math_divisible(complexity, current_complexity)) {
+    return REF_DIV_ZERO;
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] *=
+          pow(complexity / current_complexity, complexity_scale);
+    }
+    if (ref_grid_twod(ref_grid)) {
+      metric[2 + 6 * node] = 0.0;
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 1.0;
+    }
+  }
+
+  ref_free(metric_imply) return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_sanitize(REF_GRID ref_grid) {
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_metric_sanitize_twod(ref_grid), "threed");
@@ -1915,6 +1984,23 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
       "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
+      "gradation at complexity");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
+                               REF_DBL *scalar,
+                               REF_RECON_RECONSTRUCTION reconstruction,
+                               REF_INT p_norm, REF_DBL gradation,
+                               REF_DBL target_complexity) {
+  RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
+      "local scale lp norm");
+  RSS(ref_metric_gradation_at_complexity_mixed(metric, ref_grid, gradation,
+                                               target_complexity),
       "gradation at complexity");
 
   return REF_SUCCESS;
