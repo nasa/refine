@@ -208,6 +208,10 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     z = ref_node_xyz(ref_node, 2, node);
     if (strcmp(function_name, "u5") == 0) {
       scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
+    } else if (strcmp(function_name, "supcyl") == 0) {
+      REF_DBL r;
+      r = sqrt(x * x + y * y) - 0.5;
+      scalar[node] = exp(r);
     } else if (strcmp(function_name, "combo1") == 0) {
       REF_DBL xy, x3;
       xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);
