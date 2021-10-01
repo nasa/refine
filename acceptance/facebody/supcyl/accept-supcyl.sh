@@ -33,6 +33,8 @@ function adapt_cycle {
 
     ${src}/ref_acceptance -u ${field} ${outproj}.meshb \
 	  ${outproj}.solb
+    ${src}/ref multiscale ${outproj}.meshb ${outproj}.solb \
+          ${complexity} ${outproj}-metric.solb
 
     ${src}/ref visualize ${outproj}.meshb ${outproj}.solb ${outproj}.plt
 }
