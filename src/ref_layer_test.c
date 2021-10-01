@@ -31,12 +31,14 @@
 #include "ref_fixture.h"
 #include "ref_geom.h"
 #include "ref_grid.h"
+#include "ref_import.h"
 #include "ref_list.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
+#include "ref_part.h"
 #include "ref_sort.h"
 
 int main(int argc, char *argv[]) {
@@ -75,6 +77,22 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_layer_free(ref_layer), "layer");
     RSS(ref_grid_free(ref_grid), "grid");
+    RSS(ref_mpi_stop(), "stop");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "--insert", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) { /* add layers to mesh */
+    REF_GRID ref_grid;
+    REIS(4, argc, "expected ref_fixture_test --insert mesh.meshb metric.solb");
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import mesh");
+    RSS(ref_part_metric(ref_grid_node(ref_grid), argv[2]), "part metric");
+
+    RSS(ref_grid_free(ref_grid), "grid");
+    RSS(ref_mpi_stop(), "stop");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    return 0;
   }
 
   { /* make layers */
