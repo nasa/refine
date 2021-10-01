@@ -86,8 +86,8 @@ int main(int argc, char *argv[]) {
   if (REF_EMPTY != pos) { /* add layers to mesh */
     REF_GRID ref_grid;
     REIS(4, argc, "expected ref_fixture_test --insert mesh.meshb metric.solb");
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import mesh");
-    RSS(ref_part_metric(ref_grid_node(ref_grid), argv[2]), "part metric");
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import mesh");
+    RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]), "part metric");
 
     RSS(ref_grid_free(ref_grid), "grid");
     RSS(ref_mpi_stop(), "stop");
