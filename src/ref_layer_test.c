@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_edge.h"
 #include "ref_export.h"
@@ -40,19 +41,14 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  REF_INT pos;
+
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
-  { /* make layers */
-    REF_LAYER ref_layer;
 
-    RSS(ref_layer_create(&ref_layer, ref_mpi), "create");
-
-    REIS(0, ref_layer_n(ref_layer), "check total layers");
-
-    RSS(ref_layer_free(ref_layer), "layer");
-  }
-
-  { /* add layers to tet fixture */
+  RXS(ref_args_find(argc, argv, "--fixture", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) { /* add layers to tet fixture */
     REF_LAYER ref_layer;
     REF_GRID ref_grid;
     REF_INT faceid;
@@ -72,15 +68,23 @@ int main(int argc, char *argv[]) {
     RSS(ref_layer_insert(ref_layer, ref_grid), "insert");
     RSS(ref_layer_recon(ref_layer, ref_grid), "insert");
 
-    if (argc > 1) {
-      RSS(ref_export_by_extension(ref_layer_grid(ref_layer), argv[1]), "tec");
-    }
-    if (argc > 2) {
-      RSS(ref_export_by_extension(ref_grid, argv[2]), "tec");
-    }
+    RSS(ref_export_by_extension(ref_layer_grid(ref_layer),
+                                "ref_layer_test_layer.plt"),
+        "tec");
+    RSS(ref_export_by_extension(ref_grid, "ref_layer_test_all.plt"), "tec");
 
     RSS(ref_layer_free(ref_layer), "layer");
     RSS(ref_grid_free(ref_grid), "grid");
+  }
+
+  { /* make layers */
+    REF_LAYER ref_layer;
+
+    RSS(ref_layer_create(&ref_layer, ref_mpi), "create");
+
+    REIS(0, ref_layer_n(ref_layer), "check total layers");
+
+    RSS(ref_layer_free(ref_layer), "layer");
   }
 
   RSS(ref_mpi_stop(), "stop");
