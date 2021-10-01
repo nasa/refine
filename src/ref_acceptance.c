@@ -211,7 +211,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     } else if (strcmp(function_name, "supcyl") == 0) {
       REF_DBL r;
       r = sqrt(x * x + y * y) - 0.5;
-      scalar[node] = exp(r);
+      scalar[node] = 1.0 - exp(-10.0 * r);
     } else if (strcmp(function_name, "combo1") == 0) {
       REF_DBL xy, x3;
       xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);

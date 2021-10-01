@@ -11,15 +11,15 @@ else
 fi
 
 tecplot=-t
-field="-u supcyl"
-prj="supcyl"
+field="supcyl"
+project="supcyl"
 
 function adapt_cycle {
     inproj=$1
     outproj=$2
     complexity=$3
 
-    ${src}/ref_acceptance ${field} ${inproj}.meshb \
+    ${src}/ref_acceptance -u ${field} ${inproj}.meshb \
 	  ${inproj}.solb
 
     ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
@@ -31,7 +31,7 @@ function adapt_cycle {
 	  -x ${outproj}.meshb \
 	  -f ${outproj}.tec
 
-    ${src}/ref_acceptance ${field} ${outproj}.meshb \
+    ${src}/ref_acceptance -u ${field} ${outproj}.meshb \
 	  ${outproj}.solb
 
     ${src}/ref visualize ${outproj}.meshb ${outproj}.solb ${outproj}.plt
