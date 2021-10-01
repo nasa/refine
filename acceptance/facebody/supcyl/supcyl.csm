@@ -1,0 +1,15 @@
+
+set r 0.5
+set ff 2
+
+udprim ellipse rx ff ry ff
+select edge
+attribute bc_name $5000_farfield
+
+udprim ellipse rx r ry	r
+select edge
+attribute bc_name $4000_cylinder
+
+subtract
+
+dump supcyl.egads
