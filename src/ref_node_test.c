@@ -1184,6 +1184,32 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
+  { /* veritcal segment normal */
+    REF_NODE ref_node;
+    REF_INT nodes[2], global;
+    REF_DBL norm[3];
+
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node, global, &(nodes[0])), "add");
+    global = 1;
+    RSS(ref_node_add(ref_node, global, &(nodes[1])), "add");
+
+    for (global = 0; global < 2; global++) {
+      ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
+      ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
+      ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
+    }
+
+    ref_node_xyz(ref_node, 1, nodes[1]) = 1.0;
+
+    RSS(ref_node_seg_normal(ref_node, nodes, norm), "norm");
+    RWDS(1.0, norm[0], -1.0, "expected norm");
+    RWDS(0.0, norm[1], -1.0, "expected norm");
+    RWDS(0.0, norm[2], -1.0, "expected norm");
+  }
+
   /* FIXME, break this test up into pieces */
 
   { /* right tri normal, area, centroid */

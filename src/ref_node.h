@@ -181,6 +181,9 @@ REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
 REF_STATUS ref_node_ratio_node0(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                                 REF_DBL *ratio_node0);
 
+REF_STATUS ref_node_seg_normal(REF_NODE ref_node, REF_INT *nodes,
+                               REF_DBL *normal);
+
 REF_STATUS ref_node_tri_normal(REF_NODE ref_node, REF_INT *nodes,
                                REF_DBL *normal);
 REF_STATUS ref_node_tri_centroid(REF_NODE ref_node, REF_INT *nodes,

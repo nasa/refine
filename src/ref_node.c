@@ -2211,6 +2211,26 @@ static REF_STATUS ref_node_xyz_normal(REF_DBL *xyz0, REF_DBL *xyz1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_seg_normal(REF_NODE ref_node, REF_INT *nodes,
+                               REF_DBL *normal) {
+  REF_DBL *xyz0, *xyz1;
+
+  if (!ref_node_valid(ref_node, nodes[0]) ||
+      !ref_node_valid(ref_node, nodes[1]))
+    RSS(REF_INVALID, "node invalid");
+
+  xyz0 = ref_node_xyz_ptr(ref_node, nodes[0]);
+  xyz1 = ref_node_xyz_ptr(ref_node, nodes[1]);
+
+  normal[0] = xyz1[1] - xyz0[1];
+  normal[1] = xyz1[0] - xyz0[0];
+  normal[2] = 0.0;
+
+  RSS(ref_math_normalize(normal), "normalize");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_tri_normal(REF_NODE ref_node, REF_INT *nodes,
                                REF_DBL *normal) {
   REF_DBL *xyz0, *xyz1, *xyz2;
