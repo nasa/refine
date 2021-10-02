@@ -23,6 +23,7 @@
 
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_split.h"
 #include "ref_validation.h"
@@ -336,5 +337,36 @@ REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
     }
   }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_cell_node_empty(ref_cell, node)) {
+      REF_DBL normal[3] = {0.0, 0.0, 0.0};
+      REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+      REF_DBL d[12], m[6];
+      REF_DBL dot, ar, r;
+      each_ref_cell_having_node(ref_cell, node, item, cell) {
+        RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
+        RSS(ref_node_seg_normal(ref_node, nodes, normal), "normal");
+      }
+      RSS(ref_node_metric_get(ref_node, node, m), "get");
+      RSS(ref_matrix_diag_m(m, d), "eigen decomp");
+      RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
+      dot = ref_math_dot(normal, &(d[3]));
+      ar = sqrt(d[0] / d[1]);
+      r = sqrt(
+          ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
+          ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
+      printf("xyz %8.4f %8.4f %8.4f dot %7.3f ar %7.2f r %6.2f\n",
+             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+             ref_node_xyz(ref_node, 2, node), dot, ar, r);
+    }
+  }
   return REF_SUCCESS;
 }
