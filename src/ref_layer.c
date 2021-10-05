@@ -370,10 +370,21 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
       r = sqrt(
           ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
           ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
-      if (ar > 4 && ABS(dot) > 0.9)
+      if (ar > 4 && ABS(dot) > 0.9) {
+        REF_DBL h, xyz[3], dist, close;
+        REF_INT closest_node;
         printf("xyz %8.4f %8.4f %8.4f dot %7.3f ar %7.2f r %6.2f\n",
                ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
                ref_node_xyz(ref_node, 2, node), dot, ar, r);
+        h = 1.0 / sqrt(d[0]);
+        xyz[0] = ref_node_xyz(ref_node, 0, node) + h * normal[0];
+        xyz[1] = ref_node_xyz(ref_node, 1, node) + h * normal[1];
+        xyz[2] = ref_node_xyz(ref_node, 2, node) + h * normal[2];
+        RSS(ref_node_nearest_xyz(ref_node, xyz, &closest_node, &dist), "close");
+        close = dist / h;
+        printf("node %d close %d by %f of %f\n", node, closest_node, dist,
+               close);
+      }
     }
   }
   return REF_SUCCESS;
