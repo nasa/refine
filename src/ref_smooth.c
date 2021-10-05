@@ -56,6 +56,67 @@ static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
   for (ixyz = 0; ixyz < 3; ixyz++)
     total_force_vector[ixyz] += force * norm[ixyz];
 
+  /*              --->
+   *              ^
+   *              |
+   *              |  /
+   *              | /
+   *              |/
+   *     <--------+---------->
+   *              |
+   *  &(d[3]) is the minor axis (flipped to direction)
+   *  direction is normalized from center to neighbor
+   *  torque is direction - minor axis with axis removed
+   *  torque_ratio is 1 + len(torque)
+   *  torque_norm is d[0]*norm(torque) / torque_ratio
+   *  torque_force is f(torque_ratio)
+   *  [ also try replusive instead of attractive? ]
+   */
+
+  /*
+  {
+    REF_DBL mlog0[6], mlog1[6];
+    REF_DBL mlog[6], m[6], d[12];
+    REF_DBL direction[3];
+    REF_INT im;
+    REF_DBL w0, w1;
+    REF_DBL ar, torque[3], dot, len;
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      direction[ixyz] = ref_node_xyz(ref_node, ixyz, center) -
+                        ref_node_xyz(ref_node, ixyz, neighbor);
+    RSS(ref_math_normalize(direction), "norm direction");
+    RSS(ref_node_metric_get_log(ref_node, center, mlog0), "node0 m");
+    RSS(ref_node_metric_get_log(ref_node, neighbor, mlog1), "node1 m");
+
+    w1 = 0.5;
+    w0 = 0.5;
+    for (im = 0; im < 6; im++) {
+      mlog[im] = w0 * mlog0[im] + w1 * mlog1[im];
+    }
+    RSS(ref_matrix_exp_m(mlog, m), "exp");
+    RSS(ref_matrix_diag_m(m, d), "diag");
+    RSS(ref_matrix_ascending_eig_twod(m), "order");
+    ar = sqrt(d[0] / d[2]);
+    if (0.0 > ref_math_dot(direction, &(d[3]))) {
+      for (ixyz = 0; ixyz < 3; ixyz++) d[3 + ixyz] = -d[3 + ixyz];
+    }
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      torque[ixyz] = direction[ixyz] - d[3 + ixyz];
+    dot = ref_math_dot(&(d[3]), torque);
+    for (ixyz = 0; ixyz < 3; ixyz++) torque[ixyz] -= dot * d[3 + ixyz];
+    len = sqrt(ref_math_dot(torque, torque));
+    if (ar > 2.0 && ABS(len) < 0.5) {
+      ratio = 1.0 + len;
+      RSS(ref_math_normalize(torque), "norm torque");
+      for (ixyz = 0; ixyz < 3; ixyz++) torque[ixyz] *= d[0]/ratio;
+      l4 = ratio * ratio * ratio * ratio;
+      force = (1.0 - l4) * exp(-l4);
+      for (ixyz = 0; ixyz < 3; ixyz++)
+        total_force_vector[ixyz] -= torque[ixyz] * len;
+    }
+  }
+  */
+
   return REF_SUCCESS;
 }
 
