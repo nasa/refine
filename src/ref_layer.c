@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "ref_cavity.h"
+#include "ref_edge.h"
 #include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_malloc.h"
@@ -414,6 +415,60 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
         RSS(ref_cavity_free(ref_cavity), "cav free");
       }
     }
+  }
+
+  {
+    REF_CELL tri = ref_grid_tri(ref_grid);
+    REF_EDGE ref_edge;
+    REF_DBL *dots;
+    REF_INT edge;
+    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+    ref_malloc_init(dots, ref_edge_n(ref_edge), REF_DBL, 2.0);
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      REF_INT n0, n1;
+      REF_INT ntri, tri_list[2];
+      n0 = ref_edge_e2n(ref_edge, 0, edge);
+      n1 = ref_edge_e2n(ref_edge, 1, edge);
+
+      RSS(ref_cell_list_with2(tri, n0, n1, 2, &ntri, tri_list), "tri with2");
+      if (2 == ntri) {
+        REF_INT t, cell_node, n2, n3, i;
+        REF_DBL e0[3], e1[3];
+        t = tri_list[0];
+        n2 = REF_EMPTY;
+        each_ref_cell_cell_node(tri, cell_node) {
+          if (ref_cell_c2n(tri, cell_node, t) != n0 &&
+              ref_cell_c2n(tri, cell_node, t) != n1) {
+            n2 = ref_cell_c2n(tri, cell_node, t);
+          }
+        }
+        RAS(REF_EMPTY != n2, "n2 not found");
+        t = tri_list[1];
+        n3 = REF_EMPTY;
+        each_ref_cell_cell_node(tri, cell_node) {
+          if (ref_cell_c2n(tri, cell_node, t) != n0 &&
+              ref_cell_c2n(tri, cell_node, t) != n1) {
+            n3 = ref_cell_c2n(tri, cell_node, t);
+          }
+        }
+        RAS(REF_EMPTY != n3, "n3 not found");
+        for (i = 0; i < 3; i++)
+          e0[i] = ref_node_xyz(ref_node, i, n0) - ref_node_xyz(ref_node, i, n2);
+        for (i = 0; i < 3; i++)
+          e1[i] = ref_node_xyz(ref_node, i, n1) - ref_node_xyz(ref_node, i, n2);
+        RSS(ref_math_normalize(e0), "norm e0");
+        RSS(ref_math_normalize(e1), "norm e1");
+        dots[edge] = ABS(ref_math_dot(e0, e1));
+        for (i = 0; i < 3; i++)
+          e0[i] = ref_node_xyz(ref_node, i, n0) - ref_node_xyz(ref_node, i, n3);
+        for (i = 0; i < 3; i++)
+          e1[i] = ref_node_xyz(ref_node, i, n1) - ref_node_xyz(ref_node, i, n3);
+        RSS(ref_math_normalize(e0), "norm e0");
+        RSS(ref_math_normalize(e1), "norm e1");
+        dots[edge] = MAX(ABS(ref_math_dot(e0, e1)), dots[edge]);
+      }
+    }
+    RSS(ref_edge_free(ref_edge), "free edge");
   }
   return REF_SUCCESS;
 }
