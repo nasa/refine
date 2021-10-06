@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_cavity.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
@@ -343,6 +344,7 @@ REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
 REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node;
 
   each_ref_node_valid_node(ref_node, node) {
@@ -373,6 +375,11 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
       if (ar > 4 && ABS(dot) > 0.9) {
         REF_DBL h, xyz[3], dist, close;
         REF_INT closest_node;
+        REF_INT new_node;
+        REF_GLOB global;
+        REF_INT type, id;
+        REF_DBL uv[2];
+        REF_CAVITY ref_cavity;
         printf("xyz %8.4f %8.4f %8.4f dot %7.3f ar %7.2f r %6.2f\n",
                ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
                ref_node_xyz(ref_node, 2, node), dot, ar, r);
@@ -384,6 +391,22 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
         close = dist / h;
         printf("node %d close %d by %f of %f\n", node, closest_node, dist,
                close);
+        RSS(ref_node_next_global(ref_node, &global), "global");
+        RSS(ref_node_add(ref_node, global, &new_node), "add");
+        ref_node_xyz(ref_node, 0, new_node) = xyz[0];
+        ref_node_xyz(ref_node, 1, new_node) = xyz[1];
+        ref_node_xyz(ref_node, 2, new_node) = xyz[2];
+        type = REF_GEOM_FACE;
+        RSS(ref_geom_unique_id(ref_geom, node, type, &id), "unique face id");
+        RSS(ref_geom_tuv(ref_geom, node, type, id, uv), "uv");
+        RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
+        RSS(ref_cavity_create(&ref_cavity), "cav create");
+        RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node), "ball");
+        ref_cavity_node(ref_cavity) = new_node;
+        ref_cavity_tec(ref_cavity, "cav.tec");
+        RSS(ref_cavity_enlarge_combined(ref_cavity), "enlarge");
+        RSS(ref_cavity_replace(ref_cavity), "cav replace");
+        RSS(ref_cavity_free(ref_cavity), "cav free");
       }
     }
   }
