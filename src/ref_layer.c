@@ -29,6 +29,7 @@
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_mpi.h"
+#include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_validation.h"
 
@@ -421,9 +422,10 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
     REF_CELL tri = ref_grid_tri(ref_grid);
     REF_EDGE ref_edge;
     REF_DBL *dots;
-    REF_INT edge;
+    REF_INT edge, *order, o;
     RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
     ref_malloc_init(dots, ref_edge_n(ref_edge), REF_DBL, 2.0);
+    ref_malloc(order, ref_edge_n(ref_edge), REF_INT);
     for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
       REF_INT n0, n1;
       REF_INT ntri, tri_list[2];
@@ -468,6 +470,25 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
         dots[edge] = MAX(ABS(ref_math_dot(e0, e1)), dots[edge]);
       }
     }
+    RSS(ref_sort_heap_dbl(ref_edge_n(ref_edge), dots, order), "sort dots");
+
+    for (o = 0; o < ref_edge_n(ref_edge); o++) {
+      REF_INT n0, n1;
+      REF_INT ntri, tri_list[2];
+      edge = order[o];
+      if (dots[edge] < 0.1) {
+        printf("order %d dot %f\n", o, dots[edge]);
+        n0 = ref_edge_e2n(ref_edge, 0, edge);
+        n1 = ref_edge_e2n(ref_edge, 1, edge);
+
+        RSS(ref_cell_list_with2(tri, n0, n1, 2, &ntri, tri_list), "tri with2");
+        if (2 == ntri) {
+          printf("quad\n");
+        }
+      }
+    }
+    ref_free(order);
+    ref_free(dots);
     RSS(ref_edge_free(ref_edge), "free edge");
   }
   return REF_SUCCESS;
