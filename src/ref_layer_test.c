@@ -27,6 +27,7 @@
 #include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_fixture.h"
 #include "ref_geom.h"
@@ -85,8 +86,11 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--insert", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) { /* add layers to mesh */
     REF_GRID ref_grid;
-    REIS(4, argc, "expected ref_fixture_test --insert mesh.meshb metric.solb");
+    REIS(
+        5, argc,
+        "expected ref_fixture_test --insert mesh.meshb metric.solb geom.egads");
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import mesh");
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[4]), "load egads");
     RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]), "part metric");
 
     RSS(ref_layer_identify(ref_grid), "ident");
