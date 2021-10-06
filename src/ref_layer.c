@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "ref_cavity.h"
+#include "ref_egads.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
@@ -399,6 +400,7 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
         type = REF_GEOM_FACE;
         RSS(ref_geom_unique_id(ref_geom, node, type, &id), "unique face id");
         RSS(ref_geom_tuv(ref_geom, node, type, id, uv), "uv");
+        RSS(ref_egads_inverse_eval(ref_geom, type, id, xyz, uv), "inverse uv");
         RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
         RSS(ref_cavity_create(&ref_cavity), "cav create");
         RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node),
