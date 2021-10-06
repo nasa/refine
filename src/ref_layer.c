@@ -401,9 +401,9 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
         RSS(ref_geom_tuv(ref_geom, node, type, id, uv), "uv");
         RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
         RSS(ref_cavity_create(&ref_cavity), "cav create");
-        RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node), "ball");
-        ref_cavity_node(ref_cavity) = new_node;
-        RSS(ref_cavity_enlarge_combined(ref_cavity), "enlarge");
+        RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node),
+            "ball");
+        RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
         RSS(ref_cavity_replace(ref_cavity), "cav replace");
         RSS(ref_cavity_free(ref_cavity), "cav free");
       }
