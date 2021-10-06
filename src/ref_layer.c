@@ -23,6 +23,7 @@
 
 #include "ref_cavity.h"
 #include "ref_egads.h"
+#include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
@@ -405,7 +406,10 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
         RSS(ref_cavity_create(&ref_cavity), "cav create");
         RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node),
             "ball");
-        RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
+        RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
+          ref_cavity_tec(ref_cavity, "cav-fail.tec");
+          ref_export_by_extension(ref_grid, "mesh-fail.tec");
+        });
         RSS(ref_cavity_replace(ref_cavity), "cav replace");
         RSS(ref_cavity_free(ref_cavity), "cav free");
       }
