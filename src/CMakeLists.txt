@@ -162,7 +162,7 @@ if (EGADS_FOUND)
         if (${TKernel_FOUND} EQUAL -1)
             message(WARNING "TKernel target not found in OpenCASCADE libraries: ${OpenCASCADE_LIBRARIES}\nSkipping linking refine with OpenCASCADE")
         else()
-            target_link_libraries(refine_with_egads PRIVATE ${OpenCASCADE_LIBRARIES})
+            target_link_libraries(refine_with_egads PRIVATE TKernel)
         endif()
     endif ()
 
