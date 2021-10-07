@@ -47,4 +47,5 @@ adapt_cycle cycle00 cycle01 1000
 adapt_cycle cycle01 cycle02 1000
 adapt_cycle cycle02 cycle03 1000
 adapt_cycle cycle03 cycle04 1000
-
+${src}/ref_layer_test --insert cycle04.meshb cycle04-metric.solb supcyl.egads
+adapt_cycle ref_layer_test_insert cycle05 1000

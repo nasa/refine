@@ -97,6 +97,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_export_by_extension(ref_grid, "ref_layer_test_insert.plt"),
         "export");
+    RSS(ref_export_by_extension(ref_grid, "ref_layer_test_insert.meshb"),
+        "export");
 
     RSS(ref_grid_free(ref_grid), "grid");
     RSS(ref_mpi_stop(), "stop");
