@@ -477,12 +477,49 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
       REF_INT ntri, tri_list[2];
       edge = order[o];
       if (dots[edge] < 0.1) {
-        printf("order %d dot %f\n", o, dots[edge]);
         n0 = ref_edge_e2n(ref_edge, 0, edge);
         n1 = ref_edge_e2n(ref_edge, 1, edge);
 
         RSS(ref_cell_list_with2(tri, n0, n1, 2, &ntri, tri_list), "tri with2");
         if (2 == ntri) {
+          REF_INT t, cell_node, n2, n3, tn, new_cell;
+          REF_INT nodes[REF_CELL_MAX_NODE_PER];
+          t = tri_list[0];
+          n2 = REF_EMPTY;
+          tn = REF_EMPTY;
+          each_ref_cell_cell_node(tri, cell_node) {
+            if (ref_cell_c2n(tri, cell_node, t) != n0 &&
+                ref_cell_c2n(tri, cell_node, t) != n1) {
+              n2 = ref_cell_c2n(tri, cell_node, t);
+              tn = cell_node;
+            }
+          }
+          RAS(REF_EMPTY != n2, "n2 not found");
+          RAS(REF_EMPTY != tn, "tn not found")
+          t = tri_list[1];
+          n3 = REF_EMPTY;
+          each_ref_cell_cell_node(tri, cell_node) {
+            if (ref_cell_c2n(tri, cell_node, t) != n0 &&
+                ref_cell_c2n(tri, cell_node, t) != n1) {
+              n3 = ref_cell_c2n(tri, cell_node, t);
+            }
+          }
+          RAS(REF_EMPTY != n3, "n3 not found");
+          tn--;
+          if (tn < 0) tn += 3;
+          t = tri_list[0];
+          nodes[0] = ref_cell_c2n(tri, tn, t);
+          tn++;
+          if (tn > 2) tn -= 3;
+          nodes[1] = ref_cell_c2n(tri, tn, t);
+          tn++;
+          if (tn > 2) tn -= 3;
+          nodes[2] = ref_cell_c2n(tri, tn, t);
+          nodes[3] = n3;
+          nodes[4] = ref_cell_c2n(tri, tn, 3);
+          RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell), "add");
+          RSS(ref_cell_remove(tri, tri_list[0]), "remove tri 0");
+          RSS(ref_cell_remove(tri, tri_list[1]), "remove tri 1");
           printf("quad\n");
         }
       }
