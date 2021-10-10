@@ -345,80 +345,9 @@ REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
-  REF_CELL ref_cell = ref_grid_edg(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT node;
-
-  each_ref_node_valid_node(ref_node, node) {
-    if (!ref_cell_node_empty(ref_cell, node)) {
-      REF_DBL normal[3], seg_normal[3];
-      REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
-      REF_DBL d[12], m[6];
-      REF_DBL dot, ar, r;
-      normal[0] = 0.0;
-      normal[1] = 0.0;
-      normal[2] = 0.0;
-      each_ref_cell_having_node(ref_cell, node, item, cell) {
-        RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
-        RSS(ref_node_seg_normal(ref_node, nodes, seg_normal), "normal");
-        normal[0] += seg_normal[0];
-        normal[1] += seg_normal[1];
-        normal[2] += seg_normal[2];
-      }
-      RSS(ref_math_normalize(normal), "norm");
-      RSS(ref_node_metric_get(ref_node, node, m), "get");
-      RSS(ref_matrix_diag_m(m, d), "eigen decomp");
-      RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
-      dot = ref_math_dot(normal, &(d[3]));
-      ar = sqrt(d[0] / d[1]);
-      r = sqrt(
-          ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
-          ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
-      if (ar > 3.75 && ABS(dot) > 0.9) {
-        REF_DBL h, xyz[3], dist, close;
-        REF_INT closest_node;
-        REF_INT new_node;
-        REF_GLOB global;
-        REF_INT type, id;
-        REF_DBL uv[2];
-        REF_CAVITY ref_cavity;
-        printf("xyz %8.4f %8.4f %8.4f dot %7.3f ar %7.2f r %6.2f\n",
-               ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-               ref_node_xyz(ref_node, 2, node), dot, ar, r);
-        h = 1.0 / sqrt(d[0]);
-        xyz[0] = ref_node_xyz(ref_node, 0, node) + h * normal[0];
-        xyz[1] = ref_node_xyz(ref_node, 1, node) + h * normal[1];
-        xyz[2] = ref_node_xyz(ref_node, 2, node) + h * normal[2];
-        RSS(ref_node_nearest_xyz(ref_node, xyz, &closest_node, &dist), "close");
-        close = dist / h;
-        printf("node %d close %d by %f of %f\n", node, closest_node, dist,
-               close);
-        RSS(ref_node_next_global(ref_node, &global), "global");
-        RSS(ref_node_add(ref_node, global, &new_node), "add");
-        ref_node_xyz(ref_node, 0, new_node) = xyz[0];
-        ref_node_xyz(ref_node, 1, new_node) = xyz[1];
-        ref_node_xyz(ref_node, 2, new_node) = xyz[2];
-        type = REF_GEOM_FACE;
-        RSS(ref_geom_unique_id(ref_geom, node, type, &id), "unique face id");
-        RSS(ref_geom_tuv(ref_geom, node, type, id, uv), "uv");
-        RSS(ref_egads_inverse_eval(ref_geom, type, id, xyz, uv), "inverse uv");
-        RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
-        RSS(ref_cavity_create(&ref_cavity), "cav create");
-        RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node),
-            "ball");
-        RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
-          ref_cavity_tec(ref_cavity, "cav-fail.tec");
-          ref_export_by_extension(ref_grid, "mesh-fail.tec");
-        });
-        RSS(ref_cavity_replace(ref_cavity), "cav replace");
-        RSS(ref_cavity_free(ref_cavity), "cav free");
-      }
-    }
-  }
-
+static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) 
   {
+    REF_NODE ref_node=ref_grid_node(ref_grid);
     REF_CELL tri = ref_grid_tri(ref_grid);
     REF_EDGE ref_edge;
     REF_DBL *dots;
@@ -527,6 +456,83 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
     ref_free(order);
     ref_free(dots);
     RSS(ref_edge_free(ref_edge), "free edge");
+    return REF_SUCCESS;
   }
+
+REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT node;
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_cell_node_empty(ref_cell, node)) {
+      REF_DBL normal[3], seg_normal[3];
+      REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+      REF_DBL d[12], m[6];
+      REF_DBL dot, ar, r;
+      normal[0] = 0.0;
+      normal[1] = 0.0;
+      normal[2] = 0.0;
+      each_ref_cell_having_node(ref_cell, node, item, cell) {
+        RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
+        RSS(ref_node_seg_normal(ref_node, nodes, seg_normal), "normal");
+        normal[0] += seg_normal[0];
+        normal[1] += seg_normal[1];
+        normal[2] += seg_normal[2];
+      }
+      RSS(ref_math_normalize(normal), "norm");
+      RSS(ref_node_metric_get(ref_node, node, m), "get");
+      RSS(ref_matrix_diag_m(m, d), "eigen decomp");
+      RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
+      dot = ref_math_dot(normal, &(d[3]));
+      ar = sqrt(d[0] / d[1]);
+      r = sqrt(
+          ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
+          ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
+      if (ar > 3.75 && ABS(dot) > 0.9) {
+        REF_DBL h, xyz[3], dist, close;
+        REF_INT closest_node;
+        REF_INT new_node;
+        REF_GLOB global;
+        REF_INT type, id;
+        REF_DBL uv[2];
+        REF_CAVITY ref_cavity;
+        printf("xyz %8.4f %8.4f %8.4f dot %7.3f ar %7.2f r %6.2f\n",
+               ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+               ref_node_xyz(ref_node, 2, node), dot, ar, r);
+        h = 1.0 / sqrt(d[0]);
+        xyz[0] = ref_node_xyz(ref_node, 0, node) + h * normal[0];
+        xyz[1] = ref_node_xyz(ref_node, 1, node) + h * normal[1];
+        xyz[2] = ref_node_xyz(ref_node, 2, node) + h * normal[2];
+        RSS(ref_node_nearest_xyz(ref_node, xyz, &closest_node, &dist), "close");
+        close = dist / h;
+        printf("node %d close %d by %f of %f\n", node, closest_node, dist,
+               close);
+        RSS(ref_node_next_global(ref_node, &global), "global");
+        RSS(ref_node_add(ref_node, global, &new_node), "add");
+        ref_node_xyz(ref_node, 0, new_node) = xyz[0];
+        ref_node_xyz(ref_node, 1, new_node) = xyz[1];
+        ref_node_xyz(ref_node, 2, new_node) = xyz[2];
+        type = REF_GEOM_FACE;
+        RSS(ref_geom_unique_id(ref_geom, node, type, &id), "unique face id");
+        RSS(ref_geom_tuv(ref_geom, node, type, id, uv), "uv");
+        RSS(ref_egads_inverse_eval(ref_geom, type, id, xyz, uv), "inverse uv");
+        RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
+        RSS(ref_cavity_create(&ref_cavity), "cav create");
+        RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node),
+            "ball");
+        RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
+          ref_cavity_tec(ref_cavity, "cav-fail.tec");
+          ref_export_by_extension(ref_grid, "mesh-fail.tec");
+        });
+        RSS(ref_cavity_replace(ref_cavity), "cav replace");
+        RSS(ref_cavity_free(ref_cavity), "cav free");
+      }
+    }
+  }
+
+RSS(ref_layer_quad_right_triangles(ref_grid), "tri2qaud");
+
   return REF_SUCCESS;
 }
