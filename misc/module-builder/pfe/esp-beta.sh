@@ -6,7 +6,7 @@ rm -f ESPbeta.tgz
 wget -N https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
 raw=$(stat -c %Y ESPbeta.tgz)
 timestamp=$(TZ='America/New_York' date -d @${raw} +"%Y.%m.%d.%H%M")
-VERSION="119-beta.${timestamp}"
+VERSION="120-beta.${timestamp}"
 
 if [ $# -gt 0 ] ; then
    . common.sh  $1
@@ -14,8 +14,11 @@ else
    . common.sh
 fi
 
-OCC_COPY_SOURCE="${MODULE_BASE}/118/OpenCASCADE-7.3.1"
-OCC_COPY_DEST=${MODULE_DEST}/OpenCASCADE-7.3.1
+OCC_VERSION=7.4.1
+
+OCC_COPY_SOURCE="${MODULE_BASE}/120/OpenCASCADE-${OCC_VERSION}"
+OCC_COPY_DEST="${MODULE_DEST}/OpenCASCADE-${OCC_VERSION}"
+OCC_COPY_LINK=${MODULE_DEST}/OpenCASCADE
 
 echo Build ${PACKAGE} ${VERSION}
 
@@ -23,10 +26,11 @@ module purge
 
 mkdir ${MODULE_DEST}
 cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
+( cd ${MODULE_DEST} && ln -s OpenCASCADE-${OCC_VERSION} OpenCASCADE )
 
 rm -rf EngSketchPad
 tar xzf ESPbeta.tgz
-( cd EngSketchPad/config && ./makeEnv ${OCC_COPY_DEST} )
+( cd EngSketchPad/config && ./makeEnv ${OCC_COPY_LINK} )
 ( cd EngSketchPad/src && . ../ESPenv.sh && make CC=gcc CXX=g++ FCOMP=gfortran)
 
 mkdir ${MODULE_DEST}/EngSketchPad
@@ -58,12 +62,12 @@ if { \$modmode != "switch3" } {
 }
 
 setenv ESP_ROOT \$base/\$version/EngSketchPad
-setenv CASROOT \$base/\$version/OpenCASCADE-7.3.1
+setenv CASROOT \$base/\$version/OpenCASCADE
 
 prepend-path PATH \$base/\$version/EngSketchPad/bin
 
 prepend-path LD_LIBRARY_PATH \$base/\$version/EngSketchPad/lib
-prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE-7.3.1/lib
+prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE/lib
 
 EOF
 
