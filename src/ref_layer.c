@@ -345,35 +345,85 @@ REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) 
-  {
-    REF_NODE ref_node=ref_grid_node(ref_grid);
-    REF_CELL tri = ref_grid_tri(ref_grid);
-    REF_EDGE ref_edge;
-    REF_DBL *dots;
-    REF_INT edge, *order, o;
-    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
-    ref_malloc_init(dots, ref_edge_n(ref_edge), REF_DBL, 2.0);
-    ref_malloc(order, ref_edge_n(ref_edge), REF_INT);
-    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-      REF_INT n0, n1;
-      REF_INT ntri, tri_list[2];
+static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_EDGE ref_edge;
+  REF_DBL *dots;
+  REF_INT edge, *order, o;
+  RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+  ref_malloc_init(dots, ref_edge_n(ref_edge), REF_DBL, 2.0);
+  ref_malloc(order, ref_edge_n(ref_edge), REF_INT);
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    REF_INT n0, n1;
+    REF_INT ntri, tri_list[2];
+    n0 = ref_edge_e2n(ref_edge, 0, edge);
+    n1 = ref_edge_e2n(ref_edge, 1, edge);
+
+    RSS(ref_cell_list_with2(tri, n0, n1, 2, &ntri, tri_list), "tri with2");
+    if (2 == ntri) {
+      REF_INT t, cell_node, n2, n3, i;
+      REF_DBL e0[3], e1[3];
+      t = tri_list[0];
+      n2 = REF_EMPTY;
+      each_ref_cell_cell_node(tri, cell_node) {
+        if (ref_cell_c2n(tri, cell_node, t) != n0 &&
+            ref_cell_c2n(tri, cell_node, t) != n1) {
+          n2 = ref_cell_c2n(tri, cell_node, t);
+        }
+      }
+      RAS(REF_EMPTY != n2, "n2 not found");
+      t = tri_list[1];
+      n3 = REF_EMPTY;
+      each_ref_cell_cell_node(tri, cell_node) {
+        if (ref_cell_c2n(tri, cell_node, t) != n0 &&
+            ref_cell_c2n(tri, cell_node, t) != n1) {
+          n3 = ref_cell_c2n(tri, cell_node, t);
+        }
+      }
+      RAS(REF_EMPTY != n3, "n3 not found");
+      for (i = 0; i < 3; i++)
+        e0[i] = ref_node_xyz(ref_node, i, n0) - ref_node_xyz(ref_node, i, n2);
+      for (i = 0; i < 3; i++)
+        e1[i] = ref_node_xyz(ref_node, i, n1) - ref_node_xyz(ref_node, i, n2);
+      RSS(ref_math_normalize(e0), "norm e0");
+      RSS(ref_math_normalize(e1), "norm e1");
+      dots[edge] = ABS(ref_math_dot(e0, e1));
+      for (i = 0; i < 3; i++)
+        e0[i] = ref_node_xyz(ref_node, i, n0) - ref_node_xyz(ref_node, i, n3);
+      for (i = 0; i < 3; i++)
+        e1[i] = ref_node_xyz(ref_node, i, n1) - ref_node_xyz(ref_node, i, n3);
+      RSS(ref_math_normalize(e0), "norm e0");
+      RSS(ref_math_normalize(e1), "norm e1");
+      dots[edge] = MAX(ABS(ref_math_dot(e0, e1)), dots[edge]);
+    }
+  }
+  RSS(ref_sort_heap_dbl(ref_edge_n(ref_edge), dots, order), "sort dots");
+
+  for (o = 0; o < ref_edge_n(ref_edge); o++) {
+    REF_INT n0, n1;
+    REF_INT ntri, tri_list[2];
+    edge = order[o];
+    if (dots[edge] < 0.1) {
       n0 = ref_edge_e2n(ref_edge, 0, edge);
       n1 = ref_edge_e2n(ref_edge, 1, edge);
 
       RSS(ref_cell_list_with2(tri, n0, n1, 2, &ntri, tri_list), "tri with2");
       if (2 == ntri) {
-        REF_INT t, cell_node, n2, n3, i;
-        REF_DBL e0[3], e1[3];
+        REF_INT t, cell_node, n2, n3, tn, new_cell;
+        REF_INT nodes[REF_CELL_MAX_NODE_PER];
         t = tri_list[0];
         n2 = REF_EMPTY;
+        tn = REF_EMPTY;
         each_ref_cell_cell_node(tri, cell_node) {
           if (ref_cell_c2n(tri, cell_node, t) != n0 &&
               ref_cell_c2n(tri, cell_node, t) != n1) {
             n2 = ref_cell_c2n(tri, cell_node, t);
+            tn = cell_node;
           }
         }
         RAS(REF_EMPTY != n2, "n2 not found");
+        RAS(REF_EMPTY != tn, "tn not found")
         t = tri_list[1];
         n3 = REF_EMPTY;
         each_ref_cell_cell_node(tri, cell_node) {
@@ -383,81 +433,29 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid)
           }
         }
         RAS(REF_EMPTY != n3, "n3 not found");
-        for (i = 0; i < 3; i++)
-          e0[i] = ref_node_xyz(ref_node, i, n0) - ref_node_xyz(ref_node, i, n2);
-        for (i = 0; i < 3; i++)
-          e1[i] = ref_node_xyz(ref_node, i, n1) - ref_node_xyz(ref_node, i, n2);
-        RSS(ref_math_normalize(e0), "norm e0");
-        RSS(ref_math_normalize(e1), "norm e1");
-        dots[edge] = ABS(ref_math_dot(e0, e1));
-        for (i = 0; i < 3; i++)
-          e0[i] = ref_node_xyz(ref_node, i, n0) - ref_node_xyz(ref_node, i, n3);
-        for (i = 0; i < 3; i++)
-          e1[i] = ref_node_xyz(ref_node, i, n1) - ref_node_xyz(ref_node, i, n3);
-        RSS(ref_math_normalize(e0), "norm e0");
-        RSS(ref_math_normalize(e1), "norm e1");
-        dots[edge] = MAX(ABS(ref_math_dot(e0, e1)), dots[edge]);
+        tn--;
+        if (tn < 0) tn += 3;
+        t = tri_list[0];
+        nodes[0] = ref_cell_c2n(tri, tn, t);
+        tn++;
+        if (tn > 2) tn -= 3;
+        nodes[1] = ref_cell_c2n(tri, tn, t);
+        tn++;
+        if (tn > 2) tn -= 3;
+        nodes[2] = ref_cell_c2n(tri, tn, t);
+        nodes[3] = n3;
+        nodes[4] = ref_cell_c2n(tri, tn, 3);
+        RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell), "add");
+        RSS(ref_cell_remove(tri, tri_list[0]), "remove tri 0");
+        RSS(ref_cell_remove(tri, tri_list[1]), "remove tri 1");
       }
     }
-    RSS(ref_sort_heap_dbl(ref_edge_n(ref_edge), dots, order), "sort dots");
-
-    for (o = 0; o < ref_edge_n(ref_edge); o++) {
-      REF_INT n0, n1;
-      REF_INT ntri, tri_list[2];
-      edge = order[o];
-      if (dots[edge] < 0.1) {
-        n0 = ref_edge_e2n(ref_edge, 0, edge);
-        n1 = ref_edge_e2n(ref_edge, 1, edge);
-
-        RSS(ref_cell_list_with2(tri, n0, n1, 2, &ntri, tri_list), "tri with2");
-        if (2 == ntri) {
-          REF_INT t, cell_node, n2, n3, tn, new_cell;
-          REF_INT nodes[REF_CELL_MAX_NODE_PER];
-          t = tri_list[0];
-          n2 = REF_EMPTY;
-          tn = REF_EMPTY;
-          each_ref_cell_cell_node(tri, cell_node) {
-            if (ref_cell_c2n(tri, cell_node, t) != n0 &&
-                ref_cell_c2n(tri, cell_node, t) != n1) {
-              n2 = ref_cell_c2n(tri, cell_node, t);
-              tn = cell_node;
-            }
-          }
-          RAS(REF_EMPTY != n2, "n2 not found");
-          RAS(REF_EMPTY != tn, "tn not found")
-          t = tri_list[1];
-          n3 = REF_EMPTY;
-          each_ref_cell_cell_node(tri, cell_node) {
-            if (ref_cell_c2n(tri, cell_node, t) != n0 &&
-                ref_cell_c2n(tri, cell_node, t) != n1) {
-              n3 = ref_cell_c2n(tri, cell_node, t);
-            }
-          }
-          RAS(REF_EMPTY != n3, "n3 not found");
-          tn--;
-          if (tn < 0) tn += 3;
-          t = tri_list[0];
-          nodes[0] = ref_cell_c2n(tri, tn, t);
-          tn++;
-          if (tn > 2) tn -= 3;
-          nodes[1] = ref_cell_c2n(tri, tn, t);
-          tn++;
-          if (tn > 2) tn -= 3;
-          nodes[2] = ref_cell_c2n(tri, tn, t);
-          nodes[3] = n3;
-          nodes[4] = ref_cell_c2n(tri, tn, 3);
-          RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell), "add");
-          RSS(ref_cell_remove(tri, tri_list[0]), "remove tri 0");
-          RSS(ref_cell_remove(tri, tri_list[1]), "remove tri 1");
-          printf("quad\n");
-        }
-      }
-    }
-    ref_free(order);
-    ref_free(dots);
-    RSS(ref_edge_free(ref_edge), "free edge");
-    return REF_SUCCESS;
   }
+  ref_free(order);
+  ref_free(dots);
+  RSS(ref_edge_free(ref_edge), "free edge");
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
@@ -532,7 +530,7 @@ REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
     }
   }
 
-RSS(ref_layer_quad_right_triangles(ref_grid), "tri2qaud");
+  RSS(ref_layer_quad_right_triangles(ref_grid), "tri2qaud");
 
   return REF_SUCCESS;
 }
