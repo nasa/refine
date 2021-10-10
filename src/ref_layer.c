@@ -457,7 +457,7 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_identify(REF_GRID ref_grid) {
+REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);

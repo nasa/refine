@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[4]), "load egads");
     RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]), "part metric");
 
-    RSS(ref_layer_identify(ref_grid), "ident");
+    RSS(ref_layer_align_quad(ref_grid), "ident");
 
     RSS(ref_export_by_extension(ref_grid, "ref_layer_test_insert.plt"),
         "export");

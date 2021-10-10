@@ -54,7 +54,7 @@ REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid);
 REF_STATUS ref_layer_insert(REF_LAYER ref_layer, REF_GRID ref_grid);
 REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid);
 
-REF_STATUS ref_layer_identify(REF_GRID ref_grid);
+REF_STATUS ref_layer_align_quad(REF_GRID ref_grid);
 
 END_C_DECLORATION
 
