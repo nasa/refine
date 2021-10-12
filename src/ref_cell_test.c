@@ -1190,7 +1190,7 @@ int main(int argc, char *argv[]) {
 
   { /* edg */
     REF_CELL ref_cell;
-    REF_DBL bary[2], shape[2];
+    REF_DBL bary[4], shape[4];
     RSS(ref_cell_create(&ref_cell, REF_CELL_EDG), "edg");
     bary[0] = 1.0;
     bary[1] = 0.0;
@@ -1272,7 +1272,7 @@ int main(int argc, char *argv[]) {
 
   { /* tri */
     REF_CELL ref_cell;
-    REF_DBL bary[3], shape[3];
+    REF_DBL bary[4], shape[4];
     RSS(ref_cell_create(&ref_cell, REF_CELL_TRI), "tri");
     bary[0] = 1.0;
     bary[1] = 0.0;
