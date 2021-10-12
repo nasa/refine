@@ -48,7 +48,11 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #else
+#ifdef REFINE_VERSION
+#define VERSION REFINE_VERSION
+#else
 #define VERSION "not available"
+#endif
 #endif
 
 static void usage(const char *name) {

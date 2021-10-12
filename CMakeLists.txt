@@ -1,7 +1,13 @@
-
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(refine)
+
+find_program(GIT_EXEC git)
+if (GIT_EXEC)
+    execute_process(COMMAND sh -c "${GIT_EXEC} describe --tag | tr -d '\n'"
+            OUTPUT_VARIABLE REFINE_VERSION)
+    message(STATUS "refine version: ${REFINE_VERSION}")
+endif()
 
 option(refine_ENABLE_TESTS "build refine tests and enable ctest support" ON)
 
