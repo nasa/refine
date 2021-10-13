@@ -524,7 +524,8 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
           ref_cavity_tec(ref_cavity, "cav-fail.tec");
           ref_export_by_extension(ref_grid, "mesh-fail.tec");
         });
-        RSS(ref_cavity_replace(ref_cavity), "cav replace");
+        RSB(ref_cavity_replace(ref_cavity), "cav replace",
+            { ref_cavity_tec(ref_cavity, "ref_layer_align_quad_cavity.tec"); });
         RSS(ref_cavity_free(ref_cavity), "cav free");
       }
     }
