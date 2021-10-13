@@ -1465,7 +1465,15 @@ REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
   REF_INT cell_node;
   switch (cell_type) {
     case REF_CELL_EDG:
+      for (cell_node = 0; cell_node < 2; cell_node++) {
+        shape[cell_node] = bary[cell_node];
+      }
+      break;
     case REF_CELL_TRI:
+      for (cell_node = 0; cell_node < 3; cell_node++) {
+        shape[cell_node] = bary[cell_node];
+      }
+      break;
     case REF_CELL_TET:
       for (cell_node = 0; cell_node < 4; cell_node++) {
         shape[cell_node] = bary[cell_node];
@@ -1512,8 +1520,20 @@ REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
       shape[9] = 27.0 * bary[0] * bary[1] * bary[2];
       break;
     case REF_CELL_QUA:
+      for (cell_node = 0; cell_node < 4; cell_node++) {
+        shape[cell_node] = 0.0;
+      }
+      return REF_IMPLEMENT;
     case REF_CELL_PYR:
+      for (cell_node = 0; cell_node < 5; cell_node++) {
+        shape[cell_node] = 0.0;
+      }
+      return REF_IMPLEMENT;
     case REF_CELL_PRI:
+      for (cell_node = 0; cell_node < 6; cell_node++) {
+        shape[cell_node] = 0.0;
+      }
+      return REF_IMPLEMENT;
     case REF_CELL_HEX:
       for (cell_node = 0; cell_node < 8; cell_node++) {
         shape[cell_node] = 0.0;
