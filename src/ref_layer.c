@@ -524,8 +524,13 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
           ref_cavity_tec(ref_cavity, "cav-fail.tec");
           ref_export_by_extension(ref_grid, "mesh-fail.tec");
         });
-        RSB(ref_cavity_replace(ref_cavity), "cav replace",
-            { ref_cavity_tec(ref_cavity, "ref_layer_align_quad_cavity.tec"); });
+        RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+          ref_cavity_tec(ref_cavity, "ref_layer_align_quad_cavity.tec");
+          ref_export_by_extension(ref_grid, "ref_layer_align_quad_mesh.tec");
+          printf("norm %f %f %f dir %f %f %f dot %f\n", normal[0], normal[1],
+                 normal[2], d[3], d[4], d[5], ref_math_dot(normal, &(d[3])));
+          printf("new %f %f %f\n", xyz[0], xyz[1], xyz[2]);
+        });
         RSS(ref_cavity_free(ref_cavity), "cav free");
       }
     }
