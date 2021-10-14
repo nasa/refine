@@ -528,14 +528,12 @@ static REF_STATUS ref_layer_twod_normal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
+static REF_STATUS ref_layer_align_quad_first_layer(REF_GRID ref_grid,
+                                                   REF_CLOUD ref_cloud) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node;
-  REF_CLOUD ref_cloud;
-
-  RSS(ref_cloud_create(&ref_cloud, 3), "normal cloud");
 
   each_ref_node_valid_node(ref_node, node) {
     if (!ref_cell_node_empty(ref_cell, node)) {
@@ -572,6 +570,7 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
         printf("node %d close %d by %f of %f\n", node, closest_node, dist,
                close);
         RSS(ref_node_next_global(ref_node, &global), "global");
+        RSS(ref_cloud_store(ref_cloud, global, normal), "store cloud");
         RSS(ref_node_add(ref_node, global, &new_node), "add");
         ref_node_xyz(ref_node, 0, new_node) = xyz[0];
         ref_node_xyz(ref_node, 1, new_node) = xyz[1];
@@ -599,6 +598,15 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
       }
     }
   }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
+  REF_CLOUD ref_cloud;
+
+  RSS(ref_cloud_create(&ref_cloud, 3), "normal cloud");
+
+  RSS(ref_layer_align_quad_first_layer(ref_grid, ref_cloud), "first layer");
 
   RSS(ref_cloud_free(ref_cloud), "free cloud");
 
