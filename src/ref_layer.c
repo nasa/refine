@@ -530,7 +530,8 @@ static REF_STATUS ref_layer_twod_normal(REF_GRID ref_grid, REF_INT node,
 }
 
 static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
-                                              REF_CLOUD ref_cloud) {
+                                              REF_CLOUD ref_cloud,
+                                              REF_LIST ref_list) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -570,6 +571,7 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
         close = dist / h;
         RSS(ref_node_next_global(ref_node, &global), "global");
         RSS(ref_cloud_store(ref_cloud, global, normal), "store cloud");
+        RSS(ref_list_push(ref_list, node), "store list");
         RSS(ref_node_add(ref_node, global, &new_node), "add");
         ref_node_xyz(ref_node, 0, new_node) = xyz[0];
         ref_node_xyz(ref_node, 1, new_node) = xyz[1];
@@ -605,7 +607,10 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
 }
 
 static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
-                                               REF_CLOUD last, REF_CLOUD next) {
+                                               REF_CLOUD last,
+                                               REF_LIST last_list,
+                                               REF_CLOUD next,
+                                               REF_LIST next_list) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node, item;
@@ -648,6 +653,7 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
              close, h);
       RSS(ref_node_next_global(ref_node, &global), "global");
       RSS(ref_cloud_store(next, global, normal), "store cloud");
+      RSS(ref_list_push(next_list, node), "store list");
       RSS(ref_node_add(ref_node, global, &new_node), "add");
       ref_node_xyz(ref_node, 0, new_node) = xyz[0];
       ref_node_xyz(ref_node, 1, new_node) = xyz[1];
@@ -660,7 +666,7 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
       RSS(ref_metric_interpolate_node(ref_grid, new_node), "metric interp");
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
-                                 REF_EMPTY),
+                                 ref_list_value(last_list, item)),
           "ball");
       RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
         ref_cavity_tec(ref_cavity, "cav-fail.tec");
@@ -683,18 +689,26 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
 REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
   REF_INT layers = 1;
   REF_CLOUD previous_cloud, next_cloud;
+  REF_LIST previous_list, next_list;
 
   RSS(ref_cloud_create(&previous_cloud, 3), "previous cloud");
+  RSS(ref_list_create(&previous_list), "previous list");
 
-  RSS(ref_layer_align_first_layer(ref_grid, previous_cloud), "first layer");
+  RSS(ref_layer_align_first_layer(ref_grid, previous_cloud, previous_list),
+      "first layer");
 
   if (layers > 1) {
     RSS(ref_cloud_create(&next_cloud, 3), "next cloud");
-    RSS(ref_layer_align_quad_advance(ref_grid, previous_cloud, next_cloud),
+    RSS(ref_list_create(&next_list), "next list");
+    RSS(ref_layer_align_quad_advance(ref_grid, previous_cloud, previous_list,
+                                     next_cloud, next_list),
         "first layer");
     RSS(ref_cloud_free(previous_cloud), "free previous cloud");
+    RSS(ref_list_free(previous_list), "free previous list");
     previous_cloud = next_cloud;
+    previous_list = next_list;
     next_cloud = NULL;
+    next_list = NULL;
   }
 
   RSS(ref_cloud_free(previous_cloud), "free next cloud");
