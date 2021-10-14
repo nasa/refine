@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "ref_cavity.h"
+#include "ref_cloud.h"
 #include "ref_edge.h"
 #include "ref_egads.h"
 #include "ref_export.h"
@@ -532,6 +533,9 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node;
+  REF_CLOUD ref_cloud;
+
+  RSS(ref_cloud_create(&ref_cloud, 3), "normal cloud");
 
   each_ref_node_valid_node(ref_node, node) {
     if (!ref_cell_node_empty(ref_cell, node)) {
@@ -595,6 +599,8 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
       }
     }
   }
+
+  RSS(ref_cloud_free(ref_cloud), "free cloud");
 
   RSS(ref_layer_quad_right_triangles(ref_grid), "tri2qaud");
 
