@@ -488,7 +488,7 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
       r = sqrt(
           ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
           ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
-      if (ar > 3.75 && ABS(dot) > 0.9) {
+      if (ar > 3.75 && ABS(dot) > 0.9848) { /* cos(10 degrees) */
         REF_DBL h, xyz[3], dist, close;
         REF_INT closest_node;
         REF_INT new_node;
