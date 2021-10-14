@@ -460,11 +460,34 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
 static REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid, REF_INT cell,
                                                 REF_DBL *normal) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_CELL edg = ref_grid_edg(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-
-  RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
+  REF_INT ntri, tri_list[2], other, t;
+  REF_DBL tri_side[3];
+  REF_DBL dot;
+  RSS(ref_cell_nodes(edg, cell, nodes), "cell");
   RSS(ref_node_seg_normal(ref_node, nodes, normal), "normal");
+  RSS(ref_math_normalize(normal), "norm");
+  RSS(ref_cell_list_with2(tri, nodes[0], nodes[1], 2, &ntri, tri_list),
+      "tri with2");
+  REIS(1, ntri, "expected one tri at bounary");
+  t = tri_list[0];
+  other = ref_cell_c2n(tri, 0, t) + ref_cell_c2n(tri, 1, t) +
+          ref_cell_c2n(tri, 2, t) - nodes[0] - nodes[1];
+  tri_side[0] =
+      ref_node_xyz(ref_node, 0, other) - ref_node_xyz(ref_node, 0, nodes[0]);
+  tri_side[1] =
+      ref_node_xyz(ref_node, 1, other) - ref_node_xyz(ref_node, 1, nodes[0]);
+  tri_side[2] =
+      ref_node_xyz(ref_node, 2, other) - ref_node_xyz(ref_node, 2, nodes[0]);
+  RSS(ref_math_normalize(tri_side), "norm");
+  dot = ref_math_dot(normal, tri_side);
+  if (dot < 0) {
+    normal[0] = -normal[0];
+    normal[1] = -normal[1];
+    normal[2] = -normal[2];
+  }
   return REF_SUCCESS;
 }
 
