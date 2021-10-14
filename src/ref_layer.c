@@ -528,8 +528,8 @@ static REF_STATUS ref_layer_twod_normal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_align_quad_first_layer(REF_GRID ref_grid,
-                                                   REF_CLOUD ref_cloud) {
+static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
+                                              REF_CLOUD ref_cloud) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -601,14 +601,96 @@ static REF_STATUS ref_layer_align_quad_first_layer(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
+                                               REF_CLOUD last, REF_CLOUD next) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT node, item;
+  REF_GLOB global;
+
+  each_ref_cloud_global(last, item, global) {
+    REF_DBL normal[3];
+
+    REF_DBL d[12], m[6];
+    REF_DBL dot, ar, r;
+    REF_INT aux_index;
+    RSS(ref_node_local(ref_node, global, &node), "local");
+    each_ref_cloud_aux(last, aux_index) {
+      normal[aux_index] = ref_cloud_aux(last, aux_index, item);
+    }
+    RSS(ref_node_metric_get(ref_node, node, m), "get");
+    RSS(ref_matrix_diag_m(m, d), "eigen decomp");
+    RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
+    dot = ref_math_dot(normal, &(d[3]));
+    ar = sqrt(d[0] / d[1]);
+    r = sqrt(ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
+             ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
+    if (ABS(dot) > 0.9848) { /* cos(10 degrees) */
+      REF_DBL h, xyz[3], dist, close;
+      REF_INT closest_node;
+      REF_INT new_node;
+      REF_INT type, id;
+      REF_DBL uv[2];
+      REF_CAVITY ref_cavity;
+      printf("xyz %8.4f %8.4f %8.4f dot %7.3f ar %7.2f r %6.2f\n",
+             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+             ref_node_xyz(ref_node, 2, node), dot, ar, r);
+      h = 1.0 / sqrt(d[0]);
+      xyz[0] = ref_node_xyz(ref_node, 0, node) + h * normal[0];
+      xyz[1] = ref_node_xyz(ref_node, 1, node) + h * normal[1];
+      xyz[2] = ref_node_xyz(ref_node, 2, node) + h * normal[2];
+      RSS(ref_node_nearest_xyz(ref_node, xyz, &closest_node, &dist), "close");
+      close = dist / h;
+      printf("node %d close %d by %f of %f\n", node, closest_node, dist, close);
+      RSS(ref_node_next_global(ref_node, &global), "global");
+      RSS(ref_cloud_store(next, global, normal), "store cloud");
+      RSS(ref_node_add(ref_node, global, &new_node), "add");
+      ref_node_xyz(ref_node, 0, new_node) = xyz[0];
+      ref_node_xyz(ref_node, 1, new_node) = xyz[1];
+      ref_node_xyz(ref_node, 2, new_node) = xyz[2];
+      type = REF_GEOM_FACE;
+      RSS(ref_geom_unique_id(ref_geom, node, type, &id), "unique face id");
+      RSS(ref_geom_tuv(ref_geom, node, type, id, uv), "uv");
+      RSS(ref_egads_inverse_eval(ref_geom, type, id, xyz, uv), "inverse uv");
+      RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
+      RSS(ref_cavity_create(&ref_cavity), "cav create");
+      RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node), "ball");
+      RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
+        ref_cavity_tec(ref_cavity, "cav-fail.tec");
+        ref_export_by_extension(ref_grid, "mesh-fail.tec");
+      });
+      RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+        ref_cavity_tec(ref_cavity, "ref_layer_align_quad_cavity.tec");
+        ref_export_by_extension(ref_grid, "ref_layer_align_quad_mesh.tec");
+        printf("norm %f %f %f dir %f %f %f dot %f\n", normal[0], normal[1],
+               normal[2], d[3], d[4], d[5], ref_math_dot(normal, &(d[3])));
+        printf("new %f %f %f\n", xyz[0], xyz[1], xyz[2]);
+      });
+      RSS(ref_cavity_free(ref_cavity), "cav free");
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
-  REF_CLOUD ref_cloud;
+  REF_INT layers = 1;
+  REF_CLOUD previous_cloud, next_cloud;
 
-  RSS(ref_cloud_create(&ref_cloud, 3), "normal cloud");
+  RSS(ref_cloud_create(&previous_cloud, 3), "previous cloud");
 
-  RSS(ref_layer_align_quad_first_layer(ref_grid, ref_cloud), "first layer");
+  RSS(ref_layer_align_first_layer(ref_grid, previous_cloud), "first layer");
 
-  RSS(ref_cloud_free(ref_cloud), "free cloud");
+  if (layers > 1) {
+    RSS(ref_cloud_create(&next_cloud, 3), "next cloud");
+    RSS(ref_layer_align_quad_advance(ref_grid, previous_cloud, next_cloud),
+        "first layer");
+    RSS(ref_cloud_free(previous_cloud), "free previous cloud");
+    previous_cloud = next_cloud;
+    next_cloud = NULL;
+  }
+
+  RSS(ref_cloud_free(previous_cloud), "free next cloud");
 
   RSS(ref_layer_quad_right_triangles(ref_grid), "tri2qaud");
 
