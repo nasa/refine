@@ -132,7 +132,7 @@ REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                 REF_INT node);
 REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                  REF_INT node, REF_INT site);
+                                  REF_INT node, REF_INT site, REF_INT protect);
 REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                      REF_INT node0, REF_INT node1,
                                      REF_INT node);

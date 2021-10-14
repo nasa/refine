@@ -583,7 +583,8 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
         printf("new %d node %d close %d by %f of %f h %f\n", new_node, node,
                closest_node, dist, close, h);
         RSS(ref_cavity_create(&ref_cavity), "cav create");
-        RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node),
+        RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
+                                   REF_EMPTY),
             "ball");
         RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
           ref_cavity_tec(ref_cavity, "cav-fail.tec");
@@ -658,7 +659,9 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
       RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
       RSS(ref_metric_interpolate_node(ref_grid, new_node), "metric interp");
       RSS(ref_cavity_create(&ref_cavity), "cav create");
-      RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node), "ball");
+      RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
+                                 REF_EMPTY),
+          "ball");
       RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
         ref_cavity_tec(ref_cavity, "cav-fail.tec");
         ref_export_by_extension(ref_grid, "mesh-fail.tec");
