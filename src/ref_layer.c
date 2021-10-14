@@ -382,6 +382,7 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
         }
       }
       RAS(REF_EMPTY != n3, "n3 not found");
+      /* n2 corner */
       for (i = 0; i < 3; i++)
         e0[i] = ref_node_xyz(ref_node, i, n0) - ref_node_xyz(ref_node, i, n2);
       for (i = 0; i < 3; i++)
@@ -389,10 +390,27 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
       RSS(ref_math_normalize(e0), "norm e0");
       RSS(ref_math_normalize(e1), "norm e1");
       dots[edge] = ABS(ref_math_dot(e0, e1));
+      /* n3 corner */
       for (i = 0; i < 3; i++)
         e0[i] = ref_node_xyz(ref_node, i, n0) - ref_node_xyz(ref_node, i, n3);
       for (i = 0; i < 3; i++)
         e1[i] = ref_node_xyz(ref_node, i, n1) - ref_node_xyz(ref_node, i, n3);
+      RSS(ref_math_normalize(e0), "norm e0");
+      RSS(ref_math_normalize(e1), "norm e1");
+      dots[edge] = MAX(ABS(ref_math_dot(e0, e1)), dots[edge]);
+      /* n0 corner */
+      for (i = 0; i < 3; i++)
+        e0[i] = ref_node_xyz(ref_node, i, n2) - ref_node_xyz(ref_node, i, n0);
+      for (i = 0; i < 3; i++)
+        e1[i] = ref_node_xyz(ref_node, i, n3) - ref_node_xyz(ref_node, i, n0);
+      RSS(ref_math_normalize(e0), "norm e0");
+      RSS(ref_math_normalize(e1), "norm e1");
+      dots[edge] = MAX(ABS(ref_math_dot(e0, e1)), dots[edge]);
+      /* n1 corner */
+      for (i = 0; i < 3; i++)
+        e0[i] = ref_node_xyz(ref_node, i, n2) - ref_node_xyz(ref_node, i, n1);
+      for (i = 0; i < 3; i++)
+        e1[i] = ref_node_xyz(ref_node, i, n3) - ref_node_xyz(ref_node, i, n1);
       RSS(ref_math_normalize(e0), "norm e0");
       RSS(ref_math_normalize(e1), "norm e1");
       dots[edge] = MAX(ABS(ref_math_dot(e0, e1)), dots[edge]);
