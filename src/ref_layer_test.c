@@ -90,8 +90,13 @@ int main(int argc, char *argv[]) {
         5, argc,
         "expected ref_fixture_test --insert mesh.meshb metric.solb geom.egads");
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import mesh");
+    ref_mpi_stopwatch_stop(ref_mpi, "import mesh");
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[4]), "load egads");
+    ref_mpi_stopwatch_stop(ref_mpi, "egads load");
     RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]), "part metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "part metric");
+    RSS(ref_grid_cache_background(ref_grid), "cache");
+    ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
 
     RSS(ref_layer_align_quad(ref_grid), "ident");
 
