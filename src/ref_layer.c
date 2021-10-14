@@ -457,6 +457,26 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_layer_twod_normal(REF_GRID ref_grid, REF_INT node,
+                                        REF_DBL *normal) {
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL seg_normal[3];
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  normal[0] = 0.0;
+  normal[1] = 0.0;
+  normal[2] = 0.0;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
+    RSS(ref_node_seg_normal(ref_node, nodes, seg_normal), "normal");
+    normal[0] += seg_normal[0];
+    normal[1] += seg_normal[1];
+    normal[2] += seg_normal[2];
+  }
+  RSS(ref_math_normalize(normal), "norm");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -465,21 +485,11 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
 
   each_ref_node_valid_node(ref_node, node) {
     if (!ref_cell_node_empty(ref_cell, node)) {
-      REF_DBL normal[3], seg_normal[3];
-      REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+      REF_DBL normal[3];
+
       REF_DBL d[12], m[6];
       REF_DBL dot, ar, r;
-      normal[0] = 0.0;
-      normal[1] = 0.0;
-      normal[2] = 0.0;
-      each_ref_cell_having_node(ref_cell, node, item, cell) {
-        RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
-        RSS(ref_node_seg_normal(ref_node, nodes, seg_normal), "normal");
-        normal[0] += seg_normal[0];
-        normal[1] += seg_normal[1];
-        normal[2] += seg_normal[2];
-      }
-      RSS(ref_math_normalize(normal), "norm");
+      RSS(ref_layer_twod_normal(ref_grid, node, normal), "twod normal");
       RSS(ref_node_metric_get(ref_node, node, m), "get");
       RSS(ref_matrix_diag_m(m, d), "eigen decomp");
       RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
