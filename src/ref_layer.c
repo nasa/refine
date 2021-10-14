@@ -404,7 +404,7 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
     REF_INT n0, n1;
     REF_INT ntri, tri_list[2];
     edge = order[o];
-    if (dots[edge] < 0.1) {
+    if (dots[edge] < 0.1736) { /* sin(10 degrees) */
       n0 = ref_edge_e2n(ref_edge, 0, edge);
       n1 = ref_edge_e2n(ref_edge, 1, edge);
 
@@ -530,7 +530,7 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
       r = sqrt(
           ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
           ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
-      if (ar > 3.75 && ABS(dot) > 0.9848) { /* cos(10 degrees) */
+      if (ABS(dot) > 0.9848) { /* cos(10 degrees) */
         REF_DBL h, xyz[3], dist, close;
         REF_INT closest_node;
         REF_INT new_node;
