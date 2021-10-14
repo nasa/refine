@@ -457,18 +457,27 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid, REF_INT cell,
+                                                REF_DBL *normal) {
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
+  RSS(ref_node_seg_normal(ref_node, nodes, normal), "normal");
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_layer_twod_normal(REF_GRID ref_grid, REF_INT node,
                                         REF_DBL *normal) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL seg_normal[3];
-  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, cell;
   normal[0] = 0.0;
   normal[1] = 0.0;
   normal[2] = 0.0;
   each_ref_cell_having_node(ref_cell, node, item, cell) {
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
-    RSS(ref_node_seg_normal(ref_node, nodes, seg_normal), "normal");
+    RSS(ref_layer_interior_seg_normal(ref_grid, cell, seg_normal), "normal");
     normal[0] += seg_normal[0];
     normal[1] += seg_normal[1];
     normal[2] += seg_normal[2];
