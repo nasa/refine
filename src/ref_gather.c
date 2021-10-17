@@ -4267,6 +4267,12 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
     RSS(ref_gather_scalar_sol(ref_grid, ldim, scalar, filename), "scalar sol");
     return REF_SUCCESS;
   }
+  if (end_of_string > 15 &&
+      strcmp(&filename[end_of_string - 15], "-usm3dcell.solb") == 0) {
+    RSS(ref_gather_scalar_cell_solb(ref_grid, ldim, scalar, filename),
+        "scalar usm3d cell solb");
+    return REF_SUCCESS;
+  }
   if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0) {
     RSS(ref_gather_scalar_solb(ref_grid, ldim, scalar, filename),
         "scalar solb");
