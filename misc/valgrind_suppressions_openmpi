@@ -628,6 +628,13 @@
    ...
    fun:start_thread
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   poll(ufds.fd)
+   ...
+   fun:start_thread
+}
 
 {
    <insert_a_suppression_name_here>
