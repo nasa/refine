@@ -3731,6 +3731,35 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ldim = 1;
     if (ref_mpi_once(ref_mpi))
       printf("%d ldim for %s (degree)\n", ldim, in_sol);
+  } else if (strcmp(in_sol, "hmin") == 0) {
+    REF_INT node;
+    REF_DBL *metric, diag[12], hmin, temp_local;
+    ref_malloc_init(field, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    REF_DBL_MAX);
+    if (ref_mpi_once(ref_mpi)) printf("imply metric from mesh\n");
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_imply_from(metric, ref_grid), "imply");
+    ref_mpi_stopwatch_stop(ref_mpi, "metric implied");
+    hmin = REF_DBL_MAX;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), diag), "decomp");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+        if (ref_math_divisible(1.0, sqrt(diag[1])))
+          field[node] = 1.0 / sqrt(diag[1]);
+      } else {
+        RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+        if (ref_math_divisible(1.0, sqrt(diag[2])))
+          field[node] = 1.0 / sqrt(diag[2]);
+      }
+      hmin = MIN(field[node], hmin);
+    }
+    temp_local = hmin;
+    RSS(ref_mpi_min(ref_mpi, &temp_local, &hmin, REF_DBL_TYPE), "min");
+    ref_free(metric);
+    ldim = 1;
+    if (ref_mpi_once(ref_mpi))
+      printf("%d ldim for %s (hmin) = %e\n", ldim, in_sol, hmin);
   } else {
     if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
     RSS(ref_part_scalar(ref_grid, &ldim, &field, in_sol), "scalar");
