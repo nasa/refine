@@ -612,3 +612,46 @@
    fun:rdmacm_component_init
 }
 
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ...
+   fun:ompi_mpi_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ...
+   fun:start_thread
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ...
+   fun:mca_bml_base_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   ...
+   fun:ompi_mpi_finalize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:orte_finalize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:orte_finalize
+}
+
