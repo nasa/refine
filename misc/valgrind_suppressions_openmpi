@@ -666,3 +666,95 @@
    fun:orte_finalize
 }
 
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:orte_oob_base_select
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   close(fd)
+   ...
+   fun:ibv_close_device
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:ibv_reg_mr
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:ibv_reg_mr
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:ibv_create_qp
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:ibv_create_qp
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:ibv_create_cq
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:ibv_create_cq
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   munmap(length)
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   madvise(length)
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   madvise(length)
+   ...
+   fun:ibv_create_cq
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:mca_base_framework_close
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:opal_progress
+}

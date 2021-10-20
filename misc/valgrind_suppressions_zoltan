@@ -46,5 +46,12 @@
    fun:Zoltan_Create
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:Zoltan_Create
+   ...
+}
 
 
