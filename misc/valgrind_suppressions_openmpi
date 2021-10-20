@@ -748,6 +748,28 @@
 }
 {
    <insert_a_suppression_name_here>
+   Memcheck:Param
+   mmap(length)
+   ...
+   fun:ibv_create_cq
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   mmap(offset)
+   ...
+   fun:ibv_create_cq
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   munmap(length)
+   fun:munmap
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_a_suppression_name_here>
    Memcheck:Cond
    ...
    fun:mca_base_framework_close
