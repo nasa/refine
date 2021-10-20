@@ -1,3 +1,305 @@
+
+{
+   <insert_s_supression_name_here>
+   Memcheck:Leak
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_s_supression_name_here>
+   Memcheck:Leak
+   ...
+   fun:ompi_comm_activate
+}
+{
+   <insert_s_supression_name_here>
+   Memcheck:Addr4
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_s_supression_name_here>
+   Memcheck:Addr8
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_s_supression_name_here>
+   Memcheck:Addr16
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   writev(vector[...])
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:orte_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:orte_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   ...
+   fun:orte_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:opal_event_base_loop
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr4
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:mempcpy
+   ...
+   fun:mca_base_param_reg_int
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:mempcpy
+   ...
+   fun:mca_base_param_reg_int
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:mca_base_var_group_register
+   ...
+   fun:orte_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:orte_util_convert_string_to_process_name
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:orte_util_convert_string_to_process_name
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:get_my_cred
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:get_my_cred
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:mca_oob_tcp_peer_recv_connect_ack
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:mca_oob_tcp_peer_recv_connect_ack
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:opal_dss_pack_string
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:opal_dss_pack_string
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_dss_unpack_value
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:opal_dss_copy_value
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:component_set_addr
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:opal_class_initialize
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:opal_class_initialize
+   ...
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:ibv_open_device
+   ...
+   fun:rdma_bind_addr
+   fun:mca_btl_openib_build_rdma_addr_list
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:mca_coll_sync_comm_query
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:btl_openib_component_close
+   fun:mca_base_component_close
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:mca_btl_openib_finalize
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+    Memcheck:Leak
+   fun:malloc
+   fun:_mm_malloc
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:mca_btl_openib_add_procs
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:mca_btl_openib_build_rdma_addr_list
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:mca_btl_base_select
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:mca_btl_base_select
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:mca_btl_base_select
+}
+
+
 {
    <insert_s_supression_name_here>
    Memcheck:Leak
@@ -310,3 +612,171 @@
    fun:rdmacm_component_init
 }
 
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:ompi_mpi_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:start_thread
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   poll(ufds.fd)
+   ...
+   fun:start_thread
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:mca_bml_base_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   close(fd)
+   ...
+   fun:ompi_mpi_finalize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:orte_finalize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:orte_finalize
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:orte_oob_base_select
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   close(fd)
+   ...
+   fun:ibv_close_device
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:ibv_reg_mr
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:ibv_reg_mr
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:ibv_create_qp
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:ibv_create_qp
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:ibv_create_cq
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:ibv_create_cq
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   munmap(length)
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   madvise(length)
+   ...
+   fun:ompi_mpi_finalize
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   madvise(length)
+   ...
+   fun:ibv_create_cq
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   mmap(length)
+   ...
+   fun:ibv_create_cq
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   mmap(offset)
+   ...
+   fun:ibv_create_cq
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Param
+   munmap(length)
+   fun:munmap
+   ...
+   fun:ompi_mpi_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:mca_base_framework_close
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   ...
+   fun:opal_progress
+}
