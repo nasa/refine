@@ -1459,6 +1459,7 @@ static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
     }
   } else {
     /* silently skip singular contribution */
+    REF_WHERE("sig");
   }
 
   return REF_SUCCESS;
@@ -1489,7 +1490,6 @@ static REF_STATUS add_sub_tri(REF_INT n0, REF_INT n1, REF_INT n2,
     }
   } else {
     /* silently skip singular contribution */
-    THROW("sig");
   }
 
   return REF_SUCCESS;
