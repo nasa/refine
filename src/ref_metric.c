@@ -1698,6 +1698,9 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
             RAS(isfinite(metric[im + 6 * node]), "backup not finite");
         }
       }
+    } else {
+      for (im = 0; im < 6; im++)
+        RAS(isfinite(metric[im + 6 * node]), "orig,tet not finite");
     }
   }
 
