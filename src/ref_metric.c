@@ -1673,7 +1673,11 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
         ref_adj_valid(
             ref_adj_first(ref_cell_adj(ref_grid_hex(ref_grid)), node))) {
       if (ref_node_owned(ref_node, node)) {
-        RAS(0.0 < total_node_volume[node], "zero metric contributions");
+        RAB(0.0 < total_node_volume[node], "zero metric contributions", {
+          printf(" at %f %f %f\n", ref_node_xyz(ref_node, 0, node),
+                 ref_node_xyz(ref_node, 1, node),
+                 ref_node_xyz(ref_node, 2, node));
+        });
         for (im = 0; im < 6; im++) {
           if (!ref_math_divisible(metric[im + 6 * node],
                                   total_node_volume[node]))
