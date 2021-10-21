@@ -1689,6 +1689,8 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
           RSS(ref_matrix_exp_m(log_m, m), "exp");
           for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
           total_node_volume[node] = 0.0;
+          for (im = 0; im < 6; im++)
+            RAS(isfinite(metric[im + 6 * node]), "infer not finite");
         } else {
           for (im = 0; im < 6; im++)
             metric[im + 6 * node] = backup[im + 6 * node];
