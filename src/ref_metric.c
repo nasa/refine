@@ -1459,7 +1459,6 @@ static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
     }
   } else {
     /* silently skip singular contribution */
-    REF_WHERE("sig");
   }
 
   return REF_SUCCESS;
@@ -1599,6 +1598,12 @@ REF_STATUS ref_metric_imply_non_tet(REF_DBL *metric, REF_GRID ref_grid) {
   REF_INT cell;
   REF_CELL ref_cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL *backup;
+
+  ref_malloc(backup, 6 * ref_node_max(ref_node), REF_DBL);
+  each_ref_node_valid_node(ref_node, node) {
+    for (im = 0; im < 6; im++) backup[im + 6 * node] = metric[im + 6 * node];
+  }
 
   ref_malloc_init(total_node_volume, ref_node_max(ref_node), REF_DBL, 0.0);
 
@@ -1674,30 +1679,26 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
         ref_adj_valid(
             ref_adj_first(ref_cell_adj(ref_grid_hex(ref_grid)), node))) {
       if (ref_node_owned(ref_node, node)) {
-        RAB(0.0 < total_node_volume[node], "zero metric contributions", {
-          printf(" at %f %f %f with %d tet %d pyr %d pri %d hex\n",
-                 ref_node_xyz(ref_node, 0, node),
-                 ref_node_xyz(ref_node, 1, node),
-                 ref_node_xyz(ref_node, 2, node),
-                 ref_cell_node_empty(ref_grid_tet(ref_grid), node),
-                 ref_cell_node_empty(ref_grid_pyr(ref_grid), node),
-                 ref_cell_node_empty(ref_grid_pri(ref_grid), node),
-                 ref_cell_node_empty(ref_grid_hex(ref_grid), node));
-        });
-        for (im = 0; im < 6; im++) {
-          if (!ref_math_divisible(metric[im + 6 * node],
-                                  total_node_volume[node]))
-            RSS(REF_DIV_ZERO, "zero volume");
-          log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+        if (0.0 < total_node_volume[node]) {
+          for (im = 0; im < 6; im++) {
+            if (!ref_math_divisible(metric[im + 6 * node],
+                                    total_node_volume[node]))
+              RSS(REF_DIV_ZERO, "zero volume");
+            log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+          }
+          RSS(ref_matrix_exp_m(log_m, m), "exp");
+          for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
+          total_node_volume[node] = 0.0;
+        } else {
+          for (im = 0; im < 6; im++)
+            metric[im + 6 * node] = backup[im + 6 * node];
         }
-        RSS(ref_matrix_exp_m(log_m, m), "exp");
-        for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
-        total_node_volume[node] = 0.0;
       }
     }
   }
 
   ref_free(total_node_volume);
+  ref_free(backup);
 
   RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
 
