@@ -786,6 +786,107 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                                  REF_INT node, REF_INT site, REF_INT protect) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell_face, face_node, cell;
+  REF_BOOL has_node;
+  REF_BOOL already_have_it, all_local;
+  REF_INT face_nodes[3], seg_nodes[3];
+
+  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
+  if (!ref_node_owned(ref_node, node) || !ref_node_owned(ref_node, site)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
+  /* mixed element protections are not mature */
+  if (ref_cell_n(ref_grid_pyr(ref_grid)) > 0 ||
+      ref_cell_n(ref_grid_pri(ref_grid)) > 0) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_having_node(ref_cell, site, item, cell) {
+    REF_INT cell_node;
+    REF_BOOL protected = REF_FALSE;
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+     protected
+      = protected || (protect == ref_cell_c2n(ref_cell, cell_node, cell));
+    }
+    if (protected) continue;
+    RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
+                          &already_have_it),
+        "have tet?");
+    RAS(!already_have_it, "added tet twice?");
+    RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
+    RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
+    if (!all_local) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      each_ref_cavity_face_node(ref_cavity, face_node) {
+        face_nodes[face_node] =
+            ref_cell_f2n(ref_cell, face_node, cell_face, cell);
+      }
+      has_node = (node == face_nodes[0] || node == face_nodes[1] ||
+                  node == face_nodes[2]);
+      if (!has_node) {
+        RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
+      }
+    }
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node(ref_cell, site, item, cell) {
+    REF_INT cell_node;
+    REF_BOOL protected = REF_FALSE;
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+     protected
+      = protected || (protect == ref_cell_c2n(ref_cell, cell_node, cell));
+    }
+    if (protected) continue;
+    RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell,
+                          &already_have_it),
+        "have tet?");
+    RAS(!already_have_it, "added tri twice?");
+    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
+    RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
+    if (!all_local) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+
+    seg_nodes[2] = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
+    seg_nodes[0] = ref_cell_c2n(ref_cell, 1, cell);
+    seg_nodes[1] = ref_cell_c2n(ref_cell, 2, cell);
+    has_node = (node == seg_nodes[0] || node == seg_nodes[1]);
+    if (!has_node) {
+      RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+    }
+    seg_nodes[0] = ref_cell_c2n(ref_cell, 2, cell);
+    seg_nodes[1] = ref_cell_c2n(ref_cell, 0, cell);
+    has_node = (node == seg_nodes[0] || node == seg_nodes[1]);
+    if (!has_node) {
+      RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+    }
+    seg_nodes[0] = ref_cell_c2n(ref_cell, 0, cell);
+    seg_nodes[1] = ref_cell_c2n(ref_cell, 1, cell);
+    has_node = (node == seg_nodes[0] || node == seg_nodes[1]);
+    if (!has_node) {
+      RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+    }
+  }
+
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "ball face manifold");
+  RSS(ref_cavity_verify_seg_manifold(ref_cavity), "ball seg manifold");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                      REF_INT node0, REF_INT node1,
                                      REF_INT node) {

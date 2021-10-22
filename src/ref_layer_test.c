@@ -27,6 +27,7 @@
 #include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_fixture.h"
 #include "ref_geom.h"
@@ -85,11 +86,24 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--insert", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) { /* add layers to mesh */
     REF_GRID ref_grid;
-    REIS(4, argc, "expected ref_fixture_test --insert mesh.meshb metric.solb");
+    REIS(
+        5, argc,
+        "expected ref_fixture_test --insert mesh.meshb metric.solb geom.egads");
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import mesh");
+    ref_mpi_stopwatch_stop(ref_mpi, "import mesh");
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[4]), "load egads");
+    ref_mpi_stopwatch_stop(ref_mpi, "egads load");
     RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]), "part metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "part metric");
+    RSS(ref_grid_cache_background(ref_grid), "cache");
+    ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
 
-    RSS(ref_layer_identify(ref_grid), "ident");
+    RSS(ref_layer_align_quad(ref_grid), "ident");
+
+    RSS(ref_export_by_extension(ref_grid, "ref_layer_test_insert.plt"),
+        "export");
+    RSS(ref_export_by_extension(ref_grid, "ref_layer_test_insert.meshb"),
+        "export");
 
     RSS(ref_grid_free(ref_grid), "grid");
     RSS(ref_mpi_stop(), "stop");
