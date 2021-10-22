@@ -798,7 +798,8 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
 
     ratio = ref_matrix_sqrt_vt_m_v(&(metric_orig[6 * node1]), direction);
 
-    RSS(ref_matrix_diag_m(&(metric_orig[6 * node1]), diag_system), "decomp");
+    RSB(ref_matrix_diag_m(&(metric_orig[6 * node1]), diag_system), "decomp",
+        { ref_metric_show(&(metric_orig[6 * node1])); });
     for (i = 0; i < 3; i++) {
       metric_space = 1.0 + log_r * ratio;
       phys_space = 1.0 + sqrt(ref_matrix_eig(diag_system, i)) * dist * log_r;
@@ -820,7 +821,8 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
 
     ratio = ref_matrix_sqrt_vt_m_v(&(metric_orig[6 * node0]), direction);
 
-    RSS(ref_matrix_diag_m(&(metric_orig[6 * node0]), diag_system), "decomp");
+    RSB(ref_matrix_diag_m(&(metric_orig[6 * node0]), diag_system), "decomp",
+        { ref_metric_show(&(metric_orig[6 * node0])); });
     for (i = 0; i < 3; i++) {
       metric_space = 1.0 + log_r * ratio;
       phys_space = 1.0 + sqrt(ref_matrix_eig(diag_system, i)) * dist * log_r;
@@ -1445,13 +1447,13 @@ static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
   tet_nodes[1] = nodes[(n1)];
   tet_nodes[2] = nodes[(n2)];
   tet_nodes[3] = nodes[(n3)];
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &tet_volume), "vol");
   status = ref_matrix_imply_m(m, ref_node_xyz_ptr(ref_node, tet_nodes[0]),
                               ref_node_xyz_ptr(ref_node, tet_nodes[1]),
                               ref_node_xyz_ptr(ref_node, tet_nodes[2]),
                               ref_node_xyz_ptr(ref_node, tet_nodes[3]));
-  if (REF_SUCCESS == status) {
+  if (tet_volume > 0.0 && REF_SUCCESS == status) {
     RSS(ref_matrix_log_m(m, log_m), "log");
-    RSS(ref_node_tet_vol(ref_node, tet_nodes, &tet_volume), "vol");
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       total_node_volume[nodes[node]] += tet_volume;
       for (im = 0; im < 6; im++)
@@ -1598,6 +1600,12 @@ REF_STATUS ref_metric_imply_non_tet(REF_DBL *metric, REF_GRID ref_grid) {
   REF_INT cell;
   REF_CELL ref_cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL *backup;
+
+  ref_malloc(backup, 6 * ref_node_max(ref_node), REF_DBL);
+  each_ref_node_valid_node(ref_node, node) {
+    for (im = 0; im < 6; im++) backup[im + 6 * node] = metric[im + 6 * node];
+  }
 
   ref_malloc_init(total_node_volume, ref_node_max(ref_node), REF_DBL, 0.0);
 
@@ -1673,21 +1681,33 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
         ref_adj_valid(
             ref_adj_first(ref_cell_adj(ref_grid_hex(ref_grid)), node))) {
       if (ref_node_owned(ref_node, node)) {
-        RAS(0.0 < total_node_volume[node], "zero metric contributions");
-        for (im = 0; im < 6; im++) {
-          if (!ref_math_divisible(metric[im + 6 * node],
-                                  total_node_volume[node]))
-            RSS(REF_DIV_ZERO, "zero volume");
-          log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+        if (0.0 < total_node_volume[node]) {
+          for (im = 0; im < 6; im++) {
+            if (!ref_math_divisible(metric[im + 6 * node],
+                                    total_node_volume[node]))
+              RSS(REF_DIV_ZERO, "zero volume");
+            log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+          }
+          RSS(ref_matrix_exp_m(log_m, m), "exp");
+          for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
+          total_node_volume[node] = 0.0;
+          for (im = 0; im < 6; im++)
+            RAS(isfinite(metric[im + 6 * node]), "infer not finite");
+        } else {
+          for (im = 0; im < 6; im++)
+            metric[im + 6 * node] = backup[im + 6 * node];
+          for (im = 0; im < 6; im++)
+            RAS(isfinite(metric[im + 6 * node]), "backup not finite");
         }
-        RSS(ref_matrix_exp_m(log_m, m), "exp");
-        for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
-        total_node_volume[node] = 0.0;
       }
+    } else {
+      for (im = 0; im < 6; im++)
+        RAS(isfinite(metric[im + 6 * node]), "orig,tet not finite");
     }
   }
 
   ref_free(total_node_volume);
+  ref_free(backup);
 
   RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
 
