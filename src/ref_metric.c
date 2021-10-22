@@ -798,7 +798,8 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
 
     ratio = ref_matrix_sqrt_vt_m_v(&(metric_orig[6 * node1]), direction);
 
-    RSS(ref_matrix_diag_m(&(metric_orig[6 * node1]), diag_system), "decomp");
+    RSB(ref_matrix_diag_m(&(metric_orig[6 * node1]), diag_system), "decomp",
+        { ref_metric_show(&(metric_orig[6 * node1])); });
     for (i = 0; i < 3; i++) {
       metric_space = 1.0 + log_r * ratio;
       phys_space = 1.0 + sqrt(ref_matrix_eig(diag_system, i)) * dist * log_r;
@@ -820,7 +821,8 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
 
     ratio = ref_matrix_sqrt_vt_m_v(&(metric_orig[6 * node0]), direction);
 
-    RSS(ref_matrix_diag_m(&(metric_orig[6 * node0]), diag_system), "decomp");
+    RSB(ref_matrix_diag_m(&(metric_orig[6 * node0]), diag_system), "decomp",
+        { ref_metric_show(&(metric_orig[6 * node0])); });
     for (i = 0; i < 3; i++) {
       metric_space = 1.0 + log_r * ratio;
       phys_space = 1.0 + sqrt(ref_matrix_eig(diag_system, i)) * dist * log_r;
