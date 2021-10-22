@@ -141,6 +141,18 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT age, max_age;
   REF_EDGE ref_edge;
   REF_DBL m[6];
+  REF_INT int_mixed, local_mixed;
+  REF_BOOL mixed;
+
+  int_mixed = 0;
+  if (ref_cell_n(ref_grid_qua(ref_grid)) > 0 ||
+      ref_cell_n(ref_grid_pyr(ref_grid)) > 0 ||
+      ref_cell_n(ref_grid_pri(ref_grid)) > 0 ||
+      ref_cell_n(ref_grid_hex(ref_grid)) > 0)
+    int_mixed = 1;
+  local_mixed = int_mixed;
+  RSS(ref_mpi_min(ref_mpi, &local_mixed, &int_mixed, REF_INT_TYPE), "mpi min");
+  mixed = (int_mixed > 0);
 
   if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -310,7 +322,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   }
 
   ref_adapt->split_ratio = sqrt(2.0);
-  if (nodes_per_complexity > 3.0)
+  /* prevent overshoot of number of nodes, unless unreliable due to mixed */
+  if (!mixed && nodes_per_complexity > 3.0)
     ref_adapt->split_ratio = 0.5 * (sqrt(2.0) + max_ratio);
 
   if (ABS(ref_adapt->last_min_ratio - ref_adapt->post_min_ratio) <
