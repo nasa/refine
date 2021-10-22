@@ -151,7 +151,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
       ref_cell_n(ref_grid_hex(ref_grid)) > 0)
     int_mixed = 1;
   local_mixed = int_mixed;
-  RSS(ref_mpi_min(ref_mpi, &local_mixed, &int_mixed, REF_INT_TYPE), "mpi min");
+  RSS(ref_mpi_max(ref_mpi, &local_mixed, &int_mixed, REF_INT_TYPE), "mpi max");
   mixed = (int_mixed > 0);
 
   if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
