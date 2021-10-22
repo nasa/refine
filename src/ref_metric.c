@@ -1447,13 +1447,13 @@ static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
   tet_nodes[1] = nodes[(n1)];
   tet_nodes[2] = nodes[(n2)];
   tet_nodes[3] = nodes[(n3)];
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &tet_volume), "vol");
   status = ref_matrix_imply_m(m, ref_node_xyz_ptr(ref_node, tet_nodes[0]),
                               ref_node_xyz_ptr(ref_node, tet_nodes[1]),
                               ref_node_xyz_ptr(ref_node, tet_nodes[2]),
                               ref_node_xyz_ptr(ref_node, tet_nodes[3]));
-  if (REF_SUCCESS == status) {
+  if (tet_volume > 0.0 && REF_SUCCESS == status) {
     RSS(ref_matrix_log_m(m, log_m), "log");
-    RSS(ref_node_tet_vol(ref_node, tet_nodes, &tet_volume), "vol");
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       total_node_volume[nodes[node]] += tet_volume;
       for (im = 0; im < 6; im++)
