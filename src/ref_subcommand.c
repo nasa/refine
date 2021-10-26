@@ -2796,6 +2796,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos + 3 < argc) {
     REF_DBL *g;
     REF_DBL mach, re, temperature;
+    REF_DBL aspect_ratio = 1.0e6;
     multiscale_metric = REF_FALSE;
     mach = atof(argv[pos + 1]);
     re = atof(argv[pos + 2]);
@@ -2822,6 +2823,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         "floor metric eigenvalues based on grid size and solution jitter");
     RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
         "local scale lp norm");
+    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
+        "limit AR");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
         "gradation at complexity");
