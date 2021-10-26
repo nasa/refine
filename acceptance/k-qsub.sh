@@ -10,8 +10,8 @@ pwd # echo path
 
 testname=$1
 
-# Get the best queue to submit to
-queues="K4-debug K3-debug K3a-debug K2-debug K2-fun3d"
+# Get the best queue to submit to (removed disabled K3a-debug)
+queues="K4-debug K3-debug K2-debug K2-fun3d"
 for queue in $queues; do
 
     if [[ "$queue" == "K4-"* ]]; then
