@@ -2767,6 +2767,9 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
       for (i = 0; i < 6; i++) {
         metric[i + 6 * node] +=
             ABS(g[var + 5 * node]) * hess_cons[i + 6 * node];
+        RAS(isfinite(ABS(g[var + 5 * node])), "g not finite");
+        RAS(isfinite(hess_cons[i + 6 * node]), "hess not finite");
+        RAS(isfinite(metric[i + 6 * node]), "metric not finite");
       }
     }
   }
