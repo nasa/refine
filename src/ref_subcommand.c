@@ -214,7 +214,7 @@ static void loop_help(const char *name) {
   printf(
       "       Type is mach (default), "
       "incomp (incompressible vel magnitude),\n");
-  printf("       htot, pressure, density, or temperature.\n");
+  printf("       htot, ptot, pressure, density, or temperature.\n");
   printf("       Read from file.solb, if not a recognized type.\n");
   printf("   --export-metric writes <input_project_name>-metric.solb.\n");
   printf("   --opt-goal metric of Loseille et al. AIAA 2007--4186.\n");
@@ -1908,6 +1908,7 @@ static REF_STATUS avm_field_scalar(REF_GRID ref_grid, REF_INT ldim,
   if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
   if ((strcmp(interpolant, "mach") == 0) ||
       (strcmp(interpolant, "htot") == 0) ||
+      (strcmp(interpolant, "ptot") == 0) ||
       (strcmp(interpolant, "pressure") == 0) ||
       (strcmp(interpolant, "density") == 0) ||
       (strcmp(interpolant, "temperature") == 0)) {
@@ -1944,6 +1945,10 @@ static REF_STATUS avm_field_scalar(REF_GRID ref_grid, REF_INT ldim,
       } else if (strcmp(interpolant, "htot") == 0) {
         recognized = REF_TRUE;
         scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
+      } else if (strcmp(interpolant, "ptot") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] =
+            press * pow(1.0 + 0.5 * (gamma - 1.0) * mach2, gamma / (gamma - 1));
       } else if (strcmp(interpolant, "pressure") == 0) {
         recognized = REF_TRUE;
         scalar[node] = press;
@@ -2004,6 +2009,7 @@ static REF_STATUS fun3d_field_scalar(REF_GRID ref_grid, REF_INT ldim,
   }
   if ((strcmp(interpolant, "mach") == 0) ||
       (strcmp(interpolant, "htot") == 0) ||
+      (strcmp(interpolant, "ptot") == 0) ||
       (strcmp(interpolant, "pressure") == 0) ||
       (strcmp(interpolant, "density") == 0) ||
       (strcmp(interpolant, "temperature") == 0)) {
@@ -2036,6 +2042,10 @@ static REF_STATUS fun3d_field_scalar(REF_GRID ref_grid, REF_INT ldim,
       } else if (strcmp(interpolant, "htot") == 0) {
         recognized = REF_TRUE;
         scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
+      } else if (strcmp(interpolant, "ptot") == 0) {
+        recognized = REF_TRUE;
+        scalar[node] =
+            press * pow(1.0 + 0.5 * (gamma - 1.0) * mach2, gamma / (gamma - 1));
       } else if (strcmp(interpolant, "pressure") == 0) {
         recognized = REF_TRUE;
         scalar[node] = press;
