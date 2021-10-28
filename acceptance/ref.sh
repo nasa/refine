@@ -658,6 +658,10 @@ cd ${source_dir}/acceptance/cube-cylinder/uniform
 ( ./accept-cube-cylinder-uniform-valgrind-mpi.sh ${zoltan_dir} > $LOG 2>&1 || touch FAILED )
 trap - EXIT
 
+# attempt to fix stability with grep
+wait
+sleep 10
+
 grep RAC ${root_dir}/log.accept-* > ${root_dir}/log.summary
 
 find ${source_dir} -name FAILED
@@ -665,4 +669,5 @@ find ${source_dir} -name FAILED
 echo -e \\n\
 # Build has failed if any failed cases have been reported
 exit `find ${source_dir} -name FAILED | wc -l`
+
 
