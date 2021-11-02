@@ -2007,6 +2007,33 @@ static REF_STATUS fun3d_field_scalar(REF_GRID ref_grid, REF_INT ldim,
     }
     ref_mpi_stopwatch_stop(ref_mpi, "compute incompressible scalar");
   }
+  if (strcmp(interpolant, "space-time") == 0) {
+    recognized = REF_TRUE;
+    RAS(4 <= ldim, "expected 4 or more variables per vertex for space-time");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho, u, v, press, temp, u2, mach2;
+      rho = initial_field[0 + ldim * node];
+      u = initial_field[1 + ldim * node];
+      v = initial_field[2 + ldim * node];
+      press = initial_field[3 + ldim * node];
+      RAB(ref_math_divisible(press, rho), "can not divide by rho", {
+        printf("rho = %e  u = %e  v = %e  press = %e\n", rho, u, v, press);
+      });
+      temp = gamma * (press / rho);
+      u2 = u * u + v * v;
+      RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
+        printf("rho = %e  u = %e  v = %e  press = %e  temp = %e\n", rho, u, v,
+               press, temp);
+      });
+      mach2 = u2 / temp;
+      RAB(mach2 >= 0, "negative mach2", {
+        printf("rho = %e  u = %e  v = %e press = %e  temp = %e\n", rho, u, v,
+               press, temp);
+      });
+      scalar[node] = sqrt(mach2);
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute incompressible scalar");
+  }
   if ((strcmp(interpolant, "mach") == 0) ||
       (strcmp(interpolant, "htot") == 0) ||
       (strcmp(interpolant, "ptot") == 0) ||
