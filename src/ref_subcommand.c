@@ -252,6 +252,7 @@ static void multiscale_help(const char *name) {
   printf("   --hessian expects hessian.* in place of scalar.{solb,snap}.\n");
   printf("   --pcd <project.pcd> exports isotropic spacing.\n");
   printf("   --combine <scalar2.solb> <scalar2 ratio>.\n");
+  printf("   --aspect-ratio <aspect ratio limit>.\n");
   printf("\n");
 }
 static void node_help(const char *name) {
@@ -3199,6 +3200,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_INT pos;
   REF_BOOL buffer;
+  REF_DBL aspect_ratio = -1.0;
 
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
@@ -3234,6 +3236,18 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     buffer = REF_TRUE;
+  }
+
+  aspect_ratio = -1.0;
+  RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 1) {
+      if (ref_mpi_once(ref_mpi))
+        printf("option missing value: --aspect-ratio <aspect-ratio>\n");
+      goto shutdown;
+    }
+    aspect_ratio = atof(argv[pos + 1]);
   }
 
   if (ref_mpi_once(ref_mpi)) {
@@ -3365,11 +3379,31 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
       REIS(1, ldim, "expected one scalar");
       ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
-      if (ref_mpi_once(ref_mpi))
-        printf("reconstruct Hessian, compute metric\n");
-      RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                        gradation, complexity),
-          "lp norm");
+      if (aspect_ratio > 1.0) {
+        if (ref_mpi_once(ref_mpi))
+          printf("reconstruct Hessian, compute metric\n");
+        RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction),
+            "recon");
+        RSS(ref_recon_roundoff_limit(metric, ref_grid),
+            "floor metric eigenvalues based on grid size and solution jitter");
+        if (ref_mpi_once(ref_mpi))
+          printf("limit --aspect-ratio to %f\n", aspect_ratio);
+        RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
+            "limit aspect ratio");
+        RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+            "local scale lp norm");
+        RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                               complexity),
+            "gradation at complexity");
+
+        ref_mpi_stopwatch_stop(ref_mpi, "limit aspect ratio");
+      } else {
+        if (ref_mpi_once(ref_mpi))
+          printf("reconstruct Hessian, compute metric\n");
+        RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                          gradation, complexity),
+            "lp norm");
+      }
       ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
       RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
                                       complexity),
