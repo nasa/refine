@@ -682,7 +682,7 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
+static REF_STATUS ref_layer_align_quad_seq(REF_GRID ref_grid) {
   REF_INT layers = 2;
   REF_CLOUD previous_cloud, next_cloud;
   REF_LIST previous_list, next_list;
@@ -713,5 +713,16 @@ REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
 
   RSS(ref_layer_quad_right_triangles(ref_grid), "tri2qaud");
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
+  REF_MIGRATE_PARTIONER previous;
+  previous = ref_grid_partitioner(ref_grid);
+  ref_grid_partitioner(ref_grid) = REF_MIGRATE_SINGLE;
+  RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
+  RSS(ref_layer_align_quad_seq(ref_grid), "quad");
+  ref_grid_partitioner(ref_grid) = previous;
+  RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
   return REF_SUCCESS;
 }
