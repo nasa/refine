@@ -18,6 +18,7 @@ function adapt_cycle {
     inproj=$1
     outproj=$2
     complexity=$3
+    args=$4
 
     ${src}/ref_acceptance -u ${field} ${inproj}.meshb \
 	  ${inproj}.solb
@@ -29,7 +30,8 @@ function adapt_cycle {
 	  -g ${project}.egads \
 	  -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb \
-	  -f ${outproj}.tec
+	  -f ${outproj}.tec \
+          ${args}
 
     ${src}/ref_acceptance -u ${field} ${outproj}.meshb \
 	  ${outproj}.solb
@@ -43,8 +45,8 @@ serveCSM -batch ${project}.csm
 ${src}/ref bootstrap ${project}.egads
 cp ${project}-vol.meshb cycle00.meshb
 
-adapt_cycle cycle00 cycle01 1000
-adapt_cycle cycle01 cycle02 1000
-adapt_cycle cycle02 cycle03 1000
-${src}/ref_layer_test --insert cycle03.meshb cycle03-metric.solb supcyl.egads
-adapt_cycle ref_layer_test_insert cycle04 1000
+adapt_cycle cycle00 cycle01 1000 ""
+adapt_cycle cycle01 cycle02 1000 ""
+adapt_cycle cycle02 cycle03 1000 ""
+adapt_cycle cycle03 cycle04 1000 --quad
+

@@ -678,16 +678,13 @@ static REF_STATUS ref_layer_align_quad_seq(REF_GRID ref_grid) {
   REF_INT layers = 2;
   REF_CLOUD previous_cloud, next_cloud;
   REF_LIST previous_list, next_list;
-
   RSS(ref_cloud_create(&previous_cloud, 3), "previous cloud");
   RSS(ref_list_create(&previous_list), "previous list");
 
   RSS(ref_layer_align_first_layer(ref_grid, previous_cloud, previous_list),
       "first layer");
-
   if (layers > 1) {
     RSS(ref_layer_quad_right_triangles(ref_grid), "tri2qaud");
-
     RSS(ref_cloud_create(&next_cloud, 3), "next cloud");
     RSS(ref_list_create(&next_list), "next list");
     RSS(ref_layer_align_quad_advance(ref_grid, previous_cloud, previous_list,
