@@ -120,6 +120,28 @@ REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_GLOB global, REF_DBL *aux) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cloud_push(REF_CLOUD ref_cloud, REF_GLOB global, REF_DBL *aux) {
+  REF_INT item, i;
+
+  if (ref_cloud_max(ref_cloud) == ref_cloud_n(ref_cloud)) {
+    ref_cloud_max(ref_cloud) += 100;
+
+    ref_realloc(ref_cloud->global, ref_cloud_max(ref_cloud), REF_GLOB);
+    ref_realloc(ref_cloud->aux,
+                ref_cloud_naux(ref_cloud) * ref_cloud_max(ref_cloud), REF_DBL);
+  }
+
+  /* fill */
+  item = ref_cloud_n(ref_cloud);
+  ref_cloud_n(ref_cloud)++;
+  ref_cloud_global(ref_cloud, item) = global;
+  each_ref_cloud_aux(ref_cloud, i) {
+    ref_cloud_aux(ref_cloud, i, item) = aux[i];
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_GLOB global, REF_INT *item) {
   REF_INT i;
 
