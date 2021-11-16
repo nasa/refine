@@ -542,18 +542,14 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
       REF_DBL normal[3];
 
       REF_DBL d[12], m[6];
-      REF_DBL dot, ar, r;
+      REF_DBL dot;
       RSS(ref_layer_twod_normal(ref_grid, node, normal), "twod normal");
       RSS(ref_node_metric_get(ref_node, node, m), "get");
       RSS(ref_matrix_diag_m(m, d), "eigen decomp");
       RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
       dot = ref_math_dot(normal, &(d[3]));
-      ar = sqrt(d[0] / d[1]);
-      r = sqrt(
-          ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
-          ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
       if (ABS(dot) > 0.9848) { /* cos(10 degrees) */
-        REF_DBL h, xyz[3], dist, close;
+        REF_DBL h, xyz[3], dist;
         REF_INT closest_node;
         REF_INT new_node;
         REF_GLOB global;
@@ -565,7 +561,6 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
         xyz[1] = ref_node_xyz(ref_node, 1, node) + h * normal[1];
         xyz[2] = ref_node_xyz(ref_node, 2, node) + h * normal[2];
         RSS(ref_node_nearest_xyz(ref_node, xyz, &closest_node, &dist), "close");
-        close = dist / h;
         RSS(ref_node_next_global(ref_node, &global), "global");
         RSS(ref_cloud_push(ref_cloud, global, normal), "store cloud");
         RSS(ref_list_push(ref_list, node), "store list");
@@ -615,7 +610,7 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
     REF_DBL normal[3];
 
     REF_DBL d[12], m[6];
-    REF_DBL dot, ar, r;
+    REF_DBL dot;
     REF_INT aux_index;
     RSS(ref_node_local(ref_node, global, &node), "local");
     each_ref_cloud_aux(last, aux_index) {
@@ -625,11 +620,8 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
     RSS(ref_matrix_diag_m(m, d), "eigen decomp");
     RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
     dot = ref_math_dot(normal, &(d[3]));
-    ar = sqrt(d[0] / d[1]);
-    r = sqrt(ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
-             ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node));
     if (ABS(dot) > 0.9848) { /* cos(10 degrees) */
-      REF_DBL h, xyz[3], dist, close;
+      REF_DBL h, xyz[3], dist;
       REF_INT closest_node;
       REF_INT new_node;
       REF_INT type, id;
@@ -640,7 +632,6 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
       xyz[1] = ref_node_xyz(ref_node, 1, node) + h * normal[1];
       xyz[2] = ref_node_xyz(ref_node, 2, node) + h * normal[2];
       RSS(ref_node_nearest_xyz(ref_node, xyz, &closest_node, &dist), "close");
-      close = dist / h;
       RSS(ref_node_next_global(ref_node, &global), "global");
       RSS(ref_cloud_store(next, global, normal), "store cloud");
       RSS(ref_list_push(next_list, node), "store list");
