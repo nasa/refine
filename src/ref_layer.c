@@ -672,6 +672,7 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
         });
       } else {
         RSS(ref_node_remove(ref_node, new_node), "rm");
+        RSS(ref_geom_remove_all(ref_geom, new_node), "rm");
         ref_cloud_n(next)--;
         ref_list_n(next_list)--;
       }
