@@ -567,7 +567,7 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
         RSS(ref_node_nearest_xyz(ref_node, xyz, &closest_node, &dist), "close");
         close = dist / h;
         RSS(ref_node_next_global(ref_node, &global), "global");
-        RSS(ref_cloud_store(ref_cloud, global, normal), "store cloud");
+        RSS(ref_cloud_push(ref_cloud, global, normal), "store cloud");
         RSS(ref_list_push(ref_list, node), "store list");
         RSS(ref_node_add(ref_node, global, &new_node), "add");
         ref_node_xyz(ref_node, 0, new_node) = xyz[0];
