@@ -573,7 +573,8 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
         RSS(ref_geom_tuv(ref_geom, node, type, id, uv), "uv");
         RSS(ref_egads_inverse_eval(ref_geom, type, id, xyz, uv), "inverse uv");
         RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
-        RSS(ref_metric_interpolate_node(ref_grid, new_node), "metric interp");
+        RSS(ref_metric_interpolate_between(ref_grid, node, REF_EMPTY, new_node),
+            "metric interp");
         RSS(ref_cavity_create(&ref_cavity), "cav create");
         RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
                                    REF_EMPTY),
@@ -644,7 +645,8 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
       RSS(ref_geom_tuv(ref_geom, node, type, id, uv), "uv");
       RSS(ref_egads_inverse_eval(ref_geom, type, id, xyz, uv), "inverse uv");
       RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
-      RSS(ref_metric_interpolate_node(ref_grid, new_node), "metric interp");
+      RSS(ref_metric_interpolate_between(ref_grid, node, REF_EMPTY, new_node),
+          "metric interp");
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
                                  ref_list_value(last_list, item)),
