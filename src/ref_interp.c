@@ -1967,7 +1967,8 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
 
   id = REF_EMPTY;
 
-  if (id == REF_EMPTY && REF_EMPTY != ref_interp->cell[node0] &&
+  if (id == REF_EMPTY && node0 != REF_EMPTY &&
+      REF_EMPTY != ref_interp->cell[node0] &&
       ref_mpi_rank(ref_mpi) == ref_interp->part[node0]) {
     ref_interp->agent_hired[new_node] = REF_TRUE;
     RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node0],
@@ -1983,7 +1984,8 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
     }
   }
 
-  if (id == REF_EMPTY && REF_EMPTY != ref_interp->cell[node1] &&
+  if (id == REF_EMPTY && node1 != REF_EMPTY &&
+      REF_EMPTY != ref_interp->cell[node1] &&
       ref_mpi_rank(ref_mpi) == ref_interp->part[node1]) {
     ref_interp->agent_hired[new_node] = REF_TRUE;
     RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node1],

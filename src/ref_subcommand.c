@@ -33,6 +33,7 @@
 #include "ref_import.h"
 #include "ref_inflate.h"
 #include "ref_iso.h"
+#include "ref_layer.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
@@ -471,6 +472,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
   REF_BOOL all_done1 = REF_FALSE;
+  REF_BOOL form_quads = REF_FALSE;
   REF_INT pass, passes = 30;
   REF_INT opt, pos;
   REF_LONG ntet;
@@ -602,6 +604,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   if (REF_EMPTY != pos) {
     ref_grid_adapt(ref_grid, unlock_tet) = REF_TRUE;
     if (ref_mpi_once(ref_mpi)) printf("--unlock tets from geometry\n");
+  }
+
+  RXS(ref_args_find(argc, argv, "--quad", &pos), REF_NOT_FOUND, "arg search");
+  if (ref_grid_twod(ref_grid) && REF_EMPTY != pos) {
+    form_quads = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--quad form quads on boundary\n");
   }
 
   RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");
@@ -754,9 +762,11 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
              ref_mpi_n(ref_mpi));
+    if (form_quads && pass == passes - 5)
+      RSS(ref_layer_align_quad(ref_grid), "quad");
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
-    all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
+    all_done = all_done0 && all_done1 && (pass > MIN(5, passes)) && !form_quads;
     if (curvature_metric) {
       if (stepexp_metric) {
         RSS(stepexp_metric_fill(ref_grid, ref_dict_bcs, argc, argv), "stepexp");

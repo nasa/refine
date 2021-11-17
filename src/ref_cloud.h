@@ -64,6 +64,7 @@ REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud, REF_CLOUD original);
        (item)++, (global) = ref_cloud_safe_global(ref_cloud, item))
 
 REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_GLOB global, REF_DBL *aux);
+REF_STATUS ref_cloud_push(REF_CLOUD ref_cloud, REF_GLOB global, REF_DBL *aux);
 REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_GLOB global, REF_INT *item);
 REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_GLOB global);
 

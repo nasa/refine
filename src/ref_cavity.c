@@ -556,6 +556,11 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
        "attempt to replace cavity that is inconsistent");
 
+  if (0 == ref_cavity_nseg(ref_cavity) && 0 == ref_cavity_nface(ref_cavity) &&
+      0 == ref_list_n(ref_cavity_tri_list(ref_cavity)) &&
+      0 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
+    THROW("attempt noop");
+  }
   node = ref_cavity_node(ref_cavity);
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_face(ref_cavity, face) {
@@ -1429,6 +1434,13 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
            ref_cavity_nseg(ref_cavity));
 
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
+
+  if (0 == ref_cavity_nseg(ref_cavity) && 0 == ref_cavity_nface(ref_cavity) &&
+      0 == ref_list_n(ref_cavity_tri_list(ref_cavity)) &&
+      0 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_NOOP;
+    return REF_SUCCESS;
+  }
 
   RSS(ref_cavity_verify_seg_manifold(ref_cavity), "initial seg manifold");
 
