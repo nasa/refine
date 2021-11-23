@@ -2692,7 +2692,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   REF_INT size_int;
   REF_CELL ref_cell;
   REF_INT group;
-  REF_INT faceid, min_faceid, max_faceid;
+  REF_INT faceid;
   REF_BOOL version = 0; /* meshb version, zero is no id */
   REF_BOOL faceid_insted_of_c2n, select_faceid;
   REF_BOOL pad = REF_FALSE;
@@ -2774,35 +2774,32 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   if (0 < ref_mpi_timing(ref_mpi))
     ref_mpi_stopwatch_stop(ref_mpi, "ugrid node");
 
-  RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
-
   faceid_insted_of_c2n = REF_FALSE;
-  select_faceid = REF_TRUE;
-  for (faceid = min_faceid; faceid <= max_faceid; faceid++)
-    RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
-                        version, swap_endian, sixty_four_bit, select_faceid,
-                        faceid, pad, file),
-        "tri c2n");
-  for (faceid = min_faceid; faceid <= max_faceid; faceid++)
-    RSS(ref_gather_cell(ref_node, ref_grid_qua(ref_grid), faceid_insted_of_c2n,
-                        version, swap_endian, sixty_four_bit, select_faceid,
-                        faceid, pad, file),
-        "qua c2n");
+  select_faceid = REF_FALSE;
+  faceid = REF_EMPTY;
+  RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
+                      version, swap_endian, sixty_four_bit, select_faceid,
+                      faceid, pad, file),
+      "tri c2n");
+  RSS(ref_gather_cell(ref_node, ref_grid_qua(ref_grid), faceid_insted_of_c2n,
+                      version, swap_endian, sixty_four_bit, select_faceid,
+                      faceid, pad, file),
+      "qua c2n");
 
   if (0 < ref_mpi_timing(ref_mpi))
     ref_mpi_stopwatch_stop(ref_mpi, "ugrid face write");
 
   faceid_insted_of_c2n = REF_TRUE;
-  for (faceid = min_faceid; faceid <= max_faceid; faceid++)
-    RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
-                        version, swap_endian, sixty_four_bit, select_faceid,
-                        faceid, pad, file),
-        "tri faceid");
-  for (faceid = min_faceid; faceid <= max_faceid; faceid++)
-    RSS(ref_gather_cell(ref_node, ref_grid_qua(ref_grid), faceid_insted_of_c2n,
-                        version, swap_endian, sixty_four_bit, select_faceid,
-                        faceid, pad, file),
-        "qua faceid");
+  select_faceid = REF_FALSE;
+  faceid = REF_EMPTY;
+  RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
+                      version, swap_endian, sixty_four_bit, select_faceid,
+                      faceid, pad, file),
+      "tri faceid");
+  RSS(ref_gather_cell(ref_node, ref_grid_qua(ref_grid), faceid_insted_of_c2n,
+                      version, swap_endian, sixty_four_bit, select_faceid,
+                      faceid, pad, file),
+      "qua faceid");
   if (0 < ref_mpi_timing(ref_mpi))
     ref_mpi_stopwatch_stop(ref_mpi, "ugrid faceid write");
 
