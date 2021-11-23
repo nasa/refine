@@ -2789,6 +2789,9 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                         faceid, pad, file),
         "qua c2n");
 
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid face write");
+
   faceid_insted_of_c2n = REF_TRUE;
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
@@ -2801,7 +2804,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                         faceid, pad, file),
         "qua faceid");
   if (0 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "ugrid face write");
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid faceid write");
 
   faceid_insted_of_c2n = REF_FALSE;
   select_faceid = REF_FALSE;
