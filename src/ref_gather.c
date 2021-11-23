@@ -2684,6 +2684,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                                        REF_BOOL swap_endian,
                                        REF_BOOL sixty_four_bit) {
   FILE *file;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GLOB nnode;
   REF_LONG ntri, nqua, ntet, npyr, npri, nhex;
@@ -2764,9 +2765,14 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
       REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nhex");
     }
   }
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid header");
 
   RSS(ref_gather_node(ref_node, swap_endian, version, REF_FALSE, file),
       "nodes");
+
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid node");
 
   RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
@@ -2794,6 +2800,8 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                         version, swap_endian, sixty_four_bit, select_faceid,
                         faceid, pad, file),
         "qua faceid");
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "ugrid face write");
 
   faceid_insted_of_c2n = REF_FALSE;
   select_faceid = REF_FALSE;
@@ -2803,6 +2811,8 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                         swap_endian, sixty_four_bit, select_faceid, faceid, pad,
                         file),
         "cell c2n");
+    if (0 < ref_mpi_timing(ref_mpi))
+      ref_mpi_stopwatch_stop(ref_mpi, "ugrid vol cell write");
   }
 
   if (ref_grid_once(ref_grid)) fclose(file);
