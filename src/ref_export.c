@@ -1272,6 +1272,7 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
           case REF_CELL_PYR:
           case REF_CELL_PRI:
           case REF_CELL_HEX:
+          case REF_CELL_TE2:
             RSS(REF_IMPLEMENT, "2D SU2 element");
             break;
         }
@@ -1312,6 +1313,7 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
           case REF_CELL_TR2:
           case REF_CELL_TR3:
           case REF_CELL_QUA:
+          case REF_CELL_TE2:
             RSS(REF_IMPLEMENT, "3D SU2 element");
             break;
         }

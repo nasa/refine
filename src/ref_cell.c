@@ -40,6 +40,7 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_last_node_is_an_id(ref_cell) = REF_TRUE;
       break;
     case REF_CELL_TET:
+    case REF_CELL_TE2:
     case REF_CELL_PYR:
     case REF_CELL_PRI:
     case REF_CELL_HEX:
@@ -81,6 +82,9 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
     case REF_CELL_HEX:
       ref_cell_node_per(ref_cell) = 8;
       break;
+    case REF_CELL_TE2:
+      ref_cell_node_per(ref_cell) = 10;
+      break;
     default:
       return REF_IMPLEMENT;
   }
@@ -103,6 +107,7 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_edge_per(ref_cell) = 4;
       break;
     case REF_CELL_TET:
+    case REF_CELL_TE2:
       ref_cell_edge_per(ref_cell) = 6;
       break;
     case REF_CELL_PYR:
@@ -151,6 +156,7 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_e2n_gen(ref_cell, 1, 3) = 0;
       break;
     case REF_CELL_TET:
+    case REF_CELL_TE2:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 0;
@@ -246,6 +252,7 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_face_per(ref_cell) = 1;
       break;
     case REF_CELL_TET:
+    case REF_CELL_TE2:
       ref_cell_face_per(ref_cell) = 4;
       break;
     case REF_CELL_PYR:
@@ -283,6 +290,7 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_f2n_gen(ref_cell, 3, 0) = 3;
       break;
     case REF_CELL_TET:
+    case REF_CELL_TE2:
       ref_cell_f2n_gen(ref_cell, 0, 0) = 1;
       ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
       ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
@@ -558,6 +566,8 @@ REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
       break;
     case REF_CELL_HEX:
       *keyword = 10;
+    case REF_CELL_TE2:
+      *keyword = 30;
       break;
     default:
       return REF_IMPLEMENT;
@@ -1536,6 +1546,11 @@ REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
       return REF_IMPLEMENT;
     case REF_CELL_HEX:
       for (cell_node = 0; cell_node < 8; cell_node++) {
+        shape[cell_node] = 0.0;
+      }
+      return REF_IMPLEMENT;
+    case REF_CELL_TE2:
+      for (cell_node = 0; cell_node < 10; cell_node++) {
         shape[cell_node] = 0.0;
       }
       return REF_IMPLEMENT;

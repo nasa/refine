@@ -34,7 +34,8 @@ typedef enum REF_CELL_TYPES { /*  0 */ REF_CELL_EDG,
                               /*  7 */ REF_CELL_TET,
                               /*  8 */ REF_CELL_PYR,
                               /*  9 */ REF_CELL_PRI,
-                              /* 10 */ REF_CELL_HEX } REF_CELL_TYPE;
+                              /* 10 */ REF_CELL_HEX,
+                              /* 11 */ REF_CELL_TE2 } REF_CELL_TYPE;
 #define REF_CELL_N_TYPE (11)
 #define REF_CELL_MAX_SIZE_PER (11)
 #define REF_CELL_MAX_NODE_PER (10)
@@ -389,5 +390,17 @@ boundary elements right hand normal point into element, see f2n
                           /               \
                          /                 \
                       inode0--m3----m4---inode1
+
+                              inode3-----m9------inode2
+                                 / \              . /
+                                /   \          .   /
+                               /     \      .     /
+                              /       \  .       /
+                             /        .\        /
+                           m7     m6   m8     m5
+                           /    .        \    /
+                          /  .            \  /
+                         /.                \/
+                      inode0-----m4------inode1
 
 */
