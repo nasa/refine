@@ -1000,6 +1000,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT passes = 15;
   REF_INT self_intersections;
   REF_DBL *global_params = NULL;
+  REF_BOOL inspect_evaluation = REF_FALSE;
 
   if (!ref_egads_allows_construction()) {
     if (ref_mpi_once(ref_mpi))
@@ -1097,7 +1098,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi))
     RSS(ref_geom_tec(ref_grid, filename), "geom export");
   ref_mpi_stopwatch_stop(ref_mpi, "export init-geom");
-  if (REF_FALSE) {
+  if (inspect_evaluation) {
     sprintf(filename, "%s-init-surf.meshb", project);
     if (ref_mpi_once(ref_mpi))
       RSS(ref_export_by_extension(ref_grid, filename), "dbg meshb");
@@ -1117,7 +1118,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_verify_param(ref_grid), "constrained params");
   ref_mpi_stopwatch_stop(ref_mpi, "verify param");
 
-  if (REF_FALSE) {
+  if (inspect_evaluation) {
     sprintf(filename, "%s-const-geom.tec", project);
     if (ref_mpi_once(ref_mpi))
       RSS(ref_geom_tec(ref_grid, filename), "geom export");
