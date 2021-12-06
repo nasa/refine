@@ -23,7 +23,7 @@ mkdir -p egads
 	  --with-EGADS=${egads_path} \
           --with-OpenCASCADE=${opencascade_path} \
 	  CFLAGS="-g -O2" \
-	  CC=gcc >> $log 2>&1 \
+	  CC=icc >> $log 2>&1 \
       && make -j 8 >> $log 2>&1 \
       && make install >> $log 2>&1 \
     ) \
