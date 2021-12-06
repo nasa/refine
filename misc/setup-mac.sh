@@ -53,6 +53,21 @@ mkdir -p parmetis
     ) \
     || exit
 
+mkdir -p clang
+( cd clang && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-mpi=${mpi_path} \
+    --with-metis=${metis_path} \
+    --with-parmetis=${parmetis_path} \
+    --with-EGADS=${egads_path} \
+    --with-OpenCASCADE=${opencascade_path} \
+    CFLAGS="${clangflags} -fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=enum -fsanitize=vptr -fsanitize=integer-divide-by-zero -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fsanitize=nonnull-attribute -fsanitize=nullability-arg -fsanitize=nullability-assign -fsanitize=returns-nonnull-attribute -fsanitize=null -fsanitize=object-size -fsanitize=shift -fsanitize=signed-integer-overflow -fsanitize=unreachable -fsanitize=vla-bound" \
+    CC=clang \
+    ) \
+    || exit
+
+
 mkdir -p all
 ( cd all && \
       cmake .. \
