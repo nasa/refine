@@ -36,7 +36,7 @@ s2s-accept-k:
       - "log-*"
     expire_in: 1 week
 
-merge-boot-accept-k:
+.merge-boot-accept-k:
   only:
     - merge_requests
   tags:
