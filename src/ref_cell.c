@@ -46,6 +46,8 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
     case REF_CELL_HEX:
       ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
       break;
+    default:
+      return REF_IMPLEMENT;
   }
 
   switch (ref_cell_type(ref_cell)) {
@@ -188,7 +190,6 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_e2n_gen(ref_cell, 0, 7) = 3;
       ref_cell_e2n_gen(ref_cell, 1, 7) = 4;
       break;
-
     case REF_CELL_PRI:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
@@ -235,6 +236,8 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_e2n_gen(ref_cell, 0, 11) = 6;
       ref_cell_e2n_gen(ref_cell, 1, 11) = 7;
       break;
+    default:
+      return REF_IMPLEMENT;
   }
 
   switch (ref_cell_type(ref_cell)) {
@@ -264,6 +267,8 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
     case REF_CELL_HEX:
       ref_cell_face_per(ref_cell) = 6;
       break;
+    default:
+      return REF_IMPLEMENT;
   }
 
   ref_cell->f2n = NULL;
@@ -386,8 +391,9 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_f2n_gen(ref_cell, 1, 5) = 7;
       ref_cell_f2n_gen(ref_cell, 2, 5) = 6;
       ref_cell_f2n_gen(ref_cell, 3, 5) = 5;
-
       break;
+    default:
+      return REF_IMPLEMENT;
   }
 
   return REF_SUCCESS;
