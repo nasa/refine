@@ -36,7 +36,7 @@ typedef enum REF_CELL_TYPES { /*  0 */ REF_CELL_EDG,
                               /*  9 */ REF_CELL_PRI,
                               /* 10 */ REF_CELL_HEX,
                               /* 11 */ REF_CELL_TE2 } REF_CELL_TYPE;
-#define REF_CELL_N_TYPE (11)
+#define REF_CELL_N_TYPE (12)
 #define REF_CELL_MAX_SIZE_PER (11)
 #define REF_CELL_MAX_NODE_PER (10)
 #define REF_CELL_MAX_FACE_PER (6)
