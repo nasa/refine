@@ -566,6 +566,7 @@ REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
       break;
     case REF_CELL_HEX:
       *keyword = 10;
+      break;
     case REF_CELL_TE2:
       *keyword = 30;
       break;
