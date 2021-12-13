@@ -98,6 +98,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_pyr(ref_grid) ref_grid_cell(ref_grid, REF_CELL_PYR)
 #define ref_grid_pri(ref_grid) ref_grid_cell(ref_grid, REF_CELL_PRI)
 #define ref_grid_hex(ref_grid) ref_grid_cell(ref_grid, REF_CELL_HEX)
+#define ref_grid_te2(ref_grid) ref_grid_cell(ref_grid, REF_CELL_TE2)
 
 #define ref_grid_geom(ref_grid) ((ref_grid)->geom)
 #define ref_grid_gather(ref_grid) ((ref_grid)->gather)
