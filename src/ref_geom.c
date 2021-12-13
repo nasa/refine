@@ -3900,6 +3900,21 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
     nodes[5] = edge_node[edge];
     RSS(ref_cell_add(ref_grid_tr2(ref_grid), nodes, &new_cell), "add");
   }
+  each_ref_cell_valid_cell_with_nodes(ref_grid_tet(ref_grid), cell, nodes) {
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge");
+    nodes[4] = edge_node[edge];
+    RSS(ref_edge_with(ref_edge, nodes[1], nodes[2], &edge), "find edge");
+    nodes[5] = edge_node[edge];
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[2], &edge), "find edge");
+    nodes[6] = edge_node[edge];
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[3], &edge), "find edge");
+    nodes[7] = edge_node[edge];
+    RSS(ref_edge_with(ref_edge, nodes[1], nodes[3], &edge), "find edge");
+    nodes[8] = edge_node[edge];
+    RSS(ref_edge_with(ref_edge, nodes[2], nodes[3], &edge), "find edge");
+    nodes[9] = edge_node[edge];
+    RSS(ref_cell_add(ref_grid_te2(ref_grid), nodes, &new_cell), "add");
+  }
 
   ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
@@ -3909,6 +3924,9 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
   }
   each_ref_cell_valid_cell(ref_grid_tri(ref_grid), cell) {
     ref_cell_remove(ref_grid_tri(ref_grid), cell);
+  }
+  each_ref_cell_valid_cell(ref_grid_tet(ref_grid), cell) {
+    ref_cell_remove(ref_grid_tet(ref_grid), cell);
   }
 
   return REF_SUCCESS;

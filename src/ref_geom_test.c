@@ -1148,6 +1148,16 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free");
   }
 
+  if (1 == ref_mpi_n(ref_mpi)) {
+    REF_GRID ref_grid;
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tet fix");
+    RSS(ref_geom_enrich2(ref_grid), "enrich2");
+    REIS(1, ref_cell_n(ref_grid_ed2(ref_grid)), "ed2");
+    REIS(1, ref_cell_n(ref_grid_tr2(ref_grid)), "tr2");
+    REIS(1, ref_cell_n(ref_grid_te2(ref_grid)), "te2");
+    ref_grid_free(ref_grid);
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
