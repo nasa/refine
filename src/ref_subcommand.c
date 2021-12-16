@@ -251,7 +251,7 @@ static void multiscale_help(const char *name) {
   printf("   --buffer coarsens the metric approaching the x max boundary.\n");
   option_uniform_help();
   printf("   --hessian expects hessian.* in place of scalar.{solb,snap}.\n");
-  printf("   --pcd <project.pcd> exports isotropic spacing.\n");
+  printf("   --pcd <project.pcd> exports isotropic spacing point cloud.\n");
   printf("   --combine <scalar2.solb> <scalar2 ratio>.\n");
   printf("   --aspect-ratio <aspect ratio limit>.\n");
   printf("\n");

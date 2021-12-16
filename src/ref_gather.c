@@ -3253,9 +3253,9 @@ static REF_STATUS ref_gather_scalar_pcd(REF_GRID ref_grid, REF_INT ldim,
     fprintf(file, "VERSION .7\n");
     fprintf(file, "FIELDS x y z");
     if (NULL != scalar_names) {
-      for (i = 0; i < ldim; i++) fprintf(file, " \"%s\"", scalar_names[i]);
+      for (i = 0; i < ldim; i++) fprintf(file, " %s", scalar_names[i]);
     } else {
-      for (i = 0; i < ldim; i++) fprintf(file, " \"V%d\"", i + 1);
+      for (i = 0; i < ldim; i++) fprintf(file, " V%d", i + 1);
     }
     fprintf(file, "\n");
     fprintf(file, "SIZE");
