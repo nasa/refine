@@ -123,6 +123,12 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
+  RXS(ref_args_find(argc, argv, "--timing", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    ref_mpi_timing(ref_mpi) = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi)) printf("--timing %d\n", ref_mpi_timing(ref_mpi));
+  }
+
   RXS(ref_args_find(argc, argv, "--transmesh", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) transmesh = REF_TRUE;
