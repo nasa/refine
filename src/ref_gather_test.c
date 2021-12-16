@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
   }
 
   RXS(ref_args_find(argc, argv, "--mpt", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos && pos == 1 && argc == 3) {
+  if (REF_EMPTY != pos && pos == 1) {
     REF_INT i, node, n = 1, ldim = 6;
     REF_GLOB global;
     REF_GRID ref_grid;
@@ -187,7 +187,9 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar;
     const char **scalar_names = NULL;
     const char *filename = "ref_gather_mpt.solb";
-    n = atoi(argv[2]);
+    n = 100;
+    if (argc > 2) n = atoi(argv[2]);
+    if (ref_mpi_once(ref_mpi)) printf("per core %d\n", n);
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
     ref_node = ref_grid_node(ref_grid);
     for (i = 0; i < n; i++) {
@@ -198,14 +200,19 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_initialize_n_global(ref_node, global), "init n glob");
 
     if (ref_mpi_once(ref_mpi)) printf("nglobal " REF_GLOB_FMT "\n", global);
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "initialize node");
 
     ref_malloc_init(scalar, ldim * ref_node_max(ref_node), REF_DBL, 1.0);
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "initialize scalar");
 
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
                                        filename),
         "gather");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather scalar");
+
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mpi complete");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
