@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "ref_edge.h"
 #include "ref_egads.h"
@@ -1597,6 +1598,10 @@ static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
   REF_GLOB global, nnode_written, first;
   REF_INT local, n, i, im;
   REF_STATUS status;
+  clock_t tic = 0;
+  clock_t local_toc = 0;
+  clock_t mpi_toc = 0;
+  clock_t disk_toc = 0;
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
@@ -1610,7 +1615,7 @@ static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
                      ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
-
+    if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
     for (i = 0; i < (ldim + 1) * chunk; i++) local_xyzm[i] = 0.0;
 
     for (i = 0; i < n; i++) {
@@ -1627,10 +1632,14 @@ static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
           local_xyzm[im + (ldim + 1) * i] = 0.0;
       }
     }
+    if (1 < ref_mpi_timing(ref_mpi)) local_toc += (clock() - tic);
 
+    if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
     RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (ldim + 1) * n, REF_DBL_TYPE),
         "sum");
+    if (1 < ref_mpi_timing(ref_mpi)) mpi_toc += (clock() - tic);
 
+    if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[ldim + (ldim + 1) * i] - 1.0) > 0.1) {
@@ -1643,10 +1652,19 @@ static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
                "s");
         }
       }
+    if (1 < ref_mpi_timing(ref_mpi)) disk_toc += (clock() - tic);
   }
 
   ref_free(xyzm);
   ref_free(local_xyzm);
+
+  if (1 < ref_mpi_timing(ref_mpi)) {
+    printf(" local %f mpi %f disk %f rank %d\n",
+           ((REF_DBL)local_toc) / ((REF_DBL)CLOCKS_PER_SEC),
+           ((REF_DBL)mpi_toc) / ((REF_DBL)CLOCKS_PER_SEC),
+           ((REF_DBL)disk_toc) / ((REF_DBL)CLOCKS_PER_SEC),
+           ref_mpi_rank(ref_mpi));
+  }
 
   return REF_SUCCESS;
 }
