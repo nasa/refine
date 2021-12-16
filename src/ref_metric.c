@@ -3142,7 +3142,7 @@ REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
     h = 1.0 / sqrt(e);
 
     hh[0 + 2 * node] = h;
-    hh[1 + 2 * node] = h;
+    hh[1 + 2 * node] = 0.5; /* CADENCE/Pointwise typical decay rate */
   }
 
   RSS(ref_node_ghost_dbl(ref_node, hh, 2), "update ghosts");
