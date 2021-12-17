@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
 
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mpi complete");
+    ref_mpi_stopwatch_stop(ref_mpi, "mpi complete");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
