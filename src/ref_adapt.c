@@ -190,12 +190,14 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
           RSS(ref_node_tri_area(ref_grid_node(ref_grid), nodes, &area), "vol");
           RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, normal),
               "norm");
-          RSS(ref_math_normalize(normal), "normalize");
-          normal_projection = ref_matrix_vt_m_v(m, normal);
-          if (ref_math_divisible(det, normal_projection)) {
-            if (det / normal_projection > 0.0) {
-              complexity += sqrt(det / normal_projection) * area /
-                            ((REF_DBL)ref_cell_node_per(ref_cell));
+
+          if (REF_SUCCESS == ref_math_normalize(normal)) {
+            normal_projection = ref_matrix_vt_m_v(m, normal);
+            if (ref_math_divisible(det, normal_projection)) {
+              if (det / normal_projection > 0.0) {
+                complexity += sqrt(det / normal_projection) * area /
+                              ((REF_DBL)ref_cell_node_per(ref_cell));
+              }
             }
           }
         } else {
