@@ -111,9 +111,9 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  { /* export import twod .msh brick */
+  { /* export import bamg.msh brick */
     REF_GRID export_grid, import_grid;
-    char file[] = "ref_import_test.msh";
+    char file[] = "ref_import_test-bamg.msh";
     RSS(ref_fixture_twod_brick_grid(&export_grid, ref_mpi, 4), "set up tet");
     RSS(ref_export_by_extension(export_grid, file), "export");
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");

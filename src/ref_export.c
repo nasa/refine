@@ -2055,7 +2055,7 @@ static REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_bamg_msh(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
@@ -2268,8 +2268,8 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_html(ref_grid, filename), "html export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
     RSS(ref_export_meshb(ref_grid, filename), "meshb export failed");
-  } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
-    RSS(ref_export_twod_msh(ref_grid, filename), "msh export failed");
+  } else if (strcmp(&filename[end_of_string - 9], "-bamg.msh") == 0) {
+    RSS(ref_export_bamg_msh(ref_grid, filename), "bamg msh export failed");
   } else {
     RSS(ref_gather_by_extension(ref_grid, filename), "export via gather");
   }
