@@ -164,6 +164,21 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
+ { /* export import single cubic te2 */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test-single-te2.meshb";
+    RSS(ref_fixture_te2_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_te2(export_grid)),
+         ref_cell_n(ref_grid_te2(import_grid)), "ed3 count");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
   { /* export import twod .su2 brick */
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test-2d.su2";

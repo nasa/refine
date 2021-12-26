@@ -199,8 +199,17 @@ int main(int argc, char *argv[]) {
 
   { /* export twod .meshb */
     REF_GRID ref_grid;
-    char file[] = "ref_export_test.meshb";
+    char file[] = "ref_export_test-twod.meshb";
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "set up pri brick");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
+    REIS(0, remove(file), "test clean up");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* export single te2 .meshb */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test-single-te2.meshb";
+    RSS(ref_fixture_te2_grid(&ref_grid, ref_mpi), "set up pri brick");
     RSS(ref_export_by_extension(ref_grid, file), "export");
     REIS(0, remove(file), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
