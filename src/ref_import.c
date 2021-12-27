@@ -1117,11 +1117,41 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
              "numElementsInBlock(size_t)");
         if (verbose) printf("element bloc %d of %d\n", n, type);
         switch (type) {
-          case 5:
-            ref_cell = ref_grid_hex(ref_grid);
+          case 1:
+            ref_cell = ref_grid_edg(ref_grid);
+            break;
+          case 2:
+            ref_cell = ref_grid_tri(ref_grid);
             break;
           case 3:
             ref_cell = ref_grid_qua(ref_grid);
+            break;
+          case 4:
+            ref_cell = ref_grid_tet(ref_grid);
+            break;
+          case 5:
+            ref_cell = ref_grid_hex(ref_grid);
+            break;
+          case 6:
+            ref_cell = ref_grid_pri(ref_grid);
+            break;
+          case 7:
+            ref_cell = ref_grid_pyr(ref_grid);
+            break;
+          case 8:
+            ref_cell = ref_grid_ed2(ref_grid);
+            break;
+          case 9:
+            ref_cell = ref_grid_tr2(ref_grid);
+            break;
+          case 11:
+            ref_cell = ref_grid_te2(ref_grid);
+            break;
+          case 21:
+            ref_cell = ref_grid_tr3(ref_grid);
+            break;
+          case 26:
+            ref_cell = ref_grid_ed3(ref_grid);
             break;
           default:
             printf("type = %d\n", type);
@@ -1136,6 +1166,25 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
           }
           if (ref_cell_last_node_is_an_id(ref_cell))
             nodes[ref_cell_id_index(ref_cell)] = tag;
+          if (REF_CELL_PYR == ref_cell_type(ref_cell)) { /* on side */
+            REF_INT n0, n1, n2, n3, n4;
+            n0 = nodes[0];
+            n1 = nodes[1];
+            n2 = nodes[2];
+            n3 = nodes[3];
+            n4 = nodes[4];
+            nodes[0] = n0;
+            nodes[1] = n3;
+            nodes[2] = n4;
+            nodes[3] = n1;
+            nodes[4] = n2;
+          }
+          if (REF_CELL_TE2 == ref_cell_type(ref_cell)) { /* swap 8-9 */
+            REF_INT n9;
+            n9 = nodes[9];
+            nodes[9] = nodes[8];
+            nodes[8] = n9;
+          }
           RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add $Element");
         }
       }
