@@ -973,7 +973,7 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT dummy;
   REF_DBL x, y, z;
   REF_INT dim, nnode, node, new_node;
-  REF_INT nedge, edge, n0, n1, n2, n3, id;
+  REF_INT nedge, edge, n0, n1, n2, n3, n4, n9, id;
   REF_INT ntri, tri;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT status;
@@ -1167,7 +1167,6 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
           if (ref_cell_last_node_is_an_id(ref_cell))
             nodes[ref_cell_id_index(ref_cell)] = tag;
           if (REF_CELL_PYR == ref_cell_type(ref_cell)) { /* on side */
-            REF_INT n0, n1, n2, n3, n4;
             n0 = nodes[0];
             n1 = nodes[1];
             n2 = nodes[2];
@@ -1180,7 +1179,6 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
             nodes[4] = n2;
           }
           if (REF_CELL_TE2 == ref_cell_type(ref_cell)) { /* swap 8-9 */
-            REF_INT n9;
             n9 = nodes[9];
             nodes[9] = nodes[8];
             nodes[8] = n9;
