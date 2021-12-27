@@ -992,6 +992,8 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (EOF == status) return REF_SUCCESS;
     REIS(1, status, "line read failed");
 
+    /* keywords without a leading $ are for BAMG */
+
     if (0 == strcmp("Dimension", line)) {
       REIS(1, fscanf(file, "%d", &dim), "read dim");
       if (2 == dim) ref_grid_twod(ref_grid) = REF_TRUE;
