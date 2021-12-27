@@ -793,11 +793,19 @@ int main(int argc, char *argv[]) {
     FILE *f;
     f = fopen(file, "w");
     fprintf(f, "$MeshFormat\n4.1 0 8\n$EndMeshFormat\n");
+    fprintf(f, "$Nodes\n1 6 1 6\n2 1 0 6\n1\n2\n3\n4\n5\n6\n");
+    fprintf(f,
+            "0. 0. 0.\n1. 0. 0.\n1. 1. 0.\n0. 1. 0.\n2. 0. 0.\n2. 1. "
+            "0.\n$EndNodes\n");
     fclose(f);
 
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
 
-    REIS(0, ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(6, ref_node_n(ref_grid_node(import_grid)), "node count");
+    RWDS(1.0, ref_node_xyz(ref_grid_node(import_grid), 0, 2), 1e-15, "x 2");
+    RWDS(1.0, ref_node_xyz(ref_grid_node(import_grid), 1, 2), 1e-15, "y 2");
+    RWDS(0.0, ref_node_xyz(ref_grid_node(import_grid), 2, 2), 1e-15, "z 2");
+
     RSS(ref_grid_free(import_grid), "free");
 
     REIS(0, remove(file), "test clean up");

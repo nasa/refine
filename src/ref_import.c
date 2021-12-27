@@ -1072,17 +1072,34 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     }
 
     if (0 == strcmp("$Nodes", line)) {
-      REIS(1, fscanf(file, "%d", &nnode), "read nnode");
-      printf("$Nodes\n%d\n", nnode);
-      for (node = 0; node < nnode; node++) {
-        REIS(4, fscanf(file, "%d %lf %lf %lf", &row, &x, &y, &z),
-             "read $Nodes xyz");
-        REIS(node + 1, row, "row index miss match in $Nodes");
-        RSS(ref_node_add(ref_node, node, &new_node), "add node");
-        ref_node_xyz(ref_node, 0, new_node) = x;
-        ref_node_xyz(ref_node, 1, new_node) = y;
-        ref_node_xyz(ref_node, 2, new_node) = z;
+      int bloc, nbloc, mintag, maxtag;
+      REF_GLOB global;
+      global = 0;
+      REIS(4, fscanf(file, "%d %d %d %d", &nbloc, &nnode, &mintag, &maxtag),
+           "n entity bloc, nnode, min/max tag");
+      if (verbose)
+        printf("$Nodes\n%d %d %d %d\n", nbloc, nnode, mintag, maxtag);
+      for (bloc = 0; bloc < nbloc; bloc++) {
+        int entity_dim, entity_tag, parameric, n, i;
+        REIS(4,
+             fscanf(file, "%d %d %d %d", &entity_dim, &entity_tag, &parameric,
+                    &n),
+             "numEntityBlocks(size_t) numNodes(size_t) minNodeTag(size_t) "
+             "maxNodeTag(size_t)");
+        for (i = 0; i < n; i++) {
+          int node_tag;
+          REIS(1, fscanf(file, "%d", &node_tag), "node tag");
+        }
+        for (i = 0; i < n; i++) {
+          REIS(3, fscanf(file, "%lf %lf %lf", &x, &y, &z), "node tag");
+          RSS(ref_node_add(ref_node, global, &new_node), "add node");
+          global++;
+          ref_node_xyz(ref_node, 0, new_node) = x;
+          ref_node_xyz(ref_node, 1, new_node) = y;
+          ref_node_xyz(ref_node, 2, new_node) = z;
+        }
       }
+      REIS(nnode, global, "node count");
       RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
     }
 
