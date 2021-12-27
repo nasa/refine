@@ -2118,6 +2118,41 @@ static REF_STATUS ref_export_bamg_msh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
+  FILE *f;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node, nnode;
+  REF_INT *o2n, *n2o;
+  double version = 4.1;
+  int filetype =
+      0; /* file-type(ASCII int; 0 for ASCII mode, 1 for binary mode) */
+  int datasize = 8; /* data-size(ASCII int; sizeof(size_t)) */
+
+  f = fopen(filename, "w");
+  if (NULL == (void *)f) printf("unable to open %s\n", filename);
+  RNS(f, "unable to open file");
+
+  fprintf(f, "$MeshFormat\n%3.1f %d %d\n$EndMeshFormat\n", version, filetype,
+          datasize);
+
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    o2n[node] = nnode;
+    n2o[nnode] = node;
+    nnode++;
+  }
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(f);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
                                              const char *filename) {
   FILE *f;
@@ -2270,6 +2305,8 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_meshb(ref_grid, filename), "meshb export failed");
   } else if (strcmp(&filename[end_of_string - 9], "-bamg.msh") == 0) {
     RSS(ref_export_bamg_msh(ref_grid, filename), "bamg msh export failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
+    RSS(ref_export_msh(ref_grid, filename), "msh export failed");
   } else {
     RSS(ref_gather_by_extension(ref_grid, filename), "export via gather");
   }
