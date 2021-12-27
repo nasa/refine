@@ -970,14 +970,14 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_CELL ref_cell;
   FILE *file;
   char line[1024];
-  REF_INT dummy, row;
+  REF_INT dummy;
   REF_DBL x, y, z;
   REF_INT dim, nnode, node, new_node;
   REF_INT nedge, edge, n0, n1, n2, n3, id;
   REF_INT ntri, tri;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT status;
-  REF_INT elem, nelem, type, flag, three, zero;
+  REF_INT nelem, type;
   REF_BOOL verbose = REF_TRUE;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
@@ -1104,14 +1104,18 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     }
 
     if (0 == strcmp("$Elements", line)) {
-      REIS(1, fscanf(file, "%d", &nelem), "read nelements");
-      printf("$Elements\n%d\n", nelem);
-      for (elem = 0; elem < nelem; elem++) {
-        REIS(6,
-             fscanf(file, "%d %d %d %d %d %d", &row, &type, &three, &id, &flag,
-                    &zero),
-             "$Elements description");
-        REIS(elem + 1, row, "row index miss match in $Elements");
+      int bloc, nbloc, mintag, maxtag;
+      REIS(4, fscanf(file, "%d %d %d %d", &nbloc, &nelem, &mintag, &maxtag),
+           "n entity bloc, nnode, min/max tag");
+      if (verbose)
+        printf("$Elements\n%d %d %d %d\n", nbloc, nelem, mintag, maxtag);
+      for (bloc = 0; bloc < nbloc; bloc++) {
+        int entity_dim, entity_tag, n, i;
+        REIS(4,
+             fscanf(file, "%d %d %d %d", &entity_dim, &entity_tag, &type, &n),
+             "entityDim(int) entityTag(int) elementType(int) "
+             "numElementsInBlock(size_t)");
+        if (verbose) printf("element bloc %d of %d\n", n, type);
         switch (type) {
           case 5:
             ref_cell = ref_grid_hex(ref_grid);
@@ -1123,14 +1127,18 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
             printf("type = %d\n", type);
             THROW("unknown $Elements type");
         }
-        for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-          REIS(1, fscanf(file, "%d", &(nodes[node])), "$Elements node");
-          (nodes[node])--;
+        for (i = 0; i < n; i++) {
+          REF_INT cell_node, tag;
+          REIS(1, fscanf(file, "%d", &tag), "elementTag(size_t)");
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            REIS(1, fscanf(file, "%d", &(nodes[cell_node])), "nodeTag(size_t)");
+            (nodes[cell_node])--;
+          }
+          if (ref_cell_last_node_is_an_id(ref_cell))
+            nodes[ref_cell_id_index(ref_cell)] = tag;
+          RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add $Element");
         }
-        if (3 == type) nodes[4] = id;
-        RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add $Element");
       }
-      ref_grid_inspect(ref_grid);
     }
   }
 

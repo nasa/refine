@@ -797,6 +797,8 @@ int main(int argc, char *argv[]) {
     fprintf(f,
             "0. 0. 0.\n1. 0. 0.\n1. 1. 0.\n0. 1. 0.\n2. 0. 0.\n2. 1. "
             "0.\n$EndNodes\n");
+    fprintf(
+        f, "$Elements\n1 2 1 2\n2 1 3 2\n1 1 2 3 4\n2 2 5 6 3\n$EndElements\n");
     fclose(f);
 
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
@@ -805,6 +807,7 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, ref_node_xyz(ref_grid_node(import_grid), 0, 2), 1e-15, "x 2");
     RWDS(1.0, ref_node_xyz(ref_grid_node(import_grid), 1, 2), 1e-15, "y 2");
     RWDS(0.0, ref_node_xyz(ref_grid_node(import_grid), 2, 2), 1e-15, "z 2");
+    REIS(2, ref_cell_n(ref_grid_qua(import_grid)), "quad count");
 
     RSS(ref_grid_free(import_grid), "free");
 
