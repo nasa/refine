@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
- { /* export import single cubic te2 */
+  { /* export import single cubic te2 */
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test-single-te2.meshb";
     RSS(ref_fixture_te2_grid(&export_grid, ref_mpi), "set up tet");
@@ -782,6 +782,22 @@ int main(int argc, char *argv[]) {
     REIS(0, ref_cell_n(ref_grid_qua(import_grid)), "qua count");
     RWDS(12.0, ref_node_xyz(ref_grid_node(import_grid), 0, 0), 1e-15, "x 0");
     RWDS(36.0, ref_node_xyz(ref_grid_node(import_grid), 2, 2), 1e-15, "z 2");
+    RSS(ref_grid_free(import_grid), "free");
+
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* read GMSH version 4.1 .msh */
+    REF_GRID import_grid;
+    char file[] = "ref_import_test41.msh";
+    FILE *f;
+    f = fopen(file, "w");
+    fprintf(f, "$MeshFormat\n4.1 0 8\n$EndMeshFormat\n");
+    fclose(f);
+
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+
+    REIS(0, ref_node_n(ref_grid_node(import_grid)), "node count");
     RSS(ref_grid_free(import_grid), "free");
 
     REIS(0, remove(file), "test clean up");

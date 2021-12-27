@@ -978,6 +978,7 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT status;
   REF_INT elem, nelem, type, flag, three, zero;
+  REF_BOOL verbose = REF_TRUE;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -1058,6 +1059,16 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell),
             "qua face for qua");
       }
+    }
+
+    if (0 == strcmp("$MeshFormat", line)) {
+      double version;
+      int filetype, datasize;
+      REIS(3, fscanf(file, "%lf %d %d", &version, &filetype, &datasize),
+           "read version file-type data-size");
+      REIS(0, filetype, "only ASCII implemented")
+      REIS(8, datasize, "only doubles implemented")
+      if (verbose) printf("$MeshFormat %3.1f\n", version);
     }
 
     if (0 == strcmp("$Nodes", line)) {
