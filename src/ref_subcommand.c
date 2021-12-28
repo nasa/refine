@@ -283,6 +283,7 @@ static void translate_help(const char *name) {
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
   printf("   --shard converts mixed-elments to simplicies.\n");
   printf("   --surface extracts surface elements (deletes volume).\n");
+  printf("   --enrich2 promotes elements to Q2.\n");
   printf("\n");
 }
 static void visualize_help(const char *name) {
@@ -3658,6 +3659,12 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
           "empty cell create");
       ref_cell = ref_grid_cell(ref_grid, group);
     }
+  }
+
+  RXS(ref_args_find(argc, argv, "--enrich2", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    RSS(ref_geom_enrich2(ref_grid), "enrich to q2");
   }
 
   RXS(ref_args_find(argc, argv, "--shard", &pos), REF_NOT_FOUND, "arg search");
