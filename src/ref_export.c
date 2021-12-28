@@ -2229,7 +2229,7 @@ static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
           fprintf(f, "%d", ncell + 1);
         }
         each_ref_cell_cell_node(ref_cell, cell_node) {
-          fprintf(f, " %d", nodes[cell_node]);
+          fprintf(f, " %d", nodes[cell_node] + 1);
         }
         fprintf(f, "\n");
         ncell++;
