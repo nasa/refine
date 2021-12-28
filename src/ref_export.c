@@ -2126,7 +2126,10 @@ static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
   REF_INT *o2n, *n2o;
   REF_INT group, nbloc;
   REF_INT ncell, maxncell;
+  REF_INT type;
   REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell_node;
 
   double version = 4.1;
   int filetype =
@@ -2172,6 +2175,67 @@ static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
   }
 
   fprintf(f, "$Elements\n%d %d %d %d\n", nbloc, ncell, 1, maxncell);
+  nbloc = 0;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    if (0 < ref_cell_n(ref_cell)) {
+      nbloc++;
+      type = REF_EMPTY;
+      switch (ref_cell_type(ref_cell)) {
+        case REF_CELL_EDG:
+          type = 1;
+          break;
+        case REF_CELL_ED2:
+          type = 8;
+          break;
+        case REF_CELL_ED3:
+          type = 26;
+          break;
+        case REF_CELL_TRI:
+          type = 2;
+          break;
+        case REF_CELL_TR2:
+          type = 9;
+          break;
+        case REF_CELL_TR3:
+          type = 21;
+          break;
+        case REF_CELL_QUA:
+          type = 3;
+          break;
+        case REF_CELL_TET:
+          type = 4;
+          break;
+        case REF_CELL_TE2:
+          type = 11;
+          break;
+        case REF_CELL_PYR:
+          type = 7;
+          break;
+        case REF_CELL_PRI:
+          type = 6;
+          break;
+        case REF_CELL_HEX:
+          type = 5;
+          break;
+        default:
+          return REF_IMPLEMENT;
+      }
+      fprintf(f, "%d %d %d %d\n", nbloc, 1, type, ref_cell_n(ref_cell));
+      ncell = 0;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (ref_cell_last_node_is_an_id(ref_cell)) {
+          fprintf(f, "%d", nodes[ref_cell_id_index(ref_cell)]);
+        } else {
+          fprintf(f, "%d", ncell + 1);
+        }
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          fprintf(f, " %d", nodes[cell_node]);
+        }
+        fprintf(f, "\n");
+        ncell++;
+      }
+    }
+  }
   fprintf(f, "$EndElements\n");
 
   ref_free(n2o);
