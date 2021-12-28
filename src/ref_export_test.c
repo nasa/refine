@@ -197,6 +197,15 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* export gmsh.msh */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test-gmsh.msh";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet brick");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
+    REIS(0, remove(file), "test clean up");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   { /* export twod .meshb */
     REF_GRID ref_grid;
     char file[] = "ref_export_test-twod.meshb";
