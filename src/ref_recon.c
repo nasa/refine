@@ -337,6 +337,7 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
           case REF_CELL_TR2:
           case REF_CELL_TR3:
           case REF_CELL_QUA:
+          case REF_CELL_TE2:
             RSB(REF_IMPLEMENT, "implement cell type",
                 { printf("unknown type %d\n", (int)ref_cell_type(ref_cell)); });
         }

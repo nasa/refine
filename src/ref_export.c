@@ -1272,6 +1272,7 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
           case REF_CELL_PYR:
           case REF_CELL_PRI:
           case REF_CELL_HEX:
+          case REF_CELL_TE2:
             RSS(REF_IMPLEMENT, "2D SU2 element");
             break;
         }
@@ -1312,6 +1313,7 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
           case REF_CELL_TR2:
           case REF_CELL_TR3:
           case REF_CELL_QUA:
+          case REF_CELL_TE2:
             RSS(REF_IMPLEMENT, "3D SU2 element");
             break;
         }
@@ -2053,7 +2055,7 @@ static REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_bamg_msh(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
@@ -2107,6 +2109,153 @@ static REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
             o2n[nodes[1]] + 1, nodes[3]);
   }
   REIS(ntri, ref_cell_n(ref_cell), "triangle miscount");
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(f);
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
+  FILE *f;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node, nnode;
+  REF_INT dim = 3;
+  REF_INT *o2n, *n2o;
+  REF_INT group, nbloc;
+  REF_INT ncell, maxncell;
+  REF_INT type;
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell_node;
+
+  double version = 4.1;
+  int filetype =
+      0; /* file-type(ASCII int; 0 for ASCII mode, 1 for binary mode) */
+  int datasize = 8; /* data-size(ASCII int; sizeof(size_t)) */
+
+  f = fopen(filename, "w");
+  if (NULL == (void *)f) printf("unable to open %s\n", filename);
+  RNS(f, "unable to open file");
+
+  fprintf(f, "$MeshFormat\n%3.1f %d %d\n$EndMeshFormat\n", version, filetype,
+          datasize);
+
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    o2n[node] = nnode;
+    n2o[nnode] = node;
+    nnode++;
+  }
+  fprintf(f, "$Nodes\n1 %d 1 %d\n%d 1 0 %d\n", nnode, nnode, dim, nnode);
+  for (node = 0; node < nnode; node++) {
+    fprintf(f, "%d\n", node + 1);
+  }
+  for (node = 0; node < nnode; node++) {
+    fprintf(f, "%.16E %.16E %.16E\n", ref_node_xyz(ref_node, 0, n2o[node]),
+            ref_node_xyz(ref_node, 1, n2o[node]),
+            ref_node_xyz(ref_node, 2, n2o[node]));
+  }
+  fprintf(f, "$EndNodes\n");
+
+  nbloc = 0;
+  ncell = 0;
+  maxncell = 0;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    if (0 < ref_cell_n(ref_cell)) {
+      nbloc++;
+      ncell += ref_cell_n(ref_cell);
+      maxncell = MAX(maxncell, ref_cell_n(ref_cell));
+    }
+  }
+
+  fprintf(f, "$Elements\n%d %d %d %d\n", nbloc, ncell, 1, maxncell);
+  nbloc = 0;
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    if (0 < ref_cell_n(ref_cell)) {
+      nbloc++;
+      type = REF_EMPTY;
+      switch (ref_cell_type(ref_cell)) {
+        case REF_CELL_EDG:
+          type = 1;
+          break;
+        case REF_CELL_ED2:
+          type = 8;
+          break;
+        case REF_CELL_ED3:
+          type = 26;
+          break;
+        case REF_CELL_TRI:
+          type = 2;
+          break;
+        case REF_CELL_TR2:
+          type = 9;
+          break;
+        case REF_CELL_TR3:
+          type = 21;
+          break;
+        case REF_CELL_QUA:
+          type = 3;
+          break;
+        case REF_CELL_TET:
+          type = 4;
+          break;
+        case REF_CELL_TE2:
+          type = 11;
+          break;
+        case REF_CELL_PYR:
+          type = 7;
+          break;
+        case REF_CELL_PRI:
+          type = 6;
+          break;
+        case REF_CELL_HEX:
+          type = 5;
+          break;
+        default:
+          return REF_IMPLEMENT;
+      }
+      fprintf(f, "%d %d %d %d\n", nbloc, 1, type, ref_cell_n(ref_cell));
+      ncell = 0;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (REF_CELL_PYR == ref_cell_type(ref_cell)) { /* on side */
+          REF_INT n0, n1, n2, n3, n4;
+          n0 = nodes[0];
+          n1 = nodes[1];
+          n2 = nodes[2];
+          n3 = nodes[3];
+          n4 = nodes[4];
+          nodes[0] = n0;
+          nodes[3] = n1;
+          nodes[4] = n2;
+          nodes[1] = n3;
+          nodes[2] = n4;
+        }
+        if (REF_CELL_TE2 == ref_cell_type(ref_cell)) { /* swap 8-9 */
+          REF_INT n9;
+          n9 = nodes[9];
+          nodes[9] = nodes[8];
+          nodes[8] = n9;
+        }
+        if (ref_cell_last_node_is_an_id(ref_cell)) {
+          fprintf(f, "%d", nodes[ref_cell_id_index(ref_cell)]);
+        } else {
+          fprintf(f, "%d", ncell + 1);
+        }
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          fprintf(f, " %d", nodes[cell_node] + 1);
+        }
+        fprintf(f, "\n");
+        ncell++;
+      }
+    }
+  }
+  fprintf(f, "$EndElements\n");
 
   ref_free(n2o);
   ref_free(o2n);
@@ -2266,8 +2415,10 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_html(ref_grid, filename), "html export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
     RSS(ref_export_meshb(ref_grid, filename), "meshb export failed");
+  } else if (strcmp(&filename[end_of_string - 9], "-bamg.msh") == 0) {
+    RSS(ref_export_bamg_msh(ref_grid, filename), "bamg msh export failed");
   } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
-    RSS(ref_export_twod_msh(ref_grid, filename), "msh export failed");
+    RSS(ref_export_msh(ref_grid, filename), "msh export failed");
   } else {
     RSS(ref_gather_by_extension(ref_grid, filename), "export via gather");
   }

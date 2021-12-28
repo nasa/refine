@@ -111,9 +111,9 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  { /* export import twod .msh brick */
+  { /* export import bamg.msh brick */
     REF_GRID export_grid, import_grid;
-    char file[] = "ref_import_test.msh";
+    char file[] = "ref_import_test-bamg.msh";
     RSS(ref_fixture_twod_brick_grid(&export_grid, ref_mpi, 4), "set up tet");
     RSS(ref_export_by_extension(export_grid, file), "export");
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
@@ -159,6 +159,21 @@ int main(int argc, char *argv[]) {
          ref_node_n(ref_grid_node(import_grid)), "node count");
     REIS(ref_cell_n(ref_grid_ed3(export_grid)),
          ref_cell_n(ref_grid_ed3(import_grid)), "ed3 count");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import single cubic te2 */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test-single-te2.meshb";
+    RSS(ref_fixture_te2_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_te2(export_grid)),
+         ref_cell_n(ref_grid_te2(import_grid)), "ed3 count");
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_grid_free(export_grid), "free");
     REIS(0, remove(file), "test clean up");
@@ -769,6 +784,85 @@ int main(int argc, char *argv[]) {
     RWDS(36.0, ref_node_xyz(ref_grid_node(import_grid), 2, 2), 1e-15, "z 2");
     RSS(ref_grid_free(import_grid), "free");
 
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* read GMSH version 4.1 .msh */
+    REF_GRID import_grid;
+    char file[] = "ref_import_test41.msh";
+    FILE *f;
+    f = fopen(file, "w");
+    fprintf(f, "$MeshFormat\n4.1 0 8\n$EndMeshFormat\n");
+    fprintf(f, "$Nodes\n1 6 1 6\n2 1 0 6\n1\n2\n3\n4\n5\n6\n");
+    fprintf(f,
+            "0. 0. 0.\n1. 0. 0.\n1. 1. 0.\n0. 1. 0.\n2. 0. 0.\n2. 1. "
+            "0.\n$EndNodes\n");
+    fprintf(
+        f, "$Elements\n1 2 1 2\n2 1 3 2\n1 1 2 3 4\n2 2 5 6 3\n$EndElements\n");
+    fclose(f);
+
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+
+    REIS(6, ref_node_n(ref_grid_node(import_grid)), "node count");
+    RWDS(1.0, ref_node_xyz(ref_grid_node(import_grid), 0, 2), 1e-15, "x 2");
+    RWDS(1.0, ref_node_xyz(ref_grid_node(import_grid), 1, 2), 1e-15, "y 2");
+    RWDS(0.0, ref_node_xyz(ref_grid_node(import_grid), 2, 2), 1e-15, "z 2");
+    REIS(2, ref_cell_n(ref_grid_qua(import_grid)), "quad count");
+
+    RSS(ref_grid_free(import_grid), "free");
+
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import GMSH .msh tet */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test-gmsh-tet.msh";
+    RSS(ref_fixture_tet_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RWDS(ref_node_xyz(ref_grid_node(export_grid), 0, 1),
+         ref_node_xyz(ref_grid_node(import_grid), 0, 1), 1e-15, "x 1");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 0, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 0, 0), "tet node0");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 1, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 1, 0), "tet node 1");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import GMSH .msh te2 */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test-gmsh-te2.msh";
+    RSS(ref_fixture_te2_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    REIS(ref_cell_n(ref_grid_te2(export_grid)),
+         ref_cell_n(ref_grid_te2(import_grid)), "te2 count");
+    RWDS(ref_node_xyz(ref_grid_node(export_grid), 0, 1),
+         ref_node_xyz(ref_grid_node(import_grid), 0, 1), 1e-15, "x 1");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 0, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 0, 0), "tet node0");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 1, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 1, 0), "tet node 1");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
     REIS(0, remove(file), "test clean up");
   }
 
