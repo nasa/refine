@@ -2122,6 +2122,7 @@ static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, nnode;
+  REF_INT dim = 3;
   REF_INT *o2n, *n2o;
   double version = 4.1;
   int filetype =
@@ -2144,7 +2145,16 @@ static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
     n2o[nnode] = node;
     nnode++;
   }
-
+  fprintf(f, "$Nodes\n1 %d 1 %d\n%d 1 0 %d\n", nnode, nnode, dim, nnode);
+  for (node = 0; node < nnode; node++) {
+    fprintf(f, "%d\n", node + 1);
+  }
+  for (node = 0; node < nnode; node++) {
+    fprintf(f, "%.16E %.16E %.16E\n", ref_node_xyz(ref_node, 0, n2o[node]),
+            ref_node_xyz(ref_node, 1, n2o[node]),
+            ref_node_xyz(ref_node, 2, n2o[node]));
+  }
+  fprintf(f, "$EndNodes\n");
   ref_free(n2o);
   ref_free(o2n);
 
