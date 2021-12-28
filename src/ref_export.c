@@ -2223,6 +2223,25 @@ static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
       fprintf(f, "%d %d %d %d\n", nbloc, 1, type, ref_cell_n(ref_cell));
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (REF_CELL_PYR == ref_cell_type(ref_cell)) { /* on side */
+          REF_INT n0, n1, n2, n3, n4;
+          n0 = nodes[0];
+          n1 = nodes[1];
+          n2 = nodes[2];
+          n3 = nodes[3];
+          n4 = nodes[4];
+          nodes[0] = n0;
+          nodes[3] = n1;
+          nodes[4] = n2;
+          nodes[1] = n3;
+          nodes[2] = n4;
+        }
+        if (REF_CELL_TE2 == ref_cell_type(ref_cell)) { /* swap 8-9 */
+          REF_INT n9;
+          n9 = nodes[9];
+          nodes[9] = nodes[8];
+          nodes[8] = n9;
+        }
         if (ref_cell_last_node_is_an_id(ref_cell)) {
           fprintf(f, "%d", nodes[ref_cell_id_index(ref_cell)]);
         } else {
