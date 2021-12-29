@@ -20,6 +20,8 @@ ${two}/ref_driver -i square_0.msh -m square_0.solb -x mixed01.meshb -t > accept-
 ${two}/ref_acceptance ${metric} mixed01.meshb mixed01.solb
 ${two}/ref_driver -i mixed01.meshb -m mixed01.solb -x mixed02.meshb -t > accept-2d-mixed-02.status
 
+${two}/ref translate mixed02.meshb mixed02.lb8.ugrid
+
 cat accept-2d-mixed-02.status
 ../../check.rb accept-2d-mixed-02.status 0.1 20.0
 
