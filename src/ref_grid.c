@@ -993,31 +993,62 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid,
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(twod_grid), cell, nodes) {
     /* use triangle to orient edge correctly */
-    REF_INT ncell, edg_tri;
+    REF_INT ntri, edg_tri, nqua, edg_qua;
     REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT qua_nodes[REF_CELL_MAX_SIZE_PER];
     REF_INT node0, node1;
     RSS(ref_cell_list_with2(ref_grid_tri(twod_grid), nodes[0], nodes[1], 1,
-                            &ncell, &edg_tri),
+                            &ntri, &edg_tri),
         "tri with edge side");
-    REIS(1, ncell, "expect one triangle for an edge");
-    RSS(ref_cell_nodes(ref_grid_tri(twod_grid), edg_tri, tri_nodes),
-        "tri nodes");
+    RSS(ref_cell_list_with2(ref_grid_qua(twod_grid), nodes[0], nodes[1], 1,
+                            &nqua, &edg_qua),
+        "qua with edge side");
+    REIS(1, ntri + nqua, "expect one tri/qua for an edge");
+    REIS(0, MIN(ntri, nqua), "expect zero min tri/qua for an edge");
     node0 = REF_EMPTY;
     node1 = REF_EMPTY;
-    if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[0], tri_nodes[1])) &&
-        (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[0], tri_nodes[1]))) {
-      node0 = tri_nodes[0];
-      node1 = tri_nodes[1];
+    if (1 == ntri) {
+      RSS(ref_cell_nodes(ref_grid_tri(twod_grid), edg_tri, tri_nodes),
+          "tri nodes");
+      if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[0], tri_nodes[1])) &&
+          (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[0], tri_nodes[1]))) {
+        node0 = tri_nodes[0];
+        node1 = tri_nodes[1];
+      }
+      if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[1], tri_nodes[2])) &&
+          (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[1], tri_nodes[2]))) {
+        node0 = tri_nodes[1];
+        node1 = tri_nodes[2];
+      }
+      if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[2], tri_nodes[0])) &&
+          (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[2], tri_nodes[0]))) {
+        node0 = tri_nodes[2];
+        node1 = tri_nodes[0];
+      }
     }
-    if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[1], tri_nodes[2])) &&
-        (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[1], tri_nodes[2]))) {
-      node0 = tri_nodes[1];
-      node1 = tri_nodes[2];
-    }
-    if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[2], tri_nodes[0])) &&
-        (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[2], tri_nodes[0]))) {
-      node0 = tri_nodes[2];
-      node1 = tri_nodes[0];
+    if (1 == nqua) {
+      RSS(ref_cell_nodes(ref_grid_qua(twod_grid), edg_qua, qua_nodes),
+          "qua nodes");
+      if ((MIN(nodes[0], nodes[1]) == MIN(qua_nodes[0], qua_nodes[1])) &&
+          (MAX(nodes[0], nodes[1]) == MAX(qua_nodes[0], qua_nodes[1]))) {
+        node0 = qua_nodes[0];
+        node1 = qua_nodes[1];
+      }
+      if ((MIN(nodes[0], nodes[1]) == MIN(qua_nodes[1], qua_nodes[2])) &&
+          (MAX(nodes[0], nodes[1]) == MAX(qua_nodes[1], qua_nodes[2]))) {
+        node0 = qua_nodes[1];
+        node1 = qua_nodes[2];
+      }
+      if ((MIN(nodes[0], nodes[1]) == MIN(qua_nodes[2], qua_nodes[3])) &&
+          (MAX(nodes[0], nodes[1]) == MAX(qua_nodes[2], qua_nodes[3]))) {
+        node0 = qua_nodes[2];
+        node1 = qua_nodes[3];
+      }
+      if ((MIN(nodes[0], nodes[1]) == MIN(qua_nodes[3], qua_nodes[0])) &&
+          (MAX(nodes[0], nodes[1]) == MAX(qua_nodes[3], qua_nodes[0]))) {
+        node0 = qua_nodes[3];
+        node1 = qua_nodes[0];
+      }
     }
     for (plane = 0; plane < n_planes - 1; plane++) {
       offset0 = (0 + plane) * ref_node_n(twod_node);
