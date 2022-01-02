@@ -459,8 +459,7 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
-  RXS(ref_args_find(argc, argv, "--twod", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos) { /* cast tri */
+  { /* cast tri */
     REF_GRID ref_grid, iso_grid;
     REF_NODE ref_node;
     REF_INT ldim = 1;
