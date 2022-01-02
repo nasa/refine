@@ -43,6 +43,7 @@
 #include "ref_mpi.h"
 #include "ref_node.h"
 #include "ref_part.h"
+#include "ref_phys.h"
 #include "ref_smooth.h"
 #include "ref_sort.h"
 #include "ref_split.h"
@@ -659,7 +660,39 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--hair", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     REF_GRID ref_grid;
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "set up tri");
+    REF_NODE ref_node;
+    REF_DICT ref_dict_bcs;
+    REF_DBL *distance, *uplus;
+    REF_INT node;
+    REF_DBL spalding_yplus = 0.01;
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 11), "set up tri");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+    { /* solid-wall floor */
+      REF_INT id = 1;
+      REF_INT type = 4000;
+      RSS(ref_dict_store(ref_dict_bcs, id, type), "store");
+    }
+    ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
+    ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL yplus;
+      RAB(ref_math_divisible(distance[node], spalding_yplus),
+          "\nare viscous boundarys set with --viscous-tags or --fun3d-mapbc?"
+          "\nwall distance not divisible by y+=1",
+          {
+            printf("distance %e yplus=1 %e\n", distance[node], spalding_yplus);
+          });
+      yplus = distance[node] / spalding_yplus;
+      RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
+    }
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, uplus, NULL,
+                                       "ref_iso_test_uplus.plt"),
+        "dump uplus");
+    ref_free(uplus);
+    ref_free(distance) ref_dict_free(ref_dict_bcs);
     ref_grid_free(ref_grid);
   }
 
