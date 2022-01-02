@@ -692,7 +692,8 @@ int main(int argc, char *argv[]) {
                                        "ref_iso_test_uplus.plt"),
         "dump uplus");
     ref_free(uplus);
-    ref_free(distance) ref_dict_free(ref_dict_bcs);
+    ref_free(distance);
+    ref_dict_free(ref_dict_bcs);
     ref_grid_free(ref_grid);
   }
 
