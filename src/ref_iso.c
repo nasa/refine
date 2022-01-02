@@ -472,6 +472,7 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
 
   RSS(ref_grid_create(iso_grid_ptr, ref_mpi), "create");
   iso_grid = *iso_grid_ptr;
+  ref_grid_twod(iso_grid) = ref_grid_twod(ref_grid);
   RSS(ref_node_initialize_n_global(ref_grid_node(iso_grid), 0), "zero glob");
 
   RSS(ref_face_create(&ref_face, ref_grid), "create face");
