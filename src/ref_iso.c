@@ -450,6 +450,58 @@ REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
   return REF_SUCCESS;
 }
 
+static REF_DBL ref_iso_area(double *xyz0, double *xyz1, double *xyz2) {
+  double a, b, c, d;
+  double area;
+
+  a = xyz0[0] - xyz2[0];
+  b = xyz0[1] - xyz2[1];
+  c = xyz1[0] - xyz2[0];
+  d = xyz1[1] - xyz2[1];
+  area = 0.5 * (a * d - b * c);
+
+  return area;
+}
+
+REF_STATUS ref_iso_segment_segment(REF_DBL *candidate0, REF_DBL *candidate1,
+                                   REF_DBL *segment0, REF_DBL *segment1,
+                                   REF_DBL *tt) {
+  double cand0_area, cand1_area;
+  double seg0_area, seg1_area;
+  double total_area;
+
+  tt[0] = 0.0;
+  tt[1] = 0.0;
+
+  /*         c1 tt[1]
+   *        /
+   *  s0---+----s1 tt[0]
+   *      /
+   *    c0
+   */
+
+  cand0_area = ref_iso_area(candidate0, segment1, segment0);
+  cand1_area = ref_iso_area(candidate1, segment0, segment1);
+  seg0_area = ref_iso_area(segment0, candidate1, candidate0);
+  seg1_area = ref_iso_area(segment1, candidate0, candidate1);
+
+  total_area = seg0_area + seg1_area;
+  if (ref_math_divisible(seg0_area, total_area)) {
+    tt[0] = seg0_area / total_area;
+  } else {
+    return REF_DIV_ZERO;
+  }
+
+  total_area = cand0_area + cand1_area;
+  if (ref_math_divisible(cand0_area, total_area)) {
+    tt[1] = cand0_area / total_area;
+  } else {
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
                         REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
                         REF_DBL *segment0, REF_DBL *segment1) {

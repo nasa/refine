@@ -353,6 +353,35 @@ int main(int argc, char *argv[]) {
          "tri-seg");
   }
 
+  { /* seg-seg, cross */
+    REF_DBL candidate0[3], candidate1[3];
+    REF_DBL segment0[3], segment1[3];
+    REF_DBL tt[2];
+
+    candidate0[0] = 0.0;
+    candidate0[1] = 0.0;
+    candidate0[2] = 0.0;
+
+    candidate1[0] = 1.0;
+    candidate1[1] = 0.0;
+    candidate1[2] = 0.0;
+
+    segment0[0] = 0.0;
+    segment0[1] = -1.0;
+    segment0[2] = 0.0;
+
+    segment1[0] = 0.0;
+    segment1[1] = 1.0;
+    segment1[2] = 0.0;
+
+    REIS(
+        REF_SUCCESS,
+        ref_iso_segment_segment(candidate0, candidate1, segment0, segment1, tt),
+        "seg-seg");
+    RWDS(0.5, tt[0], -1.0, "segment");
+    RWDS(0.0, tt[1], -1.0, "candidate");
+  }
+
   { /* cast tet */
     REF_GRID ref_grid, iso_grid;
     REF_NODE ref_node;
