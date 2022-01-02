@@ -751,7 +751,7 @@ REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
   return REF_SUCCESS;
 }
 
-static REF_BOOL ref_phys_wall_distance_bc(REF_INT bc) {
+REF_BOOL ref_phys_wall_distance_bc(REF_INT bc) {
   return (bc == 4000 ||  /* viscous_solid */
           bc == -4000 || /* viscous_solid_trs */
           bc == 4075 ||  /* viscous_wall_rough */
