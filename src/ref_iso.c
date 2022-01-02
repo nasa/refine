@@ -578,6 +578,7 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
         continue;
       if (MIN(MIN(tuvw[1], tuvw[2]), tuvw[3]) < inside) continue;
       /* exclude intersections outside of segment */
+      if (MIN(tuvw[0], 1.0 - tuvw[0]) < inside) continue;
 
       RSS(ref_face_part(ref_face, ref_node, face, &part), "face part");
       if (ref_mpi_rank(ref_mpi) == part) {
