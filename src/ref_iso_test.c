@@ -25,6 +25,7 @@
 
 #include "ref_adapt.h"
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_collapse.h"
 #include "ref_dict.h"
@@ -48,6 +49,7 @@
 #include "ref_swap.h"
 
 int main(int argc, char *argv[]) {
+  REF_INT pos;
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
@@ -651,6 +653,13 @@ int main(int argc, char *argv[]) {
       RWDS(segment1[0], segment1[2], -1.0, "z");
     }
 
+    ref_grid_free(ref_grid);
+  }
+
+  RXS(ref_args_find(argc, argv, "--hair", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    REF_GRID ref_grid;
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 4), "set up tri");
     ref_grid_free(ref_grid);
   }
 
