@@ -756,6 +756,20 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, uplus, NULL,
                                        "ref_iso_test_uplus.plt"),
         "dump uplus");
+    {
+      REF_CELL ref_cell = ref_grid_edg(ref_grid);
+      REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+      REF_INT bc;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        bc = REF_EMPTY;
+        RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)],
+                           &bc),
+            REF_NOT_FOUND, "bc");
+        if (ref_phys_wall_distance_bc(bc)) {
+        }
+      }
+    }
+
     ref_free(uplus);
     ref_free(distance);
     ref_dict_free(ref_dict_bcs);
