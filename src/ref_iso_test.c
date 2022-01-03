@@ -738,11 +738,11 @@ int main(int argc, char *argv[]) {
       REF_INT type = 4000;
       RSS(ref_dict_store(ref_dict_bcs, id, type), "store");
     }
-    ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
+    ref_malloc(uplus, ref_node_max(ref_node), REF_DBL);
     RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
     ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    each_ref_node_valid_node(ref_node, node) {
       REF_DBL yplus;
       RAB(ref_math_divisible(distance[node], spalding_yplus),
           "\nare viscous boundarys set with --viscous-tags or --fun3d-mapbc?"
