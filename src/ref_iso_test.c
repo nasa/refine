@@ -760,14 +760,25 @@ int main(int argc, char *argv[]) {
       REF_CELL ref_cell = ref_grid_edg(ref_grid);
       REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
       REF_INT bc;
+      REF_DBL *metric;
+      ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+      RSS(ref_metric_imply_from(metric, ref_grid), "imply");
+      ref_mpi_stopwatch_stop(ref_mpi, "imply metric");
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         bc = REF_EMPTY;
         RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)],
                            &bc),
             REF_NOT_FOUND, "bc");
         if (ref_phys_wall_distance_bc(bc)) {
+          REF_DBL normal[3];
+          REF_DBL h;
+          RSS(ref_node_seg_normal(ref_node, nodes, normal), "seg normal");
+          /* average node metric/ */
+          h = ref_matrix_sqrt_vt_m_v(&(metric[nodes[0]]), normal);
+          printf("h %f\n", h);
         }
       }
+      ref_free(metric);
     }
 
     ref_free(uplus);
