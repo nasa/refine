@@ -775,7 +775,7 @@ int main(int argc, char *argv[]) {
           RSS(ref_node_seg_normal(ref_node, nodes, normal), "seg normal");
           /* average node metric/ */
           h = ref_matrix_sqrt_vt_m_v(&(metric[nodes[0]]), normal);
-          printf("h %f\n", h);
+          printf("n %f %f %f h %f\n", normal[0], normal[1], normal[2], h);
         }
       }
       ref_free(metric);
