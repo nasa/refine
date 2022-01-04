@@ -2290,6 +2290,31 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* imply metric right twod tri 2 brick */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_DBL *metric;
+    REF_INT node;
+
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 2), "tri");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    RSS(ref_metric_imply_from(metric, ref_grid), "imply");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL d[12];
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), d), "diag");
+      RWDS(0.5, d[0], tol, "d[0]");
+      RWDS(1.5, d[1], tol, "d[1]");
+      RWDS(1.0, d[2], tol, "d[2]");
+    }
+
+    ref_free(metric);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   { /* imply metric right prism */
     REF_DBL tol = 0.00001;
     REF_GRID ref_grid;
