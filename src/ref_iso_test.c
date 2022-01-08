@@ -730,7 +730,15 @@ int main(int argc, char *argv[]) {
     REF_DBL *distance, *uplus;
     REF_INT node;
     REF_DBL spalding_yplus = 0.01;
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 11), "set up tri");
+    REF_BOOL verbose = REF_FALSE;
+    if (argc > 2) {
+      printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import");
+    } else {
+      RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 11), "set up tri");
+      ref_mpi_stopwatch_stop(ref_mpi, "brick");
+    }
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_dict_create(&ref_dict_bcs), "make dict");
     { /* solid-wall floor */
@@ -792,8 +800,10 @@ int main(int argc, char *argv[]) {
           segment1[0] = segment0[0] + step * h * normal[0];
           segment1[1] = segment0[1] + step * h * normal[1];
           segment1[2] = segment0[2] + step * h * normal[2];
-          printf("seg0 %f %f %f\n", segment0[0], segment0[1], segment0[2]);
-          printf("seg1 %f %f %f\n", segment1[0], segment1[1], segment1[2]);
+          if (verbose) {
+            printf("seg0 %f %f %f\n", segment0[0], segment0[1], segment0[2]);
+            printf("seg1 %f %f %f\n", segment1[0], segment1[1], segment1[2]);
+          }
           RSS(ref_iso_cast(&iso_grid, &iso_uplus, ref_grid, uplus, ldim,
                            segment0, segment1),
               "cast");
@@ -808,9 +818,10 @@ int main(int argc, char *argv[]) {
               ratio = spalding_yplus * iso_yplus[node] /
                       ref_node_xyz(iso_node, 1, node);
             }
-            printf("ratio %f yplus %f x %f y %f\n", ratio, iso_yplus[node],
-                   ref_node_xyz(iso_node, 0, node),
-                   ref_node_xyz(iso_node, 1, node));
+            if (verbose)
+              printf("ratio %f yplus %f x %f y %f\n", ratio, iso_yplus[node],
+                     ref_node_xyz(iso_node, 0, node),
+                     ref_node_xyz(iso_node, 1, node));
           }
           ref_free(iso_yplus);
           ref_free(iso_uplus);
