@@ -731,6 +731,7 @@ int main(int argc, char *argv[]) {
     REF_INT node;
     REF_DBL spalding_yplus = 0.01;
     REF_BOOL verbose = REF_FALSE;
+    REF_DBL *metric;
     if (argc > 2) {
       printf("import %s\n", argv[2]);
       RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
@@ -764,13 +765,24 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, uplus, NULL,
                                        "ref_iso_test_uplus.plt"),
         "dump uplus");
+    ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
+    {
+      REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+      REF_INT p = 2;
+      REF_DBL gradation = -1.0;
+      REF_DBL complexity = 1000;
+      RSS(ref_metric_lp_mixed(metric, ref_grid, uplus, reconstruction, p,
+                              gradation, complexity),
+          "lp norm");
+    }
     {
       REF_CELL ref_cell = ref_grid_edg(ref_grid);
       REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
       REF_INT bc;
-      REF_DBL *metric;
-      ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-      RSS(ref_metric_imply_from(metric, ref_grid), "imply");
+      REF_DBL *implied_metric;
+      ref_malloc(implied_metric, 6 * ref_node_max(ref_grid_node(ref_grid)),
+                 REF_DBL);
+      RSS(ref_metric_imply_from(implied_metric, ref_grid), "imply");
       ref_mpi_stopwatch_stop(ref_mpi, "imply metric");
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         bc = REF_EMPTY;
@@ -787,8 +799,9 @@ int main(int argc, char *argv[]) {
           REF_INT ldim = 1;
           REF_DBL *iso_uplus, *iso_yplus;
           RSS(ref_node_seg_normal(ref_node, nodes, normal), "seg normal");
-          /* average node metric/ */
-          ratio = ref_matrix_sqrt_vt_m_v(&(metric[6 * nodes[0]]), normal);
+          /* average node imply_metric/ */
+          ratio =
+              ref_matrix_sqrt_vt_m_v(&(implied_metric[6 * nodes[0]]), normal);
           RAS(ref_math_divisible(1.0, ratio), "invert ratio");
           h = 1.0 / ratio;
           segment0[0] = 0.5 * (ref_node_xyz(ref_node, 0, nodes[0]) +
@@ -828,8 +841,10 @@ int main(int argc, char *argv[]) {
           RSS(ref_grid_free(iso_grid), "free grid");
         }
       }
-      ref_free(metric);
+      ref_free(implied_metric);
     }
+
+    ref_free(metric);
 
     ref_free(uplus);
     ref_free(distance);
