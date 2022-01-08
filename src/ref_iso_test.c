@@ -843,6 +843,11 @@ int main(int argc, char *argv[]) {
       }
       ref_free(implied_metric);
     }
+    RSS(ref_metric_to_node(metric, ref_node), "metric to node");
+    RSS(ref_gather_metric(ref_grid, "ref_iso_test_metric.solb"),
+        "gather metric");
+    RSS(ref_gather_by_extension(ref_grid, "ref_iso_test.meshb"),
+        "gather meshb");
 
     ref_free(metric);
 
