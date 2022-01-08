@@ -775,8 +775,9 @@ int main(int argc, char *argv[]) {
           REF_DBL step = 5.0;
           REF_DBL segment0[3], segment1[3];
           REF_GRID iso_grid;
+          REF_NODE iso_node;
           REF_INT ldim = 1;
-          REF_DBL *iso_uplus;
+          REF_DBL *iso_uplus, *iso_yplus;
           RSS(ref_node_seg_normal(ref_node, nodes, normal), "seg normal");
           /* average node metric/ */
           ratio = ref_matrix_sqrt_vt_m_v(&(metric[6 * nodes[0]]), normal);
@@ -794,6 +795,20 @@ int main(int argc, char *argv[]) {
           RSS(ref_iso_cast(&iso_grid, &iso_uplus, ref_grid, uplus, ldim,
                            segment0, segment1),
               "cast");
+          iso_node = ref_grid_node(iso_grid);
+          ref_malloc(iso_yplus, ref_node_max(iso_node), REF_DBL);
+          each_ref_node_valid_node(iso_node, node) {
+            RSS(ref_phys_spalding_yplus(iso_uplus[node], &(iso_yplus[node])),
+                "yplus");
+            ratio = 0;
+            if (ref_math_divisible(iso_yplus[node],
+                                   ref_node_xyz(iso_node, 1, node))) {
+              ratio = iso_yplus[node] / ref_node_xyz(iso_node, 1, node);
+            }
+            printf("ratio %f yplus %f y %f\n", ratio, iso_yplus[node],
+                   ref_node_xyz(iso_node, 1, node));
+          }
+          ref_free(iso_yplus);
           ref_free(iso_uplus);
           RSS(ref_grid_free(iso_grid), "free grid");
         }
