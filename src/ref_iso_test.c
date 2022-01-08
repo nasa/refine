@@ -771,10 +771,12 @@ int main(int argc, char *argv[]) {
             REF_NOT_FOUND, "bc");
         if (ref_phys_wall_distance_bc(bc)) {
           REF_DBL normal[3];
-          REF_DBL h;
+          REF_DBL ratio, h;
           RSS(ref_node_seg_normal(ref_node, nodes, normal), "seg normal");
           /* average node metric/ */
-          h = ref_matrix_sqrt_vt_m_v(&(metric[nodes[0]]), normal);
+          ratio = ref_matrix_sqrt_vt_m_v(&(metric[6 * nodes[0]]), normal);
+          RAS(ref_math_divisible(1.0, ratio), "invert ratio");
+          h = 1.0 / ratio;
           printf("n %f %f %f h %f\n", normal[0], normal[1], normal[2], h);
         }
       }
