@@ -2341,6 +2341,32 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* imply metric right twod tri 11 brick with interior */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_DBL *metric;
+    REF_INT node;
+
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 11), "tri");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    RSS(ref_metric_imply_from(metric, ref_grid), "imply");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL d[12];
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), d), "diag");
+      RSS(ref_matrix_ascending_eig(d), "ascend");
+      RWDS(150.0, d[0], tol, "d[0]");
+      RWDS(50.0, d[1], tol, "d[1]");
+      RWDS(1.0, d[2], tol, "d[2]");
+    }
+
+    ref_free(metric);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   { /* imply metric right prism */
     REF_DBL tol = 0.00001;
     REF_GRID ref_grid;
