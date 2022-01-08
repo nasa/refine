@@ -772,12 +772,30 @@ int main(int argc, char *argv[]) {
         if (ref_phys_wall_distance_bc(bc)) {
           REF_DBL normal[3];
           REF_DBL ratio, h;
+          REF_DBL step = 5.0;
+          REF_DBL segment0[3], segment1[3];
+          REF_GRID iso_grid;
+          REF_INT ldim = 1;
+          REF_DBL *iso_uplus;
           RSS(ref_node_seg_normal(ref_node, nodes, normal), "seg normal");
           /* average node metric/ */
           ratio = ref_matrix_sqrt_vt_m_v(&(metric[6 * nodes[0]]), normal);
           RAS(ref_math_divisible(1.0, ratio), "invert ratio");
           h = 1.0 / ratio;
-          printf("n %f %f %f h %f\n", normal[0], normal[1], normal[2], h);
+          segment0[0] = 0.5 * (ref_node_xyz(ref_node, 0, nodes[0]) +
+                               ref_node_xyz(ref_node, 0, nodes[1]));
+          segment0[1] = 0.5 * (ref_node_xyz(ref_node, 1, nodes[0]) +
+                               ref_node_xyz(ref_node, 1, nodes[1]));
+          segment0[2] = 0.5 * (ref_node_xyz(ref_node, 2, nodes[0]) +
+                               ref_node_xyz(ref_node, 2, nodes[1]));
+          segment1[0] = segment0[0] + step * h * normal[0];
+          segment1[1] = segment0[1] + step * h * normal[1];
+          segment1[2] = segment0[2] + step * h * normal[2];
+          RSS(ref_iso_cast(&iso_grid, &iso_uplus, ref_grid, uplus, ldim,
+                           segment0, segment1),
+              "cast");
+          ref_free(iso_uplus);
+          RSS(ref_grid_free(iso_grid), "free grid");
         }
       }
       ref_free(metric);
