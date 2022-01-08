@@ -730,6 +730,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *distance, *uplus;
     REF_INT node;
     REF_DBL spalding_yplus = 0.01;
+    REF_DBL yplus_of_one;
     REF_BOOL verbose = REF_FALSE;
     REF_DBL *metric;
     if (argc > 2) {
@@ -759,7 +760,9 @@ int main(int argc, char *argv[]) {
           {
             printf("distance %e yplus=1 %e\n", distance[node], spalding_yplus);
           });
-      yplus = distance[node] / spalding_yplus;
+      yplus_of_one =
+          spalding_yplus * sqrt(1.0 + ref_node_xyz(ref_node, 0, node));
+      yplus = distance[node] / yplus_of_one;
       RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
     }
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, uplus, NULL,
@@ -828,7 +831,9 @@ int main(int argc, char *argv[]) {
             ratio = 0;
             if (ref_math_divisible(iso_yplus[node],
                                    ref_node_xyz(iso_node, 1, node))) {
-              ratio = spalding_yplus * iso_yplus[node] /
+              yplus_of_one =
+                  spalding_yplus * sqrt(1.0 + ref_node_xyz(ref_node, 0, node));
+              ratio = yplus_of_one * iso_yplus[node] /
                       ref_node_xyz(iso_node, 1, node);
             }
             if (verbose)
