@@ -772,7 +772,7 @@ int main(int argc, char *argv[]) {
         if (ref_phys_wall_distance_bc(bc)) {
           REF_DBL normal[3];
           REF_DBL ratio, h;
-          REF_DBL step = 5.0;
+          REF_DBL step = -5.0;
           REF_DBL segment0[3], segment1[3];
           REF_GRID iso_grid;
           REF_NODE iso_node;
@@ -792,6 +792,8 @@ int main(int argc, char *argv[]) {
           segment1[0] = segment0[0] + step * h * normal[0];
           segment1[1] = segment0[1] + step * h * normal[1];
           segment1[2] = segment0[2] + step * h * normal[2];
+          printf("seg0 %f %f %f\n", segment0[0], segment0[1], segment0[2]);
+          printf("seg1 %f %f %f\n", segment1[0], segment1[1], segment1[2]);
           RSS(ref_iso_cast(&iso_grid, &iso_uplus, ref_grid, uplus, ldim,
                            segment0, segment1),
               "cast");
@@ -803,9 +805,11 @@ int main(int argc, char *argv[]) {
             ratio = 0;
             if (ref_math_divisible(iso_yplus[node],
                                    ref_node_xyz(iso_node, 1, node))) {
-              ratio = iso_yplus[node] / ref_node_xyz(iso_node, 1, node);
+              ratio = spalding_yplus * iso_yplus[node] /
+                      ref_node_xyz(iso_node, 1, node);
             }
-            printf("ratio %f yplus %f y %f\n", ratio, iso_yplus[node],
+            printf("ratio %f yplus %f x %f y %f\n", ratio, iso_yplus[node],
+                   ref_node_xyz(iso_node, 0, node),
                    ref_node_xyz(iso_node, 1, node));
           }
           ref_free(iso_yplus);
