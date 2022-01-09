@@ -801,6 +801,7 @@ int main(int argc, char *argv[]) {
           REF_NODE iso_node;
           REF_INT ldim = 1;
           REF_DBL *iso_uplus, *iso_yplus;
+          REF_DBL yplus_norm;
           RSS(ref_node_seg_normal(ref_node, nodes, normal), "seg normal");
           /* average node imply_metric/ */
           ratio =
@@ -825,9 +826,16 @@ int main(int argc, char *argv[]) {
               "cast");
           iso_node = ref_grid_node(iso_grid);
           ref_malloc(iso_yplus, ref_node_max(iso_node), REF_DBL);
+          yplus_norm = 0.0;
           each_ref_node_valid_node(iso_node, node) {
+            REF_DBL dist;
             RSS(ref_phys_spalding_yplus(iso_uplus[node], &(iso_yplus[node])),
                 "yplus");
+            dist = sqrt(pow(ref_node_xyz(iso_node, 0, node) - segment0[0], 2) +
+                        pow(ref_node_xyz(iso_node, 1, node) - segment0[1], 2) +
+                        pow(ref_node_xyz(iso_node, 2, node) - segment0[2], 2));
+            if (ref_math_divisible(dist, iso_yplus[node]))
+              yplus_norm = dist / iso_yplus[node];
             ratio = 0;
             if (ref_math_divisible(iso_yplus[node],
                                    ref_node_xyz(iso_node, 1, node))) {
@@ -844,6 +852,36 @@ int main(int argc, char *argv[]) {
           ref_free(iso_yplus);
           ref_free(iso_uplus);
           RSS(ref_grid_free(iso_grid), "free grid");
+          if (yplus_norm > 1e-100) {
+            REF_DBL yplus_target = 10.0;
+            REF_DBL diagonal_system[12];
+            REF_DBL hn, ht;
+            REF_INT i;
+            hn = yplus_target * yplus_norm;
+            for (i = 0; i < 3; i++)
+              ref_matrix_vec(diagonal_system, i, 0) = normal[i];
+            ref_matrix_eig(diagonal_system, 0) = 1.0 / hn / hn;
+            for (i = 0; i < 3; i++)
+              ref_matrix_vec(diagonal_system, i, 1) =
+                  ref_node_xyz(iso_node, i, nodes[1]) -
+                  ref_node_xyz(iso_node, i, nodes[0]);
+            ht = sqrt(ref_math_dot(ref_matrix_vec_ptr(diagonal_system, 1),
+                                   ref_matrix_vec_ptr(diagonal_system, 1)));
+            RSS(ref_math_normalize(&(ref_matrix_vec(diagonal_system, 0, 1))),
+                "norm surf segment");
+            ref_matrix_eig(diagonal_system, 1) = 1.0 / ht / ht;
+            ref_matrix_vec(diagonal_system, 0, 2) = 0.0;
+            ref_matrix_vec(diagonal_system, 1, 2) = 0.0;
+            ref_matrix_vec(diagonal_system, 2, 2) = 1.0;
+            ref_matrix_eig(diagonal_system, 2) = 1.0;
+            ref_matrix_show_diag_sys(diagonal_system);
+            /*
+            RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * nodes[0]])),
+                "form 0");
+            RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * nodes[1]])),
+                "form 1");
+                */
+          }
         }
       }
       ref_free(implied_metric);
