@@ -263,6 +263,12 @@ cd ${source_dir}/acceptance/2d/circle
 ( ./accept-2d-circle.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-2d-yplus
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/2d/yplus
+( ./accept-2d-yplus.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 LOG=${root_dir}/log.accept-facebody-triangle
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/facebody/triangle
