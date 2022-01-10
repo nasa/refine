@@ -450,19 +450,73 @@ REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
   return REF_SUCCESS;
 }
 
+static REF_DBL ref_iso_area(double *xyz0, double *xyz1, double *xyz2) {
+  double a, b, c, d;
+  double area;
+
+  a = xyz0[0] - xyz2[0];
+  b = xyz0[1] - xyz2[1];
+  c = xyz1[0] - xyz2[0];
+  d = xyz1[1] - xyz2[1];
+  area = 0.5 * (a * d - b * c);
+
+  return area;
+}
+
+REF_STATUS ref_iso_segment_segment(REF_DBL *candidate0, REF_DBL *candidate1,
+                                   REF_DBL *segment0, REF_DBL *segment1,
+                                   REF_DBL *tt) {
+  double cand0_area, cand1_area;
+  double seg0_area, seg1_area;
+  double total_area;
+
+  tt[0] = 0.0;
+  tt[1] = 0.0;
+
+  /*         c1 tt[1]
+   *        /
+   *  s0---+----s1 tt[0]
+   *      /
+   *    c0
+   */
+
+  cand0_area = ref_iso_area(candidate0, segment1, segment0);
+  cand1_area = ref_iso_area(candidate1, segment0, segment1);
+  seg0_area = ref_iso_area(segment0, candidate1, candidate0);
+  seg1_area = ref_iso_area(segment1, candidate0, candidate1);
+
+  total_area = seg0_area + seg1_area;
+  if (ref_math_divisible(seg0_area, total_area)) {
+    tt[0] = seg0_area / total_area;
+  } else {
+    return REF_DIV_ZERO;
+  }
+
+  total_area = cand0_area + cand1_area;
+  if (ref_math_divisible(cand0_area, total_area)) {
+    tt[1] = cand0_area / total_area;
+  } else {
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
                         REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
                         REF_DBL *segment0, REF_DBL *segment1) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell = NULL;
   REF_GRID iso_grid;
-  REF_FACE ref_face;
-  REF_INT face, i, j, part, cell;
+  REF_EDGE ref_edge = NULL;
+  REF_FACE ref_face = NULL;
+  REF_INT edge, face, i, j, part, cell;
   REF_GLOB global;
   REF_INT *new_node;
+  REF_DBL candidate0[3], candidate1[3];
   REF_DBL triangle0[3], triangle1[3], triangle2[3];
-  REF_DBL tuvw[4];
+  REF_DBL tt[2], ss[2], tuvw[4];
   REF_DBL inside = 0.0;
   REF_DBL t0, t1;
   REF_INT id = 1;
@@ -472,37 +526,75 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
 
   RSS(ref_grid_create(iso_grid_ptr, ref_mpi), "create");
   iso_grid = *iso_grid_ptr;
+  ref_grid_twod(iso_grid) = ref_grid_twod(ref_grid);
   RSS(ref_node_initialize_n_global(ref_grid_node(iso_grid), 0), "zero glob");
 
-  RSS(ref_face_create(&ref_face, ref_grid), "create face");
-  ref_malloc_init(new_node, ref_face_n(ref_face), REF_INT, REF_EMPTY);
-
-  each_ref_face(ref_face, face) {
-    for (i = 0; i < 3; i++) {
-      triangle0[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 0, face));
-      triangle1[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 1, face));
-      triangle2[i] = ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 2, face));
-    }
-    if (REF_SUCCESS != ref_iso_triangle_segment(triangle0, triangle1, triangle2,
-                                                segment0, segment1, tuvw))
-      continue;
-    if (MIN(MIN(tuvw[1], tuvw[2]), tuvw[3]) < inside) continue;
-
-    RSS(ref_face_part(ref_face, ref_node, face, &part), "face part");
-    if (ref_mpi_rank(ref_mpi) == part) {
-      RSS(ref_node_next_global(ref_grid_node(iso_grid), &global),
-          "next global");
-      RSS(ref_node_add(ref_grid_node(iso_grid), global, &(new_node[face])),
-          "add node");
-      t1 = tuvw[0];
-      t0 = 1.0 - t1;
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
+    ref_malloc_init(new_node, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
+    each_ref_edge(ref_edge, edge) {
       for (i = 0; i < 3; i++) {
-        ref_node_xyz(ref_grid_node(iso_grid), i, new_node[face]) =
-            t1 * segment1[i] + t0 * segment0[i];
+        candidate0[i] =
+            ref_node_xyz(ref_node, i, ref_edge_e2n(ref_edge, 0, edge));
+        candidate1[i] =
+            ref_node_xyz(ref_node, i, ref_edge_e2n(ref_edge, 1, edge));
+      }
+      if (REF_SUCCESS != ref_iso_segment_segment(candidate0, candidate1,
+                                                 segment0, segment1, tt))
+        continue;
+      ss[0] = 1.0 - tt[0];
+      ss[1] = 1.0 - tt[1];
+      if (MIN(tt[0], ss[0]) < inside) continue;
+      if (MIN(tt[1], ss[1]) < inside) continue;
+
+      RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        RSS(ref_node_next_global(ref_grid_node(iso_grid), &global),
+            "next global");
+        RSS(ref_node_add(ref_grid_node(iso_grid), global, &(new_node[edge])),
+            "add node");
+        for (i = 0; i < 3; i++) {
+          ref_node_xyz(ref_grid_node(iso_grid), i, new_node[edge]) =
+              ss[1] * candidate1[i] + tt[1] * candidate0[i];
+        }
+      }
+    }
+  } else {
+    RSS(ref_face_create(&ref_face, ref_grid), "create face");
+    ref_malloc_init(new_node, ref_face_n(ref_face), REF_INT, REF_EMPTY);
+
+    each_ref_face(ref_face, face) {
+      for (i = 0; i < 3; i++) {
+        triangle0[i] =
+            ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 0, face));
+        triangle1[i] =
+            ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 1, face));
+        triangle2[i] =
+            ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 2, face));
+      }
+      if (REF_SUCCESS != ref_iso_triangle_segment(triangle0, triangle1,
+                                                  triangle2, segment0, segment1,
+                                                  tuvw))
+        continue;
+      if (MIN(MIN(tuvw[1], tuvw[2]), tuvw[3]) < inside) continue;
+      /* exclude intersections outside of segment */
+      if (MIN(tuvw[0], 1.0 - tuvw[0]) < inside) continue;
+
+      RSS(ref_face_part(ref_face, ref_node, face, &part), "face part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        RSS(ref_node_next_global(ref_grid_node(iso_grid), &global),
+            "next global");
+        RSS(ref_node_add(ref_grid_node(iso_grid), global, &(new_node[face])),
+            "add node");
+        t1 = tuvw[0];
+        t0 = 1.0 - t1;
+        for (i = 0; i < 3; i++) {
+          ref_node_xyz(ref_grid_node(iso_grid), i, new_node[face]) =
+              t1 * segment1[i] + t0 * segment0[i];
+        }
       }
     }
   }
-
   if (NULL == field) {
     *iso_field_ptr = NULL;
   } else {
@@ -510,54 +602,106 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
     ref_malloc(*iso_field_ptr, ldim * ref_node_max(ref_grid_node(iso_grid)),
                REF_DBL);
     iso_field = *iso_field_ptr;
-    each_ref_face(ref_face, face) {
-      node = new_node[face];
-      if (REF_EMPTY != node) {
-        for (i = 0; i < 3; i++) {
-          triangle0[i] =
-              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 0, face));
-          triangle1[i] =
-              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 1, face));
-          triangle2[i] =
-              ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 2, face));
-        }
-        RSS(ref_iso_triangle_segment(triangle0, triangle1, triangle2, segment0,
-                                     segment1, tuvw),
-            "tuvw");
-        for (j = 0; j < ldim; j++) {
-          iso_field[j + ldim * node] = 0.0;
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_edge(ref_edge, edge) {
+        node = new_node[edge];
+        if (REF_EMPTY != node) {
           for (i = 0; i < 3; i++) {
-            iso_field[j + ldim * node] +=
-                tuvw[i + 1] * field[j + ldim * ref_face_f2n(ref_face, i, face)];
+            candidate0[i] =
+                ref_node_xyz(ref_node, i, ref_edge_e2n(ref_edge, 0, edge));
+            candidate1[i] =
+                ref_node_xyz(ref_node, i, ref_edge_e2n(ref_edge, 1, edge));
+          }
+          RSS(ref_iso_segment_segment(candidate0, candidate1, segment0,
+                                      segment1, tt),
+              "seg-seg");
+          ss[0] = 1.0 - tt[0];
+          ss[1] = 1.0 - tt[1];
+          for (j = 0; j < ldim; j++) {
+            iso_field[j + ldim * node] =
+                ss[1] * field[j + ldim * ref_edge_e2n(ref_edge, 0, edge)] +
+                tt[1] * field[j + ldim * ref_edge_e2n(ref_edge, 1, edge)];
+          }
+        }
+      }
+    } else {
+      each_ref_face(ref_face, face) {
+        node = new_node[face];
+        if (REF_EMPTY != node) {
+          for (i = 0; i < 3; i++) {
+            triangle0[i] =
+                ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 0, face));
+            triangle1[i] =
+                ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 1, face));
+            triangle2[i] =
+                ref_node_xyz(ref_node, i, ref_face_f2n(ref_face, 2, face));
+          }
+          RSS(ref_iso_triangle_segment(triangle0, triangle1, triangle2,
+                                       segment0, segment1, tuvw),
+              "tuvw");
+          for (j = 0; j < ldim; j++) {
+            iso_field[j + ldim * node] = 0.0;
+            for (i = 0; i < 3; i++) {
+              iso_field[j + ldim * node] +=
+                  tuvw[i + 1] *
+                  field[j + ldim * ref_face_f2n(ref_face, i, face)];
+            }
           }
         }
       }
     }
   }
 
-  each_ref_cell_valid_cell(ref_cell, cell) {
-    REF_INT cell_face, node, face_nodes[4];
-    REF_INT nface, faces[4];
-    REF_INT new_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
-    nface = 0;
-    each_ref_cell_cell_face(ref_cell, cell_face) {
-      for (node = 0; node < 4; node++) {
-        face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+  if (ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      REF_INT cell_edge, node, edge_nodes[2];
+      REF_INT nedge, edges[3];
+      REF_INT new_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+      nedge = 0;
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+        for (node = 0; node < 2; node++) {
+          edge_nodes[node] = ref_cell_e2n(ref_cell, node, cell_edge, cell);
+        }
+        RSS(ref_edge_with(ref_edge, edge_nodes[0], edge_nodes[1], &edge),
+            "get edge");
+        if (REF_EMPTY != new_node[edge]) {
+          edges[nedge] = edge;
+          nedge++;
+        }
       }
-      RSS(ref_face_with(ref_face, face_nodes, &face), "get face");
-      if (REF_EMPTY != new_node[face]) {
-        faces[nface] = face;
-        nface++;
+      if (2 == nedge) {
+        new_nodes[0] = new_node[edges[0]];
+        new_nodes[1] = new_node[edges[1]];
+        new_nodes[2] = id;
+        RSS(ref_cell_add(ref_grid_edg(iso_grid), new_nodes, &new_cell), "add");
       }
     }
-    if (2 == nface) {
-      new_nodes[0] = new_node[faces[0]];
-      new_nodes[1] = new_node[faces[1]];
-      new_nodes[2] = id;
-      RSS(ref_cell_add(ref_grid_edg(iso_grid), new_nodes, &new_cell), "add");
+  } else {
+    ref_cell = ref_grid_tet(ref_grid);
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      REF_INT cell_face, node, face_nodes[4];
+      REF_INT nface, faces[4];
+      REF_INT new_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+      nface = 0;
+      each_ref_cell_cell_face(ref_cell, cell_face) {
+        for (node = 0; node < 4; node++) {
+          face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+        }
+        RSS(ref_face_with(ref_face, face_nodes, &face), "get face");
+        if (REF_EMPTY != new_node[face]) {
+          faces[nface] = face;
+          nface++;
+        }
+      }
+      if (2 == nface) {
+        new_nodes[0] = new_node[faces[0]];
+        new_nodes[1] = new_node[faces[1]];
+        new_nodes[2] = id;
+        RSS(ref_cell_add(ref_grid_edg(iso_grid), new_nodes, &new_cell), "add");
+      }
     }
   }
-
   return REF_SUCCESS;
 }
 

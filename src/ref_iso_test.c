@@ -25,6 +25,7 @@
 
 #include "ref_adapt.h"
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_collapse.h"
 #include "ref_dict.h"
@@ -42,12 +43,14 @@
 #include "ref_mpi.h"
 #include "ref_node.h"
 #include "ref_part.h"
+#include "ref_phys.h"
 #include "ref_smooth.h"
 #include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_swap.h"
 
 int main(int argc, char *argv[]) {
+  REF_INT pos;
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
@@ -350,6 +353,35 @@ int main(int argc, char *argv[]) {
          "tri-seg");
   }
 
+  { /* seg-seg, cross */
+    REF_DBL candidate0[3], candidate1[3];
+    REF_DBL segment0[3], segment1[3];
+    REF_DBL tt[2];
+
+    candidate0[0] = 0.0;
+    candidate0[1] = 0.0;
+    candidate0[2] = 0.0;
+
+    candidate1[0] = 1.0;
+    candidate1[1] = 0.0;
+    candidate1[2] = 0.0;
+
+    segment0[0] = 0.0;
+    segment0[1] = -1.0;
+    segment0[2] = 0.0;
+
+    segment1[0] = 0.0;
+    segment1[1] = 1.0;
+    segment1[2] = 0.0;
+
+    REIS(
+        REF_SUCCESS,
+        ref_iso_segment_segment(candidate0, candidate1, segment0, segment1, tt),
+        "seg-seg");
+    RWDS(0.5, tt[0], -1.0, "segment");
+    RWDS(0.0, tt[1], -1.0, "candidate");
+  }
+
   { /* cast tet */
     REF_GRID ref_grid, iso_grid;
     REF_NODE ref_node;
@@ -375,7 +407,7 @@ int main(int argc, char *argv[]) {
                      segment1),
         "cast");
     if (!ref_mpi_para(ref_mpi)) {
-      REIS(2, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
+      REIS(2, ref_node_n(ref_grid_node(iso_grid)), "two nodes");
       REIS(0, ref_cell_n(ref_grid_tri(iso_grid)), "zero tri");
       REIS(1, ref_cell_n(ref_grid_edg(iso_grid)), "one edg");
     }
@@ -411,7 +443,7 @@ int main(int argc, char *argv[]) {
                      segment1),
         "cast");
     if (!ref_mpi_para(ref_mpi)) {
-      REIS(10, ref_node_n(ref_grid_node(iso_grid)), "three nodes");
+      REIS(10, ref_node_n(ref_grid_node(iso_grid)), "ten nodes");
       REIS(0, ref_cell_n(ref_grid_tri(iso_grid)), "zero tri");
       REIS(9, ref_cell_n(ref_grid_edg(iso_grid)), "one edg");
     }
@@ -420,6 +452,42 @@ int main(int argc, char *argv[]) {
                                      "iso-edge.tec");
       ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL,
                                      "iso-orig.tec");
+    }
+    ref_free(iso_field);
+    ref_grid_free(iso_grid);
+    ref_free(field);
+    ref_grid_free(ref_grid);
+  }
+
+  { /* cast tri */
+    REF_GRID ref_grid, iso_grid;
+    REF_NODE ref_node;
+    REF_INT ldim = 1;
+    REF_DBL *field, *iso_field;
+    REF_INT node;
+    REF_DBL segment0[3], segment1[3];
+
+    RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "tri");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(field, ldim * ref_node_max(ref_node), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      field[node] = ref_node_xyz(ref_node, 0, node);
+    }
+    segment0[0] = -1.0;
+    segment0[1] = 0.2;
+    segment0[2] = 0.0;
+    segment1[0] = 2.0;
+    segment1[1] = 0.2;
+    segment1[2] = 0.0;
+
+    RSS(ref_iso_cast(&iso_grid, &iso_field, ref_grid, field, ldim, segment0,
+                     segment1),
+        "cast");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(REF_TRUE, ref_grid_twod(iso_grid), "twod");
+      REIS(2, ref_node_n(ref_grid_node(iso_grid)), "two nodes");
+      REIS(0, ref_cell_n(ref_grid_tri(iso_grid)), "zero tri");
+      REIS(1, ref_cell_n(ref_grid_edg(iso_grid)), "one edg");
     }
     ref_free(iso_field);
     ref_grid_free(iso_grid);
@@ -651,6 +719,187 @@ int main(int argc, char *argv[]) {
       RWDS(segment1[0], segment1[2], -1.0, "z");
     }
 
+    ref_grid_free(ref_grid);
+  }
+
+  RXS(ref_args_find(argc, argv, "--hair", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DICT ref_dict_bcs;
+    REF_DBL *distance, *uplus;
+    REF_INT node;
+    REF_DBL spalding_yplus = 0.01;
+    REF_DBL yplus_of_one;
+    REF_BOOL verbose = REF_FALSE;
+    REF_DBL *metric;
+    if (argc > 2) {
+      printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import");
+    } else {
+      RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi, 11), "set up tri");
+      ref_mpi_stopwatch_stop(ref_mpi, "brick");
+    }
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+    { /* solid-wall floor */
+      REF_INT id = 1;
+      REF_INT type = 4000;
+      RSS(ref_dict_store(ref_dict_bcs, id, type), "store");
+    }
+    ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
+    ref_malloc(uplus, ref_node_max(ref_node), REF_DBL);
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
+    ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL yplus;
+      RAB(ref_math_divisible(distance[node], spalding_yplus),
+          "\nare viscous boundarys set with --viscous-tags or --fun3d-mapbc?"
+          "\nwall distance not divisible by y+=1",
+          {
+            printf("distance %e yplus=1 %e\n", distance[node], spalding_yplus);
+          });
+      yplus_of_one =
+          spalding_yplus * sqrt(1.0 + ref_node_xyz(ref_node, 0, node));
+      yplus = distance[node] / yplus_of_one;
+      RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
+    }
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, uplus, NULL,
+                                       "ref_iso_test_uplus.plt"),
+        "dump uplus");
+    ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
+    {
+      REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+      REF_INT p = 2;
+      REF_DBL gradation = -1.0;
+      REF_DBL complexity = 1000;
+      RSS(ref_metric_lp_mixed(metric, ref_grid, uplus, reconstruction, p,
+                              gradation, complexity),
+          "lp norm");
+    }
+    {
+      REF_CELL ref_cell = ref_grid_edg(ref_grid);
+      REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+      REF_INT bc;
+      REF_DBL *implied_metric;
+      ref_malloc(implied_metric, 6 * ref_node_max(ref_grid_node(ref_grid)),
+                 REF_DBL);
+      RSS(ref_metric_imply_from(implied_metric, ref_grid), "imply");
+      ref_mpi_stopwatch_stop(ref_mpi, "imply metric");
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        bc = REF_EMPTY;
+        RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)],
+                           &bc),
+            REF_NOT_FOUND, "bc");
+        if (ref_phys_wall_distance_bc(bc)) {
+          REF_DBL normal[3];
+          REF_DBL ratio, h;
+          REF_DBL step = -5.0;
+          REF_DBL segment0[3], segment1[3];
+          REF_GRID iso_grid;
+          REF_NODE iso_node;
+          REF_INT ldim = 1;
+          REF_DBL *iso_uplus, *iso_yplus;
+          REF_DBL yplus_norm;
+          RSS(ref_node_seg_normal(ref_node, nodes, normal), "seg normal");
+          /* average node imply_metric/ */
+          ratio =
+              ref_matrix_sqrt_vt_m_v(&(implied_metric[6 * nodes[0]]), normal);
+          RAS(ref_math_divisible(1.0, ratio), "invert ratio");
+          h = 1.0 / ratio;
+          segment0[0] = 0.5 * (ref_node_xyz(ref_node, 0, nodes[0]) +
+                               ref_node_xyz(ref_node, 0, nodes[1]));
+          segment0[1] = 0.5 * (ref_node_xyz(ref_node, 1, nodes[0]) +
+                               ref_node_xyz(ref_node, 1, nodes[1]));
+          segment0[2] = 0.5 * (ref_node_xyz(ref_node, 2, nodes[0]) +
+                               ref_node_xyz(ref_node, 2, nodes[1]));
+          segment1[0] = segment0[0] + step * h * normal[0];
+          segment1[1] = segment0[1] + step * h * normal[1];
+          segment1[2] = segment0[2] + step * h * normal[2];
+          if (verbose) {
+            printf("seg0 %f %f %f\n", segment0[0], segment0[1], segment0[2]);
+            printf("seg1 %f %f %f\n", segment1[0], segment1[1], segment1[2]);
+          }
+          RSS(ref_iso_cast(&iso_grid, &iso_uplus, ref_grid, uplus, ldim,
+                           segment0, segment1),
+              "cast");
+          iso_node = ref_grid_node(iso_grid);
+          ref_malloc(iso_yplus, ref_node_max(iso_node), REF_DBL);
+          yplus_norm = 0.0;
+          each_ref_node_valid_node(iso_node, node) {
+            REF_DBL dist;
+            RSS(ref_phys_spalding_yplus(iso_uplus[node], &(iso_yplus[node])),
+                "yplus");
+            dist = sqrt(pow(ref_node_xyz(iso_node, 0, node) - segment0[0], 2) +
+                        pow(ref_node_xyz(iso_node, 1, node) - segment0[1], 2) +
+                        pow(ref_node_xyz(iso_node, 2, node) - segment0[2], 2));
+            if (ref_math_divisible(dist, iso_yplus[node]))
+              yplus_norm = dist / iso_yplus[node];
+            ratio = 0;
+            if (ref_math_divisible(iso_yplus[node],
+                                   ref_node_xyz(iso_node, 1, node))) {
+              yplus_of_one =
+                  spalding_yplus * sqrt(1.0 + ref_node_xyz(ref_node, 0, node));
+              ratio = yplus_of_one * iso_yplus[node] /
+                      ref_node_xyz(iso_node, 1, node);
+            }
+            if (verbose)
+              printf("ratio %f yplus %f x %f y %f\n", ratio, iso_yplus[node],
+                     ref_node_xyz(iso_node, 0, node),
+                     ref_node_xyz(iso_node, 1, node));
+          }
+          ref_free(iso_yplus);
+          ref_free(iso_uplus);
+          RSS(ref_grid_free(iso_grid), "free grid");
+          if (yplus_norm > 1e-100) {
+            REF_DBL yplus_target = 10.0;
+            REF_DBL diagonal_system[12];
+            REF_DBL hn, ht;
+            REF_INT i;
+            hn = yplus_target * yplus_norm;
+            for (i = 0; i < 12; i++) diagonal_system[i] = 0;
+            ref_matrix_show_diag_sys(diagonal_system);
+            for (i = 0; i < 3; i++)
+              ref_matrix_vec(diagonal_system, i, 0) = normal[i];
+            ref_matrix_eig(diagonal_system, 0) = 1.0 / hn / hn;
+            ref_matrix_show_diag_sys(diagonal_system);
+            for (i = 0; i < 3; i++)
+              ref_matrix_vec(diagonal_system, i, 1) =
+                  ref_node_xyz(ref_node, i, nodes[1]) -
+                  ref_node_xyz(ref_node, i, nodes[0]);
+            ht = sqrt(ref_math_dot(ref_matrix_vec_ptr(diagonal_system, 1),
+                                   ref_matrix_vec_ptr(diagonal_system, 1)));
+            RSS(ref_math_normalize(ref_matrix_vec_ptr(diagonal_system, 1)),
+                "norm surf segment");
+            ref_matrix_eig(diagonal_system, 1) = 1.0 / ht / ht;
+            ref_matrix_show_diag_sys(diagonal_system);
+            ref_matrix_vec(diagonal_system, 0, 2) = 0.0;
+            ref_matrix_vec(diagonal_system, 1, 2) = 0.0;
+            ref_matrix_vec(diagonal_system, 2, 2) = 1.0;
+            ref_matrix_eig(diagonal_system, 2) = 1.0;
+            ref_matrix_show_diag_sys(diagonal_system);
+
+            RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * nodes[0]])),
+                "form 0");
+            RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * nodes[1]])),
+                "form 1");
+          }
+        }
+      }
+      ref_free(implied_metric);
+    }
+    RSS(ref_metric_to_node(metric, ref_node), "metric to node");
+    RSS(ref_gather_metric(ref_grid, "ref_iso_test_metric.solb"),
+        "gather metric");
+    RSS(ref_gather_by_extension(ref_grid, "ref_iso_test.meshb"),
+        "gather meshb");
+
+    ref_free(metric);
+
+    ref_free(uplus);
+    ref_free(distance);
+    ref_dict_free(ref_dict_bcs);
     ref_grid_free(ref_grid);
   }
 
