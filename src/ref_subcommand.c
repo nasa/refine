@@ -3077,6 +3077,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
+    RXS(ref_args_find(argc, argv, "--axi", &pos), REF_NOT_FOUND, "arg search");
+    if (REF_EMPTY != pos) {
+      if (ref_mpi_once(ref_mpi)) printf("axi wedge\n");
+      RSS(ref_axi_wedge(extruded_grid), "axi wedge");
+    }
     if (ref_mpi_once(ref_mpi))
       printf("gather extruded " REF_GLOB_FMT " nodes to %s\n",
              ref_node_n_global(ref_grid_node(extruded_grid)), filename);
