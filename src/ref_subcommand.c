@@ -137,6 +137,7 @@ static void bootstrap_help(const char *name) {
   printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("  --mesher-options \"<options>\" quoted mesher options.\n");
   option_auto_tprarms_help();
+  printf("  --axi sets 6022 boundary condition for extruded wedge 2D.\n");
   printf("\n");
 }
 static void distance_help(const char *name) {
@@ -232,6 +233,7 @@ static void loop_help(const char *name) {
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --deforming mesh flow solve, include xyz in *_volume.solb.\n");
   printf("  --mixed implies multiscale metric from mixed elements.\n");
+  printf("  --axi forms an extruded wedge from 2D mesh.\n");
   printf("  --buffer coarsens the metric approaching the x max boundary.\n");
   option_uniform_help();
 
