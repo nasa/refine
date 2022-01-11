@@ -23,6 +23,7 @@
 
 #include "ref_adapt.h"
 #include "ref_args.h"
+#include "ref_axi.h"
 #include "ref_defs.h"
 #include "ref_dist.h"
 #include "ref_egads.h"
@@ -279,6 +280,7 @@ static void translate_help(const char *name) {
   printf("  options:\n");
   printf("   --extrude a 2D mesh to single layer of prisms.\n");
   printf("       extrusion added implicitly for ugrid output files\n");
+  printf("   --axi convert an extruded mesh into a wedge at z=y=0 axis\n");
   printf("   --planes <N> extrude a 2D mesh to N layers of prisms.\n");
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
   printf("   --shard converts mixed-elments to simplicies.\n");
@@ -3745,6 +3747,12 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_mpi_max(ref_mpi, &deviation, &total_deviation, REF_DBL_TYPE),
         "mpi max");
     if (ref_mpi_once(ref_mpi)) printf("max deviation %e\n", deviation);
+  }
+
+  RXS(ref_args_find(argc, argv, "--axi", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) printf("--axi creates wedge about y=z=0 axis\n");
+    RSS(ref_axi_wedge(ref_grid), "wedge");
   }
 
   if (ref_mpi_para(ref_mpi)) {
