@@ -23,6 +23,7 @@
 
 #include "ref_adapt.h"
 #include "ref_args.h"
+#include "ref_axi.h"
 #include "ref_defs.h"
 #include "ref_dist.h"
 #include "ref_egads.h"
@@ -136,6 +137,7 @@ static void bootstrap_help(const char *name) {
   printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("  --mesher-options \"<options>\" quoted mesher options.\n");
   option_auto_tprarms_help();
+  printf("  --axi sets 6022 boundary condition for extruded wedge 2D.\n");
   printf("\n");
 }
 static void distance_help(const char *name) {
@@ -231,6 +233,7 @@ static void loop_help(const char *name) {
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --deforming mesh flow solve, include xyz in *_volume.solb.\n");
   printf("  --mixed implies multiscale metric from mixed elements.\n");
+  printf("  --axi forms an extruded wedge from 2D mesh.\n");
   printf("  --buffer coarsens the metric approaching the x max boundary.\n");
   option_uniform_help();
 
@@ -279,6 +282,7 @@ static void translate_help(const char *name) {
   printf("  options:\n");
   printf("   --extrude a 2D mesh to single layer of prisms.\n");
   printf("       extrusion added implicitly for ugrid output files\n");
+  printf("   --axi convert an extruded mesh into a wedge at z=y=0 axis\n");
   printf("   --planes <N> extrude a 2D mesh to N layers of prisms.\n");
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
   printf("   --shard converts mixed-elments to simplicies.\n");
@@ -1045,10 +1049,16 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
   if (ref_mpi_once(ref_mpi)) {
+    REF_BOOL axi = REF_FALSE;
+    RXS(ref_args_find(argc, argv, "--axi", &pos), REF_NOT_FOUND, "arg search");
+    if (REF_EMPTY != pos) {
+      if (ref_mpi_once(ref_mpi)) printf("--axi sets 6022 bc\n");
+      axi = REF_TRUE;
+    }
     sprintf(filename, "%s-vol.mapbc", project);
     printf("extracting %s from 'bc_name' attributes\n", filename);
     if (REF_SUCCESS ==
-        ref_egads_extract_mapbc(ref_grid_geom(ref_grid), filename)) {
+        ref_egads_extract_mapbc(ref_grid_geom(ref_grid), filename, axi)) {
       printf("%s extracted\n", filename);
     } else {
       printf("one or more 'bc_name' attributes not set, mapbc not written\n");
@@ -3064,13 +3074,16 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
   sprintf(filename, "%s.%s", out_project, mesh_export_extension);
-  RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
-      "arg search");
   if (0 != strcmp(soln_export_extension, i_like_restart) &&
       0 != strcmp(soln_export_extension, avm_restart) &&
       ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
+    RXS(ref_args_find(argc, argv, "--axi", &pos), REF_NOT_FOUND, "arg search");
+    if (REF_EMPTY != pos) {
+      if (ref_mpi_once(ref_mpi)) printf("axi wedge\n");
+      RSS(ref_axi_wedge(extruded_grid), "axi wedge");
+    }
     if (ref_mpi_once(ref_mpi))
       printf("gather extruded " REF_GLOB_FMT " nodes to %s\n",
              ref_node_n_global(ref_grid_node(extruded_grid)), filename);
@@ -3745,6 +3758,12 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_mpi_max(ref_mpi, &deviation, &total_deviation, REF_DBL_TYPE),
         "mpi max");
     if (ref_mpi_once(ref_mpi)) printf("max deviation %e\n", deviation);
+  }
+
+  RXS(ref_args_find(argc, argv, "--axi", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) printf("--axi creates wedge about y=z=0 axis\n");
+    RSS(ref_axi_wedge(ref_grid), "wedge");
   }
 
   if (ref_mpi_para(ref_mpi)) {

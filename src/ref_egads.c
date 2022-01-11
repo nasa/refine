@@ -3951,7 +3951,8 @@ REF_STATUS ref_egads_get_real_attribute(REF_GEOM ref_geom, REF_INT type,
 #endif
 }
 
-REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
+REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc,
+                                   REF_BOOL axi) {
   FILE *file;
   file = fopen(mapbc, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
@@ -4024,7 +4025,11 @@ REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc) {
     edge_id = ref_geom->nedge + 1;
     fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-min");
     edge_id = ref_geom->nedge + 2;
-    fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-max");
+    if (axi) {
+      fprintf(file, "%d %s\n", edge_id, "6022 symmetry-y-max-axi");
+    } else {
+      fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-max");
+    }
   }
   fclose(file);
 
