@@ -164,12 +164,13 @@ static REF_STATUS ref_acceptance_primal_fp_sa(REF_DBL y, REF_DBL *primitive) {
   REF_DBL u;
   REF_DBL y_bl_edge = 0.02;
   REF_DBL yplus_bl_edge = 10000.0;
-  REF_DBL uplus_bl_edge = 27.0;
+  REF_DBL uplus_bl_edge;
   REF_DBL yplus, uplus;
   REF_DBL mach = 0.2;
   REF_DBL nu_max = 200;
   REF_DBL nu_min = 3;
   REF_DBL nu;
+  RSS(ref_phys_spalding_uplus(yplus_bl_edge, &uplus_bl_edge), "uplus");
   yplus = y / y_bl_edge * yplus_bl_edge;
   RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
   uplus = MIN(uplus, uplus_bl_edge);
