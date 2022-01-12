@@ -25,14 +25,12 @@ function adapt_cycle {
 	  ${inproj}_volume.solb ${inproj}_volume.tec
 
     ${src}/ref loop ${inproj} ${outproj} ${complexity} \
-	  --export-metric \
 	  ${egads} -s 5 > ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
 	  ${outproj}_volume.solb
     ${src}/ref_gather_test ${outproj}.meshb \
 	  ${outproj}_volume.solb ${outproj}_volume.tec
-
 }
 
 serveCSM -batch split-fp.csm > split-fp-servecsm.txt
@@ -43,8 +41,4 @@ adapt_cycle cycle00 cycle01 1000
 adapt_cycle cycle01 cycle02 1000
 adapt_cycle cycle02 cycle03 2000
 adapt_cycle cycle03 cycle04 2000
-adapt_cycle cycle04 cycle05 4000
-adapt_cycle cycle05 cycle06 4000
-
-../../check.rb cycle05-loop.txt 0.5 2.0
 
