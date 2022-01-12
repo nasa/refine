@@ -1916,15 +1916,30 @@ int main(int argc, char *argv[]) {
       u[node] = field[1 + ldim * node];
     }
     RSS(ref_recon_gradient(ref_grid, u, gradu, reconstruction), "gu");
-    each_ref_node_valid_node(ref_node, node) {
-      u[node] = field[2 + ldim * node];
+    ref_mpi_stopwatch_stop(ref_mpi, "gradu");
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_node_valid_node(ref_node, node) {
+        u[node] = field[3 + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, u, gradv, reconstruction), "gv");
+      ref_mpi_stopwatch_stop(ref_mpi, "swap gradv");
+      each_ref_node_valid_node(ref_node, node) {
+        u[node] = field[2 + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, u, gradw, reconstruction), "gw");
+      ref_mpi_stopwatch_stop(ref_mpi, "swap gradw");
+    } else {
+      each_ref_node_valid_node(ref_node, node) {
+        u[node] = field[2 + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, u, gradv, reconstruction), "gv");
+      ref_mpi_stopwatch_stop(ref_mpi, "gradv");
+      each_ref_node_valid_node(ref_node, node) {
+        u[node] = field[3 + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, u, gradw, reconstruction), "gw");
+      ref_mpi_stopwatch_stop(ref_mpi, "gradw");
     }
-    RSS(ref_recon_gradient(ref_grid, u, gradv, reconstruction), "gv");
-    each_ref_node_valid_node(ref_node, node) {
-      u[node] = field[3 + ldim * node];
-    }
-    RSS(ref_recon_gradient(ref_grid, u, gradw, reconstruction), "gw");
-
     each_ref_node_valid_node(ref_node, node) {
       REF_DBL mach = 0.2;
       REF_DBL reynolds_number = 5.0e6;
@@ -1945,7 +1960,7 @@ int main(int argc, char *argv[]) {
           "blend");
       blend[node] = fd;
     }
-
+    ref_mpi_stopwatch_stop(ref_mpi, "blend");
     ref_free(gradw);
     ref_free(gradv);
     ref_free(gradu);
@@ -1955,6 +1970,7 @@ int main(int argc, char *argv[]) {
                                        "ref_metric_blend.plt"),
         "tec");
     ref_free(blend);
+    ref_mpi_stopwatch_stop(ref_mpi, "gather blend plt");
 
     ref_free(field);
     ref_free(dist);
