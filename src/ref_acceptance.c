@@ -404,7 +404,7 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
 
   *ldim = 5;
   if (strcmp(function_name, "fp-sa") == 0) {
-    *ldim = 7;
+    *ldim = 6;
   }
   if (strcmp(function_name, "sst") == 0) {
     *ldim = 7;
