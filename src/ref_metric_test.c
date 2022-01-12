@@ -137,6 +137,7 @@ int main(int argc, char *argv[]) {
   REF_INT gradation_pos = REF_EMPTY;
   REF_INT cloud_pos = REF_EMPTY;
   REF_INT wake_pos = REF_EMPTY;
+  REF_INT hrles_pos = REF_EMPTY;
   REF_INT stepexp_pos = REF_EMPTY;
   REF_INT decompose_pos = REF_EMPTY;
   REF_INT imply_pos = REF_EMPTY;
@@ -195,6 +196,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--cloud", &cloud_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--wake", &wake_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--hrles", &hrles_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--stepexp", &stepexp_pos), REF_NOT_FOUND,
       "arg search");
@@ -1865,6 +1868,51 @@ int main(int argc, char *argv[]) {
       printf("writing metric %s\n", argv[5]);
     RSS(ref_gather_metric(ref_grid, argv[5]), "export scaled metric");
     ref_mpi_stopwatch_stop(ref_mpi, "dump metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "done.");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (hrles_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *dist, *field, *blend;
+    REF_INT node, ldim;
+
+    REIS(1, hrles_pos,
+         "required args: --hrles grid.ext distance.solb volume.solb");
+    REIS(5, argc, "required args: --hrles grid.ext distance.solb volume.solb");
+    if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to part grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &dist, argv[3]),
+        "unable to load distance in position 3");
+    if (ref_mpi_once(ref_mpi)) printf("distance ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read dist");
+    REIS(1, ldim, "expect [distance]");
+    if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[4]),
+        "unable to load solution in position 4");
+    if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read vol");
+    REIS(6, ldim, "expect [rho,u,v,w,p,turb1]");
+
+    ref_malloc(blend, ref_node_max(ref_node), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) { blend[node] = -1.0; }
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, blend, NULL,
+                                       "ref_metric_blend.plt"),
+        "tec");
+    ref_free(blend);
+
+    ref_free(field);
+    ref_free(dist);
 
     RSS(ref_grid_free(ref_grid), "free");
     ref_mpi_stopwatch_stop(ref_mpi, "done.");

@@ -23,6 +23,8 @@ function adapt_cycle {
 	  ${inproj}_volume.solb
     ${src}/ref_gather_test ${inproj}.meshb \
 	  ${inproj}_volume.solb ${inproj}_volume.tec
+    ${src}/ref distance ${inproj}.meshb ${inproj}-distance.solb \
+	  --fun3d-mapbc split-fp-vol.mapbc
 
     ${src}/ref loop ${inproj} ${outproj} ${complexity} \
 	  ${egads} -s 5 > ${inproj}-loop.txt
@@ -31,6 +33,8 @@ function adapt_cycle {
 	  ${outproj}_volume.solb
     ${src}/ref_gather_test ${outproj}.meshb \
 	  ${outproj}_volume.solb ${outproj}_volume.tec
+    ${src}/ref distance ${outproj}.meshb ${outproj}-distance.solb \
+          --fun3d-mapbc split-fp-vol.mapbc
 }
 
 serveCSM -batch split-fp.csm > split-fp-servecsm.txt
@@ -41,4 +45,7 @@ adapt_cycle cycle00 cycle01 1000
 adapt_cycle cycle01 cycle02 1000
 adapt_cycle cycle02 cycle03 2000
 adapt_cycle cycle03 cycle04 2000
+
+${src}/ref_metric_test --hrles \
+      cycle04.meshb cycle04-distance.solb cycle04_volume.solb
 
