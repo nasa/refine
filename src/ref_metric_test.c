@@ -1881,6 +1881,8 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_DBL *dist, *field, *blend;
     REF_INT node, ldim;
+    REF_DBL *u, *gradu, *gradv, *gradw;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
 
     REIS(1, hrles_pos,
          "required args: --hrles grid.ext distance.solb volume.solb");
@@ -1904,7 +1906,50 @@ int main(int argc, char *argv[]) {
     REIS(6, ldim, "expect [rho,u,v,w,p,turb1]");
 
     ref_malloc(blend, ref_node_max(ref_node), REF_DBL);
-    each_ref_node_valid_node(ref_node, node) { blend[node] = -1.0; }
+
+    ref_malloc_init(u, ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(gradu, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(gradv, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(gradw, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+
+    each_ref_node_valid_node(ref_node, node) {
+      u[node] = field[1 + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, u, gradu, reconstruction), "gu");
+    each_ref_node_valid_node(ref_node, node) {
+      u[node] = field[2 + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, u, gradv, reconstruction), "gv");
+    each_ref_node_valid_node(ref_node, node) {
+      u[node] = field[3 + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, u, gradw, reconstruction), "gw");
+
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL mach = 0.2;
+      REF_DBL reynolds_number = 5.0e6;
+      REF_DBL sqrtgrad;
+      REF_DBL nu, fd;
+      sqrtgrad = sqrt(gradu[0 + 3 * node] * gradu[0 + 3 * node] +
+                      gradu[1 + 3 * node] * gradu[1 + 3 * node] +
+                      gradu[2 + 3 * node] * gradu[2 + 3 * node] +
+                      gradv[0 + 3 * node] * gradv[0 + 3 * node] +
+                      gradv[1 + 3 * node] * gradv[1 + 3 * node] +
+                      gradv[2 + 3 * node] * gradv[2 + 3 * node] +
+                      gradw[0 + 3 * node] * gradw[0 + 3 * node] +
+                      gradw[1 + 3 * node] * gradw[1 + 3 * node] +
+                      gradw[2 + 3 * node] * gradw[2 + 3 * node]);
+      nu = field[5 + ldim * node];
+      RSS(ref_phys_ddes_blend(mach, reynolds_number, sqrtgrad, dist[node], nu,
+                              &fd),
+          "blend");
+      blend[node] = fd;
+    }
+
+    ref_free(gradw);
+    ref_free(gradv);
+    ref_free(gradu);
+    ref_free(u);
 
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, blend, NULL,
                                        "ref_metric_blend.plt"),
