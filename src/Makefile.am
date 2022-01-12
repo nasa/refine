@@ -163,10 +163,6 @@ bin_PROGRAMS += ref_translate
 ref_translate_SOURCES = ref_translate.c
 ref_translate_LDADD = $(default_ldadd)
 
-bin_PROGRAMS += ref_axisymmetric
-ref_axisymmetric_SOURCES = ref_axisymmetric.c
-ref_axisymmetric_LDADD = $(default_ldadd)
-
 bin_PROGRAMS += ref_inflatable
 ref_inflatable_SOURCES = ref_inflatable.c
 ref_inflatable_LDADD = $(default_ldadd)
