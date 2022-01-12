@@ -1190,6 +1190,6 @@ REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
   REF_DBL kappa = 0.41;
   rd = (mach * nu / reynolds_number) /
        (sqrt_vel_grad_dot_grad * kappa * kappa * distance * distance);
-  *fd = 1.0 - tanh(pow(8. * rd, 3));
+  *fd = 1.0 - tanh(pow(8.0 * rd, 3));
   return REF_SUCCESS;
 }
