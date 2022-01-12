@@ -1188,8 +1188,14 @@ REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
                                REF_DBL nu, REF_DBL *fd) {
   REF_DBL rd;
   REF_DBL kappa = 0.41;
-  rd = (mach * nu / reynolds_number) /
-       (sqrt_vel_grad_dot_grad * kappa * kappa * distance * distance);
-  *fd = 1.0 - tanh(pow(8.0 * rd, 3));
+  REF_DBL num, denom;
+  num = mach * nu / reynolds_number;
+  denom = sqrt_vel_grad_dot_grad * kappa * kappa * distance * distance;
+  if (ref_math_divisible(num, denom)) {
+    rd = num / denom;
+    *fd = 1.0 - tanh(pow(8.0 * rd, 3));
+  } else {
+    *fd = 0.0;
+  };
   return REF_SUCCESS;
 }
