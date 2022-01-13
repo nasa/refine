@@ -12,6 +12,7 @@ fi
 
 tecplot=-t
 field="-q fp-sa"
+scalar="-u fp-sa"
 egads="--egads split-fp.egads"
 
 function adapt_cycle {
@@ -22,19 +23,20 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
 	  ${inproj}_volume.solb
     ${src}/ref_gather_test ${inproj}.meshb \
-	  ${inproj}_volume.solb ${inproj}_volume.tec
-    ${src}/ref distance ${inproj}.meshb ${inproj}-distance.solb \
-	  --fun3d-mapbc split-fp-vol.mapbc
+	  ${inproj}_volume.solb ${inproj}_volume.plt
+    ${src}/ref_acceptance ${scalar} ${inproj}.meshb \
+          ${inproj}_mach_100.solb
+   ${src}/ref_acceptance ${scalar} ${inproj}.meshb \
+          ${inproj}_mach_200.solb
 
     ${src}/ref loop ${inproj} ${outproj} ${complexity} \
-	  ${egads} -s 5 > ${inproj}-loop.txt
+	  ${egads} -s 5 \
+	  --fixed-point _mach_ 100 100 200 > ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
 	  ${outproj}_volume.solb
     ${src}/ref_gather_test ${outproj}.meshb \
-	  ${outproj}_volume.solb ${outproj}_volume.tec
-    ${src}/ref distance ${outproj}.meshb ${outproj}-distance.solb \
-          --fun3d-mapbc split-fp-vol.mapbc
+	  ${outproj}_volume.solb ${outproj}_volume.plt
 }
 
 serveCSM -batch split-fp.csm > split-fp-servecsm.txt
@@ -46,6 +48,8 @@ adapt_cycle cycle01 cycle02 1000
 adapt_cycle cycle02 cycle03 2000
 adapt_cycle cycle03 cycle04 2000
 
+${src}/ref distance cycle04.meshb cycle04-distance.solb \
+      --fun3d-mapbc split-fp-vol.mapbc
 ${src}/ref_metric_test --hrles \
       cycle04.meshb cycle04-distance.solb cycle04_volume.solb
 
