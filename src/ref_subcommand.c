@@ -2271,7 +2271,8 @@ static REF_STATUS hrles_fixed_point_metric(
   REF_DBL *u, *gradu, *gradv, *gradw;
 
   if (ref_mpi_once(ref_mpi))
-    printf("--hrles %f Mach %e Reynolds nubmer\n", mach, reynolds_number);
+    printf("--hrles %f Mach %e Reynolds number of %d ldim\n", mach,
+           reynolds_number, ldim);
 
   ref_malloc(blend, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
