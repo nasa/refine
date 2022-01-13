@@ -354,6 +354,14 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       REF_DBL vel;
       RSS(ref_acceptance_u_lisbon(x, y, &vel), "lisbon");
       scalar[node] = vel;
+    } else if (strcmp(function_name, "fp-sa") == 0) {
+      REF_DBL u, v, w;
+      REF_DBL primitive[6];
+      RSS(ref_acceptance_primal_fp_sa(y, primitive), "flat plate sa");
+      u = primitive[1];
+      v = primitive[2];
+      w = primitive[3];
+      scalar[node] = sqrt(u * u + v * v + w * w);
     } else if (strcmp(function_name, "trig") == 0) {
       REF_DBL rho, pressure, u, v, w, mach;
       REF_DBL primitive[5];
@@ -450,7 +458,7 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
       REF_DBL primitive[6];
       RSS(ref_acceptance_primal_fp_sa(ref_node_xyz(ref_node, 1, node),
                                       primitive),
-          "ringleb");
+          "flat plate sa");
       for (i = 0; i < 6; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
     } else if (strcmp(function_name, "sst") == 0) {
       REF_INT i;
