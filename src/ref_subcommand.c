@@ -2330,6 +2330,7 @@ static REF_STATUS hrles_fixed_point_metric(
         h[im] = hess[im + 6 * node];
       }
       RSS(ref_matrix_diag_m(h, d), "diag");
+      /* 0-RANS 1-LES */
       eig_ratio = MAX(1.0e-5, blend[node]);
       max_eig = MAX(ref_matrix_eig(d, 0), ref_matrix_eig(d, 1));
       max_eig = MAX(max_eig, ref_matrix_eig(d, 2));
