@@ -2309,7 +2309,6 @@ static REF_STATUS hrles_fixed_point_metric(
     blend[node] = fd;
   }
   ref_free(distance);
-  ref_free(blend);
 
   ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   total_timesteps = 0;
@@ -2326,13 +2325,33 @@ static REF_STATUS hrles_fixed_point_metric(
     ref_free(scalar);
     total_timesteps++;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL eig_ratio, h[6], d[12], max_eig, eig_floor;
       for (im = 0; im < 6; im++) {
-        metric[im + 6 * node] += hess[im + 6 * node];
+        h[im] = hess[im + 6 * node];
+      }
+      RSS(ref_matrix_diag_m(h, d), "diag");
+      eig_ratio = MAX(1.0e-5, 1.0 - blend[node]);
+      max_eig = MAX(ref_matrix_eig(d, 0), ref_matrix_eig(d, 1));
+      max_eig = MAX(max_eig, ref_matrix_eig(d, 2));
+      eig_floor = max_eig * eig_ratio * eig_ratio;
+      ref_matrix_eig(d, 0) = MAX(ref_matrix_eig(d, 0), eig_floor);
+      ref_matrix_eig(d, 1) = MAX(ref_matrix_eig(d, 1), eig_floor);
+      ref_matrix_eig(d, 2) = MAX(ref_matrix_eig(d, 2), eig_floor);
+      RSS(ref_matrix_form_m(d, h), "form");
+      if (ref_grid_twod(ref_grid)) {
+        h[3] = 0.0;
+        h[4] = 0.0;
+        h[5] = 0.0;
+      }
+      for (im = 0; im < 6; im++) {
+        metric[im + 6 * node] += h[im];
       }
     }
   }
   free(hess);
   ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
+
+  ref_free(blend);
 
   RAS(0 < total_timesteps, "expected one or more timesteps");
   inv_total = 1.0 / (REF_DBL)total_timesteps;
