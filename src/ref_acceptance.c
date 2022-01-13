@@ -159,7 +159,7 @@ static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
 static REF_STATUS ref_acceptance_primal_fp_sa(REF_DBL y, REF_DBL *primitive) {
   REF_DBL rho = 1.0;
   REF_DBL v = 0.0;
-  REF_DBL w = 0.0;
+  REF_DBL w;
   REF_DBL p = 1.0 / 1.4;
   REF_DBL u;
   REF_DBL y_bl_edge = 0.02;
@@ -167,15 +167,15 @@ static REF_STATUS ref_acceptance_primal_fp_sa(REF_DBL y, REF_DBL *primitive) {
   REF_DBL uplus_bl_edge;
   REF_DBL yplus, uplus;
   REF_DBL mach = 0.2;
-  REF_DBL nu_max = 200;
-  REF_DBL nu_min = 3;
+  REF_DBL nu_max = 200.0;
+  REF_DBL nu_min = 3.0;
   REF_DBL nu;
   RSS(ref_phys_spalding_uplus(yplus_bl_edge, &uplus_bl_edge), "uplus");
   yplus = y / y_bl_edge * yplus_bl_edge;
   RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
   uplus = MIN(uplus, uplus_bl_edge);
   u = uplus / uplus_bl_edge * mach;
-
+  w = 0.001 * y; /* for non-zero derivatives */
   nu = nu_max * sin(ref_math_pi * MIN(1.0, y / y_bl_edge));
   if (y > 0.5 * y_bl_edge) nu = MAX(nu, nu_min);
 
