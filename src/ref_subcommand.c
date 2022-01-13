@@ -2274,6 +2274,8 @@ static REF_STATUS hrles_fixed_point_metric(
     printf("--hrles %f Mach %e Reynolds number of %d ldim\n", mach,
            reynolds_number, ldim);
 
+  RAS(ref_dict_n(ref_dict_bcs) > 0, "no viscous walls set");
+
   ref_malloc(blend, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
