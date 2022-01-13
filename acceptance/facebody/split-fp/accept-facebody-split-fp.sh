@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+\0;95;0c#!/usr/bin/env bash
 
 set -x # echo commands
 set -e # exit on first error
@@ -19,6 +19,7 @@ function adapt_cycle {
     inproj=$1
     outproj=$2
     complexity=$3
+    hrles="$4"
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
 	  ${inproj}_volume.solb
@@ -31,7 +32,8 @@ function adapt_cycle {
 
     ${src}/ref loop ${inproj} ${outproj} ${complexity} \
 	  ${egads} -s 5 \
-	  --fixed-point _mach_ 100 100 200 > ${inproj}-loop.txt
+	  --fixed-point _mach_ 100 100 200 \
+	  ${hrles} | tee ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
 	  ${outproj}_volume.solb
@@ -43,10 +45,11 @@ serveCSM -batch split-fp.csm > split-fp-servecsm.txt
 ${src}/ref bootstrap split-fp.egads > spit-fp-bootstrap.txt
 mv split-fp-vol.meshb cycle00.meshb
 
-adapt_cycle cycle00 cycle01 1000
-adapt_cycle cycle01 cycle02 1000
-adapt_cycle cycle02 cycle03 2000
-adapt_cycle cycle03 cycle04 2000
+adapt_cycle cycle00 cycle01 1000 ""
+adapt_cycle cycle01 cycle02 1000 ""
+adapt_cycle cycle02 cycle03 2000 ""
+adapt_cycle cycle03 cycle04 8000 \
+	    "--hrles 0.2 5000000 --fun3d-mapbc split-fp-vol.mapbc"
 
 ${src}/ref distance cycle04.meshb cycle04-distance.solb \
       --fun3d-mapbc split-fp-vol.mapbc
