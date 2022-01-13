@@ -2340,7 +2340,7 @@ static REF_STATUS hrles_fixed_point_metric(
       ref_matrix_eig(d, 2) = MAX(ref_matrix_eig(d, 2), eig_floor);
       RSS(ref_matrix_form_m(d, h), "form");
       if (ref_grid_twod(ref_grid)) {
-        h[3] = 0.0;
+        h[2] = 0.0;
         h[4] = 0.0;
         h[5] = 0.0;
       }
