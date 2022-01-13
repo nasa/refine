@@ -2270,6 +2270,9 @@ static REF_STATUS hrles_fixed_point_metric(
   REF_DBL *distance, *blend;
   REF_DBL *u, *gradu, *gradv, *gradw;
 
+  if (ref_mpi_once(ref_mpi))
+    printf("--hrles %f Mach %e Reynolds nubmer\n", mach, reynolds_number);
+
   ref_malloc(blend, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
