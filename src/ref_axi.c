@@ -185,6 +185,14 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
         pri_nodes[4] = new_nodes[2];
         pri_nodes[5] = new_nodes[5];
       }
+      if (new_nodes[3] == new_nodes[2] && new_nodes[7] == new_nodes[6]) {
+        pri_nodes[0] = new_nodes[0];
+        pri_nodes[1] = new_nodes[1];
+        pri_nodes[2] = new_nodes[2];
+        pri_nodes[3] = new_nodes[4];
+        pri_nodes[4] = new_nodes[5];
+        pri_nodes[5] = new_nodes[6];
+      }
       /*
       printf(" new %d %d %d %d    %d %d %d %d\n", new_nodes[0], new_nodes[1],
              new_nodes[2], new_nodes[3], new_nodes[4], new_nodes[5],
