@@ -35,7 +35,7 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
   REF_INT *o2n, node;
   REF_INT nhalf;
 
-  REF_INT cell, nodes[8], new_nodes[8], pyr_nodes[8];
+  REF_INT cell, nodes[8], new_nodes[8], pyr_nodes[8], pri_nodes[8];
   REF_INT nunique, unique[8];
   REF_INT new_cell;
 
@@ -142,6 +142,50 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
       if (new_nodes[1] != new_nodes[4]) new_nodes[3] = new_nodes[4];
       if (new_nodes[2] != new_nodes[5]) new_nodes[3] = new_nodes[5];
       RSS(ref_cell_add(ref_grid_tet(ref_grid), new_nodes, &new_cell),
+          "new cell");
+    }
+  }
+
+  ref_cell = ref_grid_hex(ref_grid);
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    for (node = 0; node < 8; node++) new_nodes[node] = o2n[nodes[node]];
+    RSS(ref_sort_unique_int(8, new_nodes, &nunique, unique), "uniq");
+    if (8 == nunique) continue;
+    if (8 > nunique) RSS(ref_cell_remove(ref_cell, cell), "rm qua");
+    REIS(6, nunique, "expected 6 unique hex nodes on pole");
+    if (6 == nunique) {
+      pri_nodes[0] = REF_EMPTY;
+      if (new_nodes[0] == new_nodes[1] && new_nodes[3] == new_nodes[2]) {
+        pri_nodes[0] = new_nodes[0];
+        pri_nodes[1] = new_nodes[4];
+        pri_nodes[2] = new_nodes[5];
+        pri_nodes[3] = new_nodes[3];
+        pri_nodes[4] = new_nodes[7];
+        pri_nodes[5] = new_nodes[6];
+      }
+      if (new_nodes[0] == new_nodes[3] && new_nodes[1] == new_nodes[2]) {
+        pri_nodes[0] = new_nodes[0];
+        pri_nodes[1] = new_nodes[7];
+        pri_nodes[2] = new_nodes[4];
+        pri_nodes[3] = new_nodes[1];
+        pri_nodes[4] = new_nodes[6];
+        pri_nodes[5] = new_nodes[5];
+      }
+      if (new_nodes[3] == new_nodes[7] && new_nodes[2] == new_nodes[6]) {
+        pri_nodes[0] = new_nodes[0];
+        pri_nodes[1] = new_nodes[3];
+        pri_nodes[2] = new_nodes[4];
+        pri_nodes[3] = new_nodes[1];
+        pri_nodes[4] = new_nodes[2];
+        pri_nodes[5] = new_nodes[5];
+      }
+      /*
+      printf(" new %d %d %d %d    %d %d %d %d\n", new_nodes[0], new_nodes[1],
+             new_nodes[2], new_nodes[3], new_nodes[4], new_nodes[5],
+             new_nodes[6], new_nodes[7]);
+             */
+      RSS(ref_cell_add(ref_grid_pri(ref_grid), pri_nodes, &new_cell),
           "new cell");
     }
   }
