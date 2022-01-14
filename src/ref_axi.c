@@ -105,6 +105,11 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
       RSS(ref_cell_add(ref_grid_tri(ref_grid), new_nodes, &new_cell),
           "new cell");
     }
+    if (4 == nunique) {
+      for (node = 0; node < 4; node++) new_nodes[node] = o2n[nodes[node]];
+      new_nodes[4] = nodes[4];
+      RSS(ref_cell_replace_whole(ref_cell, cell, new_nodes), "renum");
+    }
   }
 
   ref_cell = ref_grid_pri(ref_grid);
