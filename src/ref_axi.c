@@ -68,6 +68,8 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
     }
   }
 
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
   ref_cell = ref_grid_tri(ref_grid);
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
