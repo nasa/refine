@@ -120,6 +120,63 @@ static REF_STATUS ref_prism_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_hex_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                               REF_DBL z0, REF_DBL z1) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT nodes[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+  REF_INT cell, node;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
+  ref_grid = *ref_grid_ptr;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_node_add(ref_node, 0, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = z0;
+
+  RSS(ref_node_add(ref_node, 1, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = z0;
+
+  RSS(ref_node_add(ref_node, 2, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = z0;
+
+  RSS(ref_node_add(ref_node, 3, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = z0;
+
+  RSS(ref_node_add(ref_node, 4, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = z1;
+
+  RSS(ref_node_add(ref_node, 5, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 0.0;
+  ref_node_xyz(ref_node, 2, node) = z1;
+
+  RSS(ref_node_add(ref_node, 6, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 1.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = z1;
+
+  RSS(ref_node_add(ref_node, 7, &node), "add node");
+  ref_node_xyz(ref_node, 0, node) = 0.0;
+  ref_node_xyz(ref_node, 1, node) = 1.0;
+  ref_node_xyz(ref_node, 2, node) = z1;
+
+  RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &cell), "add prism");
+
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -361,6 +418,38 @@ int main(int argc, char *argv[]) {
     REIS(0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
     REIS(0, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
     REIS(1, ref_cell_n(ref_grid_tet(ref_grid)), "tet n");
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* don't collapse hex */
+    REF_GRID ref_grid;
+
+    RSS(ref_hex_grid(&ref_grid, ref_mpi, 1.0, 2.0), "hex fixture");
+    RSS(ref_axi_wedge(ref_grid), "wedge");
+
+    REIS(8, ref_node_n(ref_grid_node(ref_grid)), "node n");
+
+    REIS(1, ref_cell_n(ref_grid_hex(ref_grid)), "hex n");
+    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
+    REIS(0, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
+    REIS(0, ref_cell_n(ref_grid_tet(ref_grid)), "tet n");
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* collapse hex to pri */
+    REF_GRID ref_grid;
+
+    RSS(ref_hex_grid(&ref_grid, ref_mpi, 0.0, 2.0), "hex fixture");
+    RSS(ref_axi_wedge(ref_grid), "wedge");
+
+    REIS(6, ref_node_n(ref_grid_node(ref_grid)), "node n");
+
+    REIS(0, ref_cell_n(ref_grid_hex(ref_grid)), "hex n");
+    REIS(1, ref_cell_n(ref_grid_pri(ref_grid)), "pri n");
+    REIS(0, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr n");
+    REIS(0, ref_cell_n(ref_grid_tet(ref_grid)), "tet n");
 
     RSS(ref_grid_free(ref_grid), "free");
   }
