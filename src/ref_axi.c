@@ -180,7 +180,7 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
         pri_nodes[5] = new_nodes[6];
       }
 
-      /* 0: 1 5 6 2 */
+      /* 1: 1 5 6 2 */
       if (new_nodes[1] == new_nodes[2] && new_nodes[5] == new_nodes[6]) {
         pri_nodes[0] = new_nodes[0];
         pri_nodes[1] = new_nodes[1];
@@ -198,7 +198,7 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
         pri_nodes[5] = new_nodes[2];
       }
 
-      /* 3: 0 3 7 4 */
+      /* 2: 2 6 7 3 */
       if (new_nodes[3] == new_nodes[7] && new_nodes[2] == new_nodes[6]) {
         pri_nodes[0] = new_nodes[0];
         pri_nodes[1] = new_nodes[3];
@@ -215,6 +215,25 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
         pri_nodes[4] = new_nodes[5];
         pri_nodes[5] = new_nodes[6];
       }
+
+      /* 3: 0 3 7 4 */
+      if (new_nodes[0] == new_nodes[4] && new_nodes[3] == new_nodes[7]) {
+        pri_nodes[0] = new_nodes[0];
+        pri_nodes[1] = new_nodes[5];
+        pri_nodes[2] = new_nodes[1];
+        pri_nodes[3] = new_nodes[3];
+        pri_nodes[4] = new_nodes[6];
+        pri_nodes[5] = new_nodes[1];
+      }
+      if (new_nodes[0] == new_nodes[3] && new_nodes[4] == new_nodes[7]) {
+        pri_nodes[0] = new_nodes[0];
+        pri_nodes[1] = new_nodes[1];
+        pri_nodes[2] = new_nodes[2];
+        pri_nodes[3] = new_nodes[4];
+        pri_nodes[4] = new_nodes[5];
+        pri_nodes[5] = new_nodes[6];
+      }
+
       /* 4: 0 1 2 3 */
       if (new_nodes[0] == new_nodes[1] && new_nodes[3] == new_nodes[2]) {
         pri_nodes[0] = new_nodes[0];
