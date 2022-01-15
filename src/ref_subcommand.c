@@ -2337,7 +2337,7 @@ static REF_STATUS hrles_fixed_point_metric(
       }
       RSS(ref_matrix_diag_m(h, d), "diag");
       /* 0-RANS 1-LES */
-      eig_ratio = MAX(1.0e-5, blend[node]);
+      eig_ratio = MAX(0.0, 2.0*blend[node]-1.0);
       max_eig = MAX(ref_matrix_eig(d, 0), ref_matrix_eig(d, 1));
       max_eig = MAX(max_eig, ref_matrix_eig(d, 2));
       eig_floor = max_eig * eig_ratio * eig_ratio;
