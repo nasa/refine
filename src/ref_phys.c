@@ -1183,6 +1183,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
+/* 0-RANS 1-LES */
 REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
                                REF_DBL sqrt_vel_grad_dot_grad, REF_DBL distance,
                                REF_DBL nu, REF_DBL *fd) {
