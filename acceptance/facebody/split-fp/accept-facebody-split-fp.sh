@@ -1,4 +1,4 @@
-\0;95;0c#!/usr/bin/env bash
+#!/usr/bin/env bash
 
 set -x # echo commands
 set -e # exit on first error
@@ -31,9 +31,10 @@ function adapt_cycle {
           ${inproj}_mach_200.solb
 
     ${src}/ref loop ${inproj} ${outproj} ${complexity} \
-	  ${egads} -s 5 \
+	  ${egads} \
 	  --fixed-point _mach_ 100 100 200 \
-	  ${hrles} | tee ${inproj}-loop.txt
+	  ${hrles} \
+          -s 5 | tee ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
 	  ${outproj}_volume.solb
@@ -49,7 +50,7 @@ adapt_cycle cycle00 cycle01 1000 ""
 adapt_cycle cycle01 cycle02 1000 ""
 adapt_cycle cycle02 cycle03 2000 ""
 adapt_cycle cycle03 cycle04 8000 \
-	    "--hrles 0.2 5000000 --fun3d-mapbc split-fp-vol.mapbc"
+	    "--hrles 0.2 5000000 --fun3d-mapbc split-fp-vol.mapbc -s 10"
 
 ${src}/ref distance cycle04.meshb cycle04-distance.solb \
       --fun3d-mapbc split-fp-vol.mapbc

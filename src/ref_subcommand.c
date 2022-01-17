@@ -2267,7 +2267,7 @@ static REF_STATUS hrles_fixed_point_metric(
   REF_DBL inv_total;
   REF_INT im, node;
   REF_INT fixed_point_ldim;
-  REF_DBL *distance, *blend;
+  REF_DBL *distance, *blend, *aspect_ratio_field;
   REF_DBL *u, *gradu, *gradv, *gradw;
 
   if (ref_mpi_once(ref_mpi))
@@ -2331,34 +2331,13 @@ static REF_STATUS hrles_fixed_point_metric(
     ref_free(scalar);
     total_timesteps++;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL eig_ratio, h[6], d[12], max_eig, eig_floor;
       for (im = 0; im < 6; im++) {
-        h[im] = hess[im + 6 * node];
-      }
-      RSS(ref_matrix_diag_m(h, d), "diag");
-      /* 0-RANS 1-LES */
-      eig_ratio = MAX(0.0, 2.0*blend[node]-1.0);
-      max_eig = MAX(ref_matrix_eig(d, 0), ref_matrix_eig(d, 1));
-      max_eig = MAX(max_eig, ref_matrix_eig(d, 2));
-      eig_floor = max_eig * eig_ratio * eig_ratio;
-      ref_matrix_eig(d, 0) = MAX(ref_matrix_eig(d, 0), eig_floor);
-      ref_matrix_eig(d, 1) = MAX(ref_matrix_eig(d, 1), eig_floor);
-      ref_matrix_eig(d, 2) = MAX(ref_matrix_eig(d, 2), eig_floor);
-      RSS(ref_matrix_form_m(d, h), "form");
-      if (ref_grid_twod(ref_grid)) {
-        h[2] = 0.0;
-        h[4] = 0.0;
-        h[5] = 0.0;
-      }
-      for (im = 0; im < 6; im++) {
-        metric[im + 6 * node] += h[im];
+        metric[im + 6 * node] += hess[im + 6 * node];
       }
     }
   }
   free(hess);
   ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
-
-  ref_free(blend);
 
   RAS(0 < total_timesteps, "expected one or more timesteps");
   inv_total = 1.0 / (REF_DBL)total_timesteps;
@@ -2372,6 +2351,25 @@ static REF_STATUS hrles_fixed_point_metric(
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
       "local lp norm scaling");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+
+  ref_malloc(aspect_ratio_field, ref_node_max(ref_grid_node(ref_grid)),
+             REF_DBL);
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    REF_DBL blend_clip;
+    REF_DBL thresh = 0.5;
+    /* blend: 0-RANS 1-LES */
+    /* when blend is less than thresh, keep RANS */
+    blend_clip = MAX(0.0, (blend[node] - thresh) / (1.0 - thresh));
+    if (ref_math_divisible(1.0, blend_clip)) {
+      aspect_ratio_field[node] = 1.0 / blend_clip;
+    } else {
+      aspect_ratio_field[node] = 1.0e15; /* unlimited */
+    }
+  }
+  RSS(ref_metric_limit_aspect_ratio_field(metric, ref_grid, aspect_ratio_field),
+      "limit aspect ratio");
+  ref_free(aspect_ratio_field);
+  ref_free(blend);
 
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
