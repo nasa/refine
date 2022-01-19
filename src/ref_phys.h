@@ -80,6 +80,10 @@ REF_STATUS ref_phys_wall_distance_static(REF_GRID ref_grid, REF_DICT ref_dict,
 REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
                                   REF_DBL *distance);
 
+REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
+                               REF_DBL sqrt_vel_grad_dot_grad, REF_DBL distance,
+                               REF_DBL nu, REF_DBL *fd);
+
 END_C_DECLORATION
 
 #endif /* REF_PHYS_H */

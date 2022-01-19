@@ -1,0 +1,22 @@
+
+skbeg     0   0   0   0
+   linseg 1 0 0
+   linseg 3 0 0
+   linseg 3 1 0
+   linseg 0 1 0
+   linseg 0 0 0
+skend     0
+
+select edge 1
+attribute bc_name $4000_plate
+select edge 2
+attribute bc_name $6663_shear
+select edge 3
+attribute bc_name $5000_outflow
+select edge 4
+attribute bc_name $5000_roof
+select edge 5
+attribute bc_name $5000_inflow
+
+dump split-fp.egads
+

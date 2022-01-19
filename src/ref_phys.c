@@ -1182,3 +1182,21 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   ref_free(a_size);
   return REF_SUCCESS;
 }
+
+/* 0-RANS 1-LES */
+REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
+                               REF_DBL sqrt_vel_grad_dot_grad, REF_DBL distance,
+                               REF_DBL nu, REF_DBL *fd) {
+  REF_DBL rd;
+  REF_DBL kappa = 0.41;
+  REF_DBL num, denom;
+  num = mach * nu / reynolds_number;
+  denom = sqrt_vel_grad_dot_grad * kappa * kappa * distance * distance;
+  if (ref_math_divisible(num, denom)) {
+    rd = num / denom;
+    *fd = 1.0 - tanh(pow(8.0 * rd, 3));
+  } else {
+    *fd = 0.0;
+  };
+  return REF_SUCCESS;
+}

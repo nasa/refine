@@ -2253,6 +2253,132 @@ static REF_STATUS fixed_point_metric(
   return REF_SUCCESS;
 }
 
+static REF_STATUS hrles_fixed_point_metric(
+    REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
+    REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
+    const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
+    REF_DBL gradation, REF_DBL complexity, REF_DICT ref_dict_bcs, REF_INT ldim,
+    REF_DBL *field, REF_DBL mach, REF_DBL reynolds_number) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *hess, *scalar;
+  REF_INT timestep, total_timesteps;
+  char solb_filename[1024];
+  REF_DBL inv_total;
+  REF_INT im, node;
+  REF_INT fixed_point_ldim;
+  REF_DBL *distance, *blend, *aspect_ratio_field;
+  REF_DBL *u, *gradu, *gradv, *gradw;
+
+  if (ref_mpi_once(ref_mpi))
+    printf("--hrles %f Mach %e Reynolds number of %d ldim\n", mach,
+           reynolds_number, ldim);
+
+  RAS(ref_dict_n(ref_dict_bcs) > 0, "no viscous walls set");
+
+  ref_malloc(blend, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
+  ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+
+  ref_malloc_init(u, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(gradu, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(gradv, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(gradw, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+
+  each_ref_node_valid_node(ref_node, node) { u[node] = field[1 + ldim * node]; }
+  RSS(ref_recon_gradient(ref_grid, u, gradu, reconstruction), "gu");
+  ref_mpi_stopwatch_stop(ref_mpi, "gradu");
+
+  each_ref_node_valid_node(ref_node, node) { u[node] = field[2 + ldim * node]; }
+  RSS(ref_recon_gradient(ref_grid, u, gradv, reconstruction), "gv");
+  ref_mpi_stopwatch_stop(ref_mpi, "gradv");
+  each_ref_node_valid_node(ref_node, node) { u[node] = field[3 + ldim * node]; }
+  RSS(ref_recon_gradient(ref_grid, u, gradw, reconstruction), "gw");
+  ref_mpi_stopwatch_stop(ref_mpi, "gradw");
+  each_ref_node_valid_node(ref_node, node) {
+    REF_DBL sqrtgrad;
+    REF_DBL nu, fd;
+    sqrtgrad = sqrt(gradu[0 + 3 * node] * gradu[0 + 3 * node] +
+                    gradu[1 + 3 * node] * gradu[1 + 3 * node] +
+                    gradu[2 + 3 * node] * gradu[2 + 3 * node] +
+                    gradv[0 + 3 * node] * gradv[0 + 3 * node] +
+                    gradv[1 + 3 * node] * gradv[1 + 3 * node] +
+                    gradv[2 + 3 * node] * gradv[2 + 3 * node] +
+                    gradw[0 + 3 * node] * gradw[0 + 3 * node] +
+                    gradw[1 + 3 * node] * gradw[1 + 3 * node] +
+                    gradw[2 + 3 * node] * gradw[2 + 3 * node]);
+    nu = field[5 + ldim * node];
+    RSS(ref_phys_ddes_blend(mach, reynolds_number, sqrtgrad, distance[node], nu,
+                            &fd),
+        "blend");
+    blend[node] = fd;
+  }
+  ref_free(distance);
+
+  ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  total_timesteps = 0;
+  for (timestep = first_timestep; timestep <= last_timestep;
+       timestep += timestep_increment) {
+    snprintf(solb_filename, 1024, "%s%s%d.solb", in_project, solb_middle,
+             timestep);
+    if (ref_mpi_once(ref_mpi))
+      printf("read and hess recon for %s\n", solb_filename);
+    RSS(ref_part_scalar(ref_grid, &fixed_point_ldim, &scalar, solb_filename),
+        "unable to load scalar");
+    REIS(1, fixed_point_ldim, "expected one scalar");
+    RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+    ref_free(scalar);
+    total_timesteps++;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (im = 0; im < 6; im++) {
+        metric[im + 6 * node] += hess[im + 6 * node];
+      }
+    }
+  }
+  free(hess);
+  ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
+
+  RAS(0 < total_timesteps, "expected one or more timesteps");
+  inv_total = 1.0 / (REF_DBL)total_timesteps;
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (im = 0; im < 6; im++) {
+      metric[im + 6 * node] *= inv_total;
+    }
+  }
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+      "local lp norm scaling");
+  ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+
+  ref_malloc(aspect_ratio_field, ref_node_max(ref_grid_node(ref_grid)),
+             REF_DBL);
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    REF_DBL blend_clip;
+    REF_DBL thresh = 0.5;
+    /* blend: 0-RANS 1-LES */
+    /* when blend is less than thresh, keep RANS */
+    blend_clip = MAX(0.0, (blend[node] - thresh) / (1.0 - thresh));
+    if (ref_math_divisible(1.0, blend_clip)) {
+      aspect_ratio_field[node] = 1.0 / blend_clip;
+    } else {
+      aspect_ratio_field[node] = 1.0e15; /* unlimited */
+    }
+  }
+  RSS(ref_metric_limit_aspect_ratio_field(metric, ref_grid, aspect_ratio_field),
+      "limit aspect ratio");
+  ref_free(aspect_ratio_field);
+  ref_free(blend);
+
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         complexity),
+      "gradation at complexity");
+  ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS extract_displaced_xyz(REF_NODE ref_node, REF_INT *ldim,
                                         REF_DBL **initial_field,
                                         REF_DBL **displaced) {
@@ -2912,20 +3038,38 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         "arg search");
     if (REF_EMPTY == deforming_pos) {
       REF_BOOL iles = REF_FALSE;
+      REF_BOOL hrles = REF_FALSE;
       RXS(ref_args_find(argc, argv, "--iles", &pos), REF_NOT_FOUND,
           "arg search");
       if (REF_EMPTY != pos) iles = REF_TRUE;
-      RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
-                             timestep_increment, in_project, solb_middle,
-                             reconstruction, p, gradation, complexity, iles,
-                             aspect_ratio),
-          "fixed point");
+      RXS(ref_args_find(argc, argv, "--hrles", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos) hrles = REF_TRUE;
+      if (hrles) {
+        REF_DBL mach, reynolds_number;
+        RAS(pos + 2 < argc,
+            "--hrles <Mach> <Reynolds nubmer> missing argument");
+        mach = atof(argv[pos + 1]);
+        reynolds_number = atof(argv[pos + 2]);
+        RSS(hrles_fixed_point_metric(metric, ref_grid, first_timestep,
+                                     last_timestep, timestep_increment,
+                                     in_project, solb_middle, reconstruction, p,
+                                     gradation, complexity, ref_dict_bcs, ldim,
+                                     initial_field, mach, reynolds_number),
+            "hrles fixed point");
+      } else {
+        RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
+                               timestep_increment, in_project, solb_middle,
+                               reconstruction, p, gradation, complexity, iles,
+                               aspect_ratio),
+            "fixed point");
+      }
     } else {
       RSS(moving_fixed_point_metric(metric, ref_grid, first_timestep,
                                     last_timestep, timestep_increment,
                                     in_project, solb_middle, reconstruction, p,
                                     gradation, complexity),
-          "fixed point");
+          "moving fixed point");
     }
   }
   if (multiscale_metric) {

@@ -156,6 +156,39 @@ static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_acceptance_primal_fp_sa(REF_DBL y, REF_DBL *primitive) {
+  REF_DBL rho = 1.0;
+  REF_DBL v = 0.0;
+  REF_DBL w;
+  REF_DBL p = 1.0 / 1.4;
+  REF_DBL u;
+  REF_DBL y_bl_edge = 0.02;
+  REF_DBL yplus_bl_edge = 10000.0;
+  REF_DBL uplus_bl_edge;
+  REF_DBL yplus, uplus;
+  REF_DBL mach = 0.2;
+  REF_DBL nu_max = 200.0;
+  REF_DBL nu_min = 3.0;
+  REF_DBL nu;
+  RSS(ref_phys_spalding_uplus(yplus_bl_edge, &uplus_bl_edge), "uplus");
+  yplus = y / y_bl_edge * yplus_bl_edge;
+  RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+  uplus = MIN(uplus, uplus_bl_edge);
+  u = uplus / uplus_bl_edge * mach;
+  w = 0.001 * y; /* for non-zero derivatives */
+  nu = nu_max * sin(ref_math_pi * MIN(1.0, y / y_bl_edge));
+  if (y > 0.5 * y_bl_edge) nu = MAX(nu, nu_min);
+
+  primitive[0] = rho;
+  primitive[1] = u;
+  primitive[2] = v;
+  primitive[3] = w;
+  primitive[4] = p;
+  primitive[5] = nu;
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_acceptance_primal_vortex(REF_DBL x, REF_DBL y,
                                                REF_DBL *primitive) {
   REF_DBL gamma = 1.4;
@@ -321,6 +354,14 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       REF_DBL vel;
       RSS(ref_acceptance_u_lisbon(x, y, &vel), "lisbon");
       scalar[node] = vel;
+    } else if (strcmp(function_name, "fp-sa") == 0) {
+      REF_DBL u, v, w;
+      REF_DBL primitive[6];
+      RSS(ref_acceptance_primal_fp_sa(y, primitive), "flat plate sa");
+      u = primitive[1];
+      v = primitive[2];
+      w = primitive[3];
+      scalar[node] = sqrt(u * u + v * v + w * w);
     } else if (strcmp(function_name, "trig") == 0) {
       REF_DBL rho, pressure, u, v, w, mach;
       REF_DBL primitive[5];
@@ -371,6 +412,9 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
   REF_INT node;
 
   *ldim = 5;
+  if (strcmp(function_name, "fp-sa") == 0) {
+    *ldim = 6;
+  }
   if (strcmp(function_name, "sst") == 0) {
     *ldim = 7;
   }
@@ -409,6 +453,13 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
                                         primitive),
           "ringleb");
       for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+    } else if (strcmp(function_name, "fp-sa") == 0) {
+      REF_INT i;
+      REF_DBL primitive[6];
+      RSS(ref_acceptance_primal_fp_sa(ref_node_xyz(ref_node, 1, node),
+                                      primitive),
+          "flat plate sa");
+      for (i = 0; i < 6; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
     } else if (strcmp(function_name, "sst") == 0) {
       REF_INT i;
       for (i = 0; i < 7; i++) (*scalar)[i + (*ldim) * node] = (REF_DBL)(i + 1);

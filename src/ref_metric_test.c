@@ -137,6 +137,7 @@ int main(int argc, char *argv[]) {
   REF_INT gradation_pos = REF_EMPTY;
   REF_INT cloud_pos = REF_EMPTY;
   REF_INT wake_pos = REF_EMPTY;
+  REF_INT hrles_pos = REF_EMPTY;
   REF_INT stepexp_pos = REF_EMPTY;
   REF_INT decompose_pos = REF_EMPTY;
   REF_INT imply_pos = REF_EMPTY;
@@ -195,6 +196,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--cloud", &cloud_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--wake", &wake_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--hrles", &hrles_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--stepexp", &stepexp_pos), REF_NOT_FOUND,
       "arg search");
@@ -1865,6 +1868,112 @@ int main(int argc, char *argv[]) {
       printf("writing metric %s\n", argv[5]);
     RSS(ref_gather_metric(ref_grid, argv[5]), "export scaled metric");
     ref_mpi_stopwatch_stop(ref_mpi, "dump metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "done.");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (hrles_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *dist, *field, *blend;
+    REF_INT node, ldim;
+    REF_DBL *u, *gradu, *gradv, *gradw;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
+    REIS(1, hrles_pos,
+         "required args: --hrles grid.ext distance.solb volume.solb");
+    REIS(5, argc, "required args: --hrles grid.ext distance.solb volume.solb");
+    if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to part grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &dist, argv[3]),
+        "unable to load distance in position 3");
+    if (ref_mpi_once(ref_mpi)) printf("distance ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read dist");
+    REIS(1, ldim, "expect [distance]");
+    if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[4]),
+        "unable to load solution in position 4");
+    if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read vol");
+    REIS(6, ldim, "expect [rho,u,v,w,p,turb1]");
+
+    ref_malloc(blend, ref_node_max(ref_node), REF_DBL);
+
+    ref_malloc_init(u, ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(gradu, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(gradv, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(gradw, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+
+    each_ref_node_valid_node(ref_node, node) {
+      u[node] = field[1 + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, u, gradu, reconstruction), "gu");
+    ref_mpi_stopwatch_stop(ref_mpi, "gradu");
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_node_valid_node(ref_node, node) {
+        u[node] = field[3 + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, u, gradv, reconstruction), "gv");
+      ref_mpi_stopwatch_stop(ref_mpi, "swap gradv");
+      each_ref_node_valid_node(ref_node, node) {
+        u[node] = field[2 + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, u, gradw, reconstruction), "gw");
+      ref_mpi_stopwatch_stop(ref_mpi, "swap gradw");
+    } else {
+      each_ref_node_valid_node(ref_node, node) {
+        u[node] = field[2 + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, u, gradv, reconstruction), "gv");
+      ref_mpi_stopwatch_stop(ref_mpi, "gradv");
+      each_ref_node_valid_node(ref_node, node) {
+        u[node] = field[3 + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, u, gradw, reconstruction), "gw");
+      ref_mpi_stopwatch_stop(ref_mpi, "gradw");
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL mach = 0.2;
+      REF_DBL reynolds_number = 5.0e6;
+      REF_DBL sqrtgrad;
+      REF_DBL nu, fd;
+      sqrtgrad = sqrt(gradu[0 + 3 * node] * gradu[0 + 3 * node] +
+                      gradu[1 + 3 * node] * gradu[1 + 3 * node] +
+                      gradu[2 + 3 * node] * gradu[2 + 3 * node] +
+                      gradv[0 + 3 * node] * gradv[0 + 3 * node] +
+                      gradv[1 + 3 * node] * gradv[1 + 3 * node] +
+                      gradv[2 + 3 * node] * gradv[2 + 3 * node] +
+                      gradw[0 + 3 * node] * gradw[0 + 3 * node] +
+                      gradw[1 + 3 * node] * gradw[1 + 3 * node] +
+                      gradw[2 + 3 * node] * gradw[2 + 3 * node]);
+      nu = field[5 + ldim * node];
+      RSS(ref_phys_ddes_blend(mach, reynolds_number, sqrtgrad, dist[node], nu,
+                              &fd),
+          "blend");
+      blend[node] = fd;
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "blend");
+    ref_free(gradw);
+    ref_free(gradv);
+    ref_free(gradu);
+    ref_free(u);
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, blend, NULL,
+                                       "ref_metric_blend.plt"),
+        "tec");
+    ref_free(blend);
+    ref_mpi_stopwatch_stop(ref_mpi, "gather blend plt");
+
+    ref_free(field);
+    ref_free(dist);
 
     RSS(ref_grid_free(ref_grid), "free");
     ref_mpi_stopwatch_stop(ref_mpi, "done.");
