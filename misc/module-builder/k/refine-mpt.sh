@@ -62,8 +62,6 @@ set modmode  [module-info mode]
 set base    $MODULE_BASE
 set version $VERSION
 
-prereq ${MPT_MODULE}
-
 set logr "/bin"
 
 if { \$modmode == "switch1" } {
