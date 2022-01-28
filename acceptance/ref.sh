@@ -76,6 +76,7 @@ ${source_dir}/configure \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    --with-compiler-rpath=${compiler_rpath} \
     CC=icc  > $LOG 2>&1
 trap - EXIT
 
@@ -103,6 +104,7 @@ ${source_dir}/configure \
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
+    --with-compiler-rpath=${compiler_rpath} \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
     CC=mpicc > $LOG 2>&1
 trap - EXIT
@@ -131,6 +133,7 @@ ${source_dir}/configure \
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
+    --with-compiler-rpath=${compiler_rpath} \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv -fp-stack-check -fstack-protector-all -fstack-security-check' \
     CC=mpicc > $LOG 2>&1
 trap - EXIT
