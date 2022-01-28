@@ -4,7 +4,7 @@ module use --append /u/shared/fun3d/fun3d_users/modulefiles
 module use --append /u/shared/wtjones1/Modules/modulefiles
 
 export compile_modules="gcc_6.2.0 intel_2017.2.174"
-export compiler_rpath="/usr/local/pkgs-modules/gcc_6.2.0/lib64"
+export compiler_rpath="/usr/local/pkgs-modules/intel_2017.0.098/compilers_and_libraries_2017.2.174/linux/compiler/lib/intel64_lin"
 
 export run_modules="openmpi_2.1.1_intel_2017 tetgen ESP/120 GEOLAB/geolab_64 GEOLAB/AFLR3-16.28.5 valgrind_3.13.0"
 
