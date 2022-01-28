@@ -147,6 +147,9 @@ trap - EXIT
 
 date
 
+module purge
+module load ${run_modules}
+
 LOG=${root_dir}/log.zoltan-unit
 trap "cat $LOG" EXIT
 cd ${zoltan_dir}/src
