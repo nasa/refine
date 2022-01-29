@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "cleanup");
   }
 
-  { /* single tet enclosing */
+  if (!ref_mpi_para(ref_mpi)) { /* single tet enclosing */
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[4];
     REF_INT tet;
@@ -324,7 +324,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "cleanup");
   }
 
-  { /* walk to find enclosing tet */
+  if (!ref_mpi_para(ref_mpi)) { /* walk to find enclosing tet */
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[4];
     REF_INT tet;
@@ -345,7 +345,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "cleanup");
   }
 
-  { /* walk to find enclosing tet falls outside*/
+  if (!ref_mpi_para(ref_mpi)) { /* walk to find enclosing tet falls outside*/
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[4];
     REF_INT tet;
