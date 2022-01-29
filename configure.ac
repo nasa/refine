@@ -20,6 +20,16 @@ AC_PROG_RANLIB
 AC_PROG_CC
 AM_PROG_CC_C_O
 
+dnl compiler rpath
+AC_ARG_WITH(compiler-rpath,
+	[  --with-compiler-rpath[=ARG] use rpath for compiler [ARG=no]],
+	[with_compiler_rpath=$withval],        [with_compiler_rpath="no"])
+if test "$with_compiler_rpath" != 'no'
+then
+  compiler_rpath_ldadd="-Wl,-rpath,${with_compiler_rpath} -L${with_compiler_rpath}"
+  AC_SUBST([compiler_rpath_ldadd])
+fi
+
 dnl mpi autostuff
 AC_ARG_WITH(mpi,
         [[  --with-mpi[=ARG]        Path to MPI library installation [ARG=no]]],
@@ -66,7 +76,6 @@ then
 else
   AM_CONDITIONAL(BUILD_MPI,false)
 fi
-
 
 AC_ARG_WITH(zoltan,
 	[  --with-zoltan[=ARG]       use Zoltan partitioner [ARG=no]],

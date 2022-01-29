@@ -16,6 +16,7 @@ ESP="ESP/${ESP_VERSION}"
 
 echo Build ${PACKAGE} ${VERSION}
 
+# do not load gcc, it will create a module dependency
 module purge
 module load ${INTEL_MODULE}
 module load ${MPT_MODULE}
@@ -60,9 +61,6 @@ set modmode  [module-info mode]
 
 set base    $MODULE_BASE
 set version $VERSION
-
-prereq ${INTEL_MODULE}
-prereq ${MPT_MODULE}
 
 set logr "/bin"
 

@@ -137,7 +137,7 @@ lib_LIBRARIES += librefine_without_meshlink.a
 librefine_without_meshlink_a_SOURCES = \
 	ref_meshlink.c
 
-default_ldadd += @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
+default_ldadd += @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @compiler_rpath_ldadd@ -lm
 
 bin_PROGRAMS =
 
@@ -148,11 +148,11 @@ ref_LDADD = $(default_ldadd)
 if BUILD_MPI
 bin_PROGRAMS += refmpi
 refmpi_SOURCES = ref_subcommand.c
-refmpi_LDADD = librefine_core.a librefine_with_mpi.a $(egadslite_lib) $(meshlink_lib) @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpi_LDADD = librefine_core.a librefine_with_mpi.a $(egadslite_lib) $(meshlink_lib) @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ @compiler_rpath_ldadd@ -lm
 
 bin_PROGRAMS += refmpifull
 refmpifull_SOURCES = ref_subcommand.c
-refmpifull_LDADD = librefine_core.a librefine_with_mpi.a $(egads_lib) $(meshlink_lib) @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpifull_LDADD = librefine_core.a librefine_with_mpi.a $(egads_lib) $(meshlink_lib) @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ @compiler_rpath_ldadd@ -lm
 endif
 
 bin_PROGRAMS += ref_driver
