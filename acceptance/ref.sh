@@ -157,6 +157,7 @@ mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_dict_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_grid_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_interp_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_iso_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_metric_test >> $LOG 2>&1
@@ -175,6 +176,7 @@ mpiexec -np 8 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_dict_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_grid_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_interp_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_iso_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_metric_test >> $LOG 2>&1
@@ -200,6 +202,7 @@ which mpiexec >> $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_grid_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_interp_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_iso_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_metric_test >> $LOG 2>&1
@@ -217,6 +220,7 @@ mpiexec -np 2 ./ref_subdiv_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_grid_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_interp_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_iso_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_metric_test >> $LOG 2>&1
