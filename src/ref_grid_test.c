@@ -366,6 +366,24 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "cleanup");
   }
 
+  {
+    REF_GRID ref_grid;
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tet");
+    {
+      REF_GRID orig;
+      orig = ref_grid;
+      RSS(ref_grid_deep_copy(&ref_grid, orig), "deep copy");
+      ref_grid_free(orig);
+    }
+    {
+      REF_INT *node_int;
+      ref_malloc(node_int, ref_node_max(ref_grid_node(ref_grid)), REF_INT);
+      RSS(ref_node_ghost_int(ref_grid_node(ref_grid), node_int, 1), "ghost");
+      ref_free(node_int);
+    }
+    RSS(ref_grid_free(ref_grid), "cleanup");
+  }
+
   if (!ref_mpi_para(ref_mpi)) {
     REF_GRID twod_grid, ref_grid;
     REF_BOOL twod_brick_wound_correctly = REF_FALSE;

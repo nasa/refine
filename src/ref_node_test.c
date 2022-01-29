@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   { /* deep copy empty */
     REF_NODE original, copy;
     RSS(ref_node_create(&original, ref_mpi), "create");
-    RSS(ref_node_deep_copy(&copy, original), "deep copy");
+    RSS(ref_node_deep_copy(&copy, ref_mpi, original), "deep copy");
 
     RSS(ref_node_free(original), "free");
     RSS(ref_node_free(copy), "free");

@@ -99,7 +99,8 @@ REF_STATUS ref_node_free(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original) {
+REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_MPI ref_mpi,
+                              REF_NODE original) {
   REF_INT max, node, i;
   REF_NODE ref_node;
 
@@ -146,7 +147,7 @@ REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original) {
         ref_node_aux(ref_node, i, node) = ref_node_aux(original, i, node);
   }
 
-  ref_node_mpi(ref_node) = ref_node_mpi(original); /* reference only */
+  ref_node_mpi(ref_node) = ref_mpi; /* reference only */
 
   ref_node->n_unused = original->n_unused;
   ref_node->max_unused = original->max_unused;
@@ -171,7 +172,8 @@ REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original) {
 REF_STATUS ref_node_pack(REF_NODE ref_node, REF_INT *o2n, REF_INT *n2o) {
   REF_INT i, node;
   REF_NODE copy;
-  RSS(ref_node_deep_copy(&copy, ref_node), "make a copy first");
+  RSS(ref_node_deep_copy(&copy, ref_node_mpi(ref_node), ref_node),
+      "make a copy first");
 
   for (node = 0; node < ref_node_n(ref_node); node++)
     ref_node->global[node] = copy->global[n2o[node]];

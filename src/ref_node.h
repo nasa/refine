@@ -110,7 +110,8 @@ struct REF_NODE_STRUCT {
 REF_STATUS ref_node_create(REF_NODE *ref_node, REF_MPI ref_mpi);
 REF_STATUS ref_node_free(REF_NODE ref_node);
 
-REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original);
+REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_MPI ref_mpi,
+                              REF_NODE original);
 REF_STATUS ref_node_pack(REF_NODE ref_node, REF_INT *o2n, REF_INT *n2o);
 
 REF_STATUS ref_node_inspect(REF_NODE ref_node);

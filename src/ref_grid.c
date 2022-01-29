@@ -82,7 +82,8 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
   RSS(ref_mpi_deep_copy(&ref_grid_mpi(ref_grid), ref_grid_mpi(original)),
       "deep copy ref_mpi");
 
-  RSS(ref_node_deep_copy(&ref_grid_node(ref_grid), ref_grid_node(original)),
+  RSS(ref_node_deep_copy(&ref_grid_node(ref_grid), ref_grid_mpi(ref_grid),
+                         ref_grid_node(original)),
       "node deep copy");
 
   for (group = 0; group < REF_CELL_N_TYPE; group++) {
