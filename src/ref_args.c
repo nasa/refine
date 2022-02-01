@@ -46,12 +46,21 @@ REF_STATUS ref_args_find(REF_INT n, char **args, const char *target,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_args_char(REF_INT n, char **args, const char *target,
-                         char **value) {
+REF_STATUS ref_args_char(REF_INT n, char **args, const char *long_target,
+                         const char *short_target, char **value) {
   REF_INT pos;
   *value = NULL;
-  RAISE(ref_args_find(n, args, target, &pos));
-  RAB(pos < n - 1, "missing value", { printf("for option %s", target); });
-  *value = args[pos + 1];
-  return REF_SUCCESS;
+  if (REF_SUCCESS == ref_args_find(n, args, long_target, &pos)) {
+    RAB(pos < n - 1, "missing value",
+        { printf("for option %s", long_target); });
+    *value = args[pos + 1];
+    return REF_SUCCESS;
+  }
+  if (REF_SUCCESS == ref_args_find(n, args, short_target, &pos)) {
+    RAB(pos < n - 1, "missing value",
+        { printf("for option %s", short_target); });
+    *value = args[pos + 1];
+    return REF_SUCCESS;
+  }
+  return REF_NOT_FOUND;
 }
