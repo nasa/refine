@@ -20,8 +20,8 @@ function adapt_cycle {
     sweeps=$3
 
     ${two}/ref adapt ${inproj}.meshb \
-	  -g ega.egads \
-	  -m ${inproj}-metric.solb \
+	  --egads ega.egads \
+	  --metric ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -s ${sweeps} \
 	  -t \
 	  -f ${outproj}_stat.tec \
