@@ -99,8 +99,8 @@ static void option_auto_tprarms_help(void) {
 static void adapt_help(const char *name) {
   printf("usage: \n %s adapt input_mesh.extension [<options>]\n", name);
   printf("  -x  output_mesh.extension\n");
-  printf("  -g  geometry.egads\n");
   printf("  -m  metric.solb (geometry feature metric when missing)\n");
+  printf("  --egads <geometry.egads> (ignored with EGADSlite)\n");
   printf("  --implied-complexity [complexity] imply metric from input mesh\n");
   printf("      and scale to complexity\n");
   printf("  --spalding [y+=1] [complexity]\n");
@@ -198,6 +198,7 @@ static void loop_help(const char *name) {
       " an interpolated solution.\n");
   printf("\n");
   printf("  options:\n");
+  printf("   --egads <geometry.egads> (ignored with EGADSlite)\n");
   printf("   --norm-power <power> multiscale metric norm power.\n");
   printf("       Default power is 2 (1 for goal-based metrics)\n");
   printf("   --gradation <gradation> (default -1)\n");
