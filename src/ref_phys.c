@@ -359,7 +359,9 @@ REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
   file = fopen(mapbc_filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc_filename);
   RNS(file, "unable to open file");
-  RES(1, fscanf(file, "%d", &n), "number of lines");
+  RAS(buffer == fgets(buffer, sizeof(buffer), file),
+      "unable to read number of lines");
+  RES(1, sscanf(buffer, "%d", &n), "unable to parse number of lines");
   for (i = 0; i < n; i++) {
     RES(1, fscanf(file, "%d", &id), "read id");
     RES(1, fscanf(file, "%d", &type), "read type");

@@ -1535,6 +1535,34 @@ int main(int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
+    char file[] = "ref_phys_test_header_text.mapbc";
+    FILE *f;
+    REF_DICT ref_dict;
+    REF_INT id, type;
+
+    f = fopen(file, "w");
+    fprintf(f, "2 BCType Name\n");
+    fprintf(f, "1 4000 solid_wall_top\n");
+    fprintf(f, "2 4000 solid_wall_bottom\n");
+    fclose(f);
+
+    RSS(ref_dict_create(&ref_dict), "create");
+
+    RSS(ref_phys_read_mapbc(ref_dict, file), "read mapbc");
+
+    REIS(2, ref_dict_n(ref_dict), "lines");
+    id = 1;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(4000, type, "type");
+    id = 2;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(4000, type, "type");
+
+    RSS(ref_dict_free(ref_dict), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
     char file[] = "ref_phys_test_inflate.mapbc";
     char token[] = "inflate";
     FILE *f;
