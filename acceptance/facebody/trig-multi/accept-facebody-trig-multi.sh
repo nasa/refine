@@ -12,7 +12,7 @@ fi
 
 tecplot=-t
 field="-q trig"
-egads="--egads square.egads"
+egads="-g square.egads" # tests short version
 
 function adapt_cycle {
     inproj=$1

@@ -2629,6 +2629,7 @@ static REF_STATUS ref_subcommand_report_error(
 static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
+  char *in_egads = NULL;
   char filename[1024];
   REF_GRID ref_grid = NULL;
   REF_MPI ref_mpi = ref_mpi_orig;
@@ -2849,11 +2850,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_meshlink_open(ref_grid, argv[pos + 1]), "meshlink init");
     RSS(ref_meshlink_infer_orientation(ref_grid), "meshlink orient");
   } else {
-    RXS(ref_args_find(argc, argv, "--egads", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY != pos && pos < argc - 1) {
-      if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", argv[pos + 1]);
-      RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[pos + 1]), "load egads");
+    RXS(ref_args_char(argc, argv, "--egads", "-g", &in_egads), REF_NOT_FOUND,
+        "egads arg search");
+    if (NULL != in_egads) {
+      if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
+      RSS(ref_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
       if (ref_mpi_once(ref_mpi) && ref_geom_effective(ref_grid_geom(ref_grid)))
         printf("EBody Effective Body loaded\n");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
