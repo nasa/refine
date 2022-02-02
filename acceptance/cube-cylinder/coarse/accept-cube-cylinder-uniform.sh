@@ -17,13 +17,13 @@ geomfile=cube-cylinder.egads
 # ${two}/ref_geom_test ${geomfile} cube-cylinder.meshb.meshb
 
 ${two}/ref_acceptance cube-cylinder.meshb cube-cylinder.metric 0.1
-${two}/ref_driver -i cube-cylinder.meshb -g ${geomfile} -m cube-cylinder.metric -o ref_driver1
-${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric 0.1
-${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cube-cylinder-uniform-01.status
+${two}/ref adapt cube-cylinder.meshb -g ${geomfile} -m cube-cylinder.metric -x cube-cylinder1.meshb
+${two}/ref_acceptance cube-cylinder1.meshb cube-cylinder1.metric 0.1
+${two}/ref_metric_test cube-cylinder1.meshb cube-cylinder1.metric > accept-cube-cylinder-uniform-01.status
 
-${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -m ref_driver1.metric -o ref_driver2
-${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
-${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-uniform-02.status
+${two}/ref adapt cube-cylinder1.meshb -g ${geomfile} -m cube-cylinder1.metric -o cube-cylinder2.meshb
+${two}/ref_acceptance cube-cylinder2.meshb cube-cylinder2.metric 0.1
+${two}/ref_metric_test cube-cylinder2.meshb cube-cylinder2.metric > accept-cube-cylinder-uniform-02.status
 
 cat accept-cube-cylinder-uniform-02.status
 ../../check.rb accept-cube-cylinder-uniform-02.status 0.16 1.6
