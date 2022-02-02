@@ -819,17 +819,44 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
      --export-metric-as final-metic.solb */
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
+      size_t end_of_string;
       mesh_exported = REF_TRUE;
-      if (ref_mpi_para(ref_mpi)) {
+      end_of_string = strlen(argv[opt + 1]);
+      if (ref_grid_twod(ref_grid) && (end_of_string >= 6) &&
+          (strncmp(&((argv[opt + 1])[end_of_string - 6]), ".ugrid", 6) == 0)) {
+        REF_GRID extruded_grid;
         if (ref_mpi_once(ref_mpi))
-          printf("gather " REF_GLOB_FMT " nodes to %s\n",
-                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
-        RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
+          printf(
+              " extrusion automatically added for ugrid output of 2D mesh.\n");
+        RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
+        if (ref_mpi_para(ref_mpi)) {
+          if (ref_mpi_once(ref_mpi))
+            printf("gather " REF_GLOB_FMT " nodes to %s\n",
+                   ref_node_n_global(ref_grid_node(extruded_grid)),
+                   argv[opt + 1]);
+          RSS(ref_gather_by_extension(extruded_grid, argv[opt + 1]),
+              "gather -x");
+        } else {
+          if (ref_mpi_once(ref_mpi))
+            printf("export " REF_GLOB_FMT " nodes to %s\n",
+                   ref_node_n_global(ref_grid_node(extruded_grid)),
+                   argv[opt + 1]);
+          RSS(ref_export_by_extension(extruded_grid, argv[opt + 1]),
+              "export -x");
+        }
+        RSS(ref_grid_free(extruded_grid), "free extruded_grid");
       } else {
-        if (ref_mpi_once(ref_mpi))
-          printf("export " REF_GLOB_FMT " nodes to %s\n",
-                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
-        RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
+        if (ref_mpi_para(ref_mpi)) {
+          if (ref_mpi_once(ref_mpi))
+            printf("gather " REF_GLOB_FMT " nodes to %s\n",
+                   ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
+          RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
+        } else {
+          if (ref_mpi_once(ref_mpi))
+            printf("export " REF_GLOB_FMT " nodes to %s\n",
+                   ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
+          RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
+        }
       }
     }
     if (strcmp(argv[opt], "-f") == 0) {
