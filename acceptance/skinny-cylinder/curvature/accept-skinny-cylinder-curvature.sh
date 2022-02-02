@@ -16,10 +16,10 @@ geomfile=skinny-cylinder.egads
 
 # ${two}/ref_geom_test ${geomfile} skinny-cylinder.meshb 1 1 90
 
-${two}/ref_driver -i skinny-cylinder.meshb -g ${geomfile} -o ref_driver1 -r 1 -t
+${two}/ref adapt skinny-cylinder.meshb -g ${geomfile} -x ref_driver1.meshb -t
 mv ref_gather_movie.tec ref_driver1_movie.tec
 
-${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -o ref_driver2 -r 10 -t
+${two}/ref adapt ref_driver1.meshb -g ${geomfile} -x ref_driver2.meshb -t
 mv ref_gather_movie.tec ref_driver2_movie.tec
 
 ${two}/ref_histogram_test ref_driver2.meshb ref_driver2-final-metric.solb \

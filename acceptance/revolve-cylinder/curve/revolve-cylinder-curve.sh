@@ -12,9 +12,9 @@ else
     two=${HOME}/refine/egads/src
 fi
 
-${two}/ref_driver \
-    -i revolve-cylinder-sphere.meshb \
+${two}/ref adapt \
+    revolve-cylinder-sphere.meshb \
     -g ../sphere-gen/revolve-cylinder-sphere.egads \
-    -o revolve-cylinder-sphere-curve \
+    -x revolve-cylinder-sphere-curve.meshb \
     -t
 

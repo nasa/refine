@@ -21,7 +21,7 @@ rm -f blister-vol.meshb
 ${two}/ref boostrap ${geomfile}
 
 rm -f blister01.meshb
-${two}/ref_driver -i blister-vol.meshb -g ${geomfile} -o blister01 -t \
+${two}/ref adapt blister-vol.meshb -g ${geomfile} -x blister01.meshb -t \
       -f blister01-final.tec
 mv ref_gather_movie.tec blister01-movie.tec
 

@@ -21,7 +21,7 @@ ${two}/ref adapt cube-sphere.meshb -g ${geomfile} -m cube-sphere-metric.solb -x 
 ${two}/ref_acceptance uniform1.meshb uniform1-metric.solb 0.1
 ${two}/ref_metric_test uniform1.meshb uniform1-metric.solb > accept-cube-sphere-uniform-01.status
 
-${two}/ref_driver -i uniform1.meshb -g ${geomfile} -m uniform1-metric.solb -o uniform2
+${two}/ref adapt uniform1.meshb -g ${geomfile} -m uniform1-metric.solb -x uniform2.meshb
 ${two}/ref_acceptance uniform2.meshb uniform2-metric.solb 0.1
 ${two}/ref_metric_test uniform2.meshb uniform2-metric.solb > accept-cube-sphere-uniform-02.status
 
