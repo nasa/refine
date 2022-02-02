@@ -155,7 +155,10 @@ refmpifull_SOURCES = ref_subcommand.c
 refmpifull_LDADD = librefine_core.a librefine_with_mpi.a $(egads_lib) $(meshlink_lib) @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ @compiler_rpath_ldadd@ -lm
 endif
 
-bin_PROGRAMS += ref_driver
+noinst_PROGRAMS =
+TESTS =
+
+noinst_PROGRAMS += ref_driver
 ref_driver_SOURCES = ref_driver.c
 ref_driver_LDADD = $(default_ldadd)
 
@@ -167,12 +170,9 @@ bin_PROGRAMS += ref_inflatable
 ref_inflatable_SOURCES = ref_inflatable.c
 ref_inflatable_LDADD = $(default_ldadd)
 
-bin_PROGRAMS += ref_acceptance
+noinst_PROGRAMS += ref_acceptance
 ref_acceptance_SOURCES = ref_acceptance.c
 ref_acceptance_LDADD = $(default_ldadd)
-
-noinst_PROGRAMS =
-TESTS =
 
 TESTS += ref_adapt_test
 noinst_PROGRAMS += ref_adapt_test
