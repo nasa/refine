@@ -17,16 +17,14 @@ h=0.01
 # ${two}/ref_geom_test ega.egads
 # ${two}/ref_geom_test ega.egads ega.meshb
 ${two}/ref_acceptance ega.meshb ega.metric ${h}
-${two}/ref_driver -i ega.meshb -g ega.egads -m ega.metric -o ref_driver1 -d
-${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric ${h}
-${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cube-cylinder-linear010-01.status
+${two}/ref adapt ega.meshb -g ega.egads -m ega.metric -x ega1.meshb -d
+${two}/ref_acceptance ega1.meshb ega1.metric ${h}
+${two}/ref_metric_test ega1.meshb ega1.metric > accept-cube-cylinder-linear010-01.status
 
-${two}/ref_driver -i ref_driver1.meshb -g ega.egads -m ref_driver1.metric -o ref_driver2 -d
-${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric ${h}
-${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-linear010-02.status
+${two}/ref adapt ega1.meshb -g ega.egads -m ega1.metric -o ega2.meshb -d
+${two}/ref_acceptance ega2.meshb ega2.metric ${h}
+${two}/ref_metric_test ega2.meshb ega2.metric > accept-cube-cylinder-linear010-02.status
 
 cat accept-cube-cylinder-linear010-02.status
 ../../check.rb accept-cube-cylinder-linear010-02.status 0.3 3.0
-
-
 

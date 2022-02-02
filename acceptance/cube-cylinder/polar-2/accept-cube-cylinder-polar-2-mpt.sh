@@ -20,7 +20,7 @@ function adapt_cycle {
     sweeps=$3
     cores=$4
 
-    mpiexec -np ${cores} ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}-metric.solb -o ${outproj} -s ${sweeps} -t
+    mpiexec -np ${cores} ${two}/ref adapt ${inproj}.meshb -g ega.egads -m ${inproj}-metric.solb -o ${outproj}.meshb -s ${sweeps} -t
     cp ref_gather_movie.tec ${inproj}_movie.tec
     cp ref_gather_histo.tec ${inproj}_histo.tec
     mpiexec -np 1 ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}-metric.solb
