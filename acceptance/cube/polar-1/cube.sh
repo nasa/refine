@@ -8,6 +8,6 @@ serveCSM -batch cube.csm
 
 ref boostrap cube.egads
 
-ref_driver -i cube-vol.meshb -g cube.egads -x cube.meshb
+ref adapt cube-vol.meshb -g cube.egads -x cube.meshb
 
 

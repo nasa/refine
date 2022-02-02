@@ -22,8 +22,8 @@ function adapt_cycle {
     ${src}/ref_acceptance ${metric} ${inproj}.meshb \
 	  ${inproj}.solb
 
-    ${src}/ref_driver \
-	  -i ${inproj}.meshb \
+    ${src}/ref adapt \
+	  ${inproj}.meshb \
 	  -m ${inproj}.solb \
 	  ${egads} \
           -x ${outproj}.meshb \

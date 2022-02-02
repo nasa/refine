@@ -16,13 +16,16 @@ geomfile=skinny-cylinder.egads
 
 # ${two}/ref_geom_test ${geomfile} skinny-cylinder.meshb 1 1 90
 
-${two}/ref_driver -i skinny-cylinder.meshb -g ${geomfile} -o ref_driver1 -r 1 -t
-mv ref_gather_movie.tec ref_driver1_movie.tec
+${two}/ref adapt skinny-cylinder.meshb -g ${geomfile} -x skinny-cylinder1.meshb -t
+mv ref_gather_movie.tec skinny-cylinder1_movie.tec
 
-${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -o ref_driver2 -r 10 -t
-mv ref_gather_movie.tec ref_driver2_movie.tec
+${two}/ref adapt skinny-cylinder1.meshb -g ${geomfile} \
+      -x skinny-cylinder2.meshb \
+      --export-metric-as skinny-cylinder2-final-metric.solb \
+      -t
+mv ref_gather_movie.tec skinny-cylinder2_movie.tec
 
-${two}/ref_histogram_test ref_driver2.meshb ref_driver2-final-metric.solb \
+${two}/ref_histogram_test skinny-cylinder2.meshb skinny-cylinder2-final-metric.solb \
  > accept-skinny-cylinder-curvature-02.status
 
 cat accept-skinny-cylinder-curvature-02.status

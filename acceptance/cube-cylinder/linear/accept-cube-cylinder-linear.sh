@@ -19,7 +19,7 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps}
+    ${two}/ref adapt ${inproj}.meshb -g ega.egads -m ${inproj}.metric -x ${outproj}.meshb -s ${sweeps}
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
 

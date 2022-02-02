@@ -17,8 +17,8 @@ function adapt_cycle {
     complexity=2000
 
     ${src}/ref_acceptance -u u5 ${inproj}.meshb ${inproj}.solb
-    ${src}/ref_metric_test --lp ${inproj}.meshb ${inproj}.solb 2 -1 ${complexity}  ${inproj}-metric.meshb
-    ${src}/ref_driver -i ${inproj}.meshb -m ${inproj}-metric.meshb -x ${outproj}.meshb -s ${sweeps}
+    ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb ${complexity}  ${inproj}-metric.meshb
+    ${src}/ref adapt ${inproj}.meshb -m ${inproj}-metric.meshb -x ${outproj}.meshb -s ${sweeps}
     ${src}/ref_acceptance -u u5 ${outproj}.meshb ${outproj}.solb
     ${src}/ref_gather_test ${outproj}.meshb ${outproj}.solb ${outproj}.tec
 }

@@ -13,7 +13,7 @@ fi
 ${src}/ref_acceptance 1 whole.meshb
 ${src}/ref_acceptance -u u5 whole.meshb whole.solb
 
-${src}/ref_translate whole.meshb target.meshb \
+${src}/ref translate whole.meshb target.meshb \
       --scale 0.5 --shift 0.25 0.25 0.25
 ${src}/ref_acceptance -u u5 target.meshb target.solb
 

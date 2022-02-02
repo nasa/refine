@@ -12,8 +12,7 @@ function adapt_cycle {
 
     cp ref_bamg_test.b8.ugrid ${proj}.b8.ugrid
 
-    ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.html
-    ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.tec
+    ${bin}/ref translate ${proj}.b8.ugrid ${proj}.tec
 
     ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric $c $k
     ${bin}/ref_bamg ${proj}.b8.ugrid ${proj}.metric

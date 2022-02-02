@@ -15,10 +15,10 @@ fi
 metric="-twod linear-0001"
 
 ${two}/ref_acceptance ${metric} square_0.msh square_0.solb
-${two}/ref_driver -i square_0.msh -m square_0.solb -x mixed01.meshb -t > accept-2d-mixed-01.status
+${two}/ref adapt square_0.msh -m square_0.solb -x mixed01.meshb -t > accept-2d-mixed-01.status
 
 ${two}/ref_acceptance ${metric} mixed01.meshb mixed01.solb
-${two}/ref_driver -i mixed01.meshb -m mixed01.solb -x mixed02.meshb -t > accept-2d-mixed-02.status
+${two}/ref adapt mixed01.meshb -m mixed01.solb -x mixed02.meshb -t > accept-2d-mixed-02.status
 
 ${two}/ref translate mixed02.meshb mixed02.lb8.ugrid
 

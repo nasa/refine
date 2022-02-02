@@ -12,16 +12,16 @@ else
     two=${HOME}/refine/egads/src
 fi
 
-${two}/ref_translate cube-sphere.meshb nogeom0.b8.ugrid
+${two}/ref translate cube-sphere.meshb nogeom0.lb8.ugrid
 
-${two}/ref_acceptance nogeom0.b8.ugrid nogeom0-metric.solb 0.1
-${two}/ref_driver -i nogeom0.b8.ugrid -m nogeom0-metric.solb -o nogeom1
-${two}/ref_acceptance nogeom1.b8.ugrid nogeom1-metric.solb 0.1
-${two}/ref_metric_test nogeom1.b8.ugrid nogeom1-metric.solb > accept-cube-sphere-uniform-nogeom-01.status
+${two}/ref_acceptance nogeom0.lb8.ugrid nogeom0-metric.solb 0.1
+${two}/ref adapt nogeom0.lb8.ugrid -m nogeom0-metric.solb -x nogeom1.lb8.ugrid
+${two}/ref_acceptance nogeom1.lb8.ugrid nogeom1-metric.solb 0.1
+${two}/ref_metric_test nogeom1.lb8.ugrid nogeom1-metric.solb > accept-cube-sphere-uniform-nogeom-01.status
 
-${two}/ref_driver -i nogeom1.b8.ugrid -m nogeom1-metric.solb -o nogeom2
-${two}/ref_acceptance nogeom2.b8.ugrid nogeom2-metric.solb 0.1
-${two}/ref_metric_test nogeom2.b8.ugrid nogeom2-metric.solb > accept-cube-sphere-uniform-nogeom-02.status
+${two}/ref adapt nogeom1.lb8.ugrid -m nogeom1-metric.solb -x nogeom2.lb8.ugrid
+${two}/ref_acceptance nogeom2.lb8.ugrid nogeom2-metric.solb 0.1
+${two}/ref_metric_test nogeom2.lb8.ugrid nogeom2-metric.solb > accept-cube-sphere-uniform-nogeom-02.status
 
 cat accept-cube-sphere-uniform-nogeom-02.status
 ../../check.rb accept-cube-sphere-uniform-nogeom-02.status 0.01 3.0

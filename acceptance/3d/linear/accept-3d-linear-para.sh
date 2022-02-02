@@ -20,13 +20,14 @@ function adapt_cycle {
 
     cp ref_adapt_test.b8.ugrid ${proj}.b8.ugrid
 
-    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.html
-    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.tec
+    ${two}/ref translate ${proj}.b8.ugrid ${proj}.tec
 
     ${two}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.01
 
     rm ref_adapt_test.b8.ugrid
-    mpiexec -np 2 ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -t -s ${sweeps} -o ref_adapt_test
+    mpiexec -np 2 ${two}/ref adapt ${proj}.b8.ugrid -m ${proj}.metric \
+	    -t -s ${sweeps} \
+	    -x ref_adapt_test.b8.ugrid
     
     ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec

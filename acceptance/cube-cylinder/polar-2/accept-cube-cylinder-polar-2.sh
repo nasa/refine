@@ -40,10 +40,8 @@ ${two}/ref_acceptance -ugawg ${field} ega.meshb ega-metric.solb
 
 adapt_cycle ega cycle01 2
 adapt_cycle cycle01 cycle02 15
-adapt_cycle cycle02 cycle03 15
-adapt_cycle cycle03 cycle04 15
 
-cat cycle04.status
-../../check.rb cycle04.status 0.2 3.0
+cat cycle02.status
+../../check.rb cycle02.status 0.2 3.0
 
 exit

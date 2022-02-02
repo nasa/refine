@@ -15,7 +15,8 @@ ${src}/ref boostrap sliver.egads
 
 geomfile=sliver.egads
 
-${src}/ref_driver -i sliver-vol.meshb -g ${geomfile} -o sliver01 -t \
+${src}/ref adapt sliver-vol.meshb -g ${geomfile} -x sliver01.meshb -t \
+      --export-metric-as sliver01-final-metric.solb \
       -f sliver01-final.tec 
 mv ref_gather_movie.tec sliver01-movie.tec
 

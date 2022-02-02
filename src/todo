@@ -67,12 +67,6 @@ bootstrap
   - edge off surface testcase or surface gap testcase?
   - cusp geom topology testcase
 
-S2S
- update best practice multiscale in docs
-  gradation, reconstruction, parallel, field for speed regime
- README and FUN3D doc update and sync
- tutorials
-
 split public/private ref_defs.h
 AX_APPEND_FLAG([-DHAVE_REF_CONFIG_H], [AM_CPPFLAGS])
 AC_CONFIG_HEADER([ref_config.h])
@@ -211,6 +205,7 @@ egads recon
    revert on failure (wrap?)
 
 meshlink
+  - incorporate tolerencing info and header change
   - robust add geom and xyz between
   - metric conformity for non-associated surfaces (drivAer cavity coarsen)
   - protect an underlying surface step inside a sheet
@@ -231,13 +226,19 @@ structural
 - explore entropy adjoint in 2D and 3D
 - understand multiscale gradation of boundary layer and nozzle when shocks
 - dual RANS/ILES metric or meshes for HRLES
-- S2S acceptance on fun3d-intg and sfe develop/master
 - verify interpolation error to background mesh
 
 ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ S2S
+ + acceptance on fun3d-intg and sfe develop/master
+ + update best practice multiscale in docs
+   + gradation, reconstruction, parallel, field for speed regime
+ + README and FUN3D doc update and sync
+ + tutorials
 
 + move JSM NBNP bootstrap from c2s to boot
 + fun3d-intg test
