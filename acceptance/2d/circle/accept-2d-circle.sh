@@ -28,7 +28,7 @@ function adapt_cycle {
 	  ${inproj}-orig.solb ${inproj}.solb \
 	  ${gradation}
 
-    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
+    ${two}/ref adapt ${inproj}.meshb -m ${inproj}.solb \
           -x ${outproj}.meshb \
 	  -s ${sweeps} ${tecplot}
     

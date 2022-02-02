@@ -23,7 +23,7 @@ function adapt_cycle {
     ${two}/ref_acceptance ${metric} ${inproj}.meshb \
 	  ${inproj}.solb
 
-    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
+    ${two}/ref adapt ${inproj}.meshb -m ${inproj}.solb \
           -x ${outproj}.meshb \
 	  -s ${sweeps} ${tecplot}
 
