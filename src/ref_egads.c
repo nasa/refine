@@ -273,7 +273,8 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 
     SUPRESS_UNUSED_COMPILER_WARNING(filename);
 
-    RAS(0 < ref_geom_cad_data_size(ref_geom), "zero size cad_data");
+    RAS(0 < ref_geom_cad_data_size(ref_geom),
+        "zero size cad_data, does the mesh contain EGADSlite data?");
     RNS(ref_geom_cad_data(ref_geom), "cad_data NULL");
     REIS(EGADS_SUCCESS,
          EG_importModel(context, (size_t)ref_geom_cad_data_size(ref_geom),
@@ -281,7 +282,8 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
          "EG load");
   }
 #else
-  if (NULL == filename) THROW("filename NULL for EGADS(full) load");
+  if (NULL == filename)
+    THROW("filename NULL for EGADS(full) load, missing --egads option?");
   REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
 
   {
