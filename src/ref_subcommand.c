@@ -3823,8 +3823,8 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("--scale %e\n", scale);
     each_ref_node_valid_node(ref_node, node) {
       ref_node_xyz(ref_node, 0, node) *= scale;
-      ref_node_xyz(ref_node, 1, node) += scale;
-      ref_node_xyz(ref_node, 2, node) += scale;
+      ref_node_xyz(ref_node, 1, node) *= scale;
+      ref_node_xyz(ref_node, 2, node) *= scale;
     }
   }
 
