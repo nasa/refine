@@ -12,7 +12,7 @@ else
     two=${HOME}/refine/egads/src
 fi
 
-${two}/ref_translate cube-sphere.meshb nogeom0.b8.ugrid
+${two}/ref translate cube-sphere.meshb nogeom0.b8.ugrid
 
 ${two}/ref_acceptance nogeom0.b8.ugrid nogeom0-metric.solb 0.1
 ${two}/ref_driver -i nogeom0.b8.ugrid -m nogeom0-metric.solb -o nogeom1

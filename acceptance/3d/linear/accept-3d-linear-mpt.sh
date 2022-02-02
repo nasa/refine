@@ -21,8 +21,7 @@ function adapt_cycle {
 
     cp ref_adapt_test.lb8.ugrid ${proj}.lb8.ugrid
 
-    mpiexec -np 1 ${two}/ref_translate ${proj}.lb8.ugrid ${proj}.html
-    mpiexec -np 1 ${two}/ref_translate ${proj}.lb8.ugrid ${proj}.tec
+    mpiexec -np 1 ${two}/ref translate ${proj}.lb8.ugrid ${proj}.tec
 
     mpiexec -np 1 ${two}/ref_acceptance ${proj}.lb8.ugrid ${proj}.solb 0.01
 

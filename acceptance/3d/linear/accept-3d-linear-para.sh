@@ -20,8 +20,7 @@ function adapt_cycle {
 
     cp ref_adapt_test.b8.ugrid ${proj}.b8.ugrid
 
-    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.html
-    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.tec
+    ${two}/ref translate ${proj}.b8.ugrid ${proj}.tec
 
     ${two}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.01
 
