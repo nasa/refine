@@ -814,7 +814,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   RSS(ref_geom_verify_param(ref_grid), "final params");
   ref_mpi_stopwatch_stop(ref_mpi, "verify final params");
 
-  /* export via -x grid.ext and -f final-surf.tec and -q final-vol.plt */
+  /* export via -x grid.ext and -f final-surf.tec and -q final-vol.plt
+     --export-metric-as final-metic.solb */
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
       if (ref_mpi_para(ref_mpi)) {
@@ -838,6 +839,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       if (ref_mpi_once(ref_mpi))
         printf("gather final volume status %s\n", argv[opt + 1]);
       RSS(ref_gather_volume_status_tec(ref_grid, argv[opt + 1]), "gather -f");
+    }
+    if (strcmp(argv[opt], "--export-metric-as") == 0) {
+      if (ref_mpi_once(ref_mpi))
+        printf("gather final metric as %s\n", argv[opt + 1]);
+      RSS(ref_gather_metric(ref_grid, argv[opt + 1]),
+          "gather --export-metric-as");
     }
   }
 
