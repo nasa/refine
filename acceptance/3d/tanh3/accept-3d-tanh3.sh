@@ -20,8 +20,12 @@ function adapt_cycle {
     sweeps=$3
 
     ${two}/ref_acceptance -u ${field} ${inproj}.meshb ${inproj}.solb
-    ${two}/ref_metric_test --lp ${inproj}.meshb ${inproj}.solb 2 3.0 2000 ${inproj}-metric.solb  --kexact
-    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}-metric.solb -o ${outproj} -s ${sweeps} -t
+    ${two}/ref multiscle ${inproj}.meshb ${inproj}.solb 2000 ${inproj}-metric.solb \
+	  --gradation 3
+    ${two}/ref adapt ${inproj}.meshb -m ${inproj}-metric.solb \
+	  -x ${outproj}.meshb \
+	  --export-metric-as ${outproj}-final-metric.solb \
+	  -s ${sweeps} -t
     mv ref_gather_movie.tec ${inproj}_movie.tec
     ${two}/ref_histogram_test ${outproj}.meshb ${outproj}-final-metric.solb > ${outproj}.status
 }

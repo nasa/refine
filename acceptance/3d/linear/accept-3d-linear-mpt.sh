@@ -26,7 +26,9 @@ function adapt_cycle {
     mpiexec -np 1 ${two}/ref_acceptance ${proj}.lb8.ugrid ${proj}.solb 0.01
 
     rm ref_adapt_test.lb8.ugrid
-    mpiexec -np ${cores} ${two}/ref_driver -i ${proj}.lb8.ugrid -m ${proj}.solb -s ${sweeps} -x ref_adapt_test.lb8.ugrid
+    mpiexec -np ${cores} ${two}/ref adapt ${proj}.lb8.ugrid -m ${proj}.solb \
+	    -s ${sweeps} \
+	    -x ref_adapt_test.lb8.ugrid
 
     mpiexec -np 1 ${two}/ref_metric_test ${proj}.lb8.ugrid ${proj}.solb > ${proj}.status
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
