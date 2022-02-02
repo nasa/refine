@@ -285,7 +285,8 @@ static void translate_help(const char *name) {
   printf("       extrusion added implicitly for ugrid output files\n");
   printf("   --axi convert an extruded mesh into a wedge at z=y=0 axis\n");
   printf("   --planes <N> extrude a 2D mesh to N layers of prisms.\n");
-  printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
+  printf("   --shift <dx> <dy> <dz> shift vertex locations.\n");
+  printf("   --zero-y-face <face id> explicitly set y=0 on face id.\n");
   printf("   --shard converts mixed-elments to simplicies.\n");
   printf("   --surface extracts surface elements (deletes volume).\n");
   printf("   --enrich2 promotes elements to Q2.\n");
@@ -3804,6 +3805,33 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi))
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
+
+  RXS(ref_args_find(argc, argv, "--shift", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    char *endptr;
+    REF_DBL dx, dy, dz;
+    REF_NODE ref_node = ref_grid_node(ref_grid);
+    REF_INT node;
+    if (pos + 3 >= argc) {
+      if (ref_mpi_once(ref_mpi)) printf("--shift missing dx dy dz\n");
+      goto shutdown;
+    }
+    pos++;
+    dx = strtod(argv[pos], &endptr);
+    RAS(argv[pos] != endptr, "parse dx");
+    pos++;
+    dy = strtod(argv[pos], &endptr);
+    RAS(argv[pos] != endptr, "parse dy");
+    pos++;
+    dz = strtod(argv[pos], &endptr);
+    RAS(argv[pos] != endptr, "parse dz");
+    if (ref_mpi_once(ref_mpi)) printf("--shift %e %e %e\n", dx, dy, dz);
+    each_ref_node_valid_node(ref_node, node) {
+      ref_node_xyz(ref_node, 0, node) += dx;
+      ref_node_xyz(ref_node, 1, node) += dy;
+      ref_node_xyz(ref_node, 2, node) += dz;
+    }
+  }
 
   RXS(ref_args_find(argc, argv, "--surface", &pos), REF_NOT_FOUND,
       "arg search");
