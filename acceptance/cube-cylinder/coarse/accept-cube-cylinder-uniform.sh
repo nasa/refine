@@ -21,7 +21,7 @@ ${two}/ref adapt cube-cylinder.meshb -g ${geomfile} -m cube-cylinder.metric -x c
 ${two}/ref_acceptance cube-cylinder1.meshb cube-cylinder1.metric 0.1
 ${two}/ref_metric_test cube-cylinder1.meshb cube-cylinder1.metric > accept-cube-cylinder-uniform-01.status
 
-${two}/ref adapt cube-cylinder1.meshb -g ${geomfile} -m cube-cylinder1.metric -o cube-cylinder2.meshb
+${two}/ref adapt cube-cylinder1.meshb -g ${geomfile} -m cube-cylinder1.metric -x cube-cylinder2.meshb
 ${two}/ref_acceptance cube-cylinder2.meshb cube-cylinder2.metric 0.1
 ${two}/ref_metric_test cube-cylinder2.meshb cube-cylinder2.metric > accept-cube-cylinder-uniform-02.status
 
