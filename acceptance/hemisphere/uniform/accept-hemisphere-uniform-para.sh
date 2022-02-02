@@ -17,7 +17,7 @@ geomfile=hemisphere.egads
 # ref_driver -i hemisphere.meshb -g hemisphere.egads -r 4 -o hemicurve
 
 ${src}/ref_acceptance hemicurve.meshb hemicurve-metric.solb 0.1
-mpiexec -np 4 ${src}/ref_driver -i hemicurve.meshb -g ${geomfile} -m hemicurve-metric.solb -o hemicurve1 -r 1 -s 20
+mpiexec -np 4 ${src}/ref adapt hemicurve.meshb -g ${geomfile} -m hemicurve-metric.solb -x hemicurve1.meshb
 ${src}/ref_acceptance hemicurve1.meshb hemicurve1-metric.solb 0.1
 ${src}/ref_metric_test hemicurve1.meshb hemicurve1-metric.solb > accept-hemisphere-uniform-para-01.status
 
