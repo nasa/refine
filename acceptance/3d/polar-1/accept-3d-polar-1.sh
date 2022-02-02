@@ -25,7 +25,9 @@ function adapt_cycle {
     ${two}/ref_acceptance -ugawg ${field} ${proj}.b8.ugrid ${proj}.metric
     
     rm ref_adapt_test.b8.ugrid
-    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -o ref_adapt_test -t
+    ${two}/ref adapt ${proj}.b8.ugrid -m ${proj}.metric \
+	  -x ref_adapt_test.b8.ugrid \
+	  -t -s 10
     cp ref_gather_movie.tec ${proj}_movie.tec
     
     ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
@@ -36,11 +38,9 @@ adapt_cycle accept-3d-polar-1-00
 adapt_cycle accept-3d-polar-1-01
 adapt_cycle accept-3d-polar-1-02
 adapt_cycle accept-3d-polar-1-03
-adapt_cycle accept-3d-polar-1-04
-adapt_cycle accept-3d-polar-1-05
 
-cat accept-3d-polar-1-05.status
-../../check.rb accept-3d-polar-1-05.status 0.3 4.4
+cat accept-3d-polar-1-03.status
+../../check.rb accept-3d-polar-1-03.status 0.3 4.4
 
 
 
