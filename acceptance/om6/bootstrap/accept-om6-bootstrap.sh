@@ -16,10 +16,11 @@ cp ../recon/onera-m6-sharp-te.egads .
 
 ${two}/ref bootstrap onera-m6-sharp-te.egads --blend om6-blend.meshb
 
-${two}/ref_driver \
-    -i onera-m6-sharp-te-vol.meshb \
+${two}/ref adapt \
+    onera-m6-sharp-te-vol.meshb \
     -g onera-m6-sharp-te.egads \
-    -o onera-m6-sharp-te01
+    -x onera-m6-sharp-te01.meshb \
+    --export-metric-as onera-m6-sharp-te01-final-metric.solb
 
 ${two}/ref_metric_test \
     onera-m6-sharp-te01.meshb \

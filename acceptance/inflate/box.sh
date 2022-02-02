@@ -6,7 +6,7 @@ rm -f box-vol.meshb
 ref bootstrap box.egads | tee box-boot.txt
 
 rm -f box01.meshb
-ref_driver -i box-vol.meshb \
+ref adapt box-vol.meshb \
 	   -g box.egads \
 	   -x box.meshb | tee box-crv.txt
 
