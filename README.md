@@ -51,6 +51,12 @@ Help on a particular subcommand is available via a `-h`, i.e.,
 execution. If ESP is provided, `ref` and `refmpifull` includes
 EGADS built with OpenCASCADE and `refmpi` includes EGADSlite.
 
+| Executable |MPI|EGADS|EGADSlite|
+|------------|---|-----|---------|
+| ref        |   |  X  |         |
+| refmpi     | X |     |    X    |
+| refmpifull | X |  X  |         |
+
 # Examples
 
 The following examples assume that `ref` is in your shell path.
