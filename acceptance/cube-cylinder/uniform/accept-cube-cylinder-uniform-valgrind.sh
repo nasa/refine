@@ -22,6 +22,6 @@ valgrind --quiet  --error-exitcode=1 --leak-check=full \
 --suppressions=../../../misc/valgrind_suppressions_occ \
 --suppressions=../../../misc/valgrind_suppressions_intel_17 \
 --suppressions=../../../misc/valgrind_suppressions_openmpi \
-         ${two}/ref adapt -i ega.meshb -g ${geomfile} -m ega.metric -x ega1.meshb -s 2
+         ${two}/ref adapt ega.meshb -g ${geomfile} -m ega.metric -x ega1.meshb -s 2
 
 
