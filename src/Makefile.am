@@ -158,7 +158,7 @@ endif
 noinst_PROGRAMS =
 TESTS =
 
-bin_PROGRAMS += ref_inflatable
+noinst_PROGRAMS += ref_inflatable
 ref_inflatable_SOURCES = ref_inflatable.c
 ref_inflatable_LDADD = $(default_ldadd)
 
