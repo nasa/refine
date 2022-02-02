@@ -281,16 +281,16 @@ static void translate_help(const char *name) {
          name);
   printf("\n");
   printf("  options:\n");
-  printf("   --extrude a 2D mesh to single layer of prisms.\n");
-  printf("       extrusion added implicitly for ugrid output files\n");
-  printf("   --axi convert an extruded mesh into a wedge at z=y=0 axis\n");
-  printf("   --planes <N> extrude a 2D mesh to N layers of prisms.\n");
-  printf("   --shift <dx> <dy> <dz> shift vertex locations.\n");
   printf("   --scale <scale> scales vertex locations about origin.\n");
-  printf("   --zero-y-face <face id> explicitly set y=0 on face id.\n");
-  printf("   --shard converts mixed-elments to simplicies.\n");
+  printf("   --shift <dx> <dy> <dz> shift vertex locations.\n");
   printf("   --surface extracts surface elements (deletes volume).\n");
   printf("   --enrich2 promotes elements to Q2.\n");
+  printf("   --shard converts mixed-elments to simplicies.\n");
+  printf("   --extrude a 2D mesh to single layer of prisms.\n");
+  printf("       extrusion added implicitly for ugrid output files\n");
+  printf("   --planes <N> extrude a 2D mesh to N layers of prisms.\n");
+  printf("   --zero-y-face <face id> explicitly set y=0 on face id.\n");
+  printf("   --axi convert an extruded mesh into a wedge at z=y=0 axis\n");
   printf("\n");
 }
 static void visualize_help(const char *name) {
