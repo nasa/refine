@@ -481,6 +481,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   REF_BOOL all_done0 = REF_FALSE;
   REF_BOOL all_done1 = REF_FALSE;
   REF_BOOL form_quads = REF_FALSE;
+  REF_BOOL mesh_exported = REF_FALSE;
   REF_INT pass, passes = 30;
   REF_INT opt, pos;
   REF_LONG ntet;
@@ -818,6 +819,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
      --export-metric-as final-metic.solb */
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
+      mesh_exported = REF_TRUE;
       if (ref_mpi_para(ref_mpi)) {
         if (ref_mpi_once(ref_mpi))
           printf("gather " REF_GLOB_FMT " nodes to %s\n",
@@ -845,6 +847,22 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         printf("gather final metric as %s\n", argv[opt + 1]);
       RSS(ref_gather_metric(ref_grid, argv[opt + 1]),
           "gather --export-metric-as");
+    }
+  }
+
+  if (!mesh_exported) {
+    char filename[1024];
+    snprintf(filename, 1024, "%s-adapted.meshb", in_mesh);
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi))
+        printf("gather " REF_GLOB_FMT " nodes to %s\n",
+               ref_node_n_global(ref_grid_node(ref_grid)), filename);
+      RSS(ref_gather_by_extension(ref_grid, filename), "gather backup");
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("export " REF_GLOB_FMT " nodes to %s\n",
+               ref_node_n_global(ref_grid_node(ref_grid)), filename);
+      RSS(ref_export_by_extension(ref_grid, filename), "export backup");
     }
   }
 
