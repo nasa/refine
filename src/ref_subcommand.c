@@ -3807,6 +3807,27 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
 
+  RXS(ref_args_find(argc, argv, "--scale", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    char *endptr;
+    REF_DBL scale;
+    REF_NODE ref_node = ref_grid_node(ref_grid);
+    REF_INT node;
+    if (pos + 1 >= argc) {
+      if (ref_mpi_once(ref_mpi)) printf("--scale missing scale\n");
+      goto shutdown;
+    }
+    pos++;
+    scale = strtod(argv[pos], &endptr);
+    RAS(argv[pos] != endptr, "parse scale");
+    if (ref_mpi_once(ref_mpi)) printf("--scale %e\n", scale);
+    each_ref_node_valid_node(ref_node, node) {
+      ref_node_xyz(ref_node, 0, node) *= scale;
+      ref_node_xyz(ref_node, 1, node) += scale;
+      ref_node_xyz(ref_node, 2, node) += scale;
+    }
+  }
+
   RXS(ref_args_find(argc, argv, "--shift", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     char *endptr;
@@ -3831,27 +3852,6 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, node) += dx;
       ref_node_xyz(ref_node, 1, node) += dy;
       ref_node_xyz(ref_node, 2, node) += dz;
-    }
-  }
-
-  RXS(ref_args_find(argc, argv, "--scale", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos) {
-    char *endptr;
-    REF_DBL scale;
-    REF_NODE ref_node = ref_grid_node(ref_grid);
-    REF_INT node;
-    if (pos + 1 >= argc) {
-      if (ref_mpi_once(ref_mpi)) printf("--scale missing scale\n");
-      goto shutdown;
-    }
-    pos++;
-    scale = strtod(argv[pos], &endptr);
-    RAS(argv[pos] != endptr, "parse scale");
-    if (ref_mpi_once(ref_mpi)) printf("--scale %e\n", scale);
-    each_ref_node_valid_node(ref_node, node) {
-      ref_node_xyz(ref_node, 0, node) *= scale;
-      ref_node_xyz(ref_node, 1, node) += scale;
-      ref_node_xyz(ref_node, 2, node) += scale;
     }
   }
 
