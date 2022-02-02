@@ -12,11 +12,10 @@ else
     two=${HOME}/refine/egads/src
 fi
 
-${two}/ref_driver \
-    -i pencil.meshb \
+${two}/ref adapt \
+    pencil.meshb \
     -g ../gen/pencil.egads \
-    -r 2 \
-    -o pencil-curve \
+    -o pencil-curve.meshb \
     -t \
     > accept-annulus-uniform.out
 
