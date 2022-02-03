@@ -1,4 +1,16 @@
 
+explain geometry triage feedback (end of bootstrap)
+
+facilitate making tecplot images (i.e. dots)
+Add an explanation of the refine triage info, i.e.,
+sliver = min(angle between all connected topology edges) <= angle_tol = 10.0 (degrees)
+
+short edge = min_diag/max_diag < short_edge_tol = 1e-3 where diag is presumably w.r.t. adjoining topological edges
+
+curve/tol = (too complex for me to easily comprehend)
+
+ambiguous topology = ref_egads_face_width approaches 2 times ref_egads_gap
+
 https://github.com/polyfem
 https://libigl.github.io/
 https://github.com/jiangzhongshi/bichon
