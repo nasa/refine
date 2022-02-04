@@ -1,21 +1,23 @@
 
-replace edge diagonal with length in ref_geom_node_short_edge
+refmpi bootstrap nice messsage 
  
 tecplot intersection locations
 
-tetgen: better q descript, add O descript, add S1000
++ tetgen: better q descript, add O descript, add S1000
 
-move gap to first geom var
++ move gap to first geom var
 
-explain geometry triage feedback (end of bootstrap)
++ explain geometry triage feedback (end of bootstrap)
 
-facilitate making tecplot images (i.e. dots)
-Add an explanation of the refine triage info, i.e.,
-sliver = min(angle between all connected topology edges) <= angle_tol = 10.0 (degrees)
++ facilitate making tecplot images (i.e. dots)
++ Add an explanation of the refine triage info, i.e.,
++ sliver = min(angle between all connected topology edges) <= angle_tol = 10.0 (degrees)
 
-short edge = min_diag/max_diag < short_edge_tol = 1e-3 where diag is presumably w.r.t. adjoining topological edges
++ short edge = min_diag/max_diag < short_edge_tol = 1e-3 where diag is presumably w.r.t. adjoining topological edges
 
-curve/tol = (too complex for me to easily comprehend)
++ curve/tol = (too complex for me to easily comprehend)
+
+loose tolerences -> use plot of gap, not indicators 
 
 ambiguous topology = ref_egads_face_width approaches 2 times ref_egads_gap
 
