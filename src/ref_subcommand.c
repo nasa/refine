@@ -1251,7 +1251,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  RSS(ref_geom_feedback(ref_grid), "feedback");
+  sprintf(filename, "%s-adapt-triage.tec", project);
+  RSS(ref_geom_feedback(ref_grid, filename), "feedback");
   ref_mpi_stopwatch_stop(ref_mpi, "geom feedback");
 
   RXS(ref_args_find(argc, argv, "--facelift", &facelift_pos), REF_NOT_FOUND,

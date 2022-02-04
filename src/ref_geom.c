@@ -2729,7 +2729,7 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
+REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT geom, node, edgeid, faceid;
@@ -2739,6 +2739,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   REF_DBL short_edge, diag;
   REF_DBL curve;
   REF_DBL location[3];
+  REF_INT nsliver;
 
   if (ref_geom_effective(ref_geom)) {
     /* EFFECTIVE */
@@ -2750,16 +2751,34 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   REIS(REF_MIGRATE_SINGLE, ref_grid_partitioner(ref_grid),
        "parallel implementation is incomplete");
 
+  printf(
+      "scaning for discrete face corners with slivers or cusps of %.1f deg or "
+      "less\n",
+      angle_tol);
+  printf(
+      "slivers in flat regions constrain the mesh and are efficency "
+      "concerns\n");
+  printf(
+      "cusps (very small angles) in curved regions may be fatal with loose "
+      "tolerences\n");
+  printf(
+      "  because the edge/face topology becomes amgigous with adaptive "
+      "refinement\n");
+  nsliver = 0;
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
     if (angle <= angle_tol) {
-      printf("%f %f %f # sliver deg=%f node %d\n",
+      printf("%f %f %f # sliver deg=%f geom node %d\n",
              ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
              ref_node_xyz(ref_node, 2, node), angle,
              ref_geom_id(ref_geom, geom));
+      nsliver++;
     }
   }
+  printf("%d geometry nodes with slivers or cusps of %.1f deg or less\n",
+         nsliver, angle_tol);
+
   if (ref_geom_model_loaded(ref_geom)) {
     each_ref_geom_node(ref_geom, geom) {
       node = ref_geom_node(ref_geom, geom);
@@ -2783,6 +2802,32 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
     }
   }
 
+  if (nsliver > 0) {
+    FILE *file;
+    REF_INT n;
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    fprintf(file, "title=\"tecplot refine geometry triage\"\n");
+    fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+    fprintf(file, "zone t=\"sliver\", i=%d, datapacking=%s\n", nsliver,
+            "point");
+    n = 0;
+    each_ref_geom_node(ref_geom, geom) {
+      node = ref_geom_node(ref_geom, geom);
+      RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
+      if (angle <= angle_tol) {
+        fprintf(file, "# sliver deg=%f geom node %d\n %f %f %f\n", angle,
+                ref_geom_id(ref_geom, geom), ref_node_xyz(ref_node, 0, node),
+                ref_node_xyz(ref_node, 1, node),
+                ref_node_xyz(ref_node, 2, node));
+        n++;
+      }
+    }
+    REIS(nsliver, n, "tecplot sliver different recount");
+    fclose(file);
+  }
   return REF_SUCCESS;
 }
 
