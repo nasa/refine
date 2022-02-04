@@ -2162,7 +2162,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   printf("    can be increased for faster initial volume refinement.\n");
   printf("  The 'O7/7' arguments (optimization iterations/operation)\n");
   printf("    can be decreased for faster mesh optimization.\n");
-  printf("  See 'ref bootstrap -h' for '--mesher-options' description.\n");
+  printf("  See 'ref bootstrap -h' for '--mesher-options' description\n");
+  printf("    and the TetGen user manual for details.\n");
 
   if (NULL == options) {
     snprintf(command, 1024,
