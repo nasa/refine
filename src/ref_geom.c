@@ -2742,7 +2742,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   REF_DBL short_edge, diag;
   REF_DBL curve;
   REF_DBL location[3];
-  REF_INT nsliver;
+  REF_INT nsliver, nshort;
 
   if (ref_geom_effective(ref_geom)) {
     /* EFFECTIVE */
@@ -2784,18 +2784,26 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   printf("%d geometry nodes with slivers or cusps of %.1f deg or less\n",
          nsliver, angle_tol);
 
+  nshort = 0;
   if (ref_geom_model_loaded(ref_geom)) {
+    printf(
+        "scaning for geom nodes with shortest/longest edge ratios of %.1f or "
+        "less\n",
+        short_edge_tol);
+    printf("short edges are efficency concerns that rarely create failures.\n");
     each_ref_geom_node(ref_geom, geom) {
       node = ref_geom_node(ref_geom, geom);
       RSS(ref_geom_node_short_edge(ref_grid, node, &short_edge, &diag, &edgeid),
           "short edge");
       if (short_edge <= short_edge_tol) {
-        printf("%f %f %f # short edge a=%e r=%e id %d\n",
+        printf("%f %f %f # short edge diagonal %e ratio %e edge id %d\n",
                ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
                ref_node_xyz(ref_node, 2, node), diag, short_edge, edgeid);
+        nshort++;
       }
     }
   }
+
   if (ref_geom_model_loaded(ref_geom)) {
     for (faceid = 1; faceid <= ref_geom->nedge; faceid++) {
       RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
@@ -2807,7 +2815,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
     }
   }
 
-  if (nsliver > 0) {
+  if (nsliver > 0 || nshort > 0) {
     FILE *file;
     REF_INT n;
     file = fopen(filename, "w");
@@ -2816,22 +2824,46 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
     fprintf(file, "title=\"tecplot refine geometry triage\"\n");
     fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
 
-    printf("exporting slivers locations to %s\n", filename);
-    fprintf(file, "zone t=\"sliver\", i=%d, datapacking=%s\n", nsliver,
-            "point");
-    n = 0;
-    each_ref_geom_node(ref_geom, geom) {
-      node = ref_geom_node(ref_geom, geom);
-      RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
-      if (angle <= angle_tol) {
-        fprintf(file, "# sliver deg=%f at geom node %d\n %f %f %f\n", angle,
-                ref_geom_id(ref_geom, geom), ref_node_xyz(ref_node, 0, node),
-                ref_node_xyz(ref_node, 1, node),
-                ref_node_xyz(ref_node, 2, node));
-        n++;
+    if (nsliver > 0) {
+      printf("exporting slivers locations to %s\n", filename);
+      fprintf(file, "zone t=\"sliver\", i=%d, datapacking=%s\n", nsliver,
+              "point");
+      n = 0;
+      each_ref_geom_node(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
+        if (angle <= angle_tol) {
+          fprintf(file, "# sliver deg=%f at geom node %d\n %f %f %f\n", angle,
+                  ref_geom_id(ref_geom, geom), ref_node_xyz(ref_node, 0, node),
+                  ref_node_xyz(ref_node, 1, node),
+                  ref_node_xyz(ref_node, 2, node));
+          n++;
+        }
       }
+      REIS(nsliver, n, "tecplot sliver different recount");
     }
-    REIS(nsliver, n, "tecplot sliver different recount");
+
+    if (nshort > 0) {
+      printf("exporting short edge locations to %s\n", filename);
+      fprintf(file, "zone t=\"short edge\", i=%d, datapacking=%s\n", nshort,
+              "point");
+      n = 0;
+      each_ref_geom_node(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        RSS(ref_geom_node_short_edge(ref_grid, node, &short_edge, &diag,
+                                     &edgeid),
+            "short edge");
+        if (short_edge <= short_edge_tol) {
+          fprintf(
+              file, "# short edge diagonal %e ratio %e edge id %d\n%f %f %f\n",
+              diag, short_edge, edgeid, ref_node_xyz(ref_node, 0, node),
+              ref_node_xyz(ref_node, 1, node), ref_node_xyz(ref_node, 2, node));
+          n++;
+        }
+      }
+      REIS(nshort, n, "tecplot short edge different recount");
+    }
+
     fclose(file);
   }
   return REF_SUCCESS;
