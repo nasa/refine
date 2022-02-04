@@ -2742,7 +2742,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   REF_DBL short_edge, diag;
   REF_DBL curve;
   REF_DBL location[3];
-  REF_INT nsliver, nshort;
+  REF_INT nsliver, nshort, nfilter;
 
   if (ref_geom_effective(ref_geom)) {
     /* EFFECTIVE */
@@ -2804,18 +2804,26 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
     }
   }
 
+  nfilter = 0;
   if (ref_geom_model_loaded(ref_geom)) {
+    printf("scaning for surface curvature tighter than face-edge tolerence\n");
+    printf("tight surface curvature is ignored where it reduces mesh\n");
+    printf("  spacing below edge and face pcurve tolerence\n");
+    printf("these locations are likely to be accommodated unless\n");
+    printf("  the error estimation resolves the high surface curvature\n");
+
     for (faceid = 1; faceid <= ref_geom->nedge; faceid++) {
       RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
           "curved face");
       if (curve < 1.0) {
         printf("%f %f %f# face id %d curve/tol %e\n", location[0], location[1],
                location[2], faceid, curve);
+        nfilter++;
       }
     }
   }
 
-  if (nsliver > 0 || nshort > 0) {
+  if (nsliver > 0 || nshort > 0 || nfilter > 0) {
     FILE *file;
     REF_INT n;
     file = fopen(filename, "w");
@@ -2862,6 +2870,23 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
         }
       }
       REIS(nshort, n, "tecplot short edge different recount");
+    }
+
+    if (nfilter > 0) {
+      printf("exporting filtered high curvature locations to %s\n", filename);
+      fprintf(file, "zone t=\"filtered\", i=%d, datapacking=%s\n", nfilter,
+              "point");
+      n = 0;
+      for (faceid = 1; faceid <= ref_geom->nedge; faceid++) {
+        RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
+            "curved face");
+        if (curve < 1.0) {
+          fprintf(file, "# face id %d curve/tol %e\n%f %f %f\n", faceid, curve,
+                  location[0], location[1], location[2]);
+          n++;
+        }
+      }
+      REIS(nfilter, n, "tecplot filtered curvature different recount");
     }
 
     fclose(file);
