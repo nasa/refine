@@ -902,6 +902,21 @@ shutdown:
   return REF_FAILURE;
 }
 
+static void report_interections(REF_GRID ref_grid, const char *project) {
+  char filename[1024];
+  REF_INT self_intersections = REF_EMPTY;
+  sprintf(filename, "%s-intersect.tec", project);
+  printf("probing adapted tessellation self-intersections\n");
+  printf("these locations will cause a failure of the initial\n");
+  printf("  volume generation and should be fixed with geometry\n");
+  printf("  repair or set ESP attribute seg_per_rad larger than 2\n");
+  printf("  for involved faces.\n");
+
+  ref_dist_collisions(ref_grid, REF_TRUE, filename, &self_intersections);
+  printf("%d segment-triangle intersections detected.\n", self_intersections);
+  if (self_intersections > 1) printf("  see locations in %s\n", filename);
+}
+
 static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
                             const char *project, const char *mesher,
                             const char *mesher_options) {
@@ -913,7 +928,6 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], tempnode, cell, new_cell;
   REF_GLOB global;
   char filename[1024];
-  REF_INT self_intersections;
   REF_INT group, cell_node;
 
   if (ref_mpi_para(ref_mpi)) {
@@ -964,26 +978,16 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
     if (ref_mpi_once(ref_mpi)) {
       printf("fill volume with TetGen\n");
       RSB(ref_geom_tetgen_volume(ref_grid, project, mesher_options),
-          "tetgen surface to volume", {
-            printf("probing adapted tessellation self-intersections\n");
-            RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-                "bumps");
-            printf("%d segment-triangle intersections detected.\n",
-                   self_intersections);
-          });
+          "tetgen surface to volume",
+          { report_interections(ref_grid, project); });
     }
     ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
   } else if (strncmp(mesher, "a", 1) == 0) {
     if (ref_mpi_once(ref_mpi)) {
       printf("fill volume with AFLR3\n");
       RSB(ref_geom_aflr_volume(ref_grid, project, mesher_options),
-          "aflr surface to volume", {
-            printf("probing adapted tessellation self-intersections\n");
-            RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-                "bumps");
-            printf("%d segment-triangle intersections detected.\n",
-                   self_intersections);
-          });
+          "aflr surface to volume",
+          { report_interections(ref_grid, project); });
     }
     ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
   } else {
@@ -1058,7 +1062,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   const char *mesher = "tetgen";
   const char *mesher_options = NULL;
   REF_INT passes = 15;
-  REF_INT self_intersections;
   REF_DBL *global_params = NULL;
   REF_BOOL inspect_evaluation = REF_FALSE;
 
@@ -1337,26 +1340,16 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       if (ref_mpi_once(ref_mpi)) {
         printf("fill volume with TetGen\n");
         RSB(ref_geom_tetgen_volume(ref_grid, project, mesher_options),
-            "tetgen surface to volume", {
-              printf("probing adapted tessellation self-intersections\n");
-              RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-                  "bumps");
-              printf("%d segment-triangle intersections detected.\n",
-                     self_intersections);
-            });
+            "tetgen surface to volume",
+            { report_interections(ref_grid, project); });
       }
       ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
     } else if (strncmp(mesher, "a", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {
         printf("fill volume with AFLR3\n");
         RSB(ref_geom_aflr_volume(ref_grid, project, mesher_options),
-            "aflr surface to volume", {
-              printf("probing adapted tessellation self-intersections\n");
-              RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-                  "bumps");
-              printf("%d segment-triangle intersections detected.\n",
-                     self_intersections);
-            });
+            "aflr surface to volume",
+            { report_interections(ref_grid, project); });
       }
       ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
     } else {
@@ -1684,7 +1677,6 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   const char *mesher = "tetgen";
   const char *mesher_options = NULL;
   REF_INT pos;
-  REF_INT self_intersections;
 
   if (ref_mpi_para(ref_mpi)) {
     RSS(REF_IMPLEMENT, "ref grow is not parallel");
@@ -1720,26 +1712,16 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       printf("fill volume with TetGen\n");
       RSB(ref_geom_tetgen_volume(ref_grid, project, mesher_options),
-          "tetgen surface to volume", {
-            printf("probing adapted tessellation self-intersections\n");
-            RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-                "bumps");
-            printf("%d segment-triangle intersections detected.\n",
-                   self_intersections);
-          });
+          "tetgen surface to volume",
+          { report_interections(ref_grid, project); });
     }
     ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
   } else if (strncmp(mesher, "a", 1) == 0) {
     if (ref_mpi_once(ref_mpi)) {
       printf("fill volume with AFLR3\n");
       RSB(ref_geom_aflr_volume(ref_grid, project, mesher_options),
-          "aflr surface to volume", {
-            printf("probing adapted tessellation self-intersections\n");
-            RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-                "bumps");
-            printf("%d segment-triangle intersections detected.\n",
-                   self_intersections);
-          });
+          "aflr surface to volume",
+          { report_interections(ref_grid, project); });
     }
     ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
   } else {

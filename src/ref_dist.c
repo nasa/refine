@@ -104,7 +104,7 @@ static REF_STATUS ref_dist_bounding_sphere2(REF_NODE ref_node, REF_INT node0,
 }
 
 REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
-                               REF_INT *n_collisions) {
+                               const char *filename, REF_INT *n_collisions) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;
@@ -114,7 +114,7 @@ REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
   REF_DBL center[3], radius, scale = 1.01;
   REF_BOOL pierce;
   REF_SEARCH ref_search;
-  REF_LIST ref_list;
+  REF_LIST ref_list, collision_node, collision_faceid;
 
   *n_collisions = 0;
 
@@ -125,6 +125,8 @@ REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
     RSS(ref_search_insert(ref_search, cell, center, scale * radius), "insert");
   }
 
+  RSS(ref_list_create(&collision_node), "create node list");
+  RSS(ref_list_create(&collision_faceid), "create faceid list");
   RSS(ref_list_create(&ref_list), "create list");
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
@@ -144,21 +146,50 @@ REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
                           ref_edge_e2n(ref_edge, 1, edge), nodes, &pierce),
           "hits?");
       if (pierce) {
+        RSS(ref_list_push(collision_node, nodes[0]), "push node");
+        RSS(ref_list_push(collision_faceid, nodes[ref_cell_id_index(ref_cell)]),
+            "push faceid");
         (*n_collisions) += 1;
         if (report) {
-          printf("%5d faceid near %f %f %f\n",
-                 nodes[ref_cell_id_index(ref_cell)],
+          printf("%f %f %f # self intersection of face %d\n",
                  ref_node_xyz(ref_node, 0, nodes[0]),
                  ref_node_xyz(ref_node, 1, nodes[0]),
-                 ref_node_xyz(ref_node, 2, nodes[0]));
+                 ref_node_xyz(ref_node, 2, nodes[0]),
+                 nodes[ref_cell_id_index(ref_cell)]);
         }
       }
     }
     RSS(ref_list_erase(ref_list), "erase");
   }
 
+  if (NULL != filename && (*n_collisions) > 0) {
+    FILE *file;
+    REF_INT faceid, node;
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    fprintf(file, "title=\"tecplot refine surface self intersections\"\n");
+    fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+    REIS(*n_collisions, ref_list_n(collision_node), "node miscount");
+    REIS(*n_collisions, ref_list_n(collision_faceid), "faceid miscount");
+    fprintf(file, "zone t=\"intersect\", i=%d, datapacking=%s\n", *n_collisions,
+            "point");
+    each_ref_list_item(collision_node, item) {
+      node = ref_list_value(collision_node, item);
+      faceid = ref_list_value(collision_faceid, item);
+      fprintf(file, "# intersection %d face id\n%f %f %f\n", faceid,
+              ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+              ref_node_xyz(ref_node, 2, node));
+    }
+
+    fclose(file);
+  }
+
   RSS(ref_list_free(ref_list), "free");
+  RSS(ref_list_free(collision_faceid), "free");
+  RSS(ref_list_free(collision_node), "free");
   RSS(ref_search_free(ref_search), "free");
   RSS(ref_edge_free(ref_edge), "free");
+
   return REF_SUCCESS;
 }

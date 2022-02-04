@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     nodes[3] = 10;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "tri");
 
-    RSS(ref_dist_collisions(ref_grid, REF_FALSE, &n), "collisions");
+    RSS(ref_dist_collisions(ref_grid, REF_FALSE, NULL, &n), "collisions");
     REIS(0, n, "no collisions expected");
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
     nodes[3] = 20;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "tri");
 
-    RSS(ref_dist_collisions(ref_grid, REF_FALSE, &n), "collisions");
+    RSS(ref_dist_collisions(ref_grid, REF_FALSE, NULL, &n), "collisions");
     REIS(2, n, "pair of collisions expected");
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
     nodes[3] = 10;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "tri");
 
-    RSS(ref_dist_collisions(ref_grid, REF_FALSE, &n), "collisions");
+    RSS(ref_dist_collisions(ref_grid, REF_FALSE, NULL, &n), "collisions");
     REIS(0, n, "no collisions expected, adjacent");
     RSS(ref_grid_free(ref_grid), "free");
   }
