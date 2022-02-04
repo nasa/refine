@@ -2816,7 +2816,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
       RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
           "curved face");
       if (curve < 1.0) {
-        printf("%f %f %f# face id %d curve/tol %e\n", location[0], location[1],
+        printf("%f %f %f # face id %d curve/tol %e\n", location[0], location[1],
                location[2], faceid, curve);
         nfilter++;
       }
