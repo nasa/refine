@@ -1,4 +1,5 @@
 
+
 https://github.com/polyfem
 https://libigl.github.io/
 https://github.com/jiangzhongshi/bichon
@@ -232,6 +233,16 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ refmpi bootstrap nice messsage
++ tecplot surface self intersection locations on tetgen failure
++ tetgen: better q description, add O descript, add S1000
++ move gap to first geom var
++ facilitate making tecplot images (i.e. dots)
++ Add an explanation of the refine triage info, i.e.,
++ sliver = min(angle between all connected topology edges) <= angle_tol
++ short edge = min_diag/max_diag < short_edge_tol = 1e-3
++ curve/tol
 
 + S2S
  + acceptance on fun3d-intg and sfe develop/master

@@ -2156,11 +2156,14 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   snprintf(filename, 896, "%s-tetgen.poly", project);
   RSS(ref_export_by_extension(ref_grid, filename), "poly");
 
-  printf("  The 'S' argument can be added to tetgen options\n");
-  printf("    to limit the number of inserted nodes and run time.\n");
-  printf("  The 'q20/10' argument (radius-edge-ratio/dihedral-angle)\n");
-  printf("    can be adjusted for faster initial volume adaptation.\n");
-  printf("  See 'ref bootstrap -h' for '--mesher-options' description.\n");
+  printf("  The 'S1000' argument can be added to tetgen options\n");
+  printf("    to cap inserted nodes at 1000 and reduce run time.\n");
+  printf("  The 'q20/10' arguments (radius-edge-ratio/dihedral-angle)\n");
+  printf("    can be increased for faster initial volume refinement.\n");
+  printf("  The 'O7/7' arguments (optimization iterations/operation)\n");
+  printf("    can be decreased for faster mesh optimization.\n");
+  printf("  See 'ref bootstrap -h' for '--mesher-options' description\n");
+  printf("    and the TetGen user manual for details.\n");
 
   if (NULL == options) {
     snprintf(command, 1024,
@@ -2729,9 +2732,10 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
+REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT geom, node, edgeid, faceid;
   REF_DBL angle_tol = 10.0;
   REF_DBL angle;
@@ -2739,6 +2743,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   REF_DBL short_edge, diag;
   REF_DBL curve;
   REF_DBL location[3];
+  REF_INT nsliver, nshort, nfilter;
 
   if (ref_geom_effective(ref_geom)) {
     /* EFFECTIVE */
@@ -2750,39 +2755,162 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   REIS(REF_MIGRATE_SINGLE, ref_grid_partitioner(ref_grid),
        "parallel implementation is incomplete");
 
+  if (ref_mpi_once(ref_mpi))
+    printf(
+        "Triaging geometry for issues impacting efficiency and robustness\n");
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf(
+        "scanning for discrete face corners with slivers or cusps of %.1f deg "
+        "or "
+        "less\n",
+        angle_tol);
+    printf(
+        "slivers in flat regions constrain the mesh and are efficiency "
+        "concerns\n");
+    printf(
+        "cusps (very small angles) in curved regions may be fatal with loose "
+        "tolerances\n");
+    printf(
+        "  because the edge/face topology becomes ambiguous with adaptive "
+        "refinement\n");
+  }
+  nsliver = 0;
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
     if (angle <= angle_tol) {
-      printf("%f %f %f # sliver deg=%f node %d\n",
+      printf("%f %f %f # sliver deg=%.3f at geom node %d\n",
              ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
              ref_node_xyz(ref_node, 2, node), angle,
              ref_geom_id(ref_geom, geom));
+      nsliver++;
     }
   }
+  if (ref_mpi_once(ref_mpi))
+    printf("%d geometry nodes with slivers or cusps of %.1f deg or less\n",
+           nsliver, angle_tol);
+
+  nshort = 0;
   if (ref_geom_model_loaded(ref_geom)) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf(
+          "scanning for geom nodes with shortest/longest edge ratios of %.1f "
+          "or "
+          "less\n",
+          short_edge_tol);
+      printf(
+          "short edges are efficiency concerns that rarely create failures.\n");
+    }
     each_ref_geom_node(ref_geom, geom) {
       node = ref_geom_node(ref_geom, geom);
       RSS(ref_geom_node_short_edge(ref_grid, node, &short_edge, &diag, &edgeid),
           "short edge");
       if (short_edge <= short_edge_tol) {
-        printf("%f %f %f # short edge a=%e r=%e id %d\n",
+        printf("%f %f %f # short edge %.2e ratio %.2e id %d\n",
                ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
                ref_node_xyz(ref_node, 2, node), diag, short_edge, edgeid);
+        nshort++;
       }
     }
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "%d geometry nodes with shortest/longest edge ratios of %.1f or "
+          "less\n",
+          nshort, angle_tol);
   }
+
+  nfilter = 0;
   if (ref_geom_model_loaded(ref_geom)) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf(
+          "scanning for surface curvature tighter than face-edge tolerance\n");
+      printf("tight surface curvature is ignored where it reduces mesh\n");
+      printf("  spacing below edge and face parameter curve tolerance\n");
+      printf("these locations are likely to be accommodated unless\n");
+      printf("  the error estimation resolves the high surface curvature\n");
+    }
     for (faceid = 1; faceid <= ref_geom->nedge; faceid++) {
       RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
           "curved face");
       if (curve < 1.0) {
-        printf("%f %f %f# face id %d curve/tol %e\n", location[0], location[1],
-               location[2], faceid, curve);
+        printf("%f %f %f # face id %d curve/tol %.3e\n", location[0],
+               location[1], location[2], faceid, curve);
+        nfilter++;
       }
     }
+    if (ref_mpi_once(ref_mpi))
+      printf("%d locations with filtered curvature\n", nfilter);
   }
 
+  if (ref_mpi_once(ref_mpi) && (nsliver > 0 || nshort > 0 || nfilter > 0)) {
+    FILE *file;
+    REF_INT n;
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    fprintf(file, "title=\"tecplot refine geometry triage\"\n");
+    fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+    if (nsliver > 0) {
+      printf("exporting slivers locations to %s\n", filename);
+      fprintf(file, "zone t=\"sliver\", i=%d, datapacking=%s\n", nsliver,
+              "point");
+      n = 0;
+      each_ref_geom_node(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
+        if (angle <= angle_tol) {
+          fprintf(file, "# sliver deg=%f at geom node %d\n %f %f %f\n", angle,
+                  ref_geom_id(ref_geom, geom), ref_node_xyz(ref_node, 0, node),
+                  ref_node_xyz(ref_node, 1, node),
+                  ref_node_xyz(ref_node, 2, node));
+          n++;
+        }
+      }
+      REIS(nsliver, n, "tecplot sliver different recount");
+    }
+
+    if (nshort > 0) {
+      printf("exporting short edge locations to %s\n", filename);
+      fprintf(file, "zone t=\"short edge\", i=%d, datapacking=%s\n", nshort,
+              "point");
+      n = 0;
+      each_ref_geom_node(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        RSS(ref_geom_node_short_edge(ref_grid, node, &short_edge, &diag,
+                                     &edgeid),
+            "short edge");
+        if (short_edge <= short_edge_tol) {
+          fprintf(
+              file, "# short edge diagonal %e ratio %e edge id %d\n%f %f %f\n",
+              diag, short_edge, edgeid, ref_node_xyz(ref_node, 0, node),
+              ref_node_xyz(ref_node, 1, node), ref_node_xyz(ref_node, 2, node));
+          n++;
+        }
+      }
+      REIS(nshort, n, "tecplot short edge different recount");
+    }
+
+    if (nfilter > 0) {
+      printf("exporting filtered high curvature locations to %s\n", filename);
+      fprintf(file, "zone t=\"filtered\", i=%d, datapacking=%s\n", nfilter,
+              "point");
+      n = 0;
+      for (faceid = 1; faceid <= ref_geom->nedge; faceid++) {
+        RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
+            "curved face");
+        if (curve < 1.0) {
+          fprintf(file, "# face id %d curve/tol %e\n%f %f %f\n", faceid, curve,
+                  location[0], location[1], location[2]);
+          n++;
+        }
+      }
+      REIS(nfilter, n, "tecplot filtered curvature different recount");
+    }
+
+    fclose(file);
+  }
   return REF_SUCCESS;
 }
 
@@ -2881,7 +3009,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], t[item], 0.0, radius, 0.0, gap);
+            xyz[1], xyz[2], gap, t[item], 0.0, radius, 0.0);
   }
   if (REF_EMPTY != jump_geom) {
     node = ref_geom_node(ref_geom, jump_geom);
@@ -2901,7 +3029,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     }
     node = ref_geom_node(ref_geom, jump_geom);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], t[nnode - 1], 0.0, radius, 0.0, gap);
+            xyz[1], xyz[2], gap, t[nnode - 1], 0.0, radius, 0.0);
   }
   ref_free(t);
 
@@ -3023,8 +3151,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item], radius, t[item],
-            gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * item], uv[1 + 2 * item], radius,
+            t[item]);
   }
   if (REF_EMPTY != jump_geom) {
     node = ref_geom_node(ref_geom, jump_geom);
@@ -3047,8 +3175,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
     }
     node = ref_geom_node(ref_geom, jump_geom);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * (nnode - 1)], uv[1 + 2 * (nnode - 1)],
-            radius, t[nnode - 1], gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * (nnode - 1)],
+            uv[1 + 2 * (nnode - 1)], radius, t[nnode - 1]);
   }
   ref_free(uv);
   ref_free(t);
@@ -3184,8 +3312,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     kmax = MAX(ABS(kr), ABS(ks));
     kmin = MIN(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item], kmax, kmin,
-            gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * item], uv[1 + 2 * item], kmax,
+            kmin);
   }
   each_ref_dict_key_value(ref_dict_jump, item, node, geom) {
     kr = 0;
@@ -3205,8 +3333,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     kmax = MAX(ABS(kr), ABS(ks));
     kmin = MAX(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * (nnode_sens0 + item)],
-            uv[1 + 2 * (nnode_sens0 + item)], kmax, kmin, gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * (nnode_sens0 + item)],
+            uv[1 + 2 * (nnode_sens0 + item)], kmax, kmin);
   }
   each_ref_dict_key_value(ref_dict_degen, item, cell, node) {
     kr = 0;
@@ -3231,8 +3359,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     kmax = MAX(ABS(kr), ABS(ks));
     kmin = MAX(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * (nnode_degen + item)],
-            uv[1 + 2 * (nnode_degen + item)], kmax, kmin, gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * (nnode_degen + item)],
+            uv[1 + 2 * (nnode_degen + item)], kmax, kmin);
   }
   ref_free(uv);
 
@@ -3425,7 +3553,7 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
   fprintf(file, "title=\"refine cad coupling in tecplot format\"\n");
   fprintf(
       file,
-      "variables = \"x\" \"y\" \"z\" \"p0\" \"p1\" \"k0\" \"k1\" \"gap\"\n");
+      "variables = \"x\" \"y\" \"z\" \"gap\" \"p0\" \"p1\" \"k0\" \"k1\"\n");
 
   min_id = REF_INT_MAX;
   max_id = REF_INT_MIN;
