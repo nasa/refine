@@ -2735,6 +2735,7 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
 REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT geom, node, edgeid, faceid;
   REF_DBL angle_tol = 10.0;
   REF_DBL angle;
@@ -2754,21 +2755,25 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   REIS(REF_MIGRATE_SINGLE, ref_grid_partitioner(ref_grid),
        "parallel implementation is incomplete");
 
-  printf("Triaging geometry for issues impacting effiency and robustness\n");
+  if (ref_mpi_once(ref_mpi))
+    printf("Triaging geometry for issues impacting effiency and robustness\n");
 
-  printf(
-      "scaning for discrete face corners with slivers or cusps of %.1f deg or "
-      "less\n",
-      angle_tol);
-  printf(
-      "slivers in flat regions constrain the mesh and are efficency "
-      "concerns\n");
-  printf(
-      "cusps (very small angles) in curved regions may be fatal with loose "
-      "tolerences\n");
-  printf(
-      "  because the edge/face topology becomes ambiguous with adaptive "
-      "refinement\n");
+  if (ref_mpi_once(ref_mpi)) {
+    printf(
+        "scaning for discrete face corners with slivers or cusps of %.1f deg "
+        "or "
+        "less\n",
+        angle_tol);
+    printf(
+        "slivers in flat regions constrain the mesh and are efficency "
+        "concerns\n");
+    printf(
+        "cusps (very small angles) in curved regions may be fatal with loose "
+        "tolerences\n");
+    printf(
+        "  because the edge/face topology becomes ambiguous with adaptive "
+        "refinement\n");
+  }
   nsliver = 0;
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
@@ -2781,16 +2786,20 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
       nsliver++;
     }
   }
-  printf("%d geometry nodes with slivers or cusps of %.1f deg or less\n",
-         nsliver, angle_tol);
+  if (ref_mpi_once(ref_mpi))
+    printf("%d geometry nodes with slivers or cusps of %.1f deg or less\n",
+           nsliver, angle_tol);
 
   nshort = 0;
   if (ref_geom_model_loaded(ref_geom)) {
-    printf(
-        "scaning for geom nodes with shortest/longest edge ratios of %.1f or "
-        "less\n",
-        short_edge_tol);
-    printf("short edges are efficency concerns that rarely create failures.\n");
+    if (ref_mpi_once(ref_mpi)) {
+      printf(
+          "scaning for geom nodes with shortest/longest edge ratios of %.1f or "
+          "less\n",
+          short_edge_tol);
+      printf(
+          "short edges are efficency concerns that rarely create failures.\n");
+    }
     each_ref_geom_node(ref_geom, geom) {
       node = ref_geom_node(ref_geom, geom);
       RSS(ref_geom_node_short_edge(ref_grid, node, &short_edge, &diag, &edgeid),
@@ -2802,16 +2811,23 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
         nshort++;
       }
     }
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "%d geometry nodes with shortest/longest edge ratios of %.1f or "
+          "less\n",
+          nshort, angle_tol);
   }
 
   nfilter = 0;
   if (ref_geom_model_loaded(ref_geom)) {
-    printf("scaning for surface curvature tighter than face-edge tolerence\n");
-    printf("tight surface curvature is ignored where it reduces mesh\n");
-    printf("  spacing below edge and face pcurve tolerence\n");
-    printf("these locations are likely to be accommodated unless\n");
-    printf("  the error estimation resolves the high surface curvature\n");
-
+    if (ref_mpi_once(ref_mpi)) {
+      printf(
+          "scaning for surface curvature tighter than face-edge tolerence\n");
+      printf("tight surface curvature is ignored where it reduces mesh\n");
+      printf("  spacing below edge and face pcurve tolerence\n");
+      printf("these locations are likely to be accommodated unless\n");
+      printf("  the error estimation resolves the high surface curvature\n");
+    }
     for (faceid = 1; faceid <= ref_geom->nedge; faceid++) {
       RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
           "curved face");
@@ -2821,9 +2837,11 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
         nfilter++;
       }
     }
+    if (ref_mpi_once(ref_mpi))
+      printf("%d locations with filtered curvature\n", nfilter);
   }
 
-  if (nsliver > 0 || nshort > 0 || nfilter > 0) {
+  if (ref_mpi_once(ref_mpi) && (nsliver > 0 || nshort > 0 || nfilter > 0)) {
     FILE *file;
     REF_INT n;
     file = fopen(filename, "w");
