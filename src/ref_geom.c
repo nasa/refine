@@ -2160,6 +2160,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   printf("    to cap inserted nodes at 1000 and reduce run time.\n");
   printf("  The 'q20/10' arguments (radius-edge-ratio/dihedral-angle)\n");
   printf("    can be increased for faster initial volume refinement.\n");
+  printf("  The 'O7/7' arguments (optimization iterations/operation)\n");
+  printf("    can be decreased for faster mesh optimization.\n");
   printf("  See 'ref bootstrap -h' for '--mesher-options' description.\n");
 
   if (NULL == options) {
