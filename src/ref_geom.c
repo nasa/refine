@@ -2760,7 +2760,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
 
   if (ref_mpi_once(ref_mpi)) {
     printf(
-        "scaning for discrete face corners with slivers or cusps of %.1f deg "
+        "scanning for discrete face corners with slivers or cusps of %.1f deg "
         "or "
         "less\n",
         angle_tol);
@@ -2769,7 +2769,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
         "concerns\n");
     printf(
         "cusps (very small angles) in curved regions may be fatal with loose "
-        "tolerences\n");
+        "tolerances\n");
     printf(
         "  because the edge/face topology becomes ambiguous with adaptive "
         "refinement\n");
@@ -2794,7 +2794,8 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   if (ref_geom_model_loaded(ref_geom)) {
     if (ref_mpi_once(ref_mpi)) {
       printf(
-          "scaning for geom nodes with shortest/longest edge ratios of %.1f or "
+          "scanning for geom nodes with shortest/longest edge ratios of %.1f "
+          "or "
           "less\n",
           short_edge_tol);
       printf(
@@ -2822,9 +2823,9 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   if (ref_geom_model_loaded(ref_geom)) {
     if (ref_mpi_once(ref_mpi)) {
       printf(
-          "scaning for surface curvature tighter than face-edge tolerence\n");
+          "scanning for surface curvature tighter than face-edge tolerance\n");
       printf("tight surface curvature is ignored where it reduces mesh\n");
-      printf("  spacing below edge and face pcurve tolerence\n");
+      printf("  spacing below edge and face pcurve tolerance\n");
       printf("these locations are likely to be accommodated unless\n");
       printf("  the error estimation resolves the high surface curvature\n");
     }
