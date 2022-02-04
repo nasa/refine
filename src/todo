@@ -1,4 +1,8 @@
 
+tetgen: better q descript, add O descript, add S1000
+
+move gap to first geom var
+
 explain geometry triage feedback (end of bootstrap)
 
 facilitate making tecplot images (i.e. dots)
