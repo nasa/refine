@@ -2771,7 +2771,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
     if (angle <= angle_tol) {
-      printf("%f %f %f # sliver deg=%f geom node %d\n",
+      printf("%f %f %f # sliver deg=%f at geom node %d\n",
              ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
              ref_node_xyz(ref_node, 2, node), angle,
              ref_geom_id(ref_geom, geom));
@@ -2821,7 +2821,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
       node = ref_geom_node(ref_geom, geom);
       RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
       if (angle <= angle_tol) {
-        fprintf(file, "# sliver deg=%f geom node %d\n %f %f %f\n", angle,
+        fprintf(file, "# sliver deg=%f at geom node %d\n %f %f %f\n", angle,
                 ref_geom_id(ref_geom, geom), ref_node_xyz(ref_node, 0, node),
                 ref_node_xyz(ref_node, 1, node),
                 ref_node_xyz(ref_node, 2, node));
