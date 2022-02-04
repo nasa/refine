@@ -2751,6 +2751,8 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   REIS(REF_MIGRATE_SINGLE, ref_grid_partitioner(ref_grid),
        "parallel implementation is incomplete");
 
+  printf("Triaging geometry for issues impacting effiency and robustness\n");
+
   printf(
       "scaning for discrete face corners with slivers or cusps of %.1f deg or "
       "less\n",
@@ -2762,7 +2764,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
       "cusps (very small angles) in curved regions may be fatal with loose "
       "tolerences\n");
   printf(
-      "  because the edge/face topology becomes amgigous with adaptive "
+      "  because the edge/face topology becomes ambiguous with adaptive "
       "refinement\n");
   nsliver = 0;
   each_ref_geom_node(ref_geom, geom) {
@@ -2811,6 +2813,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
     fprintf(file, "title=\"tecplot refine geometry triage\"\n");
     fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
 
+    printf("exporting slivers locations to %s\n", filename);
     fprintf(file, "zone t=\"sliver\", i=%d, datapacking=%s\n", nsliver,
             "point");
     n = 0;
