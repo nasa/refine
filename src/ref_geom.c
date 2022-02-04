@@ -2932,7 +2932,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], t[item], 0.0, radius, 0.0, gap);
+            xyz[1], xyz[2], gap, t[item], 0.0, radius, 0.0);
   }
   if (REF_EMPTY != jump_geom) {
     node = ref_geom_node(ref_geom, jump_geom);
@@ -2952,7 +2952,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     }
     node = ref_geom_node(ref_geom, jump_geom);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], t[nnode - 1], 0.0, radius, 0.0, gap);
+            xyz[1], xyz[2], gap, t[nnode - 1], 0.0, radius, 0.0);
   }
   ref_free(t);
 
@@ -3074,8 +3074,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item], radius, t[item],
-            gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * item], uv[1 + 2 * item], radius,
+            t[item]);
   }
   if (REF_EMPTY != jump_geom) {
     node = ref_geom_node(ref_geom, jump_geom);
@@ -3098,8 +3098,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
     }
     node = ref_geom_node(ref_geom, jump_geom);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * (nnode - 1)], uv[1 + 2 * (nnode - 1)],
-            radius, t[nnode - 1], gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * (nnode - 1)],
+            uv[1 + 2 * (nnode - 1)], radius, t[nnode - 1]);
   }
   ref_free(uv);
   ref_free(t);
@@ -3235,8 +3235,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     kmax = MAX(ABS(kr), ABS(ks));
     kmin = MIN(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item], kmax, kmin,
-            gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * item], uv[1 + 2 * item], kmax,
+            kmin);
   }
   each_ref_dict_key_value(ref_dict_jump, item, node, geom) {
     kr = 0;
@@ -3256,8 +3256,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     kmax = MAX(ABS(kr), ABS(ks));
     kmin = MAX(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * (nnode_sens0 + item)],
-            uv[1 + 2 * (nnode_sens0 + item)], kmax, kmin, gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * (nnode_sens0 + item)],
+            uv[1 + 2 * (nnode_sens0 + item)], kmax, kmin);
   }
   each_ref_dict_key_value(ref_dict_degen, item, cell, node) {
     kr = 0;
@@ -3282,8 +3282,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     kmax = MAX(ABS(kr), ABS(ks));
     kmin = MAX(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * (nnode_degen + item)],
-            uv[1 + 2 * (nnode_degen + item)], kmax, kmin, gap);
+            xyz[1], xyz[2], gap, uv[0 + 2 * (nnode_degen + item)],
+            uv[1 + 2 * (nnode_degen + item)], kmax, kmin);
   }
   ref_free(uv);
 
@@ -3476,7 +3476,7 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
   fprintf(file, "title=\"refine cad coupling in tecplot format\"\n");
   fprintf(
       file,
-      "variables = \"x\" \"y\" \"z\" \"p0\" \"p1\" \"k0\" \"k1\" \"gap\"\n");
+      "variables = \"x\" \"y\" \"z\" \"gap\" \"p0\" \"p1\" \"k0\" \"k1\"\n");
 
   min_id = REF_INT_MAX;
   max_id = REF_INT_MIN;
