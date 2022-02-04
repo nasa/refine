@@ -2756,7 +2756,8 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
        "parallel implementation is incomplete");
 
   if (ref_mpi_once(ref_mpi))
-    printf("Triaging geometry for issues impacting effiency and robustness\n");
+    printf(
+        "Triaging geometry for issues impacting efficiency and robustness\n");
 
   if (ref_mpi_once(ref_mpi)) {
     printf(
@@ -2765,7 +2766,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
         "less\n",
         angle_tol);
     printf(
-        "slivers in flat regions constrain the mesh and are efficency "
+        "slivers in flat regions constrain the mesh and are efficiency "
         "concerns\n");
     printf(
         "cusps (very small angles) in curved regions may be fatal with loose "
@@ -2799,7 +2800,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
           "less\n",
           short_edge_tol);
       printf(
-          "short edges are efficency concerns that rarely create failures.\n");
+          "short edges are efficiency concerns that rarely create failures.\n");
     }
     each_ref_geom_node(ref_geom, geom) {
       node = ref_geom_node(ref_geom, geom);
@@ -2825,7 +2826,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
       printf(
           "scanning for surface curvature tighter than face-edge tolerance\n");
       printf("tight surface curvature is ignored where it reduces mesh\n");
-      printf("  spacing below edge and face pcurve tolerance\n");
+      printf("  spacing below edge and face parameter curve tolerance\n");
       printf("these locations are likely to be accommodated unless\n");
       printf("  the error estimation resolves the high surface curvature\n");
     }
