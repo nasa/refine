@@ -2779,7 +2779,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
     if (angle <= angle_tol) {
-      printf("%f %f %f # sliver deg=%f at geom node %d\n",
+      printf("%f %f %f # sliver deg=%.3f at geom node %d\n",
              ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
              ref_node_xyz(ref_node, 2, node), angle,
              ref_geom_id(ref_geom, geom));
@@ -2805,7 +2805,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
       RSS(ref_geom_node_short_edge(ref_grid, node, &short_edge, &diag, &edgeid),
           "short edge");
       if (short_edge <= short_edge_tol) {
-        printf("%f %f %f # short edge diagonal %e ratio %e edge id %d\n",
+        printf("%f %f %f # short edge %.2e ratio %.2e id %d\n",
                ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
                ref_node_xyz(ref_node, 2, node), diag, short_edge, edgeid);
         nshort++;
@@ -2832,8 +2832,8 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
       RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
           "curved face");
       if (curve < 1.0) {
-        printf("%f %f %f # face id %d curve/tol %e\n", location[0], location[1],
-               location[2], faceid, curve);
+        printf("%f %f %f # face id %d curve/tol %.3e\n", location[0],
+               location[1], location[2], faceid, curve);
         nfilter++;
       }
     }
