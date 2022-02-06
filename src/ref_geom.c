@@ -2834,8 +2834,8 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
       RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
           "curved face");
       if (curve < 1.0) {
-        printf("%f %f %f # face id %d curve/tol %.3e\n", location[0],
-               location[1], location[2], faceid, curve);
+        printf("%f %f %f # curve/tol %.3e face id %d\n", location[0],
+               location[1], location[2], curve, faceid);
         nfilter++;
       }
     }
@@ -2861,7 +2861,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
         node = ref_geom_node(ref_geom, geom);
         RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
         if (angle <= angle_tol) {
-          fprintf(file, "# sliver deg=%f at geom node %d\n %f %f %f\n", angle,
+          fprintf(file, "# sliver deg=%.3f at geom node %d\n %f %f %f\n", angle,
                   ref_geom_id(ref_geom, geom), ref_node_xyz(ref_node, 0, node),
                   ref_node_xyz(ref_node, 1, node),
                   ref_node_xyz(ref_node, 2, node));
@@ -2883,7 +2883,8 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
             "short edge");
         if (short_edge <= short_edge_tol) {
           fprintf(
-              file, "# short edge diagonal %e ratio %e edge id %d\n%f %f %f\n",
+              file,
+              "# short edge diagonal %.3e ratio %.3e edge id %d\n%f %f %f\n",
               diag, short_edge, edgeid, ref_node_xyz(ref_node, 0, node),
               ref_node_xyz(ref_node, 1, node), ref_node_xyz(ref_node, 2, node));
           n++;
@@ -2901,8 +2902,8 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
         RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
             "curved face");
         if (curve < 1.0) {
-          fprintf(file, "# face id %d curve/tol %e\n%f %f %f\n", faceid, curve,
-                  location[0], location[1], location[2]);
+          fprintf(file, "# curve/tol %.3e face id %d\n%f %f %f\n", curve,
+                  faceid, location[0], location[1], location[2]);
           n++;
         }
       }
