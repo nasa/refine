@@ -114,6 +114,7 @@ static void adapt_help(const char *name) {
   option_uniform_help();
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
+  printf("  --axi forms an extruded wedge from 2D mesh.\n");
   printf("  --partitioner selects domain decomposition method.\n");
   printf("      2: ParMETIS graph partitioning.\n");
   printf("      3: Zoltan graph partitioning.\n");
@@ -829,6 +830,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
           printf(
               " extrusion automatically added for ugrid output of 2D mesh.\n");
         RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
+        RXS(ref_args_find(argc, argv, "--axi", &pos), REF_NOT_FOUND,
+            "arg search");
+        if (REF_EMPTY != pos) {
+          if (ref_mpi_once(ref_mpi))
+            printf(" --axi convert extrusion to wedge.\n");
+          RSS(ref_axi_wedge(extruded_grid), "axi wedge");
+        }
         if (ref_mpi_para(ref_mpi)) {
           if (ref_mpi_once(ref_mpi))
             printf("gather " REF_GLOB_FMT " nodes to %s\n",
@@ -3264,7 +3272,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid, 2), "extrude");
     RXS(ref_args_find(argc, argv, "--axi", &pos), REF_NOT_FOUND, "arg search");
     if (REF_EMPTY != pos) {
-      if (ref_mpi_once(ref_mpi)) printf("axi wedge\n");
+      if (ref_mpi_once(ref_mpi)) printf(" --axi convert extrusion to wedge.\n");
       RSS(ref_axi_wedge(extruded_grid), "axi wedge");
     }
     if (ref_mpi_once(ref_mpi))
