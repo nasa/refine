@@ -27,15 +27,13 @@ int main(int argc, char *argv[]) {
 
   if (0 == rank) {
     printf("chunk size %d doubles %lu bytes\n", n, n * sizeof(double));
+    printf("calling MPI_Reduce( %d, MPI_DOUBLE, MPI_SUM) on %d\n", n, nproc);
     fflush(stdout);
   }
 
   for (i = 0; i < n; i++) in[i] = 0.0;
   for (i = 0; i < nproc; i++) {
     if (0 == rank) {
-      printf("calling MPI_Reduce( %d, MPI_DOUBLE, MPI_SUM) on %d\n", n, nproc);
-      fflush(stdout);
-      start_time = MPI_Wtime();
     }
     MPI_Reduce(in, out, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     if (0 == rank) {
