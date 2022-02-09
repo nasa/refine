@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < n; i++) in[i] = 0.0;
   for (i = 0; i < nproc; i++) {
     if (0 == rank) {
+      start_time = MPI_Wtime();
     }
     MPI_Reduce(in, out, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     if (0 == rank) {
