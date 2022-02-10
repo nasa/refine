@@ -9,17 +9,24 @@ int main(int argc, char *argv[]) {
   double *in, *out;
   double start_time = 0, end_time = 0, delta_time = 0, total_time = 0;
   double time_limit = 10.0;
-  int give_up = 0;
+  int slow_down = 1;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  if (argc > 1) time_limit = atof(argv[1]);
+  if (argc > 1) slow_down = 0;
+
+  if (0 == rank) {
+    if (slow_down) {
+      printf("slow version, only MPI_Reduce\n");
+    } else {
+      printf("fast version, MPI_Reduce and MPI_Bcast interleave\n");
+    }
+  }
 
   target = 1000000;
   increment = 100000;
-  give_up = 0;
   for (step = 0; step < steps; step++) {
     total_time = 0;
     n = (target + increment * (step - steps / 2)) / (int)sizeof(double);
@@ -32,22 +39,22 @@ int main(int argc, char *argv[]) {
         start_time = MPI_Wtime();
       }
       MPI_Reduce(in, out, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+      if (!slow_down) {
+        i = 0;
+        MPI_Bcast(&i, 1, MPI_INT, 0, MPI_COMM_WORLD);
+      }
       if (0 == rank) {
         end_time = MPI_Wtime();
         delta_time = end_time - start_time;
         total_time += delta_time;
-        give_up = 0;
         if (total_time > time_limit) {
           printf("total %f sec for %d repeats at %lu bytes [GAVE UP]\n",
                  total_time, repeat + 1, (size_t)n * sizeof(double));
           fflush(stdout);
-          give_up = 1;
         }
       }
-      MPI_Bcast(&give_up, 1, MPI_INT, 0, MPI_COMM_WORLD);
-      if (give_up) break;
     }
-    if (0 == rank && !give_up) {
+    if (0 == rank) {
       printf("total %f sec for %d repeats at %lu bytes\n", total_time, repeats,
              (size_t)n * sizeof(double));
       fflush(stdout);
