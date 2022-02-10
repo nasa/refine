@@ -8,14 +8,18 @@ int main(int argc, char *argv[]) {
   int nproc, rank;
   double *in, *out;
   double start_time = 0, end_time = 0, delta_time = 0, total_time = 0;
+  double time_limit = 10.0;
   int give_up = 0;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+  if (argc > 1) time_limit = atof(argv[1]);
+
   target = 1000000;
   increment = 100000;
+  give_up = 0;
   for (step = 0; step < steps; step++) {
     total_time = 0;
     n = (target + increment * (step - steps / 2)) / (int)sizeof(double);
@@ -33,7 +37,7 @@ int main(int argc, char *argv[]) {
         delta_time = end_time - start_time;
         total_time += delta_time;
         give_up = 0;
-        if (total_time > 10.0) {
+        if (total_time > time_limit) {
           printf("total %f sec for %d repeats at %lu bytes [GAVE UP]\n",
                  total_time, repeat + 1, (size_t)n * sizeof(double));
           fflush(stdout);
@@ -43,7 +47,7 @@ int main(int argc, char *argv[]) {
       MPI_Bcast(&give_up, 1, MPI_INT, 0, MPI_COMM_WORLD);
       if (give_up) break;
     }
-    if (0 == rank) {
+    if (0 == rank && !give_up) {
       printf("total %f sec for %d repeats at %lu bytes\n", total_time, repeats,
              (size_t)n * sizeof(double));
       fflush(stdout);
