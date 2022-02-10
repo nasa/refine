@@ -4,7 +4,7 @@
 
 #include "mpi.h"
 int main(int argc, char *argv[]) {
-  int repeat, repeats = 100, step, steps = 10, i, n, target, increment,
+  int repeat, repeats = 1000, step, steps = 10, i, n, target, increment,
               byte_target;
   int nproc, rank;
   double *in, *out;
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
   increment = 10000;
   for (step = 0; step < steps; step++) {
     total_time = 0;
-    n = (target + increment * (step - step / 2)) / sizeof(double);
+    n = (target + increment * (step - steps / 2)) / sizeof(double);
     in = (double *)malloc(n * sizeof(double));
     out = (double *)malloc(n * sizeof(double));
 
