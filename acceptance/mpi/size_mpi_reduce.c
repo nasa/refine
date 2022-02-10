@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
           give_up = 1;
         }
         MPI_Bcast(&give_up, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        if (give_up) continue;
+        if (give_up) break;
       }
     }
     if (0 == rank) {
