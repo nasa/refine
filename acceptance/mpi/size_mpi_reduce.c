@@ -22,8 +22,10 @@ int main(int argc, char *argv[]) {
     out = (double *)malloc(n * sizeof(double));
     for (i = 0; i < n; i++) in[i] = 0.0;
 
-    for (repeat = 0; i < repeats; repeat++) {
-      if (0 == rank) start_time = MPI_Wtime();
+    for (repeat = 0; repeat < repeats; repeat++) {
+      if (0 == rank) {
+        start_time = MPI_Wtime();
+      }
       MPI_Reduce(in, out, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
       if (0 == rank) {
         end_time = MPI_Wtime();
