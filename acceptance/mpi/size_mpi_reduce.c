@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   target = 1000000;
-  increment = 10000;
+  increment = 100000;
   for (step = 0; step < steps; step++) {
     total_time = 0;
     n = (target + increment * (step - steps / 2)) / (int)sizeof(double);
