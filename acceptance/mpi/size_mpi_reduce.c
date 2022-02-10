@@ -8,6 +8,7 @@ int main(int argc, char *argv[]) {
   int nproc, rank;
   double *in, *out;
   double start_time = 0, end_time = 0, delta_time = 0, total_time = 0;
+  int give_up = 0;
 
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
@@ -36,12 +37,15 @@ int main(int argc, char *argv[]) {
                  delta_time, repeat, repeats, (size_t)n * sizeof(double));
           fflush(stdout);
         }
-        if (delta_time > 1.0) {
-          printf("MPI_Allreduce took longer than 1 sec. abort %lu bytes\n",
-                 (size_t)n * sizeof(double));
+        give_up = 0;
+        if (total_time > 10.0) {
+          printf("total %f sec for %d repeats at %lu bytes [GAVE UP]\n",
+                 total_time, repeat + 1, (size_t)n * sizeof(double));
           fflush(stdout);
-          MPI_Abort(MPI_COMM_WORLD, 1);
+          give_up = 1;
         }
+        MPI_Bcast(&give_up, 1, MPI_INT, 0, MPI_COMM_WORLD);
+        if (give_up) continue;
       }
     }
     if (0 == rank) {
