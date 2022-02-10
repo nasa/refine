@@ -4,8 +4,7 @@
 
 #include "mpi.h"
 int main(int argc, char *argv[]) {
-  int repeat, repeats = 1000, step, steps = 10, i, n, target, increment,
-              byte_target;
+  int repeat, repeats = 1000, step, steps = 10, i, n, target, increment;
   int nproc, rank;
   double *in, *out;
   double start_time = 0, end_time = 0, delta_time = 0, total_time = 0;
@@ -21,8 +20,8 @@ int main(int argc, char *argv[]) {
     n = (target + increment * (step - steps / 2)) / sizeof(double);
     in = (double *)malloc(n * sizeof(double));
     out = (double *)malloc(n * sizeof(double));
-
     for (i = 0; i < n; i++) in[i] = 0.0;
+
     for (repeat = 0; i < repeats; repeat++) {
       if (0 == rank) start_time = MPI_Wtime();
       MPI_Reduce(in, out, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
