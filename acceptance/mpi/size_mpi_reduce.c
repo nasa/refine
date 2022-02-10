@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
         delta_time = end_time - start_time;
         total_time += delta_time;
         if (total_time > time_limit) {
-          printf("total %f sec for %d repeats at %lu bytes [GAVE UP]\n",
+          printf("total %f sec for %d repeats at %lu bytes [GIVE UP!]\n",
                  total_time, repeat + 1, (size_t)n * sizeof(double));
           fflush(stdout);
         }
