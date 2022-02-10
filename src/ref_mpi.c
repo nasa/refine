@@ -84,6 +84,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
   ref_mpi->native_alltoallv = REF_FALSE;
   ref_mpi->debug = REF_FALSE;
   ref_mpi->timing = 0;
+  ref_mpi->reduce_byte_limit = REF_EMPTY;
 
 #ifdef HAVE_MPI
   {
@@ -208,6 +209,7 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
   ref_mpi->native_alltoallv = original->native_alltoallv;
   ref_mpi->debug = original->debug;
   ref_mpi->timing = original->timing;
+  ref_mpi->reduce_byte_limit = original->reduce_byte_limit;
 
   return REF_SUCCESS;
 }
