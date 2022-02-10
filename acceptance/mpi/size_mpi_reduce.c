@@ -17,9 +17,9 @@ int main(int argc, char *argv[]) {
   increment = 10000;
   for (step = 0; step < steps; step++) {
     total_time = 0;
-    n = (target + increment * (step - steps / 2)) / sizeof(double);
-    in = (double *)malloc(n * sizeof(double));
-    out = (double *)malloc(n * sizeof(double));
+    n = (target + increment * (step - steps / 2)) / (int)sizeof(double);
+    in = (double *)malloc((size_t)n * sizeof(double));
+    out = (double *)malloc((size_t)n * sizeof(double));
     for (i = 0; i < n; i++) in[i] = 0.0;
 
     for (repeat = 0; repeat < repeats; repeat++) {
@@ -33,12 +33,12 @@ int main(int argc, char *argv[]) {
         total_time += delta_time;
         if (delta_time > 0.5) {
           printf("MPI_Allreduce returned in %f sec. on %d of %d %lu bytes\n",
-                 delta_time, repeat, repeats, n * sizeof(double));
+                 delta_time, repeat, repeats, (size_t)n * sizeof(double));
           fflush(stdout);
         }
         if (delta_time > 1.0) {
           printf("MPI_Allreduce took longer than 1 sec. abort %lu bytes\n",
-                 n * sizeof(double));
+                 (size_t)n * sizeof(double));
           fflush(stdout);
           MPI_Abort(MPI_COMM_WORLD, 1);
         }
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     }
     if (0 == rank) {
       printf("total %f sec for %d repeats at %lu bytes\n", total_time, repeats,
-             n * sizeof(double));
+             (size_t)n * sizeof(double));
       fflush(stdout);
     }
     free(out);
