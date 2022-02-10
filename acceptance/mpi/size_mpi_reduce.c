@@ -32,11 +32,6 @@ int main(int argc, char *argv[]) {
         end_time = MPI_Wtime();
         delta_time = end_time - start_time;
         total_time += delta_time;
-        if (delta_time > 0.5) {
-          printf("MPI_Allreduce returned in %f sec. on %d of %d %lu bytes\n",
-                 delta_time, repeat, repeats, (size_t)n * sizeof(double));
-          fflush(stdout);
-        }
         give_up = 0;
         if (total_time > 10.0) {
           printf("total %f sec for %d repeats at %lu bytes [GAVE UP]\n",
@@ -44,9 +39,9 @@ int main(int argc, char *argv[]) {
           fflush(stdout);
           give_up = 1;
         }
-        MPI_Bcast(&give_up, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        if (give_up) break;
       }
+      MPI_Bcast(&give_up, 1, MPI_INT, 0, MPI_COMM_WORLD);
+      if (give_up) break;
     }
     if (0 == rank) {
       printf("total %f sec for %d repeats at %lu bytes\n", total_time, repeats,
