@@ -55,6 +55,10 @@ struct REF_MPI_STRUCT {
 #define ref_mpi_native_alltoallv(ref_mpi) ((ref_mpi)->native_alltoallv)
 #define ref_mpi_timing(ref_mpi) ((ref_mpi)->timing)
 #define ref_mpi_reduce_byte_limit(ref_mpi) ((ref_mpi)->reduce_byte_limit)
+#define ref_mpi_reduce_chunk_limit(ref_mpi, chunk_bytes)    \
+  (ref_mpi_reduce_byte_limit(ref_mpi) > 0                   \
+       ? ref_mpi_reduce_byte_limit(ref_mpi) / (chunk_bytes) \
+       : REF_INT_MAX)
 
 #define each_ref_mpi_part(ref_mpi, part) \
   for ((part) = 0; (part) < ref_mpi_n(ref_mpi); (part)++)

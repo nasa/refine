@@ -598,6 +598,32 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "balance");
   }
 
+  { /* deep reduce chunk */
+    REF_MPI deep_copy;
+    RSS(ref_mpi_deep_copy(&deep_copy, ref_mpi), "deep copy");
+    {
+      REF_INT chunk_bytes = 64;
+      REF_INT expected_chunk = 1024;
+      ref_mpi_reduce_byte_limit(deep_copy) = chunk_bytes * expected_chunk;
+      REIS(expected_chunk, ref_mpi_reduce_chunk_limit(deep_copy, chunk_bytes),
+           "chunk");
+    }
+    RSS(ref_mpi_free(deep_copy), "mpi free");
+  }
+
+  { /* deep reduce chunk empty unilimited */
+    REF_MPI deep_copy;
+    RSS(ref_mpi_deep_copy(&deep_copy, ref_mpi), "deep copy");
+    {
+      REF_INT chunk_bytes = 64;
+      REF_INT expected_chunk = REF_INT_MAX;
+      ref_mpi_reduce_byte_limit(deep_copy) = REF_EMPTY;
+      REIS(expected_chunk, ref_mpi_reduce_chunk_limit(deep_copy, chunk_bytes),
+           "chunk");
+    }
+    RSS(ref_mpi_free(deep_copy), "mpi free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 
