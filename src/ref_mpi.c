@@ -84,7 +84,8 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
   ref_mpi->native_alltoallv = REF_FALSE;
   ref_mpi->debug = REF_FALSE;
   ref_mpi->timing = 0;
-  ref_mpi->reduce_byte_limit = REF_EMPTY;
+  /* just below 1MB threshold to prevent slowdown with MPT 2.23-2.25 */
+  ref_mpi->reduce_byte_limit = 1000000;
 
 #ifdef HAVE_MPI
   {
