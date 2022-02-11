@@ -129,6 +129,14 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("--timing %d\n", ref_mpi_timing(ref_mpi));
   }
 
+  RXS(ref_args_find(argc, argv, "--reduce-byte-limit", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    ref_mpi_reduce_byte_limit(ref_mpi) = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi))
+      printf("--reduce-byte-limit %d\n", ref_mpi_reduce_byte_limit(ref_mpi));
+  }
+
   RXS(ref_args_find(argc, argv, "--transmesh", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) transmesh = REF_TRUE;
@@ -180,7 +188,7 @@ int main(int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--mpt", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos == 1) {
-    REF_INT i, node, n = 1, ldim = 6;
+    REF_INT i, node, n = 1, ldim = 6, chunk;
     REF_GLOB global;
     REF_GRID ref_grid;
     REF_NODE ref_node;
@@ -200,6 +208,14 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_initialize_n_global(ref_node, global), "init n glob");
 
     if (ref_mpi_once(ref_mpi)) printf("nglobal " REF_GLOB_FMT "\n", global);
+    chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+    if (ref_mpi_once(ref_mpi))
+      printf("reduce byte limit %d\n", ref_mpi_reduce_byte_limit(ref_mpi));
+    if (ref_mpi_once(ref_mpi))
+      printf("target chunk %d limited %d\n", chunk,
+             ref_mpi_reduce_chunk_limit(ref_mpi,
+                                        (ldim + 1) * (REF_INT)sizeof(REF_DBL)));
+
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "initialize node");
 
     ref_malloc_init(scalar, ldim * ref_node_max(ref_node), REF_DBL, 1.0);
