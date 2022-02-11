@@ -166,6 +166,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_GLOB nnode,
 
   chunk = (REF_INT)(nnode / ref_mpi_n(ref_mpi) + 1);
   chunk = MAX(chunk, 100000);
+  chunk = MIN(chunk, ref_mpi_reduce_chunk_limit(
+                         ref_mpi, ldim * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, dim * chunk, REF_DBL);
   ref_malloc(xyzm, dim * chunk, REF_DBL);
@@ -270,6 +272,8 @@ static REF_STATUS ref_gather_node_tec_block(REF_NODE ref_node, REF_GLOB nnode,
 
   chunk = (REF_INT)(nnode / ref_mpi_n(ref_mpi) + 1);
   chunk = MAX(chunk, 100000);
+  chunk =
+      MIN(chunk, ref_mpi_reduce_chunk_limit(ref_mpi, (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, chunk, REF_DBL);
   ref_malloc(xyzm, chunk, REF_DBL);
@@ -1169,6 +1173,8 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   REF_BOOL node_not_used_once = REF_FALSE;
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+  chunk = MIN(
+      chunk, ref_mpi_reduce_chunk_limit(ref_mpi, 4 * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, 4 * chunk, REF_DBL);
   ref_malloc(xyzm, 4 * chunk, REF_DBL);
@@ -1245,6 +1251,8 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
   REF_STATUS status;
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+  chunk = MIN(
+      chunk, ref_mpi_reduce_chunk_limit(ref_mpi, 7 * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);
@@ -1308,6 +1316,8 @@ static REF_STATUS ref_gather_node_bamg_met(REF_GRID ref_grid, FILE *file) {
   }
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+  chunk = MIN(
+      chunk, ref_mpi_reduce_chunk_limit(ref_mpi, 7 * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);
@@ -1419,6 +1429,8 @@ static REF_STATUS ref_gather_node_metric_solb(REF_GRID ref_grid, FILE *file) {
   }
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+  chunk = MIN(
+      chunk, ref_mpi_reduce_chunk_limit(ref_mpi, 7 * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);
@@ -1532,6 +1544,8 @@ static REF_STATUS ref_gather_scalar_rst(REF_GRID ref_grid, REF_INT ldim,
   }
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+  chunk = MIN(chunk, ref_mpi_reduce_chunk_limit(
+                         ref_mpi, (variables + 1) * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, (variables + 1) * chunk, REF_DBL);
   ref_malloc(xyzm, (variables + 1) * chunk, REF_DBL);
@@ -1593,7 +1607,7 @@ static REF_STATUS ref_gather_scalar_rst(REF_GRID ref_grid, REF_INT ldim,
 static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
                                              REF_DBL *scalar, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT chunk;
+  REF_INT chunk, nchunk;
   REF_DBL *local_xyzm, *xyzm;
   REF_GLOB global, nnode_written, first;
   REF_INT local, n, i, im;
@@ -1604,12 +1618,16 @@ static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
   clock_t disk_toc = 0;
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+  chunk = MIN(chunk, ref_mpi_reduce_chunk_limit(
+                         ref_mpi, (ldim + 1) * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, (ldim + 1) * chunk, REF_DBL);
   ref_malloc(xyzm, (ldim + 1) * chunk, REF_DBL);
 
+  nchunk = 0;
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
+    nchunk++;
     first = nnode_written;
     n = (REF_INT)MIN((REF_GLOB)chunk,
                      ref_node_n_global(ref_node) - nnode_written);
@@ -1666,6 +1684,14 @@ static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
            ref_mpi_rank(ref_mpi));
   }
 
+  if (chunk == ref_mpi_reduce_chunk_limit(
+                   ref_mpi, (ldim + 1) * (REF_INT)sizeof(REF_DBL))) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("mpi reduce limited to %d chunks of %d bytes\n", nchunk,
+             chunk * (ldim + 1) * (REF_INT)sizeof(REF_DBL));
+    }
+  }
+
   return REF_SUCCESS;
 }
 
@@ -1684,6 +1710,9 @@ static REF_STATUS ref_gather_node_scalar_txt(REF_NODE ref_node, REF_INT ldim,
   if (prepend_xyz) nxyz = 3;
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
+  chunk =
+      MIN(chunk, ref_mpi_reduce_chunk_limit(
+                     ref_mpi, (nxyz + ldim + 1) * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, (nxyz + ldim + 1) * chunk, REF_DBL);
   ref_malloc(xyzm, (nxyz + ldim + 1) * chunk, REF_DBL);
