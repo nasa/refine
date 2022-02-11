@@ -13,8 +13,7 @@ else
 fi
 
 TOPDIR='../../..'
-PARMETIS="ParMETIS/${PARMETIS_VERSION}_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
-ZOLTAN="Zoltan/${ZOLTAN_VERSION}_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
+PARMETIS="ParMETIS-64/${PARMETIS_VERSION}_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
 ESP="ESP/${ESP_VERSION}"
 
 echo Build ${PACKAGE} ${VERSION}
@@ -31,8 +30,7 @@ cd       _build_$VERSION
 
 ../${TOPDIR}/configure \
   --prefix=${MODULE_DEST} \
-  --with-mpi=/nasa/hpe/mpt/2.23 \
-  --with-zoltan=${MODULE_ROOT}/${ZOLTAN} \
+  --with-mpi=/nasa/hpe/mpt/${MPT_VERSION} \
   --with-metis=${MODULE_ROOT}/${PARMETIS} \
   --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
   --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
