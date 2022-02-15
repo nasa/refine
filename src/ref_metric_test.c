@@ -1741,6 +1741,9 @@ int main(int argc, char *argv[]) {
     REF_DBL x0, x1, y0, y1, z0, z1, h0, ds;
     REF_DBL *signed_distance = NULL;
     REF_DBL *total = NULL;
+    REF_GRID iso_grid;
+    REF_DBL *threshold;
+    REF_DBL turb1_isovalue = 10.0;
 
     REIS(1, wake_pos,
          "required args: --wake grid.ext distance.solb volume.solb "
@@ -1782,9 +1785,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_imply_from(metric, ref_grid), "imply");
     ref_mpi_stopwatch_stop(ref_mpi, "imply");
 
-    REF_GRID iso_grid;
-    REF_DBL *threshold;
-    REF_DBL turb1_isovalue = 10.0;
     ref_malloc(threshold, ref_node_max(ref_node), REF_DBL);
     each_ref_node_valid_node(ref_node, node) {
       REF_DBL turb1 = field[5 + ldim * node];
