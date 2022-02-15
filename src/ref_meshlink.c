@@ -453,6 +453,8 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
   char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
   MLINT gref;
   REF_INT item, geom;
+  MLREAL distance;
+  MLREAL tolerance;
 
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
@@ -476,7 +478,8 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
            "prj");
       REIS(0,
            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
-                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE,
+                                &distance, &tolerance),
            "info");
 
       ref_node_xyz(ref_node, 0, node) = projected_point[0];
@@ -504,11 +507,11 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
                ref_node_xyz(ref_node, 1, node),
                ref_node_xyz(ref_node, 2, node));
       } else {
-        REIS(
-            0,
-            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
-                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
-            "info");
+        REIS(0,
+             ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                  uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE,
+                                  &distance, &tolerance),
+             "info");
         ref_node_xyz(ref_node, 0, node) = projected_point[0];
         ref_node_xyz(ref_node, 1, node) = projected_point[1];
         ref_node_xyz(ref_node, 2, node) = projected_point[2];
@@ -541,6 +544,8 @@ REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
   MLINT gref;
   REF_INT item, geom;
   REF_DBL gap_xyz[3], dist;
+  MLREAL distance;
+  MLREAL tolerance;
 
   *gap = 0.0;
 
@@ -566,11 +571,11 @@ REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
         REIS(0,
              ML_projectPoint(geom_kernel, geom_group, point, projection_data),
              "prj");
-        REIS(
-            0,
-            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
-                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
-            "info");
+        REIS(0,
+             ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                  uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE,
+                                  &distance, &tolerance),
+             "info");
         gap_xyz[0] = projected_point[0];
         gap_xyz[1] = projected_point[1];
         gap_xyz[2] = projected_point[2];
@@ -590,7 +595,8 @@ REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
            "prj");
       REIS(0,
            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
-                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE,
+                                &distance, &tolerance),
            "info");
       dist = sqrt(pow(gap_xyz[0] - projected_point[0], 2) +
                   pow(gap_xyz[1] - projected_point[1], 2) +
@@ -612,11 +618,11 @@ REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
                ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
                ref_node_xyz(ref_node, 2, node));
       } else {
-        REIS(
-            0,
-            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
-                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
-            "info");
+        REIS(0,
+             ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                  uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE,
+                                  &distance, &tolerance),
+             "info");
         dist = sqrt(pow(gap_xyz[0] - projected_point[0], 2) +
                     pow(gap_xyz[1] - projected_point[1], 2) +
                     pow(gap_xyz[2] - projected_point[2], 2));
@@ -665,6 +671,8 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   MLREAL avg;
   MLREAL gauss;
   MLORIENT orientation;
+  MLREAL distance;
+  MLREAL tolerance;
 
   *dot_product = -2.0;
 
@@ -710,7 +718,8 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   }
   REIS(0,
        ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
-                            entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+                            entity_name, REF_MESHLINK_MAX_STRING_SIZE,
+                            &distance, &tolerance),
        "info");
   REIS(0,
        ML_evalCurvatureOnSurface(geom_kernel, uv, entity_name, eval_point,
@@ -753,6 +762,8 @@ REF_STATUS ref_meshlink_edge_curvature(REF_GRID ref_grid, REF_INT geom,
   MLREAL curvature;
   MLINT linear;
   REF_BOOL project = REF_TRUE;
+  MLREAL distance;
+  MLREAL tolerance;
 
   REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "face geom expected");
   RNS(ref_geom->meshlink, "meshlink NULL");
@@ -782,7 +793,8 @@ REF_STATUS ref_meshlink_edge_curvature(REF_GRID ref_grid, REF_INT geom,
     }
     REIS(0,
          ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
-                              entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+                              entity_name, REF_MESHLINK_MAX_STRING_SIZE,
+                              &distance, &tolerance),
          "info");
   } else {
     gref = (MLINT)ref_geom_gref(ref_geom, geom);
@@ -844,6 +856,8 @@ REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
   MLREAL gauss;
   MLORIENT orientation;
   REF_BOOL project = REF_TRUE;
+  MLREAL distance;
+  MLREAL tolerance;
 
   REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "face geom expected");
   RNS(ref_geom->meshlink, "meshlink NULL");
@@ -877,7 +891,8 @@ REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
     }
     REIS(0,
          ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
-                              entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+                              entity_name, REF_MESHLINK_MAX_STRING_SIZE,
+                              &distance, &tolerance),
          "info");
   } else {
     gref = (MLINT)ref_geom_gref(ref_geom, geom);
