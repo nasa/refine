@@ -3624,15 +3624,16 @@ int main(int argc, char *argv[]) {
     RWDS(11.5846229, integral, tol, "int linear");
   }
 
-  { /* ar=2 slant metric, identity hessian */
+  { /* ar=2 slant metric, identity hessian, 0.707106781186548 = 0.5 * sqrt(2.0)
+     */
     REF_DBL m_diag_sys_hess[18] = {1.0,
                                    0.25,
                                    1.0, /* eigvals */
-                                   0.5 * sqrt(2),
-                                   0.5 * sqrt(2),
+                                   0.707106781186548,
+                                   0.707106781186548,
                                    0.0, /* eigvect */
-                                   -0.5 * sqrt(2),
-                                   0.5 * sqrt(2),
+                                   -0.707106781186548,
+                                   0.707106781186548,
                                    0.0, /* eigvect */
                                    1.0,
                                    0.0,
