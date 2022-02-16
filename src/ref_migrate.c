@@ -1572,6 +1572,9 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   if (!ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
 
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "shuffle: start");
+
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
 
   if (1 < ref_mpi_timing(ref_mpi))
