@@ -679,7 +679,7 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
   clock_t node_toc = 0;
   clock_t cell_toc = 0;
 
-  if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
+  if (10 < ref_mpi_timing(ref_mpi)) tic = clock();
   ref_malloc(global, ref_cell_node_per(ref_cell) * n, REF_GLOB);
 
   nnode = 0;
@@ -692,8 +692,8 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
   RSS(ref_node_add_many(ref_node, nnode, global), "many nodes");
 
   ref_free(global);
-  if (1 < ref_mpi_timing(ref_mpi)) node_toc += (clock() - tic);
-  if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
+  if (10 < ref_mpi_timing(ref_mpi)) node_toc += (clock() - tic);
+  if (10 < ref_mpi_timing(ref_mpi)) tic = clock();
   /* set parts */
   for (cell = 0; cell < n; cell++) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
@@ -718,9 +718,9 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
     if (REF_EMPTY == new_cell)
       RSS(ref_cell_add(ref_cell, local_nodes, &new_cell), "add cell");
   }
-  if (1 < ref_mpi_timing(ref_mpi)) cell_toc += (clock() - tic);
+  if (10 < ref_mpi_timing(ref_mpi)) cell_toc += (clock() - tic);
 
-  if (1 < ref_mpi_timing(ref_mpi)) {
+  if (10 < ref_mpi_timing(ref_mpi)) {
     printf(" node %f cell %f\n",
            ((REF_DBL)node_toc) / ((REF_DBL)CLOCKS_PER_SEC),
            ((REF_DBL)cell_toc) / ((REF_DBL)CLOCKS_PER_SEC));
