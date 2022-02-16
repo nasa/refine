@@ -1647,7 +1647,7 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   if (NULL != ref_grid_interp(ref_grid)) {
     RSS(ref_interp_from_part(ref_grid_interp(ref_grid), node_part),
         "from part");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle primal+background");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle primal back");
   } else {
     for (node = 0; node < ref_node_max(ref_node); node++)
       ref_node_part(ref_node, node) = node_part[node];
