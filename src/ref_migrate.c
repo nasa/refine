@@ -1576,7 +1576,6 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   RSS(ref_migrate_shufflin_node(ref_node), "send out nodes");
   RSS(ref_migrate_shufflin_geom(ref_grid), "geom");
-
   each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_migrate_shufflin_cell(ref_node, ref_cell), "cell");
   }
@@ -1607,7 +1606,6 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   RSS(ref_node_ghost_real(ref_node), "ghost real");
   RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "ghost geom");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle");
 
   return REF_SUCCESS;
 }
@@ -1642,17 +1640,20 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
   RSS(ref_migrate_new_part(ref_grid, npart, node_part), "new part");
-
   RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "migrate: new part");
 
   if (NULL != ref_grid_interp(ref_grid)) {
     RSS(ref_interp_from_part(ref_grid_interp(ref_grid), node_part),
         "from part");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle primal back");
   } else {
     for (node = 0; node < ref_node_max(ref_node); node++)
       ref_node_part(ref_node, node) = node_part[node];
 
     RSS(ref_migrate_shufflin(ref_grid), "shufflin");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle primal");
   }
   ref_free(node_part);
 
