@@ -1606,7 +1606,6 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   RSS(ref_node_ghost_real(ref_node), "ghost real");
   RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "ghost geom");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle");
 
   return REF_SUCCESS;
 }
@@ -1648,11 +1647,13 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   if (NULL != ref_grid_interp(ref_grid)) {
     RSS(ref_interp_from_part(ref_grid_interp(ref_grid), node_part),
         "from part");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle primal+background");
   } else {
     for (node = 0; node < ref_node_max(ref_node); node++)
       ref_node_part(ref_node, node) = node_part[node];
 
     RSS(ref_migrate_shufflin(ref_grid), "shufflin");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle primal");
   }
   ref_free(node_part);
 
