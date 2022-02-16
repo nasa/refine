@@ -2748,9 +2748,6 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_BOOL report_migration_volume = REF_FALSE;
   REF_BOOL report_interp_error = REF_FALSE;
 
-  if (3 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "from part: start");
-
   if (ref_grid_twod(from_grid)) {
     from_cell = ref_interp_from_tri(ref_interp);
   } else {
@@ -2977,9 +2974,6 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
       printf("final %e max error\n", max_error);
     }
   }
-
-  if (3 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "from part: complete");
 
   return REF_SUCCESS;
 }
