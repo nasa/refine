@@ -903,6 +903,16 @@ m=[
     REIS(REF_DIV_ZERO, ref_matrix_solve_ab(rows, cols, ab), "expect sing");
   }
 
+  { /* ax 1 */
+    REF_DBL tol = -1.0;
+    REF_INT rows = 1;
+    REF_DBL a[] = {3.0};
+    REF_DBL x[] = {2.0};
+    REF_DBL ax[1];
+    RSS(ref_matrix_ax(rows, a, x, ax), "ax");
+    RWDS(6.0, ax[0], tol, "ax[0]");
+  }
+
 #define sqrt3 (1.73205080756888)
 #define sqrt6 (2.44948974278318)
 

@@ -870,6 +870,18 @@ REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
   return (ill_condition ? REF_ILL_CONDITIONED : REF_SUCCESS);
 }
 
+REF_STATUS ref_matrix_ax(REF_INT rows, REF_DBL *a, REF_DBL *x, REF_DBL *ax) {
+  REF_INT row, col;
+
+  for (row = 0; row < rows; row++) {
+    ax[row] = 0.0;
+    for (col = 0; col < rows; col++) {
+      ax[row] += a[row + rows * col] * x[col];
+    }
+  }
+  return REF_SUCCESS;
+}
+
 #define fill_ab(row, n1, n0)                                           \
   ab[(row) + 0 * 6] = ((n1)[0] - (n0)[0]) * ((n1)[0] - (n0)[0]);       \
   ab[(row) + 1 * 6] = 2.0 * ((n1)[0] - (n0)[0]) * ((n1)[1] - (n0)[1]); \
