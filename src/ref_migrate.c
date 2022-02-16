@@ -297,6 +297,75 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_ULONG ref_migrate_split_morton(REF_ULONG a) {
+  REF_ULONG x = a & 0x1fffff; /* we only look at the first 21 bits */
+  x = (x | x << 32) & 0x1f00000000ffff;
+  /* shift left 32 bits, OR with self, and
+     00011111000000000000000000000000000000001111111111111111 */
+  x = (x | x << 16) & 0x1f0000ff0000ff;
+  /* shift left 32 bits, OR with self, and
+     00011111000000000000000011111111000000000000000011111111 */
+  x = (x | x << 8) & 0x100f00f00f00f00f;
+  /* shift left 32 bits, OR with self, and
+     0001000000001111000000001111000000001111000000001111000000000000 */
+  x = (x | x << 4) & 0x10c30c30c30c30c3;
+  /* shift left 32 bits, OR with self, and
+     0001000011000011000011000011000011000011000011000011000100000000 */
+  x = (x | x << 2) & 0x1249249249249249;
+  return x;
+}
+REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
+  REF_ULONG answer = 0;
+  answer |= ref_migrate_split_morton(x) | ref_migrate_split_morton(y) << 1 |
+            ref_migrate_split_morton(z) << 2;
+  return answer;
+}
+
+REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
+                                 REF_INT *dir) {
+  REF_DBL mins[3], maxes[3], temp;
+  REF_INT i, j;
+  *dir = 0;
+  for (j = 0; j < 3; j++) {
+    mins[j] = REF_DBL_MAX;
+    maxes[j] = REF_DBL_MIN;
+  }
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < 3; j++) {
+      mins[j] = MIN(mins[j], xyz[j + 3 * i]);
+      maxes[j] = MAX(maxes[j], xyz[j + 3 * i]);
+    }
+  }
+  for (j = 0; j < 3; j++) {
+    temp = mins[j];
+    RSS(ref_mpi_min(ref_mpi, &temp, &(mins[j]), REF_DBL_TYPE), "min");
+    RSS(ref_mpi_bcast(ref_mpi, &(mins[j]), 1, REF_DBL_TYPE), "bcast");
+    temp = maxes[j];
+    RSS(ref_mpi_max(ref_mpi, &temp, &(maxes[j]), REF_DBL_TYPE), "max");
+    RSS(ref_mpi_bcast(ref_mpi, &(maxes[j]), 1, REF_DBL_TYPE), "bcast");
+  }
+  if ((maxes[1] - mins[1]) >= (maxes[0] - mins[0]) &&
+      (maxes[1] - mins[1]) >= (maxes[2] - mins[2]))
+    *dir = 1;
+  if ((maxes[2] - mins[2]) >= (maxes[0] - mins[0]) &&
+      (maxes[2] - mins[2]) >= (maxes[1] - mins[1]))
+    *dir = 2;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
+                                   REF_DBL *ratio) {
+  REF_INT half = number_of_partitions / 2;
+  if (ref_math_divisible((REF_DBL)half, (REF_DBL)number_of_partitions)) {
+    *ratio = (REF_DBL)half / (REF_DBL)number_of_partitions;
+  } else {
+    *ratio = 0;
+    return REF_DIV_ZERO;
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_migrate_native_rcb_direction(
     REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_INT npart, REF_INT offset,
     REF_INT *owners, REF_INT *locals, REF_MPI global_mpi, REF_INT *part,
@@ -1657,75 +1726,6 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   }
   ref_free(node_part);
 
-  return REF_SUCCESS;
-}
-
-static REF_ULONG ref_migrate_split_morton(REF_ULONG a) {
-  REF_ULONG x = a & 0x1fffff; /* we only look at the first 21 bits */
-  x = (x | x << 32) & 0x1f00000000ffff;
-  /* shift left 32 bits, OR with self, and
-     00011111000000000000000000000000000000001111111111111111 */
-  x = (x | x << 16) & 0x1f0000ff0000ff;
-  /* shift left 32 bits, OR with self, and
-     00011111000000000000000011111111000000000000000011111111 */
-  x = (x | x << 8) & 0x100f00f00f00f00f;
-  /* shift left 32 bits, OR with self, and
-     0001000000001111000000001111000000001111000000001111000000000000 */
-  x = (x | x << 4) & 0x10c30c30c30c30c3;
-  /* shift left 32 bits, OR with self, and
-     0001000011000011000011000011000011000011000011000011000100000000 */
-  x = (x | x << 2) & 0x1249249249249249;
-  return x;
-}
-REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
-  REF_ULONG answer = 0;
-  answer |= ref_migrate_split_morton(x) | ref_migrate_split_morton(y) << 1 |
-            ref_migrate_split_morton(z) << 2;
-  return answer;
-}
-
-REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
-                                 REF_INT *dir) {
-  REF_DBL mins[3], maxes[3], temp;
-  REF_INT i, j;
-  *dir = 0;
-  for (j = 0; j < 3; j++) {
-    mins[j] = REF_DBL_MAX;
-    maxes[j] = REF_DBL_MIN;
-  }
-  for (i = 0; i < n; i++) {
-    for (j = 0; j < 3; j++) {
-      mins[j] = MIN(mins[j], xyz[j + 3 * i]);
-      maxes[j] = MAX(maxes[j], xyz[j + 3 * i]);
-    }
-  }
-  for (j = 0; j < 3; j++) {
-    temp = mins[j];
-    RSS(ref_mpi_min(ref_mpi, &temp, &(mins[j]), REF_DBL_TYPE), "min");
-    RSS(ref_mpi_bcast(ref_mpi, &(mins[j]), 1, REF_DBL_TYPE), "bcast");
-    temp = maxes[j];
-    RSS(ref_mpi_max(ref_mpi, &temp, &(maxes[j]), REF_DBL_TYPE), "max");
-    RSS(ref_mpi_bcast(ref_mpi, &(maxes[j]), 1, REF_DBL_TYPE), "bcast");
-  }
-  if ((maxes[1] - mins[1]) >= (maxes[0] - mins[0]) &&
-      (maxes[1] - mins[1]) >= (maxes[2] - mins[2]))
-    *dir = 1;
-  if ((maxes[2] - mins[2]) >= (maxes[0] - mins[0]) &&
-      (maxes[2] - mins[2]) >= (maxes[1] - mins[1]))
-    *dir = 2;
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
-                                   REF_DBL *ratio) {
-  REF_INT half = number_of_partitions / 2;
-  if (ref_math_divisible((REF_DBL)half, (REF_DBL)number_of_partitions)) {
-    *ratio = (REF_DBL)half / (REF_DBL)number_of_partitions;
-  } else {
-    *ratio = 0;
-    return REF_DIV_ZERO;
-  }
   return REF_SUCCESS;
 }
 
