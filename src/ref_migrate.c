@@ -1572,26 +1572,13 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   if (!ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
 
-  if (1 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "shuffle: start");
-
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
 
-  if (1 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "shuffle: sync global");
-
   RSS(ref_migrate_shufflin_node(ref_node), "send out nodes");
-  if (1 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "shuffle: node");
   RSS(ref_migrate_shufflin_geom(ref_grid), "geom");
-  if (1 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "shuffle: geom");
-
   each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_migrate_shufflin_cell(ref_node, ref_cell), "cell");
   }
-  if (1 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "shuffle: cell");
 
   each_ref_node_valid_node(ref_node, node) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
@@ -1615,11 +1602,7 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
           "rm local geom without cell support");
     }
   }
-  if (1 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "shuffle: remove unused");
   RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild");
-  if (1 < ref_mpi_timing(ref_mpi))
-    ref_mpi_stopwatch_stop(ref_mpi, "shuffle: rebuild global");
 
   RSS(ref_node_ghost_real(ref_node), "ghost real");
   RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "ghost geom");
