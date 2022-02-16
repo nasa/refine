@@ -903,7 +903,7 @@ m=[
     REIS(REF_DIV_ZERO, ref_matrix_solve_ab(rows, cols, ab), "expect sing");
   }
 
-  { /* ax 1 */
+  { /* Ax 1x1 */
     REF_DBL tol = -1.0;
     REF_INT rows = 1;
     REF_DBL a[] = {3.0};
@@ -911,6 +911,23 @@ m=[
     REF_DBL ax[1];
     RSS(ref_matrix_ax(rows, a, x, ax), "ax");
     RWDS(6.0, ax[0], tol, "ax[0]");
+  }
+
+  { /* Ax 2x2 
+    a = [ 2 3
+          4 5 ]
+    x = [ 6 7 ]'
+    a*x
+    ans = [ 33 59 ]'
+    */
+    REF_DBL tol = -1.0;
+    REF_INT rows = 2;
+    REF_DBL a[] = {2.0, 4.0, 3.0, 5.0};
+    REF_DBL x[] = {6.0, 7.0};
+    REF_DBL ax[2];
+    RSS(ref_matrix_ax(rows, a, x, ax), "ax");
+    RWDS(33, ax[0], tol, "ax[0]");
+    RWDS(59, ax[1], tol, "ax[1]");
   }
 
 #define sqrt3 (1.73205080756888)
