@@ -1658,8 +1658,9 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
   RSS(ref_migrate_new_part(ref_grid, npart, node_part), "new part");
-
   RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "migrate: new part");
 
   if (NULL != ref_grid_interp(ref_grid)) {
     RSS(ref_interp_from_part(ref_grid_interp(ref_grid), node_part),
