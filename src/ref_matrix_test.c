@@ -1704,18 +1704,43 @@ jac*m
     }
   }
 
-  {
+  { /* euler rotation matrix 0,0,0 */
     REF_DBL tol = -1.0;
     REF_DBL phi = 0;
     REF_DBL theta = 0;
     REF_DBL psi = 0;
     REF_DBL rotation[9];
+    REF_DBL det;
     RSS(ref_matrix_euler_rotation(phi, theta, psi, rotation), "rot");
+    RSS(ref_matrix_det_gen(3, rotation, &det), "rot det");
+    RWDS(1, det, tol, "det(rotation)");
     RWDS(1, rotation[0], tol, "[0,0]");
     RWDS(0, rotation[1], tol, "[1,0]");
     RWDS(0, rotation[2], tol, "[2,0]");
     RWDS(0, rotation[3], tol, "[0,1]");
     RWDS(1, rotation[4], tol, "[1,1]");
+    RWDS(0, rotation[5], tol, "[2,1]");
+    RWDS(0, rotation[6], tol, "[0,2]");
+    RWDS(0, rotation[7], tol, "[1,2]");
+    RWDS(1, rotation[8], tol, "[2,2]");
+  }
+
+  { /* euler rotation matrix 90,0,0 */
+    REF_DBL tol = -1.0;
+    REF_DBL phi = 1.570796326794897;
+    REF_DBL theta = 0;
+    REF_DBL psi = 0;
+    REF_DBL rotation[9];
+    REF_DBL det;
+    RSS(ref_matrix_euler_rotation(phi, theta, psi, rotation), "rot");
+    RSS(ref_matrix_det_gen(3, rotation, &det), "rot det");
+    RWDS(1, det, tol, "det(rotation)");
+    /* ref_matrix_show_ab(3,3,rotation); */
+    RWDS(0, rotation[0], tol, "[0,0]");
+    RWDS(-1, rotation[1], tol, "[1,0]");
+    RWDS(0, rotation[2], tol, "[2,0]");
+    RWDS(1, rotation[3], tol, "[0,1]");
+    RWDS(0, rotation[4], tol, "[1,1]");
     RWDS(0, rotation[5], tol, "[2,1]");
     RWDS(0, rotation[6], tol, "[0,2]");
     RWDS(0, rotation[7], tol, "[1,2]");

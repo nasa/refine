@@ -1351,14 +1351,14 @@ REF_STATUS ref_matrix_extract2(REF_DBL *m, REF_DBL *r, REF_DBL *s, REF_DBL *e) {
 REF_STATUS ref_matrix_euler_rotation(REF_DBL phi, REF_DBL theta, REF_DBL psi,
                                      REF_DBL *rotation) {
   /* listed column first */
-  rotation[0] = -sin(psi) * sin(theta) + cos(theta) * cos(phi) * cos(psi);
-  rotation[3] = sin(psi) * cos(theta) + cos(theta) * sin(phi) * cos(psi);
-  rotation[6] = -cos(psi) * sin(theta);
-  rotation[1] = -cos(psi) * sin(psi) - cos(theta) * cos(phi) * sin(psi);
-  rotation[4] = cos(psi) * cos(phi) - cos(theta) * sin(phi) * sin(psi);
-  rotation[7] = sin(psi) * sin(theta);
-  rotation[2] = sin(theta) * cos(phi);
-  rotation[5] = sin(theta) * sin(phi);
+  rotation[0] = cos(psi) * cos(phi) + cos(theta) * sin(phi) * sin(psi);
+  rotation[3] = cos(psi) * sin(phi) + cos(theta) * cos(phi) * sin(psi);
+  rotation[6] = sin(psi) * sin(theta);
+  rotation[1] = -sin(psi) * cos(phi) - cos(theta) * sin(phi) * cos(psi);
+  rotation[4] = -sin(psi) * sin(phi) + cos(theta) * cos(phi) * cos(psi);
+  rotation[7] = cos(psi) * sin(theta);
+  rotation[2] = sin(theta) * sin(phi);
+  rotation[5] = -sin(theta) * cos(phi);
   rotation[8] = cos(theta);
   return REF_SUCCESS;
 }
