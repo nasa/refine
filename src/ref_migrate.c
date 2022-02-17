@@ -536,7 +536,7 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
   REF_INT offset;
   REF_INT *owners;
   REF_INT *locals;
-  REF_DBL transform[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+  REF_DBL transform[9];
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     node_part[node] = REF_EMPTY;
@@ -555,6 +555,14 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
       locals[n] = node;
       n++;
     }
+  }
+
+  {
+    REF_DBL phi, theta, psi;
+    phi = 0.0;
+    theta = 0.0;
+    psi = 0.0;
+    RSS(ref_matrix_euler_rotation(phi, theta, psi, transform), "rot");
   }
 
   RSS(ref_migrate_native_rcb_direction(
