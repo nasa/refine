@@ -108,6 +108,9 @@ REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m, REF_DBL *jac_m_jact);
 
 REF_STATUS ref_matrix_extract2(REF_DBL *m, REF_DBL *r, REF_DBL *s, REF_DBL *e);
 
+REF_STATUS ref_matrix_euler_rotation(REF_DBL phi, REF_DBL theta, REF_DBL psi,
+                                     REF_DBL *rotation);
+
 END_C_DECLORATION
 
 #endif /* REF_MATRIX_H */

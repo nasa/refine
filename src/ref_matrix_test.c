@@ -913,7 +913,7 @@ m=[
     RWDS(6.0, ax[0], tol, "ax[0]");
   }
 
-  { /* Ax 2x2 
+  { /* Ax 2x2
     a = [ 2 3
           4 5 ]
     x = [ 6 7 ]'
@@ -1703,5 +1703,24 @@ jac*m
       ref_matrix_show_m(err);
     }
   }
+
+  {
+    REF_DBL tol = -1.0;
+    REF_DBL phi = 0;
+    REF_DBL theta = 0;
+    REF_DBL psi = 0;
+    REF_DBL rotation[9];
+    RSS(ref_matrix_euler_rotation(phi, theta, psi, rotation), "rot");
+    RWDS(1, rotation[0], tol, "[0,0]");
+    RWDS(0, rotation[1], tol, "[1,0]");
+    RWDS(0, rotation[2], tol, "[2,0]");
+    RWDS(0, rotation[3], tol, "[0,1]");
+    RWDS(1, rotation[4], tol, "[1,1]");
+    RWDS(0, rotation[5], tol, "[2,1]");
+    RWDS(0, rotation[6], tol, "[0,2]");
+    RWDS(0, rotation[7], tol, "[1,2]");
+    RWDS(1, rotation[8], tol, "[2,2]");
+  }
+
   return 0;
 }
