@@ -83,7 +83,7 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate);
 
 REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z);
 REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
-                                 REF_INT *dir, REF_DBL *transform);
+                                 REF_DBL *transform, REF_INT *dir);
 REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
                                    REF_DBL *ratio);
 

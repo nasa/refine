@@ -323,7 +323,7 @@ REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
 }
 
 REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
-                                 REF_INT *dir, REF_DBL *transform) {
+                                 REF_DBL *transform, REF_INT *dir) {
   REF_DBL mins[3], maxes[3], temp, transformed[3];
   REF_INT i, j;
   *dir = 0;
@@ -407,7 +407,7 @@ static REF_STATUS ref_migrate_native_rcb_direction(
 
   ref_malloc(x, n, REF_DBL);
   if (dir < 0 || 2 < dir)
-    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir, transform), "dir");
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, transform, &dir), "dir");
   RAS(-1 < dir && dir < 3, "3D dir");
   RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
   ratio_shift = (REF_DBL)(seed % seed_base) / (REF_DBL)seed_base;
