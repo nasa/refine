@@ -302,7 +302,8 @@ int main(int argc, char *argv[]) {
     REF_INT n = 2;
     REF_DBL xyz[] = {0, 0, 0, 5, 2, 3};
     REF_INT dir;
-    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REF_DBL transform[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, transform, &dir), "dir");
     REIS(0, dir, "expects x");
   }
 
@@ -310,7 +311,8 @@ int main(int argc, char *argv[]) {
     REF_INT n = 2;
     REF_DBL xyz[] = {0, 0, 0, 1, 7, 3};
     REF_INT dir;
-    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REF_DBL transform[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, transform, &dir), "dir");
     REIS(1, dir, "expects y");
   }
 
@@ -318,7 +320,8 @@ int main(int argc, char *argv[]) {
     REF_INT n = 2;
     REF_DBL xyz[] = {0, 0, 0, 1, 2, 3};
     REF_INT dir;
-    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REF_DBL transform[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, transform, &dir), "dir");
     REIS(2, dir, "expects z");
   }
 
@@ -326,8 +329,9 @@ int main(int argc, char *argv[]) {
     REF_INT n = 2;
     REF_DBL xyz[] = {0, 0, 0, 1, 2, 3};
     REF_INT dir;
+    REF_DBL transform[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     if (ref_mpi_rank(ref_mpi) > 0) n = 0;
-    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, transform, &dir), "dir");
     REIS(2, dir, "expects z");
   }
 
@@ -335,7 +339,8 @@ int main(int argc, char *argv[]) {
     REF_INT n = 2;
     REF_DBL xyz[] = {0, 0, 0, 1, 2, 0};
     REF_INT dir;
-    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REF_DBL transform[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, transform, &dir), "dir");
     REIS(1, dir, "expects z");
   }
 

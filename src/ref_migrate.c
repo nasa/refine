@@ -47,6 +47,7 @@
 #include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 #include "ref_migrate.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
@@ -297,10 +298,80 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_ULONG ref_migrate_split_morton(REF_ULONG a) {
+  REF_ULONG x = a & 0x1fffff; /* we only look at the first 21 bits */
+  x = (x | x << 32) & 0x1f00000000ffff;
+  /* shift left 32 bits, OR with self, and
+     00011111000000000000000000000000000000001111111111111111 */
+  x = (x | x << 16) & 0x1f0000ff0000ff;
+  /* shift left 32 bits, OR with self, and
+     00011111000000000000000011111111000000000000000011111111 */
+  x = (x | x << 8) & 0x100f00f00f00f00f;
+  /* shift left 32 bits, OR with self, and
+     0001000000001111000000001111000000001111000000001111000000000000 */
+  x = (x | x << 4) & 0x10c30c30c30c30c3;
+  /* shift left 32 bits, OR with self, and
+     0001000011000011000011000011000011000011000011000011000100000000 */
+  x = (x | x << 2) & 0x1249249249249249;
+  return x;
+}
+REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
+  REF_ULONG answer = 0;
+  answer |= ref_migrate_split_morton(x) | ref_migrate_split_morton(y) << 1 |
+            ref_migrate_split_morton(z) << 2;
+  return answer;
+}
+
+REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
+                                 REF_DBL *transform, REF_INT *dir) {
+  REF_DBL mins[3], maxes[3], temp, transformed[3];
+  REF_INT i, j;
+  *dir = 0;
+  for (j = 0; j < 3; j++) {
+    mins[j] = REF_DBL_MAX;
+    maxes[j] = REF_DBL_MIN;
+  }
+  for (i = 0; i < n; i++) {
+    RSS(ref_matrix_ax(3, transform, &(xyz[3 * i]), transformed), "ax");
+    for (j = 0; j < 3; j++) {
+      mins[j] = MIN(mins[j], transformed[j]);
+      maxes[j] = MAX(maxes[j], transformed[j]);
+    }
+  }
+  for (j = 0; j < 3; j++) {
+    temp = mins[j];
+    RSS(ref_mpi_min(ref_mpi, &temp, &(mins[j]), REF_DBL_TYPE), "min");
+    RSS(ref_mpi_bcast(ref_mpi, &(mins[j]), 1, REF_DBL_TYPE), "bcast");
+    temp = maxes[j];
+    RSS(ref_mpi_max(ref_mpi, &temp, &(maxes[j]), REF_DBL_TYPE), "max");
+    RSS(ref_mpi_bcast(ref_mpi, &(maxes[j]), 1, REF_DBL_TYPE), "bcast");
+  }
+  if ((maxes[1] - mins[1]) >= (maxes[0] - mins[0]) &&
+      (maxes[1] - mins[1]) >= (maxes[2] - mins[2]))
+    *dir = 1;
+  if ((maxes[2] - mins[2]) >= (maxes[0] - mins[0]) &&
+      (maxes[2] - mins[2]) >= (maxes[1] - mins[1]))
+    *dir = 2;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
+                                   REF_DBL *ratio) {
+  REF_INT half = number_of_partitions / 2;
+  if (ref_math_divisible((REF_DBL)half, (REF_DBL)number_of_partitions)) {
+    *ratio = (REF_DBL)half / (REF_DBL)number_of_partitions;
+  } else {
+    *ratio = 0;
+    return REF_DIV_ZERO;
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_migrate_native_rcb_direction(
-    REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_INT npart, REF_INT offset,
-    REF_INT *owners, REF_INT *locals, REF_MPI global_mpi, REF_INT *part,
-    REF_INT seed, REF_INT dir, REF_BOOL twod) {
+    REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_DBL *transform, REF_INT npart,
+    REF_INT offset, REF_INT *owners, REF_INT *locals, REF_MPI global_mpi,
+    REF_INT *part, REF_INT seed, REF_INT dir, REF_BOOL twod) {
   REF_INT i, j, n0, n1, npart0, npart1, offset0, offset1;
   REF_INT bal_n0, bal_n1;
   REF_DBL *xyz0, *xyz1, *x;
@@ -336,14 +407,18 @@ static REF_STATUS ref_migrate_native_rcb_direction(
 
   ref_malloc(x, n, REF_DBL);
   if (dir < 0 || 2 < dir)
-    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, transform, &dir), "dir");
   RAS(-1 < dir && dir < 3, "3D dir");
   RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
   ratio_shift = (REF_DBL)(seed % seed_base) / (REF_DBL)seed_base;
   ratio0 = ratio * ratio_shift;
   ratio1 = 1.0 - (ratio - ratio0);
 
-  for (i = 0; i < n; i++) x[i] = xyz[dir + 3 * i];
+  for (i = 0; i < n; i++) {
+    REF_DBL transformed[3];
+    RSS(ref_matrix_ax(3, transform, &(xyz[3 * i]), transformed), "ax");
+    x[i] = transformed[dir];
+  }
 
   total = (REF_LONG)n;
   RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_LONG_TYPE), "high_pos");
@@ -415,14 +490,14 @@ static REF_STATUS ref_migrate_native_rcb_direction(
     dir = -1; /* direction computed in next recursion */
   }
   if (ref_mpi_rank(ref_mpi) < npart0) {
-    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0,
-                                         offset0, bal_owners0, bal_locals0,
-                                         global_mpi, part, seed, dir, twod),
+    RSS(ref_migrate_native_rcb_direction(
+            split_mpi, bal_n0, bal_xyz0, transform, npart0, offset0,
+            bal_owners0, bal_locals0, global_mpi, part, seed, dir, twod),
         "recurse 0");
   } else {
-    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1,
-                                         offset1, bal_owners1, bal_locals1,
-                                         global_mpi, part, seed, dir, twod),
+    RSS(ref_migrate_native_rcb_direction(
+            split_mpi, bal_n1, bal_xyz1, transform, npart1, offset1,
+            bal_owners1, bal_locals1, global_mpi, part, seed, dir, twod),
         "recurse 1");
   }
 
@@ -461,6 +536,7 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
   REF_INT offset;
   REF_INT *owners;
   REF_INT *locals;
+  REF_DBL transform[9];
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     node_part[node] = REF_EMPTY;
@@ -481,9 +557,28 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
     }
   }
 
+  if (ref_mpi_once(ref_mpi)) {
+    REF_DBL phi, theta, psi, z;
+    if (ref_grid_twod(ref_grid)) { /* restrict rotation to x-y plane */
+      phi = 2.0 * ref_math_pi * (REF_DBL)(rand()) / (REF_DBL)RAND_MAX;
+      theta = 0.0;
+      psi = 0.0;
+    } else { /* not exactly unirom sampling, should be good enough */
+      phi = 2.0 * ref_math_pi * (REF_DBL)(rand()) / (REF_DBL)RAND_MAX;
+      z = 2.0 * (REF_DBL)(rand()) / (REF_DBL)RAND_MAX - 1.0;
+      z = MAX(MIN(z, 1.0), -1.0); /* redundant nan safety */
+      theta = acos(z);
+      psi = 2.0 * ref_math_pi * (REF_DBL)(rand()) / (REF_DBL)RAND_MAX;
+    }
+    /* printf("phi %f theta %f psi %f\n",phi,theta,psi); */
+    RSS(ref_matrix_euler_rotation(phi, theta, psi, transform), "rot");
+  }
+  RSS(ref_mpi_bcast(ref_mpi, transform, 9, REF_DBL_TYPE), "bcast xform");
+
   RSS(ref_migrate_native_rcb_direction(
-          ref_mpi, n, xyz, npart, offset, owners, locals, ref_mpi, node_part,
-          ref_grid_partitioner_seed(ref_grid), -1, ref_grid_twod(ref_grid)),
+          ref_mpi, n, xyz, transform, npart, offset, owners, locals, ref_mpi,
+          node_part, ref_grid_partitioner_seed(ref_grid), -1,
+          ref_grid_twod(ref_grid)),
       "split");
   ref_grid_partitioner_seed(ref_grid)++;
   if (ref_grid_partitioner_seed(ref_grid) < 0)
@@ -1657,75 +1752,6 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   }
   ref_free(node_part);
 
-  return REF_SUCCESS;
-}
-
-static REF_ULONG ref_migrate_split_morton(REF_ULONG a) {
-  REF_ULONG x = a & 0x1fffff; /* we only look at the first 21 bits */
-  x = (x | x << 32) & 0x1f00000000ffff;
-  /* shift left 32 bits, OR with self, and
-     00011111000000000000000000000000000000001111111111111111 */
-  x = (x | x << 16) & 0x1f0000ff0000ff;
-  /* shift left 32 bits, OR with self, and
-     00011111000000000000000011111111000000000000000011111111 */
-  x = (x | x << 8) & 0x100f00f00f00f00f;
-  /* shift left 32 bits, OR with self, and
-     0001000000001111000000001111000000001111000000001111000000000000 */
-  x = (x | x << 4) & 0x10c30c30c30c30c3;
-  /* shift left 32 bits, OR with self, and
-     0001000011000011000011000011000011000011000011000011000100000000 */
-  x = (x | x << 2) & 0x1249249249249249;
-  return x;
-}
-REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
-  REF_ULONG answer = 0;
-  answer |= ref_migrate_split_morton(x) | ref_migrate_split_morton(y) << 1 |
-            ref_migrate_split_morton(z) << 2;
-  return answer;
-}
-
-REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
-                                 REF_INT *dir) {
-  REF_DBL mins[3], maxes[3], temp;
-  REF_INT i, j;
-  *dir = 0;
-  for (j = 0; j < 3; j++) {
-    mins[j] = REF_DBL_MAX;
-    maxes[j] = REF_DBL_MIN;
-  }
-  for (i = 0; i < n; i++) {
-    for (j = 0; j < 3; j++) {
-      mins[j] = MIN(mins[j], xyz[j + 3 * i]);
-      maxes[j] = MAX(maxes[j], xyz[j + 3 * i]);
-    }
-  }
-  for (j = 0; j < 3; j++) {
-    temp = mins[j];
-    RSS(ref_mpi_min(ref_mpi, &temp, &(mins[j]), REF_DBL_TYPE), "min");
-    RSS(ref_mpi_bcast(ref_mpi, &(mins[j]), 1, REF_DBL_TYPE), "bcast");
-    temp = maxes[j];
-    RSS(ref_mpi_max(ref_mpi, &temp, &(maxes[j]), REF_DBL_TYPE), "max");
-    RSS(ref_mpi_bcast(ref_mpi, &(maxes[j]), 1, REF_DBL_TYPE), "bcast");
-  }
-  if ((maxes[1] - mins[1]) >= (maxes[0] - mins[0]) &&
-      (maxes[1] - mins[1]) >= (maxes[2] - mins[2]))
-    *dir = 1;
-  if ((maxes[2] - mins[2]) >= (maxes[0] - mins[0]) &&
-      (maxes[2] - mins[2]) >= (maxes[1] - mins[1]))
-    *dir = 2;
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
-                                   REF_DBL *ratio) {
-  REF_INT half = number_of_partitions / 2;
-  if (ref_math_divisible((REF_DBL)half, (REF_DBL)number_of_partitions)) {
-    *ratio = (REF_DBL)half / (REF_DBL)number_of_partitions;
-  } else {
-    *ratio = 0;
-    return REF_DIV_ZERO;
-  }
   return REF_SUCCESS;
 }
 

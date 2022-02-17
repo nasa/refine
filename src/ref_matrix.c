@@ -870,6 +870,18 @@ REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
   return (ill_condition ? REF_ILL_CONDITIONED : REF_SUCCESS);
 }
 
+REF_STATUS ref_matrix_ax(REF_INT rows, REF_DBL *a, REF_DBL *x, REF_DBL *ax) {
+  REF_INT row, col;
+
+  for (row = 0; row < rows; row++) {
+    ax[row] = 0.0;
+    for (col = 0; col < rows; col++) {
+      ax[row] += a[row + rows * col] * x[col];
+    }
+  }
+  return REF_SUCCESS;
+}
+
 #define fill_ab(row, n1, n0)                                           \
   ab[(row) + 0 * 6] = ((n1)[0] - (n0)[0]) * ((n1)[0] - (n0)[0]);       \
   ab[(row) + 1 * 6] = 2.0 * ((n1)[0] - (n0)[0]) * ((n1)[1] - (n0)[1]); \
@@ -1333,5 +1345,20 @@ REF_STATUS ref_matrix_extract2(REF_DBL *m, REF_DBL *r, REF_DBL *s, REF_DBL *e) {
   e[0] = m3[0];
   e[1] = m3[1];
   e[2] = m3[3];
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_euler_rotation(REF_DBL phi, REF_DBL theta, REF_DBL psi,
+                                     REF_DBL *rotation) {
+  /* listed column first */
+  rotation[0] = cos(psi) * cos(phi) - cos(theta) * sin(phi) * sin(psi);
+  rotation[3] = cos(psi) * sin(phi) + cos(theta) * cos(phi) * sin(psi);
+  rotation[6] = sin(psi) * sin(theta);
+  rotation[1] = -sin(psi) * cos(phi) - cos(theta) * sin(phi) * cos(psi);
+  rotation[4] = -sin(psi) * sin(phi) + cos(theta) * cos(phi) * cos(psi);
+  rotation[7] = cos(psi) * sin(theta);
+  rotation[2] = sin(theta) * sin(phi);
+  rotation[5] = -sin(theta) * cos(phi);
+  rotation[8] = cos(theta);
   return REF_SUCCESS;
 }

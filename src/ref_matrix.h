@@ -77,6 +77,7 @@ REF_STATUS ref_matrix_twod_m(REF_DBL *m);
 
 REF_STATUS ref_matrix_show_ab(REF_INT rows, REF_INT cols, REF_DBL *ab);
 REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab);
+REF_STATUS ref_matrix_ax(REF_INT rows, REF_DBL *a, REF_DBL *x, REF_DBL *ax);
 
 REF_STATUS ref_matrix_imply_m(REF_DBL *m_upper_tri, REF_DBL *xyz0,
                               REF_DBL *xyz1, REF_DBL *xyz2, REF_DBL *xyz3);
@@ -106,6 +107,9 @@ REF_STATUS ref_matrix_full_m(REF_DBL *full, REF_DBL *m);
 REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m, REF_DBL *jac_m_jact);
 
 REF_STATUS ref_matrix_extract2(REF_DBL *m, REF_DBL *r, REF_DBL *s, REF_DBL *e);
+
+REF_STATUS ref_matrix_euler_rotation(REF_DBL phi, REF_DBL theta, REF_DBL psi,
+                                     REF_DBL *rotation);
 
 END_C_DECLORATION
 
