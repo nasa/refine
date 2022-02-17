@@ -47,6 +47,7 @@
 #include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 #include "ref_migrate.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
@@ -322,8 +323,8 @@ REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
 }
 
 REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
-                                 REF_INT *dir) {
-  REF_DBL mins[3], maxes[3], temp;
+                                 REF_INT *dir, REF_DBL *transform) {
+  REF_DBL mins[3], maxes[3], temp, transformed[3];
   REF_INT i, j;
   *dir = 0;
   for (j = 0; j < 3; j++) {
@@ -331,9 +332,10 @@ REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
     maxes[j] = REF_DBL_MIN;
   }
   for (i = 0; i < n; i++) {
+    RSS(ref_matrix_ax(3, transform, &(xyz[3 * i]), transformed), "ax");
     for (j = 0; j < 3; j++) {
-      mins[j] = MIN(mins[j], xyz[j + 3 * i]);
-      maxes[j] = MAX(maxes[j], xyz[j + 3 * i]);
+      mins[j] = MIN(mins[j], transformed[j]);
+      maxes[j] = MAX(maxes[j], transformed[j]);
     }
   }
   for (j = 0; j < 3; j++) {
@@ -369,7 +371,7 @@ REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
 static REF_STATUS ref_migrate_native_rcb_direction(
     REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_INT npart, REF_INT offset,
     REF_INT *owners, REF_INT *locals, REF_MPI global_mpi, REF_INT *part,
-    REF_INT seed, REF_INT dir, REF_BOOL twod) {
+    REF_INT seed, REF_INT dir, REF_BOOL twod, REF_DBL *transform) {
   REF_INT i, j, n0, n1, npart0, npart1, offset0, offset1;
   REF_INT bal_n0, bal_n1;
   REF_DBL *xyz0, *xyz1, *x;
@@ -405,14 +407,18 @@ static REF_STATUS ref_migrate_native_rcb_direction(
 
   ref_malloc(x, n, REF_DBL);
   if (dir < 0 || 2 < dir)
-    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir, transform), "dir");
   RAS(-1 < dir && dir < 3, "3D dir");
   RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
   ratio_shift = (REF_DBL)(seed % seed_base) / (REF_DBL)seed_base;
   ratio0 = ratio * ratio_shift;
   ratio1 = 1.0 - (ratio - ratio0);
 
-  for (i = 0; i < n; i++) x[i] = xyz[dir + 3 * i];
+  for (i = 0; i < n; i++) {
+    REF_DBL transformed[3];
+    RSS(ref_matrix_ax(3, transform, &(xyz[3 * i]), transformed), "ax");
+    x[i] = transformed[dir];
+  }
 
   total = (REF_LONG)n;
   RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_LONG_TYPE), "high_pos");
@@ -484,14 +490,14 @@ static REF_STATUS ref_migrate_native_rcb_direction(
     dir = -1; /* direction computed in next recursion */
   }
   if (ref_mpi_rank(ref_mpi) < npart0) {
-    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0,
-                                         offset0, bal_owners0, bal_locals0,
-                                         global_mpi, part, seed, dir, twod),
+    RSS(ref_migrate_native_rcb_direction(
+            split_mpi, bal_n0, bal_xyz0, npart0, offset0, bal_owners0,
+            bal_locals0, global_mpi, part, seed, dir, twod, transform),
         "recurse 0");
   } else {
-    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1,
-                                         offset1, bal_owners1, bal_locals1,
-                                         global_mpi, part, seed, dir, twod),
+    RSS(ref_migrate_native_rcb_direction(
+            split_mpi, bal_n1, bal_xyz1, npart1, offset1, bal_owners1,
+            bal_locals1, global_mpi, part, seed, dir, twod, transform),
         "recurse 1");
   }
 
@@ -530,6 +536,7 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
   REF_INT offset;
   REF_INT *owners;
   REF_INT *locals;
+  REF_DBL transform[] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     node_part[node] = REF_EMPTY;
@@ -550,9 +557,10 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
     }
   }
 
-  RSS(ref_migrate_native_rcb_direction(
-          ref_mpi, n, xyz, npart, offset, owners, locals, ref_mpi, node_part,
-          ref_grid_partitioner_seed(ref_grid), -1, ref_grid_twod(ref_grid)),
+  RSS(ref_migrate_native_rcb_direction(ref_mpi, n, xyz, npart, offset, owners,
+                                       locals, ref_mpi, node_part,
+                                       ref_grid_partitioner_seed(ref_grid), -1,
+                                       ref_grid_twod(ref_grid), transform),
       "split");
   ref_grid_partitioner_seed(ref_grid)++;
   if (ref_grid_partitioner_seed(ref_grid) < 0)
