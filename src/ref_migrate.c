@@ -369,9 +369,9 @@ REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
 }
 
 static REF_STATUS ref_migrate_native_rcb_direction(
-    REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_INT npart, REF_INT offset,
-    REF_INT *owners, REF_INT *locals, REF_MPI global_mpi, REF_INT *part,
-    REF_INT seed, REF_INT dir, REF_BOOL twod, REF_DBL *transform) {
+    REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_DBL *transform, REF_INT npart,
+    REF_INT offset, REF_INT *owners, REF_INT *locals, REF_MPI global_mpi,
+    REF_INT *part, REF_INT seed, REF_INT dir, REF_BOOL twod) {
   REF_INT i, j, n0, n1, npart0, npart1, offset0, offset1;
   REF_INT bal_n0, bal_n1;
   REF_DBL *xyz0, *xyz1, *x;
@@ -491,13 +491,13 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   }
   if (ref_mpi_rank(ref_mpi) < npart0) {
     RSS(ref_migrate_native_rcb_direction(
-            split_mpi, bal_n0, bal_xyz0, npart0, offset0, bal_owners0,
-            bal_locals0, global_mpi, part, seed, dir, twod, transform),
+            split_mpi, bal_n0, bal_xyz0, transform, npart0, offset0,
+            bal_owners0, bal_locals0, global_mpi, part, seed, dir, twod),
         "recurse 0");
   } else {
     RSS(ref_migrate_native_rcb_direction(
-            split_mpi, bal_n1, bal_xyz1, npart1, offset1, bal_owners1,
-            bal_locals1, global_mpi, part, seed, dir, twod, transform),
+            split_mpi, bal_n1, bal_xyz1, transform, npart1, offset1,
+            bal_owners1, bal_locals1, global_mpi, part, seed, dir, twod),
         "recurse 1");
   }
 
@@ -557,10 +557,10 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
     }
   }
 
-  RSS(ref_migrate_native_rcb_direction(ref_mpi, n, xyz, npart, offset, owners,
-                                       locals, ref_mpi, node_part,
-                                       ref_grid_partitioner_seed(ref_grid), -1,
-                                       ref_grid_twod(ref_grid), transform),
+  RSS(ref_migrate_native_rcb_direction(
+          ref_mpi, n, xyz, transform, npart, offset, owners, locals, ref_mpi,
+          node_part, ref_grid_partitioner_seed(ref_grid), -1,
+          ref_grid_twod(ref_grid)),
       "split");
   ref_grid_partitioner_seed(ref_grid)++;
   if (ref_grid_partitioner_seed(ref_grid) < 0)
