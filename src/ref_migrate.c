@@ -558,10 +558,17 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
   }
 
   {
-    REF_DBL phi, theta, psi;
-    phi = 0.0;
-    theta = 0.0;
-    psi = 0.0;
+    REF_DBL phi, theta, psi, z;
+    if (ref_grid_twod(ref_grid)) { /* restrict rotation to x-y plane */
+      phi = 2.0 * ref_math_pi * (REF_DBL)(rand()) / (REF_DBL)RAND_MAX;
+      theta = 0.0;
+      psi = 0.0;
+    } else { /* not exactly unirom sampling, should be good enough */
+      phi = 2.0 * ref_math_pi * (REF_DBL)(rand()) / (REF_DBL)RAND_MAX;
+      z = 2.0 * (REF_DBL)(rand()) / (REF_DBL)RAND_MAX;
+      theta = acos(z);
+      psi = 2.0 * ref_math_pi * (REF_DBL)(rand()) / (REF_DBL)RAND_MAX;
+    }
     RSS(ref_matrix_euler_rotation(phi, theta, psi, transform), "rot");
   }
 
