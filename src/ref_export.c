@@ -2265,6 +2265,52 @@ static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_export_tri(REF_GRID ref_grid, const char *filename) {
+  FILE *f;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node, nnode;
+  REF_INT *o2n, *n2o;
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+  f = fopen(filename, "w");
+  if (NULL == (void *)f) printf("unable to open %s\n", filename);
+  RNS(f, "unable to open file");
+
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_cell_node_empty(ref_cell, node)) {
+      o2n[node] = nnode;
+      n2o[nnode] = node;
+      nnode++;
+    }
+  }
+
+  fprintf(f, "%d %d\n", nnode, ref_cell_n(ref_cell));
+  for (node = 0; node < nnode; node++) {
+    fprintf(f, "%.16E %.16E %.16E\n", ref_node_xyz(ref_node, 0, n2o[node]),
+            ref_node_xyz(ref_node, 1, n2o[node]),
+            ref_node_xyz(ref_node, 2, n2o[node]));
+  }
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    fprintf(f, "%d %d %d\n", nodes[0] + 1, nodes[1] + 1, nodes[2] + 1);
+  }
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    fprintf(f, "%d\n", nodes[3]);
+  }
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(f);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
                                              const char *filename) {
   FILE *f;
@@ -2419,6 +2465,8 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_bamg_msh(ref_grid, filename), "bamg msh export failed");
   } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
     RSS(ref_export_msh(ref_grid, filename), "msh export failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".tri") == 0) {
+    RSS(ref_export_tri(ref_grid, filename), "tri export failed");
   } else {
     RSS(ref_gather_by_extension(ref_grid, filename), "export via gather");
   }
