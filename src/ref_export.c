@@ -2277,18 +2277,19 @@ static REF_STATUS ref_export_tri(REF_GRID ref_grid, const char *filename) {
   if (NULL == (void *)f) printf("unable to open %s\n", filename);
   RNS(f, "unable to open file");
 
-  fprintf(f, "%d %d\n", ref_node_n(ref_node), ref_cell_n(ref_cell));
-
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   ref_malloc_init(n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-    o2n[node] = nnode;
-    n2o[nnode] = node;
-    nnode++;
+    if (!ref_cell_node_empty(ref_cell, node)) {
+      o2n[node] = nnode;
+      n2o[nnode] = node;
+      nnode++;
+    }
   }
-  REIS(ref_node_n(ref_node), nnode, "nnode miscount");
+
+  fprintf(f, "%d %d\n", nnode, ref_cell_n(ref_cell));
   for (node = 0; node < nnode; node++) {
     fprintf(f, "%.16E %.16E %.16E\n", ref_node_xyz(ref_node, 0, n2o[node]),
             ref_node_xyz(ref_node, 1, n2o[node]),
