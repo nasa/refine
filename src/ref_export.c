@@ -2297,7 +2297,8 @@ static REF_STATUS ref_export_tri(REF_GRID ref_grid, const char *filename) {
   }
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    fprintf(f, "%d %d %d\n", nodes[0] + 1, nodes[1] + 1, nodes[2] + 1);
+    fprintf(f, "%d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[1]] + 1,
+            o2n[nodes[2]] + 1);
   }
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     fprintf(f, "%d\n", nodes[3]);
