@@ -26,7 +26,7 @@ A native implementation of a recursive coordinate bisection partition
 algorithm is included, but better results are expected with
 [ParMETIS](http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview).
 Initial mesh generation assumes
-[TetGen](http://wias-berlin.de/software/tetgen/) or
+[TetGen](http://tetgen.org) or
 [AFLR](http://www.simcenter.msstate.edu/research/cavs_cfd/aflr.php) is in
 the shell path.
 Configuration and compliation is supported with Autoconf and CMake.
