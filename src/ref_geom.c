@@ -2795,7 +2795,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   if (ref_geom_model_loaded(ref_geom)) {
     if (ref_mpi_once(ref_mpi)) {
       printf(
-          "scanning for geom nodes with shortest/longest edge ratios of %.1f "
+          "scanning for geom nodes with shortest/longest edge ratios of %.3f "
           "or "
           "less\n",
           short_edge_tol);
@@ -2815,9 +2815,9 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
     }
     if (ref_mpi_once(ref_mpi))
       printf(
-          "%d geometry nodes with shortest/longest edge ratios of %.1f or "
+          "%d geometry nodes with shortest/longest edge ratios of %.3f or "
           "less\n",
-          nshort, angle_tol);
+          nshort, short_edge_tol);
   }
 
   nfilter = 0;
