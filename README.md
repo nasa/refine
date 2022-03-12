@@ -126,11 +126,11 @@ The fields in a .solb file paired with a donor mesh can be interpolated to
 a receptor mesh. This utility can be executed in serial or parallel.
 
 ```
-ref interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
+ref interpolate donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
 ```
-or 
+or
 ```
-mpiexec ... refmpi interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
+mpiexec ... refmpi interpolate donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
 ```
 where the output is `receptor-field.solb`.
 
