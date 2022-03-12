@@ -29,7 +29,7 @@ Initial mesh generation assumes
 [TetGen](http://tetgen.org) or
 [AFLR](http://www.simcenter.msstate.edu/research/cavs_cfd/aflr.php) is in
 the shell path.
-Configuration and compliation is supported with Autoconf and CMake.
+Configuration and compilation is supported with Autoconf and CMake.
 
 ## Automake 1.7 (or later) and Autoconf 2.53 (or later):
 ```
