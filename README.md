@@ -94,7 +94,7 @@ mpiexec ... refmpifull bootstrap project.egads
 which assume that `tetgen` is in your shell path or
 `aflr3` is in your shell path with `--mesher aflr` option.
 A `project-vol.meshb` is output that includes the surface mesh,
-volume mesh, mesh-to-geometry associtivity, and EGADSlite data.
+volume mesh, mesh-to-geometry associativity, and EGADSlite data.
 
 ## Mesh Adaptation
 
