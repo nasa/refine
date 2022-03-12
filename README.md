@@ -19,17 +19,17 @@ verify the mesh adaptation process.
 
 # Quick Start Compile from Git Repo and Basic Usage
 
-`refine` can function without depencies, but the typical use cases of
+`refine` can function without dependencies, but the typical use cases of
 parallel execution and geometry evaluation require an MPI implementation
 and [Engineering Sketch Pad](https://acdl.mit.edu/ESP/ESPreadme.txt) (ESP).
-A native implementaion of a recursive coordinate bisection partition
+A native implementation of a recursive coordinate bisection partition
 algorithm is included, but better results are expected with
 [ParMETIS](http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview).
 Initial mesh generation assumes
-[TetGen](http://wias-berlin.de/software/tetgen/) or
+[TetGen](http://tetgen.org) or
 [AFLR](http://www.simcenter.msstate.edu/research/cavs_cfd/aflr.php) is in
 the shell path.
-Configuration and compliation is supported with Autoconf and CMake.
+Configuration and compilation is supported with Autoconf and CMake.
 
 ## Automake 1.7 (or later) and Autoconf 2.53 (or later):
 ```
@@ -94,7 +94,7 @@ mpiexec ... refmpifull bootstrap project.egads
 which assume that `tetgen` is in your shell path or
 `aflr3` is in your shell path with `--mesher aflr` option.
 A `project-vol.meshb` is output that includes the surface mesh,
-volume mesh, mesh-to-geometry associtivity, and EGADSlite data.
+volume mesh, mesh-to-geometry associativity, and EGADSlite data.
 
 ## Mesh Adaptation
 
@@ -126,11 +126,23 @@ The fields in a .solb file paired with a donor mesh can be interpolated to
 a receptor mesh. This utility can be executed in serial or parallel.
 
 ```
-ref interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
+ref interpolate donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
 ```
-or 
+or
 ```
-mpiexec ... refmpi interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
+mpiexec ... refmpi interpolate donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
 ```
 where the output is `receptor-field.solb`.
 
+## Distance to surface elements
+The distance to surface elements with a non-slip boundary condition is used
+by many turbulence models. These no-slip face ids are specified with
+`--viscous-tags <comma-separated list>` or `--fun3d-mapbc fun3d_format.mapbc`
+```
+ref distance mesh.ext distance.solb [face id option]
+```
+or
+```
+mpiexec ... refmpi distance mesh.ext distance.solb [face id option]
+```
+where the wall distance is `distance.solb`.
