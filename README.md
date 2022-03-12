@@ -134,3 +134,15 @@ mpiexec ... refmpi interpolate donor-mesh.ext donor-field.solb receptor-mesh.ext
 ```
 where the output is `receptor-field.solb`.
 
+## Distance to surface elements
+The distance to surface elements with a non-slip boundary condition is used
+by many turbulence models. These no-slip face ids are specified with
+`--viscous-tags <comma-separated list>` or `--fun3d-mapbc fun3d_format.mapbc`
+```
+ref distance mesh.ext distance.solb [face id option]
+```
+or
+```
+mpiexec ... refmpi distance mesh.ext distance.solb [face id option]
+```
+where the wall distance is `distance.solb`.
