@@ -19,10 +19,10 @@ verify the mesh adaptation process.
 
 # Quick Start Compile from Git Repo and Basic Usage
 
-`refine` can function without depencies, but the typical use cases of
+`refine` can function without dependencies, but the typical use cases of
 parallel execution and geometry evaluation require an MPI implementation
 and [Engineering Sketch Pad](https://acdl.mit.edu/ESP/ESPreadme.txt) (ESP).
-A native implementaion of a recursive coordinate bisection partition
+A native implementation of a recursive coordinate bisection partition
 algorithm is included, but better results are expected with
 [ParMETIS](http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview).
 Initial mesh generation assumes
