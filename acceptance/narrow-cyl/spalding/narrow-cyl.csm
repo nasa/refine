@@ -1,0 +1,21 @@
+
+set l 5
+set w 0.1
+set r 1
+
+box 0 0 0 l w l
+select face
+attribute bc_name $5000_farfield
+select face 3
+attribute bc_name $6662_ysymm
+select face 4
+attribute bc_name $6662_ysymm
+
+cylinder 0 0 0 0 w 0 r
+select face
+attribute bc_name $4000_cylinder
+
+subtract # cylinder from box
+
+dump narrow-cyl.egads
+

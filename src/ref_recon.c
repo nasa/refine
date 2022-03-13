@@ -1303,6 +1303,38 @@ REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid, REF_DBL *hessian) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_recon_skip_orphan_replace(REF_GRID ref_grid,
+                                                REF_BOOL *replace,
+                                                REF_INT ldim) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_EDGE ref_edge;
+  REF_INT *contributions;
+  REF_INT i, edge, node0, node1, node;
+  ref_malloc_init(contributions, 6 * ref_node_max(ref_node), REF_INT, 0);
+  RSS(ref_edge_create(&ref_edge, ref_grid), "edges");
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    node0 = ref_edge_e2n(ref_edge, 0, edge);
+    node1 = ref_edge_e2n(ref_edge, 1, edge);
+    for (i = 0; i < ldim; i++) {
+      if (replace[i + ldim * node0]) {
+        if (!replace[i + ldim * node1]) contributions[i + ldim * node0]++;
+      }
+      if (replace[i + ldim * node1]) {
+        if (!replace[i + ldim * node0]) contributions[i + ldim * node1]++;
+      }
+    }
+  }
+  RSS(ref_edge_free(ref_edge), "free edge");
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < ldim; i++) {
+      if (0 == contributions[i + ldim * node])
+        replace[i + ldim * node] = REF_FALSE;
+    }
+  }
+  ref_free(contributions);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                                     REF_DBL *hessian,
                                     REF_RECON_RECONSTRUCTION recon) {
@@ -1317,6 +1349,7 @@ REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       } else {
         RSS(ref_recon_mask_tri(ref_grid, replace, 6), "mask tri");
       }
+      RSS(ref_recon_skip_orphan_replace(ref_grid, replace, 6), "skip orphans");
       RSS(ref_recon_extrapolate_zeroth(ref_grid, hessian, replace, 6),
           "bound extrap");
       ref_free(replace);
