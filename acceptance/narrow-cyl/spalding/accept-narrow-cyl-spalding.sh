@@ -21,7 +21,7 @@ function adapt_cycle {
     outproj=$2
 
     ${src}/ref adapt ${inproj}.meshb ${egads} \
-	  --spalding 0.01 1000 \
+	  --spalding 0.01 250 \
 	  ${mapbc} \
 	  -x ${outproj}.meshb -x ${outproj}.plt \
 	  ${sweeps} ${tecplot}
