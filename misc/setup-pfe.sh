@@ -5,12 +5,12 @@ set -x
 ./bootstrap
 
 module_path="/swbuild/fun3d/shared/fun3d_users/modules"
-zoltan_path="${module_path}/Zoltan/3.82_mpt-2.17r13_ifort-2018.3.222"
-parmetis_path="${module_path}/ParMETIS/4.0.3_mpt-2.17r13_ifort-2018.3.222"
-egads_path="${module_path}/ESP/119-beta.2020.10.27.0909/EngSketchPad"
-occ_path="${module_path}/ESP/119-beta.2020.10.27.0909/OpenCASCADE-7.3.1"
+zoltan_path="${module_path}/Zoltan/3.82_mpt-2.25_ifort-2018.3.222"
+parmetis_path="${module_path}/ParMETIS-64/4.0.3_mpt-2.25_ifort-2018.3.222"
+egads_path="${module_path}/ESP/120/EngSketchPad"
+occ_path="${module_path}/ESP/120/OpenCASCADE"
 
-mpi_path="/nasa/hpe/mpt/2.17r13"
+mpi_path="/nasa/hpe/mpt/2.25_rhel79"
 
 gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
 
