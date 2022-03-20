@@ -433,6 +433,15 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(mapbc), "test clean up");
   }
 
+  if (ref_egads_allows_construction()) { /* square brep examine */
+    REF_GEOM ref_geom = NULL;
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "square"), "create");
+    printf("square:\n");
+    RSS(ref_egads_brep_examine(ref_geom), "dup");
+    RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

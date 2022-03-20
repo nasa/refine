@@ -715,6 +715,38 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
+#if defined(HAVE_EGADS)
+  REF_INT face;
+  int oclass, mtype, *senses;
+  ego esurf, *eloops;
+  int nloop;
+  ego loop_curve, *loop_edges;
+  int iloop, loop_nedge;
+
+  for (face = 0; face < (ref_geom->nface); face++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
+                        &mtype, NULL, &nloop, &eloops, &senses),
+         "topo");
+    printf("face %d nloop %d\n", face + 1, nloop);
+    for (iloop = 0; iloop < nloop; iloop++) {
+      /* loop through all Edges associated with this Loop */
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(eloops[iloop], &loop_curve, &oclass, &mtype, NULL,
+                          &loop_nedge, &loop_edges, &senses),
+           "topo");
+      printf(" loop %d nedge %d\n", iloop + 1, loop_nedge);
+    }
+  }
+
+#else
+  printf("nothing for %s, EGADS not linked\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+#endif
+  return REF_SUCCESS;
+}
+
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
                                               int *surface_type) {
