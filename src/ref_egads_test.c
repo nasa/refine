@@ -454,7 +454,16 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "square"), "create");
     printf("square:\n");
-    RSS(ref_egads_brep_examine(ref_geom), "dup");
+    RSS(ref_egads_brep_examine(ref_geom), "brep info");
+    RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
+  if (ref_egads_allows_construction()) { /* steinmetz brep examine */
+    REF_GEOM ref_geom = NULL;
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
+    printf("steinmetz:\n");
+    RSS(ref_egads_brep_examine(ref_geom), "brep info");
     RSS(ref_geom_free(ref_geom), "free geom");
   }
 
