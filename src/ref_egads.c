@@ -721,8 +721,9 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   int oclass, mtype, *senses;
   ego esurf, *eloops;
   int nloop;
-  ego loop_curve, *loop_edges;
+  ego loop_curve, *loop_edges, *children, ref;
   int iloop, loop_nedge;
+  int iedge, nchild;
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
@@ -736,7 +737,14 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
            EG_getTopology(eloops[iloop], &loop_curve, &oclass, &mtype, NULL,
                           &loop_nedge, &loop_edges, &senses),
            "topo");
-      printf(" loop %d nedge %d\n", iloop + 1, loop_nedge);
+      printf(" loop %d mtype %d nedge %d\n", iloop + 1, mtype, loop_nedge);
+      for (iedge = 0; iedge < loop_nedge; iedge++) {
+        REIS(EGADS_SUCCESS,
+             EG_getTopology(loop_edges[iedge], &ref, &oclass, &mtype, NULL,
+                            &nchild, &children, &senses),
+             "topo");
+        printf("  loop edge %d mtype %d nchild %d\n", iedge + 1, mtype, nchild);
+      }
     }
   }
 
