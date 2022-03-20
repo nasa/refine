@@ -43,6 +43,21 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
+  RXS(ref_args_find(argc, argv, "--brep", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GEOM ref_geom;
+    REIS(3, argc, "usage: ref_egads_test --brep model.egads");
+    RAS(ref_egads_allows_construction(), "needs to be linked with EGADS(full).")
+    printf("%s:\n", argv[2]);
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_load(ref_geom, argv[2]), "ld egads");
+    RSS(ref_egads_brep_examine(ref_geom), "dup");
+    RSS(ref_geom_free(ref_geom), "free geom");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--recon", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY) {
     REF_GRID ref_grid;
@@ -71,6 +86,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_export_by_extension(ref_grid, "ref_geom_recon.meshb"), "export");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -431,6 +447,24 @@ int main(int argc, char *argv[]) {
     }
 
     REIS(0, remove(mapbc), "test clean up");
+  }
+
+  if (ref_egads_allows_construction()) { /* square brep examine */
+    REF_GEOM ref_geom = NULL;
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "square"), "create");
+    printf("square:\n");
+    RSS(ref_egads_brep_examine(ref_geom), "brep info");
+    RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
+  if (ref_egads_allows_construction()) { /* steinmetz brep examine */
+    REF_GEOM ref_geom = NULL;
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
+    printf("steinmetz:\n");
+    RSS(ref_egads_brep_examine(ref_geom), "brep info");
+    RSS(ref_geom_free(ref_geom), "free geom");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
