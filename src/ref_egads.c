@@ -744,16 +744,22 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
                             &nchild, &children, &senses),
              "topo");
         printf("  loop edge %d mtype %d nchild %d\n", iedge + 1, mtype, nchild);
-        if(NULL==edge_ref){
-        }else{
+        if (NULL == edge_ref) {
+        } else {
           ego geom_ref;
           int *geom_ints;
           double *geom_reals;
           REIS(EGADS_SUCCESS,
-             EG_getGeometry(edge_ref, &oclass, &mtype,
-                            &geom_ref, &geom_ints, &geom_reals),
-             "topo");
-             printf("  loop edge ref geom oclass %d mtype %d\n", oclass, mtype);
+               EG_getGeometry(edge_ref, &oclass, &mtype, &geom_ref, &geom_ints,
+                              &geom_reals),
+               "topo");
+          printf("  loop edge ref geom oclass %d mtype %d\n", oclass, mtype);
+          if (CURVE == oclass && BSPLINE == mtype) {
+            printf("bit flag %d deg %d ncp %d nkt %d nkt %f\n", geom_ints[0],
+                   geom_ints[1], geom_ints[2], geom_ints[3], geom_reals[0]);
+          }
+          EG_free(geom_ints);
+          EG_free(geom_reals);
         }
       }
     }
