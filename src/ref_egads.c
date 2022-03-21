@@ -795,7 +795,7 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
               for (cp = 0; cp < geom_ints[2]; cp++) {
                 printf("cp[%d]=%f %f\n", cp,
                        geom_reals[geom_ints[3] + 0 + 2 * cp],
-                       geom_reals[geom_ints[3] + 0 + 2 * cp]);
+                       geom_reals[geom_ints[3] + 1 + 2 * cp]);
               }
               if (2 == geom_ints[0]) {
                 for (w = 0; w < geom_ints[3]; w++) {
