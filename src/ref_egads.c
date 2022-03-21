@@ -784,7 +784,7 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
             printf("  loop pcurve ref geom oclass %d mtype %d\n", oclass,
                    mtype);
             if (PCURVE == oclass && BSPLINE == mtype) {
-              int knot, cp;
+              int knot, cp, w;
               printf("    bit flag %d deg %d ncp %d nkt %d\n", geom_ints[0],
                      geom_ints[1], geom_ints[2], geom_ints[3]);
               for (knot = 0; knot < geom_ints[3]; knot++) {
@@ -794,6 +794,12 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
                 printf("cp[%d]=%f %f\n", cp,
                        geom_reals[geom_ints[3] + 0 + 2 * cp],
                        geom_reals[geom_ints[3] + 0 + 2 * cp]);
+              }
+              if (2 == geom_ints[0]) {
+                for (w = 0; w < geom_ints[3]; w++) {
+                  printf("weight[%d]=%f\n", knot,
+                         geom_reals[geom_ints[3] + 2 * geom_ints[2] + w]);
+                }
               }
             }
             EG_free(geom_ints);
