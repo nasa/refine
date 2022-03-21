@@ -719,18 +719,32 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
 #if defined(HAVE_EGADS)
   REF_INT face;
   int oclass, mtype, *senses;
-  ego esurf, *eloops;
+  ego surface, *eloops;
   int nloop;
-  ego loop_curve, *loop_edges, *children, edge_ref;
+  ego loop_curve, *loop_edges, *children, edge_ref, surface_ref;
   int iloop, loop_nedge;
   int iedge, nchild;
+  int face_geom_class, face_geom_type;
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
-         EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
+         EG_getTopology(((ego *)(ref_geom->faces))[face], &surface, &oclass,
                         &mtype, NULL, &nloop, &eloops, &senses),
          "topo");
-    printf("face %d nloop %d\n", face + 1, nloop);
+    face_geom_class = REF_EMPTY;
+    face_geom_type = REF_EMPTY;
+    if (NULL != surface) {
+      int *geom_ints;
+      double *geom_reals;
+      REIS(EGADS_SUCCESS,
+           EG_getGeometry(surface, &face_geom_class, &face_geom_type,
+                          &surface_ref, &geom_ints, &geom_reals),
+           "topo");
+      EG_free(geom_ints);
+      EG_free(geom_reals);
+    }
+    printf("face %d geom %d %d nloop %d\n", face + 1, face_geom_class,
+           face_geom_type, nloop);
     for (iloop = 0; iloop < nloop; iloop++) {
       /* loop through all Edges associated with this Loop */
       REIS(EGADS_SUCCESS,
@@ -760,6 +774,22 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
           }
           EG_free(geom_ints);
           EG_free(geom_reals);
+          if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
+            REIS(EGADS_SUCCESS,
+                 EG_getGeometry(loop_edges[iedge + loop_nedge], &oclass, &mtype,
+                                &geom_ref, &geom_ints, &geom_reals),
+                 "topo");
+            printf("  loop pcurve ref geom oclass %d mtype %d\n", oclass,
+                   mtype);
+            if (PCURVE == oclass && BSPLINE == mtype) {
+              printf("bit flag %d deg %d ncp %d nkt %d nkt %f\n", geom_ints[0],
+                     geom_ints[1], geom_ints[2], geom_ints[3], geom_reals[0]);
+            }
+            EG_free(geom_ints);
+            EG_free(geom_reals);
+          } else {
+            printf("  loop pcurve not required\n");
+          }
         }
       }
     }
