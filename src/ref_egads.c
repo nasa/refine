@@ -769,8 +769,9 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
                "topo");
           printf("  loop edge ref geom oclass %d mtype %d\n", oclass, mtype);
           if (CURVE == oclass && BSPLINE == mtype) {
-            printf("bit flag %d deg %d ncp %d nkt %d nkt %f\n", geom_ints[0],
-                   geom_ints[1], geom_ints[2], geom_ints[3], geom_reals[0]);
+            printf("    bit flag %d deg %d ncp %d nkt %d nkt %f\n",
+                   geom_ints[0], geom_ints[1], geom_ints[2], geom_ints[3],
+                   geom_reals[0]);
           }
           EG_free(geom_ints);
           EG_free(geom_reals);
@@ -782,8 +783,9 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
             printf("  loop pcurve ref geom oclass %d mtype %d\n", oclass,
                    mtype);
             if (PCURVE == oclass && BSPLINE == mtype) {
-              printf("bit flag %d deg %d ncp %d nkt %d nkt %f\n", geom_ints[0],
-                     geom_ints[1], geom_ints[2], geom_ints[3], geom_reals[0]);
+              printf("    bit flag %d deg %d ncp %d nkt %d nkt %f\n",
+                     geom_ints[0], geom_ints[1], geom_ints[2], geom_ints[3],
+                     geom_reals[0]);
             }
             EG_free(geom_ints);
             EG_free(geom_reals);
