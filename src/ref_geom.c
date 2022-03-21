@@ -3143,12 +3143,12 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
     if (ref_geom_model_loaded(ref_geom)) {
       RSS(ref_egads_edge_curvature(ref_geom, geom, &radius, normal), "curve");
       radius = ABS(radius);
-      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, edgeid, &(t[item]), xyz,
-                            NULL),
-          "eval at");
       RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t[item],
                                  &(uv[2 * item])),
           "p-curve uv");
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, &(uv[2*item]), xyz,
+                            NULL),
+          "eval at");
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
@@ -3166,12 +3166,12 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
       RSS(ref_egads_edge_curvature(ref_geom, jump_geom, &radius, normal),
           "curve");
       radius = ABS(radius);
-      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, edgeid, &(t[nnode - 1]),
-                            xyz, NULL),
-          "eval at");
       RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t[nnode - 1],
                                  &(uv[2 * (nnode - 1)])),
           "p-curve uv");
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, &(uv[2*(nnode - 1)]),
+                            xyz, NULL),
+          "eval at");
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
     node = ref_geom_node(ref_geom, jump_geom);
