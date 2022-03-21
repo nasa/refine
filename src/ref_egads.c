@@ -787,6 +787,8 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
               int knot, cp, w;
               printf("    bit flag %d deg %d ncp %d nkt %d\n", geom_ints[0],
                      geom_ints[1], geom_ints[2], geom_ints[3]);
+              REIS(geom_ints[3], geom_ints[2] + geom_ints[1] + 1,
+                   "nknot != ncp+deg+1");
               for (knot = 0; knot < geom_ints[3]; knot++) {
                 printf("knot[%d]=%f\n", knot, geom_reals[knot]);
               }
