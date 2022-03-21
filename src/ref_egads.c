@@ -725,6 +725,7 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   int iloop, loop_nedge;
   int iedge, nchild;
   int face_geom_class, face_geom_type;
+  double range[4];
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
@@ -754,10 +755,11 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
       printf(" loop %d mtype %d nedge %d\n", iloop + 1, mtype, loop_nedge);
       for (iedge = 0; iedge < loop_nedge; iedge++) {
         REIS(EGADS_SUCCESS,
-             EG_getTopology(loop_edges[iedge], &edge_ref, &oclass, &mtype, NULL,
-                            &nchild, &children, &senses),
+             EG_getTopology(loop_edges[iedge], &edge_ref, &oclass, &mtype,
+                            range, &nchild, &children, &senses),
              "topo");
-        printf("  loop edge %d mtype %d nchild %d\n", iedge + 1, mtype, nchild);
+        printf("  loop edge %d mtype %d nchild %d trange %f %f\n", iedge + 1,
+               mtype, nchild, range[0], range[1]);
         if (NULL == edge_ref) {
         } else {
           ego geom_ref;
@@ -769,9 +771,8 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
                "topo");
           printf("  loop edge ref geom oclass %d mtype %d\n", oclass, mtype);
           if (CURVE == oclass && BSPLINE == mtype) {
-            printf("    bit flag %d deg %d ncp %d nkt %d nkt %f\n",
-                   geom_ints[0], geom_ints[1], geom_ints[2], geom_ints[3],
-                   geom_reals[0]);
+            printf("    bit flag %d deg %d ncp %d nkt %d\n", geom_ints[0],
+                   geom_ints[1], geom_ints[2], geom_ints[3]);
           }
           EG_free(geom_ints);
           EG_free(geom_reals);
@@ -783,9 +784,17 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
             printf("  loop pcurve ref geom oclass %d mtype %d\n", oclass,
                    mtype);
             if (PCURVE == oclass && BSPLINE == mtype) {
-              printf("    bit flag %d deg %d ncp %d nkt %d nkt %f\n",
-                     geom_ints[0], geom_ints[1], geom_ints[2], geom_ints[3],
-                     geom_reals[0]);
+              int knot, cp;
+              printf("    bit flag %d deg %d ncp %d nkt %d\n", geom_ints[0],
+                     geom_ints[1], geom_ints[2], geom_ints[3]);
+              for (knot = 0; knot < geom_ints[3]; knot++) {
+                printf("knot[%d]=%f\n", knot, geom_reals[knot]);
+              }
+              for (cp = 0; cp < geom_ints[2]; cp++) {
+                printf("cp[%d]=%f %f\n", cp,
+                       geom_reals[geom_ints[3] + 0 + 2 * cp],
+                       geom_reals[geom_ints[3] + 0 + 2 * cp]);
+              }
             }
             EG_free(geom_ints);
             EG_free(geom_reals);
