@@ -4174,9 +4174,10 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
 
 /* number of knots is n_control_point + degree + 1 */
 /* piegl-tiller m + 1 is number of knots, knots={t_0,...,t_m} */
-/* n is number of knots - degree */
-/* n is n_control_point - 1 */
-/* n=m-degree-1, m=n+degree+1 */
+/* n = m - degree - 1, m = n + degree + 1 */
+/* n = (number of knots - 1) - degree - 1 */
+/* n = n_control_point + degree + 1 - 1 - degree - 1 */
+/* n = n_control_point - 1 */
 /* piegl-tiller nurbs book pg 68 algoirth A2.1 */
 REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
                                        REF_DBL *knots, REF_DBL t,
