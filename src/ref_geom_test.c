@@ -1315,6 +1315,41 @@ int main(int argc, char *argv[]) {
     RWDS(1.0 / 8.0, N[2], tol, "N4,2");
   }
 
+  {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 2;
+    REF_DBL knots[] = {0, 0, 1, 1};
+    REF_DBL control_points[] = {4, 8};
+    REF_DBL t;
+    REF_DBL val;
+    REF_DBL tol = -1.0;
+    t = 0.0;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(4.0, val, tol, "f(0.0)");
+    t = 0.25;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(5.0, val, tol, "f(0.25)");
+    t = 0.5;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(6.0, val, tol, "f(0.5)");
+    t = 0.75;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(7.0, val, tol, "f(0.75)");
+    t = 1.0;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(8.0, val, tol, "f(1.0)");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
