@@ -4220,3 +4220,25 @@ REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
       "check");
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
+                                  REF_INT span, REF_DBL *N) {
+  REF_INT j, r;
+  REF_DBL left[16];
+  REF_DBL right[16];
+  REF_DBL saved, temp;
+  RAS(degree < 16, "temp varaibles sized smaller than p");
+  N[0] = 1.0;
+  for (j = 1; j <= degree; j++) {
+    left[j] = t - knots[span + 1 - j];
+    right[j] = knots[span + j] - t;
+    saved = 0.0;
+    for (r = 0; r < j; r++) {
+      temp = N[r] / (right[r + 1] + left[j - r]);
+      N[r] = saved + right[r + 1] * temp;
+      saved = left[j - r] * temp;
+    }
+    N[j] = saved;
+  }
+  return REF_SUCCESS;
+}
