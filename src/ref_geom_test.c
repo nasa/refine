@@ -1350,6 +1350,31 @@ int main(int argc, char *argv[]) {
     RWDS(8.0, val, tol, "f(1.0)");
   }
 
+  {
+    REF_INT degree = 2;
+    REF_INT n_control_points = 7;
+    REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
+    REF_DBL control_points[] = {1, 1, 1, 1, 1, 1, 1};
+    REF_DBL t;
+    REF_DBL val;
+    REF_DBL tol = -1.0;
+    t = 0.0;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(1.0, val, tol, "unity");
+    t = 2.5;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(1.0, val, tol, "unity");
+    t = 3.8;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(1.0, val, tol, "unity");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

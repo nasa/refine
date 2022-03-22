@@ -4258,6 +4258,9 @@ REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
   RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");
   for (i = 0; i < degree + 1; i++) {
     point = span + i - degree;
+    printf("i %d span %d point %d\n", i, span, point);
+    RAS(point >= 0, "point negative");
+    RAS(point < n_control_point, "point >= n_control_point");
     (*val) += N[i] * control_points[point];
   }
   return REF_SUCCESS;
