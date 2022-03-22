@@ -4234,6 +4234,8 @@ REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
     right[j] = knots[span + j] - t;
     saved = 0.0;
     for (r = 0; r < j; r++) {
+      RAS(ref_math_divisible(N[r], (right[r + 1] + left[j - r])),
+          "right+left is zero");
       temp = N[r] / (right[r + 1] + left[j - r]);
       N[r] = saved + right[r + 1] * temp;
       saved = left[j - r] * temp;
