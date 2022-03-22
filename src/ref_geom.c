@@ -4176,11 +4176,17 @@ static REF_STATUS ref_geom_bspline_span_check(REF_INT degree,
                                               REF_INT n_control_point,
                                               REF_DBL *knots, REF_DBL t,
                                               REF_INT span) {
-  if (span >= degree) printf("span %d less than degree %d\n", span, degree);
-  if (n_control_point + degree - 1 < span)
-    printf("end %d equal larger than span %d\n", n_control_point + degree - 1,
-           span);
-  printf("%f < %f < %f\n", knots[span], t, knots[span + 1]);
+  REF_DBL tclip;
+  REF_INT last_span = n_control_point + degree - 2;
+  if (span < degree) printf("span %d less than degree %d\n", span, degree);
+  RAS(span >= degree, "span low of bounds");
+  if (last_span < span)
+    printf("end %d equal larger than span %d\n", last_span, span);
+  RAS(last_span >= span, "span high of bounds");
+  tclip = MAX(knots[degree], MIN(t, knots[last_span + 1]));
+  if (tclip < knots[span] || knots[span + 1] < tclip)
+    printf("%f < %f < %f\n", knots[span], t, knots[span + 1]);
+  RAS(knots[span] <= tclip && tclip <= knots[span + 1], "t out of knot span");
   return REF_SUCCESS;
 }
 
