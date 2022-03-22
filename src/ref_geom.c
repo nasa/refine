@@ -4190,26 +4190,21 @@ static REF_STATUS ref_geom_bspline_span_check(REF_INT degree,
   return REF_SUCCESS;
 }
 
-/* number of knots is n_control_point + degree + 1 */
-/* piegl-tiller m + 1 is number of knots, knots={t_0,...,t_m} */
-/* n = m - degree - 1, m = n + degree + 1 */
-/* n = (number of knots - 1) - degree - 1 */
-/* n = n_control_point + degree + 1 - 1 - degree - 1 */
-/* n = n_control_point - 1 */
 /* piegl-tiller nurbs book pg 68 algoirth A2.1 */
 REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
                                        REF_DBL *knots, REF_DBL t,
                                        REF_INT *span) {
   REF_INT low, high, mid;
+  REF_INT last_span = n_control_point + degree - 2;
   *span = REF_EMPTY;
-  if (t >= knots[n_control_point + degree - 2]) {
-    *span = n_control_point + degree - 2;
+  if (t >= knots[last_span]) {
+    *span = last_span;
     RSS(ref_geom_bspline_span_check(degree, n_control_point, knots, t, *span),
         "check");
     return REF_SUCCESS;
   }
   low = degree;
-  high = n_control_point + degree - 2;
+  high = last_span;
   mid = (low + high) / 2;
   while ((t < knots[mid] || t >= knots[mid + 1]) && (low != high)) {
     /* printf("t %f l %d m %d h %d\n",t,low,mid,high); */
