@@ -1284,15 +1284,13 @@ int main(int argc, char *argv[]) {
 
   {
     REF_INT degree = 1;
-    REF_INT n_control_points = 2;
     REF_DBL knots[] = {0, 0, 1, 1};
     REF_DBL t;
     REF_INT span;
     REF_DBL N[2];
     REF_DBL tol = -1.0;
     t = 0.5;
-    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
-        "index");
+    span = 1;
     RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");
     RWDS(1.0 / 2.0, N[0], tol, "N0,1");
     RWDS(1.0 / 2.0, N[1], tol, "N1,1");
@@ -1300,15 +1298,13 @@ int main(int argc, char *argv[]) {
 
   {
     REF_INT degree = 2;
-    REF_INT n_control_points = 7;
     REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
     REF_DBL t;
     REF_INT span;
     REF_DBL N[3];
     REF_DBL tol = -1.0;
     t = 2.5;
-    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
-        "index");
+    span = 4;
     RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");
     RWDS(1.0 / 8.0, N[0], tol, "N2,2");
     RWDS(6.0 / 8.0, N[1], tol, "N3,2");
