@@ -312,6 +312,9 @@ REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
 REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
                                   REF_INT span, REF_DBL *N);
 
+REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
+                                REF_DBL *knots, REF_DBL t, REF_DBL *N);
+
 REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
                                  REF_DBL *knots, REF_DBL t,
                                  REF_DBL *control_points, REF_DBL *val);

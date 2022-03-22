@@ -4245,6 +4245,26 @@ REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
+                                REF_DBL *knots, REF_DBL t, REF_DBL *N) {
+  REF_INT span;
+  REF_DBL n[16];
+  REF_INT i, point;
+  RAS(degree < 16, "temp varaibles sized smaller than degree");
+  RSS(ref_geom_bspline_span_index(degree, n_control_point, knots, t, &span),
+      "index");
+  span = MAX(span, n_control_point - 1);
+  RSS(ref_geom_bspline_basis(degree, knots, t, span, n), "basis");
+  for (i = 0; i < n_control_point; i++) {
+    N[i] = 0.0;
+  }
+  for (i = 0; i < degree + 1; i++) {
+    point = span + i - degree;
+    if (0 <= point && point < n_control_point) N[point] = n[i];
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
                                  REF_DBL *knots, REF_DBL t,
                                  REF_DBL *control_points, REF_DBL *val) {

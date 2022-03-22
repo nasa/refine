@@ -1315,6 +1315,27 @@ int main(int argc, char *argv[]) {
     REF_INT degree = 1;
     REF_INT n_control_points = 2;
     REF_DBL knots[] = {0, 0, 1, 1};
+    REF_DBL N[2];
+    REF_DBL t;
+    REF_DBL tol = -1.0;
+    t = 0.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(1.0, N[0], tol, "N0,1");
+    RWDS(0.0, N[1], tol, "N1,1");
+    t = 1.0 / 3.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(2.0 / 3.0, N[0], tol, "N0,1");
+    RWDS(1.0 / 3.0, N[1], tol, "N1,1");
+    t = 1.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(0.0, N[0], tol, "N0,1");
+    RWDS(1.0, N[1], tol, "N1,1");
+  }
+
+  {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 2;
+    REF_DBL knots[] = {0, 0, 1, 1};
     REF_DBL control_points[] = {4, 8};
     REF_DBL t;
     REF_DBL val;
