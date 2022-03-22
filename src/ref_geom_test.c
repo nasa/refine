@@ -1179,11 +1179,11 @@ int main(int argc, char *argv[]) {
     t = 1.0;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
-    REIS(2, span, "wrong span");
+    REIS(1, span, "wrong span");
     t = 2.0;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
-    REIS(2, span, "wrong span");
+    REIS(1, span, "wrong span");
   }
 
   {
@@ -1215,15 +1215,15 @@ int main(int argc, char *argv[]) {
     t = 4.0;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
-    REIS(5, span, "wrong span");
+    REIS(4, span, "wrong span");
     t = 5;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
-    REIS(5, span, "wrong span");
+    REIS(4, span, "wrong span");
     t = 6;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
-    REIS(5, span, "wrong span");
+    REIS(4, span, "wrong span");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");

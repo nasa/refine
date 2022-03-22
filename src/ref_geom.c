@@ -4172,17 +4172,23 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+/* number of knots is n_control_point + degree + 1 */
+/* piegl-tiller m + 1 is number of knots, knots={t_0,...,t_m} */
+/* n is number of knots - degree */
+/* n is n_control_point - 1 */
+/* n=m-degree-1, m=n+degree+1 */
+/* piegl-tiller nurbs book pg 68 algoirth A2.1 */
 REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
                                        REF_DBL *knots, REF_DBL t,
                                        REF_INT *span) {
   REF_INT low, high, mid;
   *span = REF_EMPTY;
-  if (t >= knots[n_control_point + 1]) {
-    *span = n_control_point;
+  if (t >= knots[n_control_point]) {
+    *span = n_control_point - 1;
     return REF_SUCCESS;
   }
   low = degree;
-  high = n_control_point + 1;
+  high = n_control_point;
   mid = (low + high) / 2;
   while ((t < knots[mid] || t >= knots[mid + 1]) && (low != high)) {
     /* printf("t %f l %d m %d h %d\n",t,low,mid,high); */
