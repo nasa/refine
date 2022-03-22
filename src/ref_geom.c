@@ -3146,8 +3146,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
       RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t[item],
                                  &(uv[2 * item])),
           "p-curve uv");
-      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, &(uv[2*item]), xyz,
-                            NULL),
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, &(uv[2 * item]),
+                            xyz, NULL),
           "eval at");
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
@@ -3169,8 +3169,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
       RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t[nnode - 1],
                                  &(uv[2 * (nnode - 1)])),
           "p-curve uv");
-      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, &(uv[2*(nnode - 1)]),
-                            xyz, NULL),
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid,
+                            &(uv[2 * (nnode - 1)]), xyz, NULL),
           "eval at");
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
@@ -4169,5 +4169,29 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
     ref_cell_remove(ref_grid_tri(ref_grid), cell);
   }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *knots, REF_DBL t,
+                                       REF_INT *span) {
+  REF_INT low, high, mid;
+  *span = REF_EMPTY;
+  if (t >= knots[n_control_point + 1]) {
+    *span = n_control_point;
+    return REF_SUCCESS;
+  }
+  low = degree;
+  high = n_control_point + 1;
+  mid = (low + high) / 2;
+  while (t < knots[mid] || t >= knots[mid + 1]) {
+    if (t < knots[mid]) {
+      high = mid;
+    } else {
+      low = mid;
+    }
+    mid = (low + high) / 2;
+  }
+  *span = mid;
   return REF_SUCCESS;
 }

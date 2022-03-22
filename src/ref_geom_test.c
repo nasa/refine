@@ -1158,6 +1158,17 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
+  {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 2;
+    REF_DBL knots[] = {0, 0, 1, 1};
+    REF_DBL t = 1.0;
+    REF_INT span;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
