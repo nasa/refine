@@ -4337,7 +4337,6 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
   for (i = 0; i < nknot; i++) {
     bundle[i] = -1.0;
   }
-
   for (i = 0; i < degree + 1; i++) {
     bundle[i] = t[0];
   }
@@ -4353,6 +4352,10 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
   ref_malloc(N, n_control_point, REF_DBL);
   for (i = 0; i < n_control_point; i++) {
     RSS(ref_geom_bspline_row(degree, n_control_point, bundle, t[i], N), "row");
+    for (j = 0; j < n_control_point; j++) {
+      printf(" %f", N[j]);
+    }
+    printf("\n");
     for (j = 0; j < n_control_point; j++) {
       row = 0 + 2 * i;
       col = i;
