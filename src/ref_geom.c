@@ -4353,10 +4353,6 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
   for (i = 0; i < n_control_point; i++) {
     RSS(ref_geom_bspline_row(degree, n_control_point, bundle, t[i], N), "row");
     for (j = 0; j < n_control_point; j++) {
-      printf(" %f", N[j]);
-    }
-    printf("\n");
-    for (j = 0; j < n_control_point; j++) {
       row = 0 + 2 * i;
       col = j;
       ab[row + col * rows] = N[j];
@@ -4373,7 +4369,12 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
     col = 2 * n_control_point;
     ab[row + col * rows] = uv[row];
   }
-  ref_matrix_show_ab(rows, cols, ab);
+  RSS(ref_matrix_solve_ab(rows, cols, ab), "solve");
+  for (i = 0; i < 2 * n_control_point; i++) {
+    row = i;
+    col = 2 * n_control_point;
+    bundle[i + nknot] = ab[row + col * rows];
+  }
   ref_free(N);
   ref_free(ab);
   return REF_SUCCESS;
