@@ -4297,7 +4297,7 @@ REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
   }
   fprintf(file, "\n");
 
-  ref_malloc(N, degree + 1, REF_DBL);
+  ref_malloc(N, n_control_point + 1, REF_DBL);
   t0 = knots[degree];
   t1 = knots[degree + n_control_point - 1];
   n = 1001;
