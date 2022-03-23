@@ -715,6 +715,21 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
+                                 REF_INT faceid) {
+#if defined(HAVE_EGADS)
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeid);
+  SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+#else
+  printf("EGADS not linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeid);
+  SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
 #if defined(HAVE_EGADS)
   REF_INT face;
