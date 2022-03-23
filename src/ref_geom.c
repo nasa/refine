@@ -4369,11 +4369,8 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
     col = 2 * n_control_point;
     ab[row + col * rows] = uv[1 + 2 * i];
   }
-  printf("orig\n");
-  RSS(ref_matrix_show_ab(rows, cols, ab), "solve");
+
   RSS(ref_matrix_solve_ab(rows, cols, ab), "solve");
-  printf("solve\n");
-  RSS(ref_matrix_show_ab(rows, cols, ab), "solve");
   for (i = 0; i < n_control_point; i++) {
     row = i;
     col = 2 * n_control_point;
@@ -4401,7 +4398,6 @@ REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
 
   fprintf(file, "title=\"refine bspine bundle\"\n");
   fprintf(file, "variables = \"u\" \"v\" \"t\"\n");
-  fprintf(file, "zone t=\"bundle\", i=%d, datapacking=%s\n", n, "point");
 
   ref_malloc(u, n_control_point, REF_DBL);
   ref_malloc(v, n_control_point, REF_DBL);
@@ -4410,12 +4406,14 @@ REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
     u[i] = bundle[nknot + 0 + 2 * i];
     v[i] = bundle[nknot + 1 + 2 * i];
   }
-  for (i = 0; i < nknot; i++) printf(" %f", knots[i]);
-  printf("\n");
-  for (i = 0; i < n_control_point; i++) printf(" %f", u[i]);
-  printf("\n");
-  for (i = 0; i < n_control_point; i++) printf(" %f", v[i]);
-  printf("\n");
+  fprintf(file, "zone t=\"control\", i=%d, datapacking=%s\n", n_control_point,
+          "point");
+  for (i = 0; i < n_control_point; i++) {
+    t = ((REF_DBL)i / ((REF_DBL)(n_control_point - 1)));
+    fprintf(file, "%f %f %f\n", u[i], v[i], t);
+  }
+
+  fprintf(file, "zone t=\"bundle\", i=%d, datapacking=%s\n", n, "point");
   t0 = knots[0];
   t1 = knots[nknot - 1];
   for (i = 0; i < n; i++) {
