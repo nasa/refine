@@ -1453,6 +1453,7 @@ int main(int argc, char *argv[]) {
   }
 
   RXS(ref_args_find(argc, argv, "--basis", &pos), REF_NOT_FOUND, "arg search");
+  /* piegl-tiller nurbs book pg 54 Figure 2.5 */
   if (pos != REF_EMPTY) {
     REF_INT degree = 1;
     REF_INT n_control_points = 7;
@@ -1462,22 +1463,34 @@ int main(int argc, char *argv[]) {
                                  "ref_geom_test_basis_repeat_17.tec"),
         "tec basis");
   }
+  /* piegl-tiller nurbs book pg 55 Figure 2.6 */
+  if (pos != REF_EMPTY) {
+    REF_INT degree = 2;
+    REF_INT n_control_points = 8;
+    REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
+                                 "ref_geom_test_basis_repeat_28.tec"),
+        "tec basis");
+  }
+  /* piegl-tiller nurbs book pg 63 Figure 2.9(a)*/
   if (pos != REF_EMPTY) {
     REF_INT degree = 3;
-    REF_INT n_control_points = 5;
+    REF_INT n_control_points = 7;
     REF_DBL knots[] = {0, 0, 0, 0, 2, 4, 6, 8, 8, 8, 8};
     REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
-                                 "ref_geom_test_basis_uniform_35.tec"),
+                                 "ref_geom_test_basis_uniform_37.tec"),
         "tec basis");
   }
+  /* piegl-tiller nurbs book pg 67 Figure 2.12*/
   if (pos != REF_EMPTY) {
     REF_INT degree = 3;
-    REF_INT n_control_points = 5;
+    REF_INT n_control_points = 7;
     REF_DBL knots[] = {0, 0, 0, 0, 1, 5, 6, 8, 8, 8, 8};
     REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
-                                 "ref_geom_test_basis_nonuniform_35.tec"),
+                                 "ref_geom_test_basis_nonuniform_37.tec"),
         "tec basis");
   }
 

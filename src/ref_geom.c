@@ -4172,26 +4172,7 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_bspline_span_check(REF_INT degree, REF_INT n_control_point,
-                                       REF_DBL *knots, REF_DBL t, REF_INT span);
-REF_STATUS ref_geom_bspline_span_check(REF_INT degree, REF_INT n_control_point,
-                                       REF_DBL *knots, REF_DBL t,
-                                       REF_INT span) {
-  REF_DBL tclip;
-  REF_INT last_span = n_control_point + degree - 2;
-  if (span < degree) printf("span %d less than degree %d\n", span, degree);
-  RAS(span >= degree, "span low of bounds");
-  if (last_span < span)
-    printf("end %d equal larger than span %d\n", last_span, span);
-  RAS(last_span >= span, "span high of bounds");
-  tclip = MAX(knots[degree], MIN(t, knots[last_span + 1]));
-  if (tclip < knots[span] || knots[span + 1] < tclip)
-    printf("%f < %f < %f\n", knots[span], t, knots[span + 1]);
-  RAS(knots[span] <= tclip && tclip <= knots[span + 1], "t out of knot span");
-  return REF_SUCCESS;
-}
-
-/* piegl-tiller nurbs book pg 68 algoirth A2.1 */
+/* piegl-tiller nurbs book pg 68 algorithm A2.1 */
 #define ref_geom_bspline_m(degree, n_control_point) \
   (ref_geom_bspline_nknot(degree, n_control_point) - 1)
 #define ref_geom_bspline_n(degree, n_control_point) \
@@ -4226,6 +4207,7 @@ REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
   return REF_SUCCESS;
 }
 
+/* piegl-tiller nurbs book pg 70 algorithm A2.2 */
 REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
                                   REF_INT span, REF_DBL *N) {
   REF_INT j, r;
@@ -4253,6 +4235,7 @@ REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
   return REF_SUCCESS;
 }
 
+/* piegl-tiller nurbs book pg 82 algorithm A3.1 */
 REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
                                 REF_DBL *knots, REF_DBL t, REF_DBL *N) {
   REF_INT span;
@@ -4262,16 +4245,14 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
   RAS(degree < 16, "temp varaibles sized smaller than degree");
   RSS(ref_geom_bspline_span_index(degree, n_control_point, knots, t, &span),
       "index");
-  if (verbose) printf("deg %d ncp %d span %d", degree, n_control_point, span);
-  span = MIN(span, n_control_point + 1);
-  if (verbose) printf(" %d :", span);
+  if (verbose) printf("deg %d ncp %d span %d :", degree, n_control_point, span);
   RSS(ref_geom_bspline_basis(degree, knots, t, span, n), "basis");
   for (i = 0; i < n_control_point; i++) {
     N[i] = 0.0;
   }
   for (i = 0; i < degree + 1; i++) {
-    point = span + i - degree;
-    if (0 <= point && point < n_control_point) N[point] = n[i];
+    point = span - degree + i;
+    N[point] = n[i];
   }
 
   if (verbose) {
@@ -4303,7 +4284,7 @@ REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
   fprintf(file, "\n");
   fprintf(file, "zone t=\"basis\", i=%d, datapacking=%s\n", n, "point");
 
-  ref_malloc(N, n_control_point + 1, REF_DBL);
+  ref_malloc(N, n_control_point, REF_DBL);
   t0 = knots[degree];
   t1 = knots[degree + n_control_point - 1];
   for (i = 0; i < n; i++) {
@@ -4322,6 +4303,7 @@ REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
   return REF_SUCCESS;
 }
 
+/* piegl-tiller nurbs book pg 82 algorithm A3.1 */
 REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
                                  REF_DBL *knots, REF_DBL t,
                                  REF_DBL *control_points, REF_DBL *val) {
@@ -4334,7 +4316,7 @@ REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
       "index");
   RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");
   for (i = 0; i < degree + 1; i++) {
-    point = span + i - degree;
+    point = span - degree + i;
     RAS(point >= 0, "point negative");
     RAS(point < n_control_point, "point >= n_control_point");
     (*val) += N[i] * control_points[point];
