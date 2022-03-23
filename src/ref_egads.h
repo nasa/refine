@@ -46,6 +46,7 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description);
 REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom);
 REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
                                  REF_INT faceid);
+REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid);
 
 REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom, REF_INT **edge_faces);
 

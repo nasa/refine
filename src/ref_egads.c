@@ -880,6 +880,57 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
+  ego face;
+  ego surface;
+  int faceclass, facetype;
+  double facebounds[4];
+  int nloop;
+  ego *loops;
+  int *loopsenses;
+  int face_geom_class, face_geom_type;
+  int iloop;
+
+  face = ((ego *)(ref_geom->faces))[faceid - 1];
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(face, &surface, &faceclass, &facetype, facebounds, &nloop,
+                      &loops, &loopsenses),
+       "topo");
+  face_geom_class = REF_EMPTY;
+  face_geom_type = REF_EMPTY;
+  if (NULL != surface) {
+    int *geom_ints;
+    double *geom_reals;
+    ego surface_ref;
+    REIS(EGADS_SUCCESS,
+         EG_getGeometry(surface, &face_geom_class, &face_geom_type,
+                        &surface_ref, &geom_ints, &geom_reals),
+         "topo");
+    EG_free(geom_ints);
+    EG_free(geom_reals);
+  }
+  for (iloop = 0; iloop < nloop; iloop++) {
+    ego loop_ref, *children;
+    int nchild, *children_senses, loopclass, looptype;
+
+    /* loop through all Edges associated with this Loop */
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(loops[iloop], &loop_ref, &loopclass, &looptype, NULL,
+                        &nchild, &children, &children_senses),
+         "topo");
+    if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
+    }
+  }
+
+#else
+  printf("nothing for %s, full EGADS not linked\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+#endif
+  return REF_SUCCESS;
+}
+
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
                                               int *surface_type) {
