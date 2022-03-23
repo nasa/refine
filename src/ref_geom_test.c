@@ -1498,7 +1498,7 @@ int main(int argc, char *argv[]) {
   {
     REF_INT degree = 3;
     REF_DBL t[] = {0, 5.0 / 17.0, 9 / 17.0, 14.0 / 17.0, 1.0};
-    REF_DBL uv[] = {0, 0, 3, 4, -1, 4, -4, 0 - 4, -3};
+    REF_DBL uv[] = {0, 0, 3, 4, -1, 4, -4, 0, -4, -3};
     REF_INT n_control_points = 5;
     REF_INT nknot;
     REF_DBL *bundle;
