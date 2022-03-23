@@ -305,6 +305,10 @@ REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
 REF_STATUS ref_geom_enrich2(REF_GRID ref_grid);
 REF_STATUS ref_geom_enrich3(REF_GRID ref_grid);
 
+#define ref_geom_bspline_nknot(degree, n_control_point) \
+  ((n_control_point) + (degree) + 1)
+#define ref_geom_bspline_n_control_point(degree, nknot) ((nknot) - (degree)-1)
+
 REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
                                        REF_DBL *knots, REF_DBL t,
                                        REF_INT *span);
