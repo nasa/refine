@@ -4353,27 +4353,34 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
   for (i = 0; i < n_control_point; i++) {
     RSS(ref_geom_bspline_row(degree, n_control_point, bundle, t[i], N), "row");
     for (j = 0; j < n_control_point; j++) {
-      row = 0 + 2 * i;
+      row = i;
       col = j;
       ab[row + col * rows] = N[j];
     }
-    row = 0 + 2 * i;
+    row = i;
     col = 2 * n_control_point;
-    ab[row + col * rows] = uv[row];
+    ab[row + col * rows] = uv[0 + 2 * i];
     for (j = 0; j < n_control_point; j++) {
-      row = 1 + 2 * i;
+      row = i + n_control_point;
       col = j + n_control_point;
       ab[row + col * rows] = N[j];
     }
-    row = 1 + 2 * i;
+    row = i + n_control_point;
     col = 2 * n_control_point;
-    ab[row + col * rows] = uv[row];
+    ab[row + col * rows] = uv[1 + 2 * i];
   }
+  printf("orig\n");
+  RSS(ref_matrix_show_ab(rows, cols, ab), "solve");
   RSS(ref_matrix_solve_ab(rows, cols, ab), "solve");
-  for (i = 0; i < 2 * n_control_point; i++) {
+  printf("solve\n");
+  RSS(ref_matrix_show_ab(rows, cols, ab), "solve");
+  for (i = 0; i < n_control_point; i++) {
     row = i;
     col = 2 * n_control_point;
-    bundle[i + nknot] = ab[row + col * rows];
+    bundle[0 + 2 * i + nknot] = ab[row + col * rows];
+    row = i + n_control_point;
+    col = 2 * n_control_point;
+    bundle[1 + 2 * i + nknot] = ab[row + col * rows];
   }
   ref_free(N);
   ref_free(ab);
@@ -4403,6 +4410,12 @@ REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
     u[i] = bundle[nknot + 0 + 2 * i];
     v[i] = bundle[nknot + 1 + 2 * i];
   }
+  for (i = 0; i < nknot; i++) printf(" %f", knots[i]);
+  printf("\n");
+  for (i = 0; i < n_control_point; i++) printf(" %f", u[i]);
+  printf("\n");
+  for (i = 0; i < n_control_point; i++) printf(" %f", v[i]);
+  printf("\n");
   t0 = knots[0];
   t1 = knots[nknot - 1];
   for (i = 0; i < n; i++) {
