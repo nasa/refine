@@ -4192,6 +4192,10 @@ REF_STATUS ref_geom_bspline_span_check(REF_INT degree, REF_INT n_control_point,
 }
 
 /* piegl-tiller nurbs book pg 68 algoirth A2.1 */
+#define ref_geom_bspline_m(degree, n_control_point) \
+  (ref_geom_bspline_nknot(degree, n_control_point) - 1)
+#define ref_geom_bspline_n(degree, n_control_point) \
+  (ref_geom_bspline_m(degree, n_control_point) - (degree)-1)
 REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
                                        REF_DBL *knots, REF_DBL t,
                                        REF_INT *span) {
