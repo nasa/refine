@@ -1443,6 +1443,16 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, val, tol, "unity");
   }
 
+  RXS(ref_args_find(argc, argv, "--basis", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 7;
+    REF_DBL knots[] = {0, 0, 1, 2, 3, 4, 4, 5, 5};
+    RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
+                                 "ref_geom_test_basis17.tec"),
+        "tec basis");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

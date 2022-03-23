@@ -4313,6 +4313,7 @@ REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
     fprintf(file, "\n");
   }
   ref_free(N);
+  fclose(file);
   return REF_SUCCESS;
 }
 
