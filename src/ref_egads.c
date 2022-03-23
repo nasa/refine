@@ -723,6 +723,9 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
   double trange[2];
   REF_INT degree, n_control_point, nknot;
   REF_DBL *t, *uv, *bundle;
+  REF_DBL s0, s1;
+  REF_DBL xyz[3];
+  REF_INT i;
   REIS(
       EGADS_SUCCESS,
       EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &curve, &edgeclass,
@@ -736,6 +739,17 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
   ref_malloc(t, n_control_point, REF_DBL);
   ref_malloc(uv, 2 * n_control_point, REF_DBL);
   ref_malloc(bundle, nknot + 2 * n_control_point, REF_DBL);
+  for (i = 0; i < n_control_point; i++) {
+    s1 = ((REF_DBL)i) / ((REF_DBL)(n_control_point - 1));
+    s0 = 1.0 - s1;
+    t[i] = s0 * trange[0] + s1 * trange[1];
+    RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, edgeid, &(t[i]), xyz, NULL),
+        "eval edge xyz");
+    RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, xyz,
+                               &(uv[2 * i])),
+        "inv eval face uv");
+  }
+
   ref_free(bundle);
   ref_free(uv);
   ref_free(t);
