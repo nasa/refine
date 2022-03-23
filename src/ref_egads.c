@@ -726,6 +726,7 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
   REF_DBL s0, s1;
   REF_DBL xyz[3];
   REF_INT i;
+  char filename[1024];
   REIS(
       EGADS_SUCCESS,
       EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &curve, &edgeclass,
@@ -749,7 +750,10 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
                                &(uv[2 * i])),
         "inv eval face uv");
   }
-
+  RSS(ref_geom_bspline_fit(degree, n_control_point, t, uv, bundle), "fit");
+  snprintf(filename, 1024, "pcurve-face%d-edge%d.tec", faceid, edgeid);
+  RSS(ref_geom_bspline_bundle_tec(degree, n_control_point, bundle, filename),
+      "tec basis");
   ref_free(bundle);
   ref_free(uv);
   ref_free(t);
