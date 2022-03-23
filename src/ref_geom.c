@@ -4281,7 +4281,7 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
 
 REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
                                     REF_DBL *knots, const char *filename) {
-  REF_INT i, n, j;
+  REF_INT i, n = 1001, j;
   REF_DBL t, t0, t1, s0, s1;
   REF_DBL *N;
   FILE *file;
@@ -4296,11 +4296,11 @@ REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
     fprintf(file, " \"N%d,%d\"", j, degree);
   }
   fprintf(file, "\n");
+  fprintf(file, "zone t=\"basis\", i=%d, datapacking=%s\n", n, "point");
 
   ref_malloc(N, n_control_point + 1, REF_DBL);
   t0 = knots[degree];
   t1 = knots[degree + n_control_point - 1];
-  n = 1001;
   for (i = 0; i < n; i++) {
     s1 = ((REF_DBL)i) / ((REF_DBL)(n - 1));
     s0 = 1.0 - s1;
