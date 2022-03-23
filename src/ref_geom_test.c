@@ -1164,6 +1164,7 @@ int main(int argc, char *argv[]) {
     REF_DBL knots[] = {0, 0, 1, 1};
     REF_DBL t;
     REF_INT span;
+    REIS(4, ref_geom_bspline_nknot(degree, n_control_points), "knots")
     t = -1;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
