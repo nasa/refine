@@ -931,6 +931,10 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
              EG_getGeometry(pcurve, &pcurveclass, &pcurvetype, &pcurve_ref,
                             &pcurve_ints, &pcurve_reals),
              "topo");
+        printf("    bit flag %d deg %d ncp %d nkt %d\n", pcurve_ints[0],
+               pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
+        REIS(pcurve_ints[3], pcurve_ints[2] + pcurve_ints[1] + 1,
+             "nknot != ncp+deg+1");
         EG_free(pcurve_ints);
         EG_free(pcurve_reals);
       }

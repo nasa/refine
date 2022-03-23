@@ -467,6 +467,18 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free geom");
   }
 
+  RXS(ref_args_find(argc, argv, "--reface", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY &&
+      ref_egads_allows_construction()) { /* steinmetz brep reface */
+    REF_GEOM ref_geom = NULL;
+    REIS(2, argc, "usage ref_egads_test --reface");
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
+    printf("steinmetz reface:\n");
+    RSS(ref_egads_brep_reface(ref_geom, 8), "brep reface");
+    RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
