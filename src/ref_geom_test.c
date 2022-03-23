@@ -1164,7 +1164,7 @@ int main(int argc, char *argv[]) {
     REF_DBL knots[] = {0, 0, 1, 1};
     REF_DBL t;
     REF_INT span;
-    REIS(4, ref_geom_bspline_nknot(degree, n_control_points), "knots")
+    REIS(4, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     t = -1;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
@@ -1189,10 +1189,11 @@ int main(int argc, char *argv[]) {
 
   {
     REF_INT degree = 2;
-    REF_INT n_control_points = 2;
+    REF_INT n_control_points = 3;
     REF_DBL knots[] = {0, 0, 0, 1, 1, 1};
     REF_DBL t;
     REF_INT span;
+    REIS(6, ref_geom_bspline_nknot(degree, n_control_points), "knots")
     t = -1;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
@@ -1217,10 +1218,11 @@ int main(int argc, char *argv[]) {
 
   {
     REF_INT degree = 3;
-    REF_INT n_control_points = 2;
+    REF_INT n_control_points = 4;
     REF_DBL knots[] = {0, 0, 0, 0, 1, 1, 1, 1};
     REF_DBL t;
     REF_INT span;
+    REIS(8, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     t = -1;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
@@ -1245,10 +1247,11 @@ int main(int argc, char *argv[]) {
 
   {
     REF_INT degree = 2;
-    REF_INT n_control_points = 7;
+    REF_INT n_control_points = 8;
     REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
     REF_DBL t;
     REF_INT span;
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     t = -1;
     RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
         "index");
@@ -1319,6 +1322,7 @@ int main(int argc, char *argv[]) {
     REF_DBL N[2];
     REF_DBL t;
     REF_DBL tol = -1.0;
+    REIS(4, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     t = 0.0;
     RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
     RWDS(1.0, N[0], tol, "N0,1");
@@ -1340,6 +1344,7 @@ int main(int argc, char *argv[]) {
     REF_DBL N[3];
     REF_DBL t;
     REF_DBL tol = -1.0;
+    REIS(5, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     t = 0.0;
     RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
     RWDS(1.0, N[0], tol, "N0,1");
@@ -1359,11 +1364,12 @@ int main(int argc, char *argv[]) {
 
   {
     REF_INT degree = 2;
-    REF_INT n_control_points = 7;
+    REF_INT n_control_points = 8;
     REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
     REF_DBL N[7];
     REF_DBL t;
     REF_DBL tol = -1.0;
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     t = 0.0;
     RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "eval");
     RWDS(1.0, N[0], tol, "N0,2");
@@ -1392,6 +1398,7 @@ int main(int argc, char *argv[]) {
     REF_DBL t;
     REF_DBL val;
     REF_DBL tol = -1.0;
+    REIS(4, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     t = 0.0;
     RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
                               control_points, &val),
@@ -1421,12 +1428,13 @@ int main(int argc, char *argv[]) {
 
   {
     REF_INT degree = 2;
-    REF_INT n_control_points = 7;
+    REF_INT n_control_points = 8;
     REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
-    REF_DBL control_points[] = {1, 1, 1, 1, 1, 1, 1};
+    REF_DBL control_points[] = {1, 1, 1, 1, 1, 1, 1, 1};
     REF_DBL t;
     REF_DBL val;
     REF_DBL tol = -1.0;
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     t = 0.0;
     RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
                               control_points, &val),
@@ -1449,6 +1457,7 @@ int main(int argc, char *argv[]) {
     REF_INT degree = 1;
     REF_INT n_control_points = 7;
     REF_DBL knots[] = {0, 0, 1, 2, 3, 4, 4, 5, 5};
+    REIS(9, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
                                  "ref_geom_test_basis_repeat_17.tec"),
         "tec basis");
@@ -1457,6 +1466,7 @@ int main(int argc, char *argv[]) {
     REF_INT degree = 3;
     REF_INT n_control_points = 5;
     REF_DBL knots[] = {0, 0, 0, 0, 2, 4, 6, 8, 8, 8, 8};
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
                                  "ref_geom_test_basis_uniform_35.tec"),
         "tec basis");
@@ -1465,6 +1475,7 @@ int main(int argc, char *argv[]) {
     REF_INT degree = 3;
     REF_INT n_control_points = 5;
     REF_DBL knots[] = {0, 0, 0, 0, 1, 5, 6, 8, 8, 8, 8};
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
     RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
                                  "ref_geom_test_basis_nonuniform_35.tec"),
         "tec basis");

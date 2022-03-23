@@ -4200,16 +4200,21 @@ REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
                                        REF_DBL *knots, REF_DBL t,
                                        REF_INT *span) {
   REF_INT low, high, mid;
-  REF_INT last_span = n_control_point + degree - 2;
+  REF_INT n = ref_geom_bspline_n(degree, n_control_point);
   *span = REF_EMPTY;
-  if (t >= knots[last_span]) {
-    *span = last_span;
+  if (t >= knots[n + 1]) {
+    *span = n;
+    return REF_SUCCESS;
+  }
+  if (t <= knots[degree]) {
+    *span = degree;
     return REF_SUCCESS;
   }
   low = degree;
-  high = last_span;
+  high = n + 1;
   mid = (low + high) / 2;
   while ((t < knots[mid] || t >= knots[mid + 1]) && (low != high)) {
+    /* printf("t %f l %d m %d h %d\n",t,low,mid,high); */
     if (t < knots[mid]) {
       high = mid;
     } else {
