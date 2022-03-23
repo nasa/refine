@@ -735,7 +735,7 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
   SUPRESS_UNUSED_COMPILER_WARNING(faceid);
   printf("trange %f %f\n", trange[0], trange[1]);
   degree = 3;
-  n_control_point = 24;
+  n_control_point = 8;
   nknot = ref_geom_bspline_nknot(degree, n_control_point);
   ref_malloc(t, n_control_point, REF_DBL);
   ref_malloc(uv, 2 * n_control_point, REF_DBL);
@@ -749,6 +749,8 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
     RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, xyz,
                                &(uv[2 * i])),
         "inv eval face uv");
+    printf("t[%d] %f uv %f %f xyz %f %f %f\n", i, t[i], uv[0 + 2 * i],
+           uv[1 + 2 * i], xyz[0], xyz[1], xyz[2]);
   }
   RSS(ref_geom_bspline_fit(degree, n_control_point, t, uv, bundle), "fit");
   snprintf(filename, 1024, "pcurve-face%d-edge%d.tec", faceid, edgeid);
