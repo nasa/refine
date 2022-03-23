@@ -4234,6 +4234,9 @@ REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
     right[j] = knots[span + j] - t;
     saved = 0.0;
     for (r = 0; r < j; r++) {
+      if (!ref_math_divisible(N[r], (right[r + 1] + left[j - r]))) {
+        printf("N[%d] %f l %f r %f\n", r, N[r], right[r + 1], left[j - r]);
+      }
       RAS(ref_math_divisible(N[r], (right[r + 1] + left[j - r])),
           "right+left is zero");
       temp = N[r] / (right[r + 1] + left[j - r]);
@@ -4253,7 +4256,9 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
   RAS(degree < 16, "temp varaibles sized smaller than degree");
   RSS(ref_geom_bspline_span_index(degree, n_control_point, knots, t, &span),
       "index");
-  span = MIN(span, n_control_point - 1);
+  printf("deg %d ncp %d span %d", degree, n_control_point, span);
+  span = MIN(span, n_control_point + 1);
+  printf(" %d :", span);
   RSS(ref_geom_bspline_basis(degree, knots, t, span, n), "basis");
   for (i = 0; i < n_control_point; i++) {
     N[i] = 0.0;
@@ -4262,7 +4267,7 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
     point = span + i - degree;
     if (0 <= point && point < n_control_point) N[point] = n[i];
   }
-  printf("deg %d ncp %d span %d:", degree, n_control_point, span);
+
   for (i = 0; i < n_control_point; i++) {
     printf(" %f", N[i]);
   }
