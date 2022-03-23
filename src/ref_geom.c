@@ -4358,7 +4358,7 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
     printf("\n");
     for (j = 0; j < n_control_point; j++) {
       row = 0 + 2 * i;
-      col = i;
+      col = j;
       ab[row + col * rows] = N[j];
     }
     row = 0 + 2 * i;
@@ -4366,7 +4366,7 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
     ab[row + col * rows] = uv[row];
     for (j = 0; j < n_control_point; j++) {
       row = 1 + 2 * i;
-      col = i + n_control_point;
+      col = j + n_control_point;
       ab[row + col * rows] = N[j];
     }
     row = 1 + 2 * i;
