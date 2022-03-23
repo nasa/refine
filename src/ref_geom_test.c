@@ -1449,7 +1449,7 @@ int main(int argc, char *argv[]) {
     REF_INT n_control_points = 7;
     REF_DBL knots[] = {0, 0, 1, 2, 3, 4, 4, 5, 5};
     RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
-                                 "ref_geom_test_basis17.tec"),
+                                 "ref_geom_test_basis_repeat_17.tec"),
         "tec basis");
   }
   if (pos != REF_EMPTY) {
@@ -1457,9 +1457,18 @@ int main(int argc, char *argv[]) {
     REF_INT n_control_points = 5;
     REF_DBL knots[] = {0, 0, 0, 0, 2, 4, 6, 8, 8, 8, 8};
     RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
-                                 "ref_geom_test_basis35.tec"),
+                                 "ref_geom_test_basis_uniform_35.tec"),
         "tec basis");
   }
+  if (pos != REF_EMPTY) {
+    REF_INT degree = 3;
+    REF_INT n_control_points = 5;
+    REF_DBL knots[] = {0, 0, 0, 0, 1, 5, 6, 8, 8, 8, 8};
+    RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
+                                 "ref_geom_test_basis_nonuniform_35.tec"),
+        "tec basis");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
