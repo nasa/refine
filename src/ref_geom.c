@@ -4326,12 +4326,13 @@ REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
 
 REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
                                 REF_DBL *t, REF_DBL *uv, REF_DBL *bundle) {
-  REF_DBL rows = 2 * n_control_point;
-  REF_DBL cols = 2 * n_control_point + 1;
+  REF_INT rows = 2 * n_control_point;
+  REF_INT cols = 2 * n_control_point + 1;
   REF_DBL *ab;
   REF_DBL *N;
   REF_INT nknot = ref_geom_bspline_nknot(degree, n_control_point);
   REF_INT i, j;
+  REF_INT row, col;
 
   for (i = 0; i < nknot; i++) {
     bundle[i] = -1.0;
@@ -4348,9 +4349,28 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
   for (i = 0; i < degree + 1; i++) {
     bundle[i + n_control_point] = t[n_control_point - 1];
   }
-  ref_malloc(ab, rows * cols, REF_DBL);
+  ref_malloc_init(ab, rows * cols, REF_DBL, 0.0);
   ref_malloc(N, n_control_point, REF_DBL);
-  ab[0] = uv[0];
+  for (i = 0; i < n_control_point; i++) {
+    RSS(ref_geom_bspline_row(degree, n_control_point, bundle, t[i], N), "row");
+    for (j = 0; j < n_control_point; j++) {
+      row = 0 + 2 * i;
+      col = i;
+      ab[row + col * rows] = N[j];
+    }
+    row = 0 + 2 * i;
+    col = 2 * n_control_point;
+    ab[row + col * rows] = uv[row];
+    for (j = 0; j < n_control_point; j++) {
+      row = 1 + 2 * i;
+      col = i + n_control_point;
+      ab[row + col * rows] = N[j];
+    }
+    row = 1 + 2 * i;
+    col = 2 * n_control_point;
+    ab[row + col * rows] = uv[row];
+  }
+  ref_matrix_show_ab(rows, cols, ab);
   ref_free(N);
   ref_free(ab);
   return REF_SUCCESS;
