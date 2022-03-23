@@ -4253,12 +4253,13 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
   REF_INT span;
   REF_DBL n[16];
   REF_INT i, point;
+  REF_BOOL verbose = REF_FALSE;
   RAS(degree < 16, "temp varaibles sized smaller than degree");
   RSS(ref_geom_bspline_span_index(degree, n_control_point, knots, t, &span),
       "index");
-  printf("deg %d ncp %d span %d", degree, n_control_point, span);
+  if (verbose) printf("deg %d ncp %d span %d", degree, n_control_point, span);
   span = MIN(span, n_control_point + 1);
-  printf(" %d :", span);
+  if (verbose) printf(" %d :", span);
   RSS(ref_geom_bspline_basis(degree, knots, t, span, n), "basis");
   for (i = 0; i < n_control_point; i++) {
     N[i] = 0.0;
@@ -4268,10 +4269,12 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
     if (0 <= point && point < n_control_point) N[point] = n[i];
   }
 
-  for (i = 0; i < n_control_point; i++) {
-    printf(" %f", N[i]);
+  if (verbose) {
+    for (i = 0; i < n_control_point; i++) {
+      printf(" %f", N[i]);
+    }
+    printf("\n");
   }
-  printf("\n");
 
   return REF_SUCCESS;
 }
