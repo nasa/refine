@@ -4279,6 +4279,43 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
+                                    REF_DBL *knots, const char *filename) {
+  REF_INT i, n, j;
+  REF_DBL t, t0, t1, s0, s1;
+  REF_DBL *N;
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"refine bspine basis\"\n");
+  fprintf(file, "variables = \"t\"");
+  for (j = 0; j < n_control_point; j++) {
+    fprintf(file, " \"N%d,%d\"", j, degree);
+  }
+  fprintf(file, "\n");
+
+  ref_malloc(N, degree + 1, REF_DBL);
+  t0 = knots[degree];
+  t1 = knots[degree + n_control_point - 1];
+  n = 1001;
+  for (i = 0; i < n; i++) {
+    s1 = ((REF_DBL)i) / ((REF_DBL)(n - 1));
+    s0 = 1.0 - s1;
+    t = s0 * t0 + s1 * t1;
+    fprintf(file, " %f", t);
+    RSS(ref_geom_bspline_row(degree, n_control_point, knots, t, N), "eval");
+    for (j = 0; j < n_control_point; j++) {
+      fprintf(file, " %f", N[j]);
+    }
+    fprintf(file, "\n");
+  }
+  ref_free(N);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
                                  REF_DBL *knots, REF_DBL t,
                                  REF_DBL *control_points, REF_DBL *val) {
@@ -4292,7 +4329,6 @@ REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
   RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");
   for (i = 0; i < degree + 1; i++) {
     point = span + i - degree;
-    printf("i %d span %d point %d\n", i, span, point);
     RAS(point >= 0, "point negative");
     RAS(point < n_control_point, "point >= n_control_point");
     (*val) += N[i] * control_points[point];

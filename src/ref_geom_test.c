@@ -1381,20 +1381,6 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, N[4], tol, "N4,2");
     RWDS(1.0, N[5], tol, "N5,2");
     RWDS(0.0, N[6], tol, "N6,2");
-    {
-      REF_INT i, n, j;
-      n = 101;
-      for (i = 0; i < n; i++) {
-        t = 5.0 * ((REF_DBL)i) / ((REF_DBL)(n - 1));
-        printf(" %f", t);
-        RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N),
-            "eval");
-        for (j = 0; j < n_control_points; j++) {
-          printf(" %f", N[j]);
-        }
-        printf("\n");
-      }
-    }
   }
 
   {
