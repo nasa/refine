@@ -4379,3 +4379,43 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
   ref_free(ab);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *bundle, const char *filename) {
+  REF_INT i, n = 1001;
+  REF_DBL t, t0, t1, s0, s1;
+  REF_DBL *u, *v, uv[2], *knots;
+  REF_INT nknot = ref_geom_bspline_nknot(degree, n_control_point);
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"refine bspine bundle\"\n");
+  fprintf(file, "variables = \"u\" \"v\" \"t\"\n");
+  fprintf(file, "zone t=\"bundle\", i=%d, datapacking=%s\n", n, "point");
+
+  ref_malloc(u, n_control_point, REF_DBL);
+  ref_malloc(v, n_control_point, REF_DBL);
+  knots = bundle;
+  for (i = 0; i < n_control_point; i++) {
+    u[i] = bundle[nknot + 0 + 2 * i];
+    v[i] = bundle[nknot + 1 + 2 * i];
+  }
+  t0 = knots[0];
+  t1 = knots[nknot - 1];
+  for (i = 0; i < n; i++) {
+    s1 = ((REF_DBL)i) / ((REF_DBL)(n - 1));
+    s0 = 1.0 - s1;
+    t = s0 * t0 + s1 * t1;
+    RSS(ref_geom_bspline_eval(degree, n_control_point, knots, t, u, &(uv[0])),
+        "eval");
+    RSS(ref_geom_bspline_eval(degree, n_control_point, knots, t, v, &(uv[1])),
+        "eval");
+    fprintf(file, "%f %f %f\n", uv[0], uv[1], t);
+  }
+  ref_free(v);
+  ref_free(u) fclose(file);
+  return REF_SUCCESS;
+}

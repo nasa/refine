@@ -329,6 +329,12 @@ REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
 REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
                                 REF_DBL *t, REF_DBL *uv, REF_DBL *bundle);
 
+REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
+                                    REF_DBL *knots, const char *filename);
+
+REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *bundle, const char *filename);
+
 END_C_DECLORATION
 
 #endif /* REF_GEOM_H */

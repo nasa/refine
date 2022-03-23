@@ -1513,7 +1513,10 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, bundle[8], tol, "end");
     if (pos != REF_EMPTY) {
       RSS(ref_geom_bspline_row_tec(degree, n_control_points, bundle,
-                                   "ref_geom_test_basis_fit.tec"),
+                                   "ref_geom_test_fit_basis.tec"),
+          "tec basis");
+      RSS(ref_geom_bspline_bundle_tec(degree, n_control_points, bundle,
+                                      "ref_geom_test_fit_bundle.tec"),
           "tec basis");
     }
     ref_free(bundle);
