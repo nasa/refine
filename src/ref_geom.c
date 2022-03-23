@@ -4172,10 +4172,11 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_bspline_span_check(REF_INT degree,
-                                              REF_INT n_control_point,
-                                              REF_DBL *knots, REF_DBL t,
-                                              REF_INT span) {
+REF_STATUS ref_geom_bspline_span_check(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *knots, REF_DBL t, REF_INT span);
+REF_STATUS ref_geom_bspline_span_check(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *knots, REF_DBL t,
+                                       REF_INT span) {
   REF_DBL tclip;
   REF_INT last_span = n_control_point + degree - 2;
   if (span < degree) printf("span %d less than degree %d\n", span, degree);
@@ -4199,15 +4200,12 @@ REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
   *span = REF_EMPTY;
   if (t >= knots[last_span]) {
     *span = last_span;
-    RSS(ref_geom_bspline_span_check(degree, n_control_point, knots, t, *span),
-        "check");
     return REF_SUCCESS;
   }
   low = degree;
   high = last_span;
   mid = (low + high) / 2;
   while ((t < knots[mid] || t >= knots[mid + 1]) && (low != high)) {
-    /* printf("t %f l %d m %d h %d\n",t,low,mid,high); */
     if (t < knots[mid]) {
       high = mid;
     } else {
@@ -4216,8 +4214,6 @@ REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
     mid = (low + high) / 2;
   }
   *span = mid;
-  RSS(ref_geom_bspline_span_check(degree, n_control_point, knots, t, *span),
-      "check");
   return REF_SUCCESS;
 }
 
