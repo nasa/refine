@@ -1511,6 +1511,11 @@ int main(int argc, char *argv[]) {
     RWDS(28.0 / 51.0, bundle[4], tol, "mid");
     RWDS(1.0, bundle[5], tol, "end");
     RWDS(1.0, bundle[8], tol, "end");
+    if (pos != REF_EMPTY) {
+      RSS(ref_geom_bspline_row_tec(degree, n_control_points, bundle,
+                                   "ref_geom_test_basis_fit.tec"),
+          "tec basis");
+    }
     ref_free(bundle);
   }
 
