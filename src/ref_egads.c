@@ -718,9 +718,27 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
 REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
                                  REF_INT faceid) {
 #if defined(HAVE_EGADS)
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
-  SUPRESS_UNUSED_COMPILER_WARNING(edgeid);
+  ego curve, *children;
+  int edgeclass, edgetype, nchild, *senses;
+  double trange[2];
+  REF_INT degree, n_control_point, nknot;
+  REF_DBL *t, *uv, *bundle;
+  REIS(
+      EGADS_SUCCESS,
+      EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &curve, &edgeclass,
+                     &edgetype, trange, &nchild, &children, &senses),
+      "topo");
   SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+  printf("trange %f %f\n", trange[0], trange[1]);
+  degree = 3;
+  n_control_point = 24;
+  nknot = ref_geom_bspline_nknot(degree, n_control_point);
+  ref_malloc(t, n_control_point, REF_DBL);
+  ref_malloc(uv, 2 * n_control_point, REF_DBL);
+  ref_malloc(bundle, nknot + 2 * n_control_point, REF_DBL);
+  ref_free(bundle);
+  ref_free(uv);
+  ref_free(t);
 #else
   printf("EGADS not linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -741,8 +759,10 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   int iedge, nchild;
   int face_geom_class, face_geom_type;
   double range[4];
+  int faceid, edgeid;
 
   for (face = 0; face < (ref_geom->nface); face++) {
+    faceid = face + 1;
     REIS(EGADS_SUCCESS,
          EG_getTopology(((ego *)(ref_geom->faces))[face], &surface, &oclass,
                         &mtype, NULL, &nloop, &eloops, &senses),
@@ -773,8 +793,9 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
              EG_getTopology(loop_edges[iedge], &edge_ref, &oclass, &mtype,
                             range, &nchild, &children, &senses),
              "topo");
-        printf("  loop edge %d mtype %d nchild %d trange %f %f\n", iedge + 1,
-               mtype, nchild, range[0], range[1]);
+        edgeid = EG_indexBodyTopo((ego)(ref_geom->body), loop_edges[iedge]);
+        printf("  loop edge %d (edgeid %d) mtype %d nchild %d trange %f %f\n",
+               iedge + 1, edgeid, mtype, nchild, range[0], range[1]);
         if (NULL == edge_ref) {
         } else {
           ego geom_ref;
@@ -818,6 +839,7 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
                          geom_reals[geom_ints[3] + 2 * geom_ints[2] + w]);
                 }
               }
+              RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid), "pcurve");
             }
             EG_free(geom_ints);
             EG_free(geom_reals);
