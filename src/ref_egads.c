@@ -920,6 +920,20 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                         &nchild, &children, &children_senses),
          "topo");
     if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
+      int ipc;
+      for (ipc = nchild; ipc < 2 * nchild; ipc++) {
+        int pcurveclass, pcurvetype;
+        int *pcurve_ints;
+        double *pcurve_reals;
+        ego pcurve_ref = NULL;
+        ego pcurve = children[ipc];
+        REIS(EGADS_SUCCESS,
+             EG_getGeometry(pcurve, &pcurveclass, &pcurvetype, &pcurve_ref,
+                            &pcurve_ints, &pcurve_reals),
+             "topo");
+        EG_free(pcurve_ints);
+        EG_free(pcurve_reals);
+      }
     }
   }
 
