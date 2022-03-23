@@ -1511,7 +1511,6 @@ int main(int argc, char *argv[]) {
     RWDS(28.0 / 51.0, bundle[4], tol, "mid");
     RWDS(1.0, bundle[5], tol, "end");
     RWDS(1.0, bundle[8], tol, "end");
-
     ref_free(bundle);
   }
 
