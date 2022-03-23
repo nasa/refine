@@ -746,6 +746,8 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
     t[i] = s0 * trange[0] + s1 * trange[1];
     RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, edgeid, &(t[i]), xyz, NULL),
         "eval edge xyz");
+    RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, 0, t[i], &(uv[2 * i])),
+        "edge face uv");
     RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, xyz,
                                &(uv[2 * i])),
         "inv eval face uv");
