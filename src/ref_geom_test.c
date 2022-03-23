@@ -36,6 +36,7 @@
 #include "ref_histogram.h"
 #include "ref_import.h"
 #include "ref_list.h"
+#include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_metric.h"
@@ -1492,6 +1493,26 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
                                  "ref_geom_test_basis_nonuniform_37.tec"),
         "tec basis");
+  }
+
+  {
+    REF_INT degree = 3;
+    REF_DBL t[] = {0, 5.0 / 17.0, 9 / 17.0, 14.0 / 17.0, 1.0};
+    REF_DBL uv[] = {0, 0, 3, 4, -1, 4, -4, 0 - 4, -3};
+    REF_INT n_control_points = 5;
+    REF_INT nknot;
+    REF_DBL *bundle;
+    REF_DBL tol = -1.0;
+    nknot = ref_geom_bspline_nknot(degree, n_control_points);
+    ref_malloc(bundle, nknot + 2 * n_control_points, REF_DBL);
+    RSS(ref_geom_bspline_fit(degree, n_control_points, t, uv, bundle), "fit");
+    RWDS(0.0, bundle[0], tol, "start");
+    RWDS(0.0, bundle[3], tol, "start");
+    RWDS(28.0 / 51.0, bundle[4], tol, "mid");
+    RWDS(1.0, bundle[5], tol, "end");
+    RWDS(1.0, bundle[8], tol, "end");
+
+    ref_free(bundle);
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");

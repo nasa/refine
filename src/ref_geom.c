@@ -4323,3 +4323,50 @@ REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
   }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
+                                REF_DBL *t, REF_DBL *uv, REF_DBL *bundle) {
+  REF_DBL rows = 2 * n_control_point;
+  REF_DBL cols = 2 * n_control_point + 1;
+  REF_DBL *ab;
+  REF_DBL *N;
+  REF_INT nknot = ref_geom_bspline_nknot(degree, n_control_point);
+  REF_INT i, j;
+
+  for (i = 0; i < nknot; i++) {
+    bundle[i] = -1.0;
+  }
+  for (i = 0; i < nknot; i++) {
+    printf(" %f", bundle[i]);
+  }
+  printf("\n");
+  for (i = 0; i < degree + 1; i++) {
+    bundle[i] = t[0];
+  }
+  for (i = 0; i < nknot; i++) {
+    printf(" %f", bundle[i]);
+  }
+  printf("\n");
+  for (j = 1; j <= ref_geom_bspline_n(degree, n_control_point) - degree; j++) {
+    bundle[j + degree] = 0.0;
+    for (i = j; i <= j + degree - 1; i++)
+      bundle[j + degree] += t[i] / ((REF_DBL)degree);
+  }
+  for (i = 0; i < nknot; i++) {
+    printf(" %f", bundle[i]);
+  }
+  printf("\n");
+  for (i = 0; i < degree + 1; i++) {
+    bundle[i + n_control_point] = t[n_control_point - 1];
+  }
+  for (i = 0; i < nknot; i++) {
+    printf(" %f", bundle[i]);
+  }
+  printf("\n");
+  ref_malloc(ab, rows * cols, REF_DBL);
+  ref_malloc(N, n_control_point, REF_DBL);
+  ab[0] = uv[0];
+  ref_free(N);
+  ref_free(ab);
+  return REF_SUCCESS;
+}
