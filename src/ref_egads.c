@@ -82,8 +82,7 @@ REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
 }
 
 #ifdef HAVE_EGADS
-#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
-    defined(HAVE_EGADS_EFFECTIVE)
+#if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
 static REF_STATUS ref_egads_free_body_objects(REF_GEOM ref_geom) {
   if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
   if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
