@@ -467,17 +467,34 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free geom");
   }
 
-  RXS(ref_args_find(argc, argv, "--reface", &pos), REF_NOT_FOUND, "arg search");
-  if (pos != REF_EMPTY &&
-      ref_egads_allows_construction()) { /* steinmetz brep reface */
+  if (ref_egads_allows_construction()) { /* steinmetz brep reface */
+    REF_BOOL save = REF_FALSE;
     REF_GEOM ref_geom = NULL;
-    REIS(2, argc, "usage ref_egads_test --reface");
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
     printf("steinmetz reface:\n");
     RSS(ref_egads_brep_reface(ref_geom, 8), "brep reface");
-    RSS(ref_egads_save(ref_geom, "ref_egads_test_steinmetz_reface.egads"),
-        "egd");
+    if (save)
+      RSS(ref_egads_save(ref_geom, "ref_egads_test_steinmetz_reface.egads"),
+          "egd");
+    RSS(ref_geom_free(ref_geom), "free geom");
+  }
+
+  RXS(ref_args_find(argc, argv, "--reface", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY &&
+      ref_egads_allows_construction()) { /* steinmetz brep reface */
+    REF_GEOM ref_geom = NULL;
+    const char *filename;
+    REF_INT faceid;
+    REIS(4, argc, "usage: ref_egads_test --reface project.egads faceid");
+    filename = argv[2];
+    faceid = atoi(argv[3]);
+    RSS(ref_geom_create(&ref_geom), "create geom");
+    printf("load %s\n", filename);
+    RSS(ref_egads_load(ref_geom, filename), "ld egads");
+    printf("reface %d\n", faceid);
+    RSS(ref_egads_brep_reface(ref_geom, faceid), "brep reface");
+    RSS(ref_egads_save(ref_geom, "ref_egads_test_reface.egads"), "egd");
     RSS(ref_geom_free(ref_geom), "free geom");
   }
 
