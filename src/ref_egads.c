@@ -1041,11 +1041,14 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
         EG_free(pcurve_reals);
       }
     }
-    REIS(EGADS_SUCCESS,
+    REIB(EGADS_SUCCESS,
          EG_makeTopology((ego)(ref_geom->context), loop_ref, loopclass,
                          looptype, NULL, nchild, children, children_senses,
                          &(loops[iloop])),
-         "topo");
+         "make topo loop", {
+           printf("loop %d ref %p class %d type %d nchild %d\n", iloop,
+                  (void *)loop_ref, loopclass, looptype, nchild);
+         });
   }
   REIS(EGADS_SUCCESS,
        EG_makeTopology((ego)(ref_geom->context), surface, faceclass, facetype,
