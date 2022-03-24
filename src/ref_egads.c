@@ -736,7 +736,7 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
                      &edgetype, trange, &nchild, &children, &senses),
       "topo");
   SUPRESS_UNUSED_COMPILER_WARNING(faceid);
-  printf("trange %f %f\n", trange[0], trange[1]);
+  if (verbose) printf("trange %f %f\n", trange[0], trange[1]);
   nknot = ref_geom_bspline_nknot(degree, n_control_point);
   ref_malloc(t, n_control_point, REF_DBL);
   ref_malloc(uv, 2 * n_control_point, REF_DBL);
