@@ -929,17 +929,11 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
     EG_free(geom_reals);
   }
   {
-    REF_INT loopsize;
     ego *oldloops;
     int *oldloopsenses;
-    if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
-      loopsize = 2 * nloop;
-    } else {
-      loopsize = nloop;
-    }
     oldloops = loops;
-    ref_malloc(loops, loopsize, ego);
-    for (iloop = 0; iloop < loopsize; iloop++) {
+    ref_malloc(loops, nloop, ego);
+    for (iloop = 0; iloop < nloop; iloop++) {
       loops[iloop] = oldloops[iloop];
     }
     oldloopsenses = loopsenses;
