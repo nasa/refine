@@ -882,7 +882,7 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
 
 REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
-  ego face;
+  ego face, newface;
   ego surface;
   int faceclass, facetype;
   double facebounds[4];
@@ -956,8 +956,20 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
   }
   REIS(EGADS_SUCCESS,
        EG_makeTopology((ego)(ref_geom->context), surface, faceclass, facetype,
-                       facebounds, nloop, loops, loopsenses, &face),
+                       facebounds, nloop, loops, loopsenses, &newface),
        "topo");
+  {
+    ego body;
+    ego facepair[2];
+    facepair[0] = face;
+    facepair[1] = newface;
+    REIS(EGADS_SUCCESS,
+         EG_replaceFaces((ego)(ref_geom->body), 1, facepair, &body), "replace");
+    ref_geom->body = (void *)body;
+    RSS(ref_egads_free_body_objects(ref_geom), "free before new cache");
+    RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
+  }
+
 #else
   printf("nothing for %s, full EGADS not linked\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
