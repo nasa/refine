@@ -784,7 +784,7 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
   SUPRESS_UNUSED_COMPILER_WARNING(degree);
   SUPRESS_UNUSED_COMPILER_WARNING(n_control_point);
   *int_bundle = NULL;
-  &dbl_bundle = NULL;
+  *dbl_bundle = NULL;
 #endif
   return REF_SUCCESS;
 }
