@@ -934,13 +934,16 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                         &nchild, &children, &children_senses),
          "topo");
     if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
-      int ipc;
-      for (ipc = nchild; ipc < 2 * nchild; ipc++) {
+      int iedge, ipc;
+      for (iedge = nchild; iedge < nchild; iedge++) {
         int pcurveclass, pcurvetype;
         int *pcurve_ints;
         double *pcurve_reals;
         ego pcurve_ref = NULL;
-        ego pcurve = children[ipc];
+        ego pcurve, edge;
+        ipc = iedge + nchild;
+        edge = children[iedge];
+        pcurve = children[ipc];
         REIS(EGADS_SUCCESS,
              EG_getGeometry(pcurve, &pcurveclass, &pcurvetype, &pcurve_ref,
                             &pcurve_ints, &pcurve_reals),
@@ -950,7 +953,24 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                  pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
           REIS(pcurve_ints[3], pcurve_ints[2] + pcurve_ints[1] + 1,
                "nknot != ncp+deg+1");
-          /* magic here */
+          {
+            REF_INT degree;
+            REF_INT n_control_point;
+            REF_INT edgeid;
+            int *int_bundle;
+            double *dbl_bundle;
+            degree = 3;
+            n_control_point = MAX(8, pcurve_ints[2]);
+            edgeid = EG_indexBodyTopo((ego)(ref_geom->body), edge);
+            RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid, degree,
+                                      n_control_point, &int_bundle,
+                                      &dbl_bundle),
+                "bspline fit");
+            EG_free(pcurve_ints);
+            EG_free(pcurve_reals);
+            pcurve_ints = int_bundle;
+            pcurve_reals = dbl_bundle;
+          }
           REIS(
               EGADS_SUCCESS,
               EG_makeGeometry((ego)(ref_geom->context), pcurveclass, pcurvetype,
