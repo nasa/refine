@@ -800,10 +800,9 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   int iedge, nchild;
   int face_geom_class, face_geom_type;
   double range[4];
-  int faceid, edgeid;
+  int edgeid;
 
   for (face = 0; face < (ref_geom->nface); face++) {
-    faceid = face + 1;
     REIS(EGADS_SUCCESS,
          EG_getTopology(((ego *)(ref_geom->faces))[face], &surface, &oclass,
                         &mtype, NULL, &nloop, &eloops, &senses),
