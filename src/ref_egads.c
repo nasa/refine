@@ -964,12 +964,12 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
       }
       oldchildren = children;
       ref_malloc(children, childsize, ego);
-      for (iedge = nchild; iedge < childsize; iedge++) {
+      for (iedge = 0; iedge < childsize; iedge++) {
         children[iedge] = oldchildren[iedge];
       }
       oldchildren_senses = children_senses;
       ref_malloc(children_senses, nchild, int);
-      for (iedge = nchild; iedge < nchild; iedge++) {
+      for (iedge = 0; iedge < nchild; iedge++) {
         children_senses[iedge] = oldchildren_senses[iedge];
       }
     }
