@@ -1027,6 +1027,10 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
             pcurve_ints = int_bundle;
             pcurve_reals = dbl_bundle;
           }
+          printf("    new flag %d deg %d ncp %d nkt %d\n", pcurve_ints[0],
+                 pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
+          REIS(pcurve_ints[3], pcurve_ints[2] + pcurve_ints[1] + 1,
+               "nknot != ncp+deg+1");
           REIS(
               EGADS_SUCCESS,
               EG_makeGeometry((ego)(ref_geom->context), pcurveclass, pcurvetype,
