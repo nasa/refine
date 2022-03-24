@@ -1074,6 +1074,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
       }
     }
 
+    RSS(ref_egads_out_level(ref_geom, 3), "verbose");
     REIB(EGADS_SUCCESS,
          EG_makeTopology((ego)(ref_geom->context), loop_ref, loopclass,
                          looptype, NULL, nchild, children, children_senses,
@@ -1083,6 +1084,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                   iloop, (void *)loop_ref, (void *)surface, loopclass, looptype,
                   nchild);
          });
+    RSS(ref_egads_out_level(ref_geom, 0), "quiet");
   }
   REIS(EGADS_SUCCESS,
        EG_makeTopology((ego)(ref_geom->context), surface, faceclass, facetype,
