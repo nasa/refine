@@ -1051,6 +1051,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
         ego edge_ref = NULL, *edgechildren;
         int edgeclass, edgetype, *edgechildren_senses;
         int nedgechild;
+        REF_BOOL viz = REF_FALSE;
         ego pcurve, edge;
         ipc = iedge + nchild;
         edge = children[iedge];
@@ -1070,6 +1071,13 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                  pcurvetype);
           printf("    dup flag %d deg %d ncp %d nkt %d\n", pcurve_ints[0],
                  pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
+          if (viz) {
+            char filename[1024];
+            snprintf(filename, 1024, "pcurve-%d.tec", iedge);
+            RSS(ref_geom_bspline_bundle_tec(pcurve_ints[0], pcurve_ints[1],
+                                            pcurve_reals, filename),
+                "tec basis");
+          }
         }
       }
     }
