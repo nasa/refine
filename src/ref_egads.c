@@ -716,12 +716,13 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
 }
 
 REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
-                                 REF_INT faceid) {
+                                 REF_INT faceid, REF_INT degree,
+                                 REF_INT n_control_point) {
 #if defined(HAVE_EGADS)
   ego curve, *children;
   int edgeclass, edgetype, nchild, *senses;
   double trange[2];
-  REF_INT degree, n_control_point, nknot;
+  REF_INT nknot;
   REF_DBL *t, *uv, *bundle;
   REF_DBL s0, s1;
   REF_DBL xyz[3];
@@ -734,8 +735,6 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
       "topo");
   SUPRESS_UNUSED_COMPILER_WARNING(faceid);
   printf("trange %f %f\n", trange[0], trange[1]);
-  degree = 3;
-  n_control_point = 8;
   nknot = ref_geom_bspline_nknot(degree, n_control_point);
   ref_malloc(t, n_control_point, REF_DBL);
   ref_malloc(uv, 2 * n_control_point, REF_DBL);
@@ -861,7 +860,8 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
                          geom_reals[geom_ints[3] + 2 * geom_ints[2] + w]);
                 }
               }
-              RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid), "pcurve");
+              RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid, 3, 8),
+                  "pcurve");
             }
             EG_free(geom_ints);
             EG_free(geom_reals);
