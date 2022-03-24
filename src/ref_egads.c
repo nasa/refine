@@ -1000,6 +1000,14 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
     REIS(EGADS_SUCCESS,
          EG_replaceFaces((ego)(ref_geom->body), 1, facepair, &body), "replace");
     ref_geom->body = (void *)body;
+    {
+      ego model;
+      REIS(EGADS_SUCCESS,
+           EG_makeTopology((ego)(ref_geom->context), NULL, MODEL, 0, NULL, 1,
+                           &body, NULL, &model),
+           "make Topo Model");
+      ref_geom->model = (void *)model;
+    }
     RSS(ref_egads_free_body_objects(ref_geom), "free before new cache");
     RSS(ref_egads_cache_body_objects(ref_geom), "cache egads objects");
   }
