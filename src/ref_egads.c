@@ -908,6 +908,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
   int *loopsenses;
   int face_geom_class, face_geom_type;
   int iloop;
+  REF_BOOL verbose = REF_TRUE;
 
   face = ((ego *)(ref_geom->faces))[faceid - 1];
   REIS(EGADS_SUCCESS,
@@ -928,6 +929,9 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
     EG_free(geom_ints);
     EG_free(geom_reals);
   }
+  if (verbose)
+    printf("faceid %d class %d type %d surface class %d type %d nloop %d\n",
+           faceid, faceclass, facetype, face_geom_class, face_geom_type, nloop);
   {
     ego *oldloops;
     int *oldloopsenses;
