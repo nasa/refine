@@ -936,11 +936,23 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                  pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
           REIS(pcurve_ints[3], pcurve_ints[2] + pcurve_ints[1] + 1,
                "nknot != ncp+deg+1");
+          /* magic here */
+          REIS(
+              EGADS_SUCCESS,
+              EG_makeGeometry((ego)(ref_geom->context), pcurveclass, pcurvetype,
+                              pcurve_ref, pcurve_ints, pcurve_reals, &pcurve),
+              "topo");
+          children[ipc] = pcurve;
         }
         EG_free(pcurve_ints);
         EG_free(pcurve_reals);
       }
     }
+    REIS(EGADS_SUCCESS,
+         EG_makeTopology((ego)(ref_geom->context), loop_ref, loopclass,
+                         looptype, NULL, nchild, children, children_senses,
+                         &(loops[iloop])),
+         "topo");
   }
 
 #else
