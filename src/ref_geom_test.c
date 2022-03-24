@@ -36,6 +36,7 @@
 #include "ref_histogram.h"
 #include "ref_import.h"
 #include "ref_list.h"
+#include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_metric.h"
@@ -1156,6 +1157,369 @@ int main(int argc, char *argv[]) {
     REIS(1, ref_cell_n(ref_grid_tr2(ref_grid)), "tr2");
     REIS(1, ref_cell_n(ref_grid_te2(ref_grid)), "te2");
     ref_grid_free(ref_grid);
+  }
+
+  {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 2;
+    REF_DBL knots[] = {0, 0, 1, 1};
+    REF_DBL t;
+    REF_INT span;
+    REIS(4, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    t = -1;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(1, span, "wrong span");
+    t = 0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(1, span, "wrong span");
+    t = 0.5;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(1, span, "wrong span");
+    t = 1.0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(1, span, "wrong span");
+    t = 2.0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(1, span, "wrong span");
+  }
+
+  {
+    REF_INT degree = 2;
+    REF_INT n_control_points = 3;
+    REF_DBL knots[] = {0, 0, 0, 1, 1, 1};
+    REF_DBL t;
+    REF_INT span;
+    REIS(6, ref_geom_bspline_nknot(degree, n_control_points), "knots")
+    t = -1;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+    t = 0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+    t = 0.5;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+    t = 1.0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+    t = 2.0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+  }
+
+  {
+    REF_INT degree = 3;
+    REF_INT n_control_points = 4;
+    REF_DBL knots[] = {0, 0, 0, 0, 1, 1, 1, 1};
+    REF_DBL t;
+    REF_INT span;
+    REIS(8, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    t = -1;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(3, span, "wrong span");
+    t = 0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(3, span, "wrong span");
+    t = 0.5;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(3, span, "wrong span");
+    t = 1.0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(3, span, "wrong span");
+    t = 2.0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(3, span, "wrong span");
+  }
+
+  {
+    REF_INT degree = 2;
+    REF_INT n_control_points = 8;
+    REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
+    REF_DBL t;
+    REF_INT span;
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    t = -1;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+    t = 0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+    t = 0.5;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(2, span, "wrong span");
+    t = 1.0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(3, span, "wrong span");
+    t = 2.5;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(4, span, "wrong span");
+    t = 4.0;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(7, span, "wrong span");
+    t = 5;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(7, span, "wrong span");
+    t = 6;
+    RSS(ref_geom_bspline_span_index(degree, n_control_points, knots, t, &span),
+        "index");
+    REIS(7, span, "wrong span");
+  }
+
+  {
+    REF_INT degree = 1;
+    REF_DBL knots[] = {0, 0, 1, 1};
+    REF_DBL t;
+    REF_INT span;
+    REF_DBL N[2];
+    REF_DBL tol = -1.0;
+    t = 0.5;
+    span = 1;
+    RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");
+    RWDS(1.0 / 2.0, N[0], tol, "N0,1");
+    RWDS(1.0 / 2.0, N[1], tol, "N1,1");
+  }
+
+  {
+    REF_INT degree = 2;
+    REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
+    REF_DBL t;
+    REF_INT span;
+    REF_DBL N[3];
+    REF_DBL tol = -1.0;
+    t = 2.5;
+    span = 4;
+    RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");
+    RWDS(1.0 / 8.0, N[0], tol, "N2,2");
+    RWDS(6.0 / 8.0, N[1], tol, "N3,2");
+    RWDS(1.0 / 8.0, N[2], tol, "N4,2");
+  }
+
+  {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 2;
+    REF_DBL knots[] = {0, 0, 1, 1};
+    REF_DBL N[2];
+    REF_DBL t;
+    REF_DBL tol = -1.0;
+    REIS(4, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    t = 0.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(1.0, N[0], tol, "N0,1");
+    RWDS(0.0, N[1], tol, "N1,1");
+    t = 1.0 / 3.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(2.0 / 3.0, N[0], tol, "N0,1");
+    RWDS(1.0 / 3.0, N[1], tol, "N1,1");
+    t = 1.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(0.0, N[0], tol, "N0,1");
+    RWDS(1.0, N[1], tol, "N1,1");
+  }
+
+  {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 3;
+    REF_DBL knots[] = {0, 0, 1, 2, 2};
+    REF_DBL N[3];
+    REF_DBL t;
+    REF_DBL tol = -1.0;
+    REIS(5, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    t = 0.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(1.0, N[0], tol, "N0,1");
+    RWDS(0.0, N[1], tol, "N1,1");
+    RWDS(0.0, N[2], tol, "N2,1");
+    t = 1.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(0.0, N[0], tol, "N0,1");
+    RWDS(1.0, N[1], tol, "N1,1");
+    RWDS(0.0, N[2], tol, "N2,1");
+    t = 2.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "row");
+    RWDS(0.0, N[0], tol, "N0,1");
+    RWDS(0.0, N[1], tol, "N1,1");
+    RWDS(1.0, N[2], tol, "N2,1");
+  }
+
+  {
+    REF_INT degree = 2;
+    REF_INT n_control_points = 8;
+    REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
+    REF_DBL N[7];
+    REF_DBL t;
+    REF_DBL tol = -1.0;
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    t = 0.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "eval");
+    RWDS(1.0, N[0], tol, "N0,2");
+    RWDS(0.0, N[1], tol, "N1,2");
+    RWDS(0.0, N[2], tol, "N2,2");
+    RWDS(0.0, N[3], tol, "N3,2");
+    RWDS(0.0, N[4], tol, "N4,2");
+    RWDS(0.0, N[5], tol, "N5,2");
+    RWDS(0.0, N[6], tol, "N6,2");
+    t = 4.0;
+    RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "eval");
+    RWDS(0.0, N[0], tol, "N0,2");
+    RWDS(0.0, N[1], tol, "N1,2");
+    RWDS(0.0, N[2], tol, "N2,2");
+    RWDS(0.0, N[3], tol, "N3,2");
+    RWDS(0.0, N[4], tol, "N4,2");
+    RWDS(1.0, N[5], tol, "N5,2");
+    RWDS(0.0, N[6], tol, "N6,2");
+  }
+
+  {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 2;
+    REF_DBL knots[] = {0, 0, 1, 1};
+    REF_DBL control_points[] = {4, 8};
+    REF_DBL t;
+    REF_DBL val;
+    REF_DBL tol = -1.0;
+    REIS(4, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    t = 0.0;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(4.0, val, tol, "f(0.0)");
+    t = 0.25;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(5.0, val, tol, "f(0.25)");
+    t = 0.5;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(6.0, val, tol, "f(0.5)");
+    t = 0.75;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(7.0, val, tol, "f(0.75)");
+    t = 1.0;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(8.0, val, tol, "f(1.0)");
+  }
+
+  {
+    REF_INT degree = 2;
+    REF_INT n_control_points = 8;
+    REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
+    REF_DBL control_points[] = {1, 1, 1, 1, 1, 1, 1, 1};
+    REF_DBL t;
+    REF_DBL val;
+    REF_DBL tol = -1.0;
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    t = 0.0;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(1.0, val, tol, "unity");
+    t = 2.5;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(1.0, val, tol, "unity");
+    t = 3.8;
+    RSS(ref_geom_bspline_eval(degree, n_control_points, knots, t,
+                              control_points, &val),
+        "eval");
+    RWDS(1.0, val, tol, "unity");
+  }
+
+  RXS(ref_args_find(argc, argv, "--basis", &pos), REF_NOT_FOUND, "arg search");
+  /* piegl-tiller nurbs book pg 54 Figure 2.5 */
+  if (pos != REF_EMPTY) {
+    REF_INT degree = 1;
+    REF_INT n_control_points = 7;
+    REF_DBL knots[] = {0, 0, 1, 2, 3, 4, 4, 5, 5};
+    REIS(9, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
+                                 "ref_geom_test_basis_repeat_17.tec"),
+        "tec basis");
+  }
+  /* piegl-tiller nurbs book pg 55 Figure 2.6 */
+  if (pos != REF_EMPTY) {
+    REF_INT degree = 2;
+    REF_INT n_control_points = 8;
+    REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
+                                 "ref_geom_test_basis_repeat_28.tec"),
+        "tec basis");
+  }
+  /* piegl-tiller nurbs book pg 63 Figure 2.9(a)*/
+  if (pos != REF_EMPTY) {
+    REF_INT degree = 3;
+    REF_INT n_control_points = 7;
+    REF_DBL knots[] = {0, 0, 0, 0, 2, 4, 6, 8, 8, 8, 8};
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
+                                 "ref_geom_test_basis_uniform_37.tec"),
+        "tec basis");
+  }
+  /* piegl-tiller nurbs book pg 67 Figure 2.12*/
+  if (pos != REF_EMPTY) {
+    REF_INT degree = 3;
+    REF_INT n_control_points = 7;
+    REF_DBL knots[] = {0, 0, 0, 0, 1, 5, 6, 8, 8, 8, 8};
+    REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
+    RSS(ref_geom_bspline_row_tec(degree, n_control_points, knots,
+                                 "ref_geom_test_basis_nonuniform_37.tec"),
+        "tec basis");
+  }
+
+  {
+    REF_INT degree = 3;
+    REF_DBL t[] = {0, 5.0 / 17.0, 9 / 17.0, 14.0 / 17.0, 1.0};
+    REF_DBL uv[] = {0, 0, 3, 4, -1, 4, -4, 0, -4, -3};
+    REF_INT n_control_points = 5;
+    REF_INT nknot;
+    REF_DBL *bundle;
+    REF_DBL tol = -1.0;
+    nknot = ref_geom_bspline_nknot(degree, n_control_points);
+    ref_malloc(bundle, nknot + 2 * n_control_points, REF_DBL);
+    RSS(ref_geom_bspline_fit(degree, n_control_points, t, uv, bundle), "fit");
+    RWDS(0.0, bundle[0], tol, "start");
+    RWDS(0.0, bundle[3], tol, "start");
+    RWDS(28.0 / 51.0, bundle[4], tol, "mid");
+    RWDS(1.0, bundle[5], tol, "end");
+    RWDS(1.0, bundle[8], tol, "end");
+    if (pos != REF_EMPTY) {
+      RSS(ref_geom_bspline_row_tec(degree, n_control_points, bundle,
+                                   "ref_geom_test_fit_basis.tec"),
+          "tec basis");
+      RSS(ref_geom_bspline_bundle_tec(degree, n_control_points, bundle,
+                                      "ref_geom_test_fit_bundle.tec"),
+          "tec basis");
+    }
+    ref_free(bundle);
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");

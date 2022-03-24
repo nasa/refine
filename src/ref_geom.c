@@ -3146,8 +3146,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
       RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t[item],
                                  &(uv[2 * item])),
           "p-curve uv");
-      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, &(uv[2*item]), xyz,
-                            NULL),
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, &(uv[2 * item]),
+                            xyz, NULL),
           "eval at");
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
@@ -3169,8 +3169,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
       RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t[nnode - 1],
                                  &(uv[2 * (nnode - 1)])),
           "p-curve uv");
-      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid, &(uv[2*(nnode - 1)]),
-                            xyz, NULL),
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, faceid,
+                            &(uv[2 * (nnode - 1)]), xyz, NULL),
           "eval at");
       RSS(ref_egads_gap(ref_geom, node, &gap), "gap")
     }
@@ -4169,5 +4169,264 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
     ref_cell_remove(ref_grid_tri(ref_grid), cell);
   }
 
+  return REF_SUCCESS;
+}
+
+/* piegl-tiller nurbs book pg 68 algorithm A2.1 */
+#define ref_geom_bspline_m(degree, n_control_point) \
+  (ref_geom_bspline_nknot(degree, n_control_point) - 1)
+#define ref_geom_bspline_n(degree, n_control_point) \
+  (ref_geom_bspline_m(degree, n_control_point) - (degree)-1)
+REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *knots, REF_DBL t,
+                                       REF_INT *span) {
+  REF_INT low, high, mid;
+  REF_INT n = ref_geom_bspline_n(degree, n_control_point);
+  *span = REF_EMPTY;
+  if (t >= knots[n + 1]) {
+    *span = n;
+    return REF_SUCCESS;
+  }
+  if (t <= knots[degree]) {
+    *span = degree;
+    return REF_SUCCESS;
+  }
+  low = degree;
+  high = n + 1;
+  mid = (low + high) / 2;
+  while ((t < knots[mid] || t >= knots[mid + 1]) && (low != high)) {
+    /* printf("t %f l %d m %d h %d\n",t,low,mid,high); */
+    if (t < knots[mid]) {
+      high = mid;
+    } else {
+      low = mid;
+    }
+    mid = (low + high) / 2;
+  }
+  *span = mid;
+  return REF_SUCCESS;
+}
+
+/* piegl-tiller nurbs book pg 70 algorithm A2.2 */
+REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
+                                  REF_INT span, REF_DBL *N) {
+  REF_INT j, r;
+  REF_DBL left[16];
+  REF_DBL right[16];
+  REF_DBL saved, temp;
+  RAS(degree < 16, "temp varaibles sized smaller than degree");
+  N[0] = 1.0;
+  for (j = 1; j <= degree; j++) {
+    left[j] = t - knots[span + 1 - j];
+    right[j] = knots[span + j] - t;
+    saved = 0.0;
+    for (r = 0; r < j; r++) {
+      if (!ref_math_divisible(N[r], (right[r + 1] + left[j - r]))) {
+        printf("N[%d] %f l %f r %f\n", r, N[r], right[r + 1], left[j - r]);
+      }
+      RAS(ref_math_divisible(N[r], (right[r + 1] + left[j - r])),
+          "right+left is zero");
+      temp = N[r] / (right[r + 1] + left[j - r]);
+      N[r] = saved + right[r + 1] * temp;
+      saved = left[j - r] * temp;
+    }
+    N[j] = saved;
+  }
+  return REF_SUCCESS;
+}
+
+/* piegl-tiller nurbs book pg 82 algorithm A3.1 */
+REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
+                                REF_DBL *knots, REF_DBL t, REF_DBL *N) {
+  REF_INT span;
+  REF_DBL n[16];
+  REF_INT i, point;
+  REF_BOOL verbose = REF_FALSE;
+  RAS(degree < 16, "temp varaibles sized smaller than degree");
+  RSS(ref_geom_bspline_span_index(degree, n_control_point, knots, t, &span),
+      "index");
+  if (verbose) printf("deg %d ncp %d span %d :", degree, n_control_point, span);
+  RSS(ref_geom_bspline_basis(degree, knots, t, span, n), "basis");
+  for (i = 0; i < n_control_point; i++) {
+    N[i] = 0.0;
+  }
+  for (i = 0; i < degree + 1; i++) {
+    point = span - degree + i;
+    N[point] = n[i];
+  }
+
+  if (verbose) {
+    for (i = 0; i < n_control_point; i++) {
+      printf(" %f", N[i]);
+    }
+    printf("\n");
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
+                                    REF_DBL *knots, const char *filename) {
+  REF_INT i, n = 1001, j;
+  REF_DBL t, t0, t1, s0, s1;
+  REF_DBL *N;
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"refine bspine basis\"\n");
+  fprintf(file, "variables = \"t\"");
+  for (j = 0; j < n_control_point; j++) {
+    fprintf(file, " \"N%d,%d\"", j, degree);
+  }
+  fprintf(file, "\n");
+  fprintf(file, "zone t=\"basis\", i=%d, datapacking=%s\n", n, "point");
+
+  ref_malloc(N, n_control_point, REF_DBL);
+  t0 = knots[degree];
+  t1 = knots[degree + n_control_point - 1];
+  for (i = 0; i < n; i++) {
+    s1 = ((REF_DBL)i) / ((REF_DBL)(n - 1));
+    s0 = 1.0 - s1;
+    t = s0 * t0 + s1 * t1;
+    fprintf(file, " %f", t);
+    RSS(ref_geom_bspline_row(degree, n_control_point, knots, t, N), "eval");
+    for (j = 0; j < n_control_point; j++) {
+      fprintf(file, " %f", N[j]);
+    }
+    fprintf(file, "\n");
+  }
+  ref_free(N);
+  fclose(file);
+  return REF_SUCCESS;
+}
+
+/* piegl-tiller nurbs book pg 82 algorithm A3.1 */
+REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
+                                 REF_DBL *knots, REF_DBL t,
+                                 REF_DBL *control_points, REF_DBL *val) {
+  REF_INT span;
+  REF_DBL N[16];
+  REF_INT i, point;
+  *val = 0.0;
+  RAS(degree < 16, "temp varaibles sized smaller than degree");
+  RSS(ref_geom_bspline_span_index(degree, n_control_point, knots, t, &span),
+      "index");
+  RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");
+  for (i = 0; i < degree + 1; i++) {
+    point = span - degree + i;
+    RAS(point >= 0, "point negative");
+    RAS(point < n_control_point, "point >= n_control_point");
+    (*val) += N[i] * control_points[point];
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
+                                REF_DBL *t, REF_DBL *uv, REF_DBL *bundle) {
+  REF_INT rows = 2 * n_control_point;
+  REF_INT cols = 2 * n_control_point + 1;
+  REF_DBL *ab;
+  REF_DBL *N;
+  REF_INT nknot = ref_geom_bspline_nknot(degree, n_control_point);
+  REF_INT i, j;
+  REF_INT row, col;
+
+  for (i = 0; i < nknot; i++) {
+    bundle[i] = -1.0;
+  }
+  for (i = 0; i < degree + 1; i++) {
+    bundle[i] = t[0];
+  }
+  for (j = 1; j <= ref_geom_bspline_n(degree, n_control_point) - degree; j++) {
+    bundle[j + degree] = 0.0;
+    for (i = j; i <= j + degree - 1; i++)
+      bundle[j + degree] += t[i] / ((REF_DBL)degree);
+  }
+  for (i = 0; i < degree + 1; i++) {
+    bundle[i + n_control_point] = t[n_control_point - 1];
+  }
+  ref_malloc_init(ab, rows * cols, REF_DBL, 0.0);
+  ref_malloc(N, n_control_point, REF_DBL);
+  for (i = 0; i < n_control_point; i++) {
+    RSS(ref_geom_bspline_row(degree, n_control_point, bundle, t[i], N), "row");
+    for (j = 0; j < n_control_point; j++) {
+      row = i;
+      col = j;
+      ab[row + col * rows] = N[j];
+    }
+    row = i;
+    col = 2 * n_control_point;
+    ab[row + col * rows] = uv[0 + 2 * i];
+    for (j = 0; j < n_control_point; j++) {
+      row = i + n_control_point;
+      col = j + n_control_point;
+      ab[row + col * rows] = N[j];
+    }
+    row = i + n_control_point;
+    col = 2 * n_control_point;
+    ab[row + col * rows] = uv[1 + 2 * i];
+  }
+
+  RSS(ref_matrix_solve_ab(rows, cols, ab), "solve");
+  for (i = 0; i < n_control_point; i++) {
+    row = i;
+    col = 2 * n_control_point;
+    bundle[0 + 2 * i + nknot] = ab[row + col * rows];
+    row = i + n_control_point;
+    col = 2 * n_control_point;
+    bundle[1 + 2 * i + nknot] = ab[row + col * rows];
+  }
+  ref_free(N);
+  ref_free(ab);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *bundle, const char *filename) {
+  REF_INT i, n = 1001;
+  REF_DBL t, t0, t1, s0, s1;
+  REF_DBL *u, *v, uv[2], *knots;
+  REF_INT nknot = ref_geom_bspline_nknot(degree, n_control_point);
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"refine bspine bundle\"\n");
+  fprintf(file, "variables = \"u\" \"v\" \"t\"\n");
+
+  ref_malloc(u, n_control_point, REF_DBL);
+  ref_malloc(v, n_control_point, REF_DBL);
+  knots = bundle;
+  for (i = 0; i < n_control_point; i++) {
+    u[i] = bundle[nknot + 0 + 2 * i];
+    v[i] = bundle[nknot + 1 + 2 * i];
+  }
+  fprintf(file, "zone t=\"control\", i=%d, datapacking=%s\n", n_control_point,
+          "point");
+  for (i = 0; i < n_control_point; i++) {
+    t = ((REF_DBL)i / ((REF_DBL)(n_control_point - 1)));
+    fprintf(file, "%f %f %f\n", u[i], v[i], t);
+  }
+
+  fprintf(file, "zone t=\"bundle\", i=%d, datapacking=%s\n", n, "point");
+  t0 = knots[0];
+  t1 = knots[nknot - 1];
+  for (i = 0; i < n; i++) {
+    s1 = ((REF_DBL)i) / ((REF_DBL)(n - 1));
+    s0 = 1.0 - s1;
+    t = s0 * t0 + s1 * t1;
+    RSS(ref_geom_bspline_eval(degree, n_control_point, knots, t, u, &(uv[0])),
+        "eval");
+    RSS(ref_geom_bspline_eval(degree, n_control_point, knots, t, v, &(uv[1])),
+        "eval");
+    fprintf(file, "%f %f %f\n", uv[0], uv[1], t);
+  }
+  ref_free(v);
+  ref_free(u) fclose(file);
   return REF_SUCCESS;
 }

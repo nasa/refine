@@ -305,6 +305,36 @@ REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
 REF_STATUS ref_geom_enrich2(REF_GRID ref_grid);
 REF_STATUS ref_geom_enrich3(REF_GRID ref_grid);
 
+#define ref_geom_bspline_nknot(degree, n_control_point) \
+  ((n_control_point) + (degree) + 1)
+#define ref_geom_bspline_n_control_point(degree, nknot) ((nknot) - (degree)-1)
+
+REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *knots, REF_DBL t,
+                                       REF_INT *span);
+
+REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
+                                  REF_INT span, REF_DBL *N);
+
+REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
+                                REF_DBL *knots, REF_DBL t, REF_DBL *N);
+
+REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
+                                    REF_DBL *knots, const char *filename);
+
+REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
+                                 REF_DBL *knots, REF_DBL t,
+                                 REF_DBL *control_points, REF_DBL *val);
+
+REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
+                                REF_DBL *t, REF_DBL *uv, REF_DBL *bundle);
+
+REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
+                                    REF_DBL *knots, const char *filename);
+
+REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
+                                       REF_DBL *bundle, const char *filename);
+
 END_C_DECLORATION
 
 #endif /* REF_GEOM_H */

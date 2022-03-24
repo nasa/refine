@@ -44,6 +44,11 @@ REF_BOOL ref_egads_allows_construction(void);
 REF_BOOL ref_egads_allows_effective(void);
 REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description);
 REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom);
+REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
+                                 REF_INT faceid, REF_INT degree,
+                                 REF_INT n_control_point, REF_INT **int_bundle,
+                                 REF_DBL **dbl_bundle);
+REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid);
 
 REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom, REF_INT **edge_faces);
 
