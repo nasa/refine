@@ -476,6 +476,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
     printf("steinmetz reface:\n");
     RSS(ref_egads_brep_reface(ref_geom, 8), "brep reface");
+    RSS(ref_egads_save(ref_geom, "ref_egads_test_steinmetz_reface.egads"),
+        "egd");
     RSS(ref_geom_free(ref_geom), "free geom");
   }
 
