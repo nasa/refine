@@ -911,6 +911,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
        EG_getTopology(face, &surface, &faceclass, &facetype, facebounds, &nloop,
                       &loops, &loopsenses),
        "topo");
+  /* copy loop to new ego array, currently point to internal struct */
   face_geom_class = REF_EMPTY;
   face_geom_type = REF_EMPTY;
   if (NULL != surface) {
@@ -933,6 +934,8 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
          EG_getTopology(loops[iloop], &loop_ref, &loopclass, &looptype, NULL,
                         &nchild, &children, &children_senses),
          "topo");
+    /* steinmetz face 8 RAS(NULL == loop_ref, "loop ref not null"); */
+    /* copy childen to new ego array, currently point to internal struct */
     if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
       int iedge, ipc;
       for (iedge = nchild; iedge < nchild; iedge++) {
@@ -948,6 +951,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
              EG_getGeometry(pcurve, &pcurveclass, &pcurvetype, &pcurve_ref,
                             &pcurve_ints, &pcurve_reals),
              "topo");
+        RAS(NULL == pcurve_ref, "pcurve ref not null");
         if (PCURVE == pcurveclass && BSPLINE == pcurvetype) {
           printf("    bit flag %d deg %d ncp %d nkt %d\n", pcurve_ints[0],
                  pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
