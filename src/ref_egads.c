@@ -952,7 +952,27 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                         &nchild, &children, &children_senses),
          "topo");
     /* steinmetz face 8 RAS(NULL == loop_ref, "loop ref not null"); */
-    /* copy childen to new ego array, currently point to internal struct */
+    {
+      int iedge;
+      int childsize;
+      ego *oldchildren;
+      int *oldchildren_senses;
+      if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
+        childsize = 2 * nchild;
+      } else {
+        childsize = nchild;
+      }
+      oldchildren = children;
+      ref_malloc(children, childsize, ego);
+      for (iedge = nchild; iedge < childsize; iedge++) {
+        children[iedge] = oldchildren[iedge];
+      }
+      oldchildren_senses = children_senses;
+      ref_malloc(children_senses, nchild, int);
+      for (iedge = nchild; iedge < nchild; iedge++) {
+        children_senses[iedge] = oldchildren_senses[iedge];
+      }
+    }
     if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
       int iedge, ipc;
       for (iedge = nchild; iedge < nchild; iedge++) {
