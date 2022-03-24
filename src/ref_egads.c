@@ -1041,13 +1041,47 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
         EG_free(pcurve_reals);
       }
     }
+    {
+      int iedge, ipc;
+      for (iedge = 0; iedge < nchild; iedge++) {
+        int pcurveclass, pcurvetype;
+        int *pcurve_ints;
+        double *pcurve_reals;
+        ego pcurve_ref = NULL;
+        ego edge_ref = NULL, *edgechildren;
+        int edgeclass, edgetype, *edgechildren_senses;
+        int nedgechild;
+        ego pcurve, edge;
+        ipc = iedge + nchild;
+        edge = children[iedge];
+        pcurve = children[ipc];
+        REIS(EGADS_SUCCESS,
+             EG_getTopology(edge, &edge_ref, &edgeclass, &edgetype, NULL,
+                            &nedgechild, &edgechildren, &edgechildren_senses),
+             "edge topo");
+        printf("  edge %d class %d type %d nchild %d\n", iedge + 1, edgeclass,
+               edgetype, nedgechild);
+        REIS(EGADS_SUCCESS,
+             EG_getGeometry(pcurve, &pcurveclass, &pcurvetype, &pcurve_ref,
+                            &pcurve_ints, &pcurve_reals),
+             "pcurve geom");
+        if (PCURVE == pcurveclass && BSPLINE == pcurvetype) {
+          printf("  pcurve %d class %d type %d\n", iedge + 1, pcurveclass,
+                 pcurvetype);
+          printf("    dup flag %d deg %d ncp %d nkt %d\n", pcurve_ints[0],
+                 pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
+        }
+      }
+    }
+
     REIB(EGADS_SUCCESS,
          EG_makeTopology((ego)(ref_geom->context), loop_ref, loopclass,
                          looptype, NULL, nchild, children, children_senses,
                          &(loops[iloop])),
          "make topo loop", {
-           printf("loop %d ref %p class %d type %d nchild %d\n", iloop,
-                  (void *)loop_ref, loopclass, looptype, nchild);
+           printf("loop %d ref %p surface %p class %d type %d nchild %d\n",
+                  iloop, (void *)loop_ref, (void *)surface, loopclass, looptype,
+                  nchild);
          });
   }
   REIS(EGADS_SUCCESS,
