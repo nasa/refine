@@ -954,7 +954,10 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                          &(loops[iloop])),
          "topo");
   }
-
+  REIS(EGADS_SUCCESS,
+       EG_makeTopology((ego)(ref_geom->context), surface, faceclass, facetype,
+                       facebounds, nloop, loops, loopsenses, &face),
+       "topo");
 #else
   printf("nothing for %s, full EGADS not linked\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
