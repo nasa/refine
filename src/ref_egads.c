@@ -729,6 +729,7 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
   REF_DBL xyz[3];
   REF_INT i;
   REF_BOOL viz = REF_FALSE;
+  REF_BOOL verbose = REF_FALSE;
   REIS(
       EGADS_SUCCESS,
       EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &curve, &edgeclass,
@@ -751,8 +752,9 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
     RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, xyz,
                                &(uv[2 * i])),
         "inv eval face uv");
-    printf("t[%d] %f uv %f %f xyz %f %f %f\n", i, t[i], uv[0 + 2 * i],
-           uv[1 + 2 * i], xyz[0], xyz[1], xyz[2]);
+    if (verbose)
+      printf("t[%d] %f uv %f %f xyz %f %f %f\n", i, t[i], uv[0 + 2 * i],
+             uv[1 + 2 * i], xyz[0], xyz[1], xyz[2]);
   }
   RSS(ref_geom_bspline_fit(degree, n_control_point, t, uv, bundle), "fit");
   if (viz) {
@@ -801,6 +803,7 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   int face_geom_class, face_geom_type;
   double range[4];
   int edgeid;
+  REF_BOOL verbose = REF_FALSE;
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
@@ -865,18 +868,20 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
                      geom_ints[1], geom_ints[2], geom_ints[3]);
               REIS(geom_ints[3], geom_ints[2] + geom_ints[1] + 1,
                    "nknot != ncp+deg+1");
-              for (knot = 0; knot < geom_ints[3]; knot++) {
-                printf("knot[%d]=%f\n", knot, geom_reals[knot]);
-              }
-              for (cp = 0; cp < geom_ints[2]; cp++) {
-                printf("cp[%d]=%f %f\n", cp,
-                       geom_reals[geom_ints[3] + 0 + 2 * cp],
-                       geom_reals[geom_ints[3] + 1 + 2 * cp]);
-              }
-              if (2 == geom_ints[0]) {
-                for (w = 0; w < geom_ints[3]; w++) {
-                  printf("weight[%d]=%f\n", knot,
-                         geom_reals[geom_ints[3] + 2 * geom_ints[2] + w]);
+              if (verbose) {
+                for (knot = 0; knot < geom_ints[3]; knot++) {
+                  printf("knot[%d]=%f\n", knot, geom_reals[knot]);
+                }
+                for (cp = 0; cp < geom_ints[2]; cp++) {
+                  printf("cp[%d]=%f %f\n", cp,
+                         geom_reals[geom_ints[3] + 0 + 2 * cp],
+                         geom_reals[geom_ints[3] + 1 + 2 * cp]);
+                }
+                if (2 == geom_ints[0]) {
+                  for (w = 0; w < geom_ints[3]; w++) {
+                    printf("weight[%d]=%f\n", knot,
+                           geom_reals[geom_ints[3] + 2 * geom_ints[2] + w]);
+                  }
                 }
               }
             }
@@ -956,6 +961,9 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                         &nchild, &children, &children_senses),
          "topo");
     /* steinmetz face 8 RAS(NULL == loop_ref, "loop ref not null"); */
+    if (verbose)
+      printf(" loop %d class %d type %d nchild %d\n", iloop + 1, loopclass,
+             looptype, nchild);
     {
       int iedge;
       int childsize;
@@ -993,6 +1001,9 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
                             &pcurve_ints, &pcurve_reals),
              "topo");
         RAS(NULL == pcurve_ref, "pcurve ref not null");
+        if (verbose)
+          printf("  pcurve %d class %d type %d\n", iedge + 1, pcurveclass,
+                 pcurvetype);
         if (PCURVE == pcurveclass && BSPLINE == pcurvetype) {
           printf("    bit flag %d deg %d ncp %d nkt %d\n", pcurve_ints[0],
                  pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
