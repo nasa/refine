@@ -979,7 +979,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
     }
     if (REF_EMPTY != face_geom_type && PLANE != face_geom_type) {
       int iedge, ipc;
-      for (iedge = nchild; iedge < nchild; iedge++) {
+      for (iedge = 0; iedge < nchild; iedge++) {
         int pcurveclass, pcurvetype;
         int *pcurve_ints;
         double *pcurve_reals;
