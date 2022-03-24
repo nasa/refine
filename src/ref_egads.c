@@ -717,7 +717,8 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
 
 REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
                                  REF_INT faceid, REF_INT degree,
-                                 REF_INT n_control_point) {
+                                 REF_INT n_control_point, REF_INT **int_bundle,
+                                 REF_DBL **dbl_bundle) {
 #if defined(HAVE_EGADS)
   ego curve, *children;
   int edgeclass, edgetype, nchild, *senses;
@@ -760,7 +761,19 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
     RSS(ref_geom_bspline_bundle_tec(degree, n_control_point, bundle, filename),
         "tec basis");
   }
-  ref_free(bundle);
+  if (NULL == dbl_bundle) {
+  } else {
+    ref_malloc(*int_bundle, 4, REF_INT);
+    (*int_bundle)[0] = 0; /* bit flag */
+    (*int_bundle)[1] = degree;
+    (*int_bundle)[2] = n_control_point;
+    (*int_bundle)[3] = nknot;
+  }
+  if (NULL == dbl_bundle) {
+    ref_free(bundle);
+  } else {
+    *dbl_bundle = bundle;
+  }
   ref_free(uv);
   ref_free(t);
 #else
@@ -863,8 +876,6 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
                          geom_reals[geom_ints[3] + 2 * geom_ints[2] + w]);
                 }
               }
-              RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid, 3, 8),
-                  "pcurve");
             }
             EG_free(geom_ints);
             EG_free(geom_reals);
