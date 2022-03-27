@@ -177,6 +177,44 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--face-norm", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_INT faceid;
+    REIS(5, argc, "required args: --face-norm grid.ext geom.egads faceid");
+    REIS(1, pos, "required args: --face_norm grid.ext geom.egads faceid");
+    printf("import grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
+    printf("load geom %s\n", argv[3]);
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    faceid = atoi(argv[4]);
+    printf("faceid %d\n", faceid);
+    {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      REF_INT geom;
+      REF_DBL r[3], s[3], n[3], area_sign;
+      each_ref_geom_face(ref_geom, geom) {
+        if (ref_geom_id(ref_geom, geom) == faceid) {
+          RAISE(ref_geom_face_rsn(
+              ref_geom, faceid, &(ref_geom_param(ref_geom, 0, geom)), r, s, n));
+          RSS(ref_geom_uv_area_sign(ref_grid, faceid, &area_sign), "a sign");
+          n[0] *= area_sign;
+          n[1] *= area_sign;
+          n[2] *= area_sign;
+          printf("%8.5f %8.5f %8.5f\n", n[0], n[1], n[2]);
+        }
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "done.");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--projection", &pos), REF_NOT_FOUND,
       "arg search");
   if (pos != REF_EMPTY) {
