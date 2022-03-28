@@ -70,6 +70,8 @@ int main(int argc, char *argv[]) {
     REF_INT ip = 0, ivol = 1, iphi = 2;
     REF_EDGE ref_edge;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_KEXACT;
+    if (ref_mpi_once(ref_mpi))
+      printf("%s number of processors %d\n", argv[0], ref_mpi_n(ref_mpi));
     REIS(4, argc, "required args: --limiter-effect grid.ext [p,vol,phi].solb");
     REIS(1, pos, "required args: --limiter-effect grid.ext [p,vol,phi].solb");
     if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
