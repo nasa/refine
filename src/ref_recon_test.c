@@ -83,17 +83,16 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "field import");
     REIS(3, ldim, "expected [p,vol,phi]");
 
-    ref_malloc_init(limeff, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
-                    0.0);
-    ref_malloc(p, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    ref_malloc_init(limeff, ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc(p, ref_node_max(ref_node), REF_DBL);
+    ref_malloc(grad, 3 * ref_node_max(ref_node), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
       p[node] = field[ip + ldim * node];
     }
     RSS(ref_recon_gradient(ref_grid, p, grad, reconstruction), "grad");
-    ref_mpi_stopwatch_stop(ref_mpi, "kexact grad");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "kexact grad");
     RSS(ref_edge_create(&ref_edge, ref_grid), "create");
-    ref_mpi_stopwatch_stop(ref_mpi, "create edges");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "create edges");
     each_ref_edge(ref_edge, edge) {
       REF_DBL qunlim, qlim;
       REF_DBL r[3];
@@ -125,15 +124,17 @@ int main(int argc, char *argv[]) {
         limeff[node] = 0.0;
       }
     }
-    ref_mpi_stopwatch_stop(ref_mpi, "limiter effect");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "limiter effect");
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, limeff, NULL,
                                        "ref_recon_limiter_effect.plt"),
         "export lim eff plt");
-    ref_mpi_stopwatch_stop(ref_mpi, "ref_recon_limiter_effect.plt");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid),
+                           "ref_recon_limiter_effect.plt");
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, limeff, NULL,
                                        "ref_recon_limiter_effect.solb"),
         "export lim eff solb");
-    ref_mpi_stopwatch_stop(ref_mpi, "ref_recon_limiter_effect.solb");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid),
+                           "ref_recon_limiter_effect.solb");
     RSS(ref_edge_free(ref_edge), "free");
     ref_free(grad);
     ref_free(p);
@@ -143,6 +144,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_mpi_stop(), "stop");
     return 0;
   }
+
   if (argc == 3) {
     REF_GRID ref_grid;
     REF_DBL *function, *derivatives, *scalar, *grad;
