@@ -58,6 +58,8 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
+  /* Influence of the Numerical Scheme in Predictions of Vortex Interaction
+   *   about a Generic Missile Airframe DOI:10.2514/6.2022-1178 */
   RXS(ref_args_find(argc, argv, "--limiter-effect", &pos), REF_NOT_FOUND,
       "arg search");
   if (pos != REF_EMPTY) {
