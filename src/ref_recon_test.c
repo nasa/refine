@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     }
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL h;
-      h = pow(field[iphi + ldim * node], 1.0 / 3.0);
+      h = pow(field[ivol + ldim * node], 1.0 / 3.0);
       if (ref_math_divisible(limeff[node], h)) {
         limeff[node] /= h;
       } else {
