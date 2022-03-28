@@ -28,6 +28,8 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 
+/* assumes in x-z, extrusion is unity in y, global ids are paired accross span
+ */
 REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -45,9 +47,10 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
 
   ref_malloc_init(o2n, ref_node_n(ref_node), REF_INT, REF_EMPTY);
 
-  pole_tol = 1.0e-6;
+  pole_tol = 1.0e-6; /* drop to smaller number */
   wedge_angle = ref_math_in_radians(5.0);
 
+  /* make half logic globals, RCB scrambles local indexes */
   nhalf = ref_node_n(ref_node) / 2;
   each_ref_node_valid_node(ref_node, node) {
     if (ABS(ref_node_xyz(ref_node, 2, node)) < pole_tol &&
@@ -57,6 +60,7 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
       } else {
         o2n[node] = node - nhalf;
       }
+      /* remove if you own it, remove without global if you don't own it */
       RSS(ref_node_remove(ref_node, node), "remove");
     } else {
       o2n[node] = node;
