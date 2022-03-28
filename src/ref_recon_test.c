@@ -72,8 +72,8 @@ int main(int argc, char *argv[]) {
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_KEXACT;
     REIS(4, argc, "required args: --limiter-effect grid.ext [p,vol,phi].solb");
     REIS(1, pos, "required args: --limiter-effect grid.ext [p,vol,phi].solb");
-    if (ref_mpi_once(ref_mpi)) printf("import grid %s\n", argv[2]);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     if (ref_mpi_once(ref_mpi)) printf("extract ref_node\n");
     ref_node = ref_grid_node(ref_grid);
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
