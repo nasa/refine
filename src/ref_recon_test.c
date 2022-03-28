@@ -53,10 +53,43 @@
 #include "ref_validation.h"
 
 int main(int argc, char *argv[]) {
+  REF_INT pos;
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
+  RXS(ref_args_find(argc, argv, "--limiter-effect", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *field, *p, *grad, *limeff;
+    REF_INT node, ldim, i;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_KEXACT;
+    REIS(4, argc, "required args: --limiter-effect grid.ext [p,vol,phi].solb");
+    REIS(1, pos, "required args: --limiter-effect grid.ext [p,vol,phi].solb");
+    printf("import grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
+    if (ref_mpi_once(ref_mpi)) printf("reading field %s\n", argv[2]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
+        "unable to load field in position 3");
+    REIS(3, ldim, "expected [p,vol,phi]");
+    ref_malloc(limeff, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(p, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    i = 0;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      p[node] = field[i + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, p, grad, reconstruction), "grad");
+    ref_free(grad);
+    ref_free(p);
+    ref_free(limeff);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
   if (argc == 3) {
     REF_GRID ref_grid;
     REF_DBL *function, *derivatives, *scalar, *grad;
