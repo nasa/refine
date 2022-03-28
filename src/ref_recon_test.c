@@ -63,27 +63,77 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--limiter-effect", &pos), REF_NOT_FOUND,
       "arg search");
   if (pos != REF_EMPTY) {
-    REF_GRID ref_grid;
+    REF_GRID ref_grid = NULL;
+    REF_NODE ref_node = NULL;
     REF_DBL *field, *p, *grad, *limeff;
-    REF_INT node, ldim, i;
+    REF_INT node, ldim, edge;
+    REF_INT ip = 0, ivol = 1, iphi = 2;
+    REF_EDGE ref_edge;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_KEXACT;
     REIS(4, argc, "required args: --limiter-effect grid.ext [p,vol,phi].solb");
     REIS(1, pos, "required args: --limiter-effect grid.ext [p,vol,phi].solb");
     printf("import grid %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_node = ref_grid_node(ref_grid);
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
     if (ref_mpi_once(ref_mpi)) printf("reading field %s\n", argv[2]);
     RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
         "unable to load field in position 3");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "field import");
     REIS(3, ldim, "expected [p,vol,phi]");
-    ref_malloc(limeff, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    ref_malloc_init(limeff, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
     ref_malloc(p, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    i = 0;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      p[node] = field[i + ldim * node];
+      p[node] = field[ip + ldim * node];
     }
     RSS(ref_recon_gradient(ref_grid, p, grad, reconstruction), "grad");
+    ref_mpi_stopwatch_stop(ref_mpi, "kexact grad");
+    RSS(ref_edge_create(&ref_edge, ref_grid), "create");
+    ref_mpi_stopwatch_stop(ref_mpi, "create edges");
+    each_ref_edge(ref_edge, edge) {
+      REF_DBL qunlim, qlim;
+      REF_DBL r[3];
+      REF_INT n0, n1;
+      n0 = ref_edge_e2n(ref_edge, 0, edge);
+      n1 = ref_edge_e2n(ref_edge, 1, edge);
+      /* n0 */
+      r[0] = ref_node_xyz(ref_node, 0, n1) - ref_node_xyz(ref_node, 0, n0);
+      r[1] = ref_node_xyz(ref_node, 1, n1) - ref_node_xyz(ref_node, 1, n0);
+      r[2] = ref_node_xyz(ref_node, 2, n1) - ref_node_xyz(ref_node, 2, n0);
+      qunlim = p[n0] + ref_math_dot(&(grad[3 * n0]), r);
+      qlim = p[n0] + field[iphi + ldim * n0] * ref_math_dot(&(grad[3 * n0]), r);
+      limeff[n0] = MAX(limeff[n0], ABS(qunlim - qlim));
+      /* n1 */
+      r[0] = ref_node_xyz(ref_node, 0, n0) - ref_node_xyz(ref_node, 0, n1);
+      r[1] = ref_node_xyz(ref_node, 1, n0) - ref_node_xyz(ref_node, 1, n1);
+      r[2] = ref_node_xyz(ref_node, 2, n0) - ref_node_xyz(ref_node, 2, n1);
+      qunlim = p[n1] + ref_math_dot(&(grad[3 * n1]), r);
+      qlim = p[n1] + field[iphi + ldim * n1] * ref_math_dot(&(grad[3 * n1]), r);
+      limeff[n1] = MAX(limeff[n1], ABS(qunlim - qlim));
+    }
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL h;
+      h = pow(field[iphi + ldim * node], 1.0 / 3.0);
+      if (ref_math_divisible(limeff[node], h)) {
+        limeff[node] /= h;
+      } else {
+        printf("DIV zero %e / %e set to zero\n", limeff[node], h);
+        limeff[node] = 0.0;
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "limiter effect");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, limeff, NULL,
+                                       "ref_recon_limiter_effect.plt"),
+        "export lim eff plt");
+    ref_mpi_stopwatch_stop(ref_mpi, "ref_recon_limiter_effect.plt");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, limeff, NULL,
+                                       "ref_recon_limiter_effect.solb"),
+        "export lim eff solb");
+    ref_mpi_stopwatch_stop(ref_mpi, "ref_recon_limiter_effect.solb");
+    RSS(ref_edge_free(ref_edge), "free");
     ref_free(grad);
     ref_free(p);
     ref_free(limeff);
