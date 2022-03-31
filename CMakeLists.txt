@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(refine)
 
 find_program(GIT_EXEC git)
-if (GIT_EXEC)
+if (GIT_EXEC AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
     execute_process(COMMAND sh -c "${GIT_EXEC} describe --tag | tr -d '\n'"
             OUTPUT_VARIABLE REFINE_VERSION)
     message(STATUS "refine version: ${REFINE_VERSION}")
