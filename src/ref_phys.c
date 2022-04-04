@@ -649,9 +649,9 @@ REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
   *yplus_dist = -1.0;
   RSS(viscosity_law(t, reference_t_k, &mu), "sutherlands");
   tau_wall = mu * dudn;
-  u_tau = sqrt(tau_wall / rho);
+  u_tau = sqrt(tau_wall / rho) * sqrt(mach / re);
   nu = mu / rho;
-  *yplus_dist = nu / u_tau;
+  *yplus_dist = nu / u_tau * (re / mach);
   return REF_SUCCESS;
 }
 
