@@ -1393,13 +1393,13 @@ int main(int argc, char *argv[]) {
     nondim_temperature = 1.0;
     reference_temperature_k = 288.15;
     RSS(viscosity_law(nondim_temperature, reference_temperature_k, &mu),
-        "constant viscosity");
+        "sutherlands");
     RWDS(1.0, mu, tol, "not room temperature viscosity");
 
     nondim_temperature = 2.0;
     reference_temperature_k = 288.15;
     RSS(viscosity_law(nondim_temperature, reference_temperature_k, &mu),
-        "constant viscosity");
+        "sutherlands");
     RWDS(1.641851583885440, mu, tol, "not hot viscosity");
   }
 
