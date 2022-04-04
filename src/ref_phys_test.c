@@ -219,9 +219,11 @@ int main(int argc, char *argv[]) {
 
   if (yplus_pos != REF_EMPTY) {
     REF_GRID ref_grid;
+    REF_NODE ref_node;
     REF_DBL mach, re, temperature;
     REF_DBL *field;
     REF_INT ldim;
+    REF_DBL *yplus;
 
     REIS(1, yplus_pos,
          "required args: --yplus grid.meshb volume.solb Mach Re "
@@ -241,6 +243,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading volume %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
@@ -248,6 +251,34 @@ int main(int argc, char *argv[]) {
     RAS(5 == ldim || 6 == ldim,
         "expected 5 (rho,u,v,w,p) or 6 (rho,u,v,w,p,turb)");
 
+    if (ref_grid_twod(ref_grid)) {
+      if (ref_mpi_once(ref_mpi)) printf("flip ref_field v-w for twod\n");
+      RSS(ref_phys_flip_twod_yz(ref_node, ldim, field), "flip");
+    }
+    ref_malloc_init(yplus, ref_node_max(ref_node), REF_DBL, 0.0);
+    if (ref_grid_twod(ref_grid)) {
+      REF_CELL edg_cell = ref_grid_edg(ref_grid);
+      REF_CELL tri_cell = ref_grid_tri(ref_grid);
+      REF_INT edg, tri;
+      REF_INT edg_nodes[REF_CELL_MAX_SIZE_PER];
+      REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+      REF_INT ntri, tri_list[2];
+
+      each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+        RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), edg_nodes[0],
+                                edg_nodes[1], 2, &ntri, tri_list),
+            "tri with2");
+        REIS(1, ntri, "edg expects one tri");
+        tri = tri_list[0];
+        RSS(ref_cell_nodes(tri_cell, tri, tri_nodes), "tri nodes");
+      }
+    } else {
+      RSS(REF_IMPLEMENT, "implement 3D");
+    }
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, yplus, NULL, argv[7]),
+        "gather yplus");
+    ref_free(yplus);
     ref_free(field);
 
     RSS(ref_grid_free(ref_grid), "free");
