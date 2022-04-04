@@ -25,8 +25,12 @@
 #include "ref_dict.h"
 #include "ref_geom.h"
 #include "ref_grid.h"
+#include "ref_node.h"
 
 BEGIN_C_DECLORATION
+
+REF_STATUS ref_phys_flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
+                                 REF_DBL *field);
 
 REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive);
 REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved);

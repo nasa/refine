@@ -28,6 +28,32 @@
 #include "ref_recon.h"
 #include "ref_sort.h"
 
+REF_STATUS ref_phys_flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
+                                 REF_DBL *field) {
+  REF_INT node;
+  REF_DBL temp;
+  REF_INT nequ;
+
+  nequ = 0;
+  if (ldim > 5 && 0 == ldim % 5) nequ = 5;
+  if (ldim > 6 && 0 == ldim % 6) nequ = 6;
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ldim >= 5) {
+      temp = field[2 + ldim * node];
+      field[2 + ldim * node] = field[3 + ldim * node];
+      field[3 + ldim * node] = temp;
+    }
+    if (nequ > 0) {
+      temp = field[nequ + 2 + ldim * node];
+      field[nequ + 2 + ldim * node] = field[nequ + 3 + ldim * node];
+      field[nequ + 3 + ldim * node] = temp;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive) {
   REF_DBL rho, u, v, w, p, e;
   REF_DBL gamma = 1.4;
