@@ -2407,8 +2407,6 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   REF_DBL diag_system[12];
   REF_DBL weight;
   REF_DBL gamma = 1.4;
-  REF_DBL sutherland_constant = 110.56;
-  REF_DBL sutherland_temp;
   REF_DBL t, mu;
   REF_DBL pr = 0.72;
   REF_DBL turbulent_pr = 0.90;
@@ -2477,11 +2475,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += (5.0 / 3.0) *
               ABS(omega[1 + 2 * 3 + 9 * node] - omega[2 + 1 * 3 + 9 * node]);
     t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
-    mu = 1.0;
-    if (reference_temp > 0.0) {
-      sutherland_temp = sutherland_constant / reference_temp;
-      mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-    }
+    RSS(viscosity_law(t, reference_temp, &mu), "sutherlands");
     if (6 == nequ) {
       rho = prim_dual[0 + ldim * node];
       turb = prim_dual[5 + ldim * node];
@@ -2516,11 +2510,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += (5.0 / 3.0) *
               ABS(omega[2 + 0 * 3 + 9 * node] - omega[0 + 2 * 3 + 9 * node]);
     t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
-    mu = 1.0;
-    if (reference_temp > 0.0) {
-      sutherland_temp = sutherland_constant / reference_temp;
-      mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-    }
+    RSS(viscosity_law(t, reference_temp, &mu), "sutherlands");
     if (6 == nequ) {
       rho = prim_dual[0 + ldim * node];
       turb = prim_dual[5 + ldim * node];
@@ -2555,11 +2545,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += (5.0 / 3.0) *
               ABS(omega[0 + 1 * 3 + 9 * node] - omega[1 + 0 * 3 + 9 * node]);
     t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
-    mu = 1.0;
-    if (reference_temp > 0.0) {
-      sutherland_temp = sutherland_constant / reference_temp;
-      mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-    }
+    RSS(viscosity_law(t, reference_temp, &mu), "sutherlands");
     if (6 == nequ) {
       rho = prim_dual[0 + ldim * node];
       turb = prim_dual[5 + ldim * node];
@@ -2581,11 +2567,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
   each_ref_node_valid_node(ref_node, node) {
     t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
-    mu = 1.0;
-    if (reference_temp > 0.0) {
-      sutherland_temp = sutherland_constant / reference_temp;
-      mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-    }
+    RSS(viscosity_law(t, reference_temp, &mu), "sutherlands");
     thermal_conductivity = mu / (pr * (gamma - 1.0));
     if (6 == nequ) {
       rho = prim_dual[0 + ldim * node];
@@ -2678,8 +2660,6 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
   REF_INT nequ;
   REF_DBL *lam, *rhou1star, *rhou2star, *rhou3star, *rhoestar;
   REF_DBL gamma = 1.4;
-  REF_DBL sutherland_constant = 110.56;
-  REF_DBL sutherland_temp;
   REF_DBL t, mu, u1, u2, u3, q2, e;
   REF_DBL pr = 0.72;
   REF_DBL turbulent_pr = 0.90;
@@ -2726,11 +2706,7 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
     q2 = u1 * u1 + u2 * u2 + u3 * u3;
     e = prim_dual[4 + ldim * node] / (gamma - 1.0) + 0.5 * rho * q2;
     t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
-    mu = 1.0;
-    if (reference_temp > 0.0) {
-      sutherland_temp = sutherland_constant / reference_temp;
-      mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-    }
+    RSS(viscosity_law(t, reference_temp, &mu), "sutherlands");
     thermal_conductivity = mu / (pr * (gamma - 1.0));
     if (6 == nequ) {
       turb = prim_dual[5 + ldim * node];

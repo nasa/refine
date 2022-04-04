@@ -199,8 +199,6 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
                             REF_DBL *dir, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, mu, mu_t, t;
   REF_DBL gamma = 1.4;
-  REF_DBL sutherland_constant = 110.56;
-  REF_DBL sutherland_temp;
   REF_DBL pr = 0.72;
   REF_DBL turbulent_pr = 0.90;
   REF_DBL tau[3][3], qdot[3];
@@ -214,12 +212,7 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
   p = state[4];
   t = gamma * p / rho;
 
-  mu = 1.0;
-  if (reference_temp > 0.0) {
-    sutherland_temp = sutherland_constant / reference_temp;
-    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-  }
-
+  RSS(viscosity_law(t, reference_temp, &mu), "sutherlands");
   RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
   thermal_conductivity =
       -(mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
