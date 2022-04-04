@@ -1374,6 +1374,21 @@ int main(int argc, char *argv[]) {
     RWDS(jac[4], dflux_dcons[4 + 4 * 5], tol, "energy flux");
   }
 
+  { /* sutherland law */
+    REF_DBL nondim_temperature, reference_temperature_k, mu;
+    REF_DBL tol = -1.0;
+    nondim_temperature = 1.0;
+    reference_temperature_k = -1.0;
+    RSS(sutherlands_law(nondim_temperature, reference_temperature_k, &mu),
+        "constant viscosity");
+    RWDS(1.0, mu, tol, "not constant");
+    nondim_temperature = 2.0;
+    reference_temperature_k = -1.0;
+    RSS(sutherlands_law(nondim_temperature, reference_temperature_k, &mu),
+        "constant viscosity");
+    RWDS(1.0, mu, tol, "not constant");
+  }
+
   { /* Couette laminar flux */
     REF_DBL state[5], gradient[15], direction[3];
     REF_DBL flux[5];

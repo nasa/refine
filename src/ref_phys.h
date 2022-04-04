@@ -36,6 +36,8 @@ REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux);
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux);
 REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
                               REF_DBL *dflux_dcons);
+REF_STATUS sutherlands_law(REF_DBL nondim_temperature,
+                           REF_DBL reference_temperature_k, REF_DBL *mu);
 REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
                             REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
                             REF_DBL *dir, REF_DBL *flux);
