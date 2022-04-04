@@ -1847,6 +1847,16 @@ int main(int argc, char *argv[]) {
   }
 
   { /* yplus normal derivative */
+    REF_DBL t = 1.0;
+    REF_DBL rho = 1.0;
+    REF_DBL dudn = 1000.0;
+    REF_DBL mach = 0.2;
+    REF_DBL re = 1.0e6;
+    REF_DBL reference_t_k = 288.15;
+    REF_DBL yplus_dist;
+    RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dudn, &yplus_dist),
+        "yplus distance");
+    RWDS(0.03162277660168379, yplus_dist, -1, "uplus");
   }
 
   { /* minspac */

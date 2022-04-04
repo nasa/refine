@@ -69,6 +69,10 @@ REF_STATUS ref_phys_spalding_dyplus_duplus(REF_DBL uplus,
                                            REF_DBL *dyplus_duplus);
 REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus);
 
+REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
+                               REF_DBL rho, REF_DBL t, REF_DBL dudn,
+                               REF_DBL *yplus_dist);
+
 REF_STATUS ref_phys_minspac(REF_DBL reynolds_number, REF_DBL *yplus1);
 
 REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance, REF_DBL *nu_tilde);
