@@ -2030,12 +2030,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (timing_pos != REF_EMPTY) { /* stop when --timing */
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
-
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 
