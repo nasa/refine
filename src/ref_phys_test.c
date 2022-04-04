@@ -188,6 +188,7 @@ int main(int argc, char *argv[]) {
   REF_INT entropy_output_pos = REF_EMPTY;
   REF_INT timing_pos = REF_EMPTY;
   REF_INT minspac_pos = REF_EMPTY;
+  REF_INT yplus_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -213,6 +214,47 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--minspac", &minspac_pos), REF_NOT_FOUND,
       "arg search");
+  RXS(ref_args_find(argc, argv, "--yplus", &yplus_pos), REF_NOT_FOUND,
+      "arg search");
+
+  if (yplus_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL mach, re, temperature;
+    REF_DBL *field;
+    REF_INT ldim;
+
+    REIS(1, yplus_pos,
+         "required args: --yplus grid.meshb volume.solb Mach Re "
+         "Temperature(Kelvin) yplus.tec");
+    if (8 > argc) {
+      printf(
+          "required args: --yplus grid.meshb volume.solb Mach Re "
+          "Temperature(Kelvin) yplus.tec\n");
+      return REF_FAILURE;
+    }
+    mach = atof(argv[4]);
+    re = atof(argv[5]);
+    temperature = atof(argv[6]);
+    if (ref_mpi_once(ref_mpi))
+      printf("Reference Mach %f Re %e temperature %f\n", mach, re, temperature);
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading volume %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
+        "unable to load volume in position 3");
+    RAS(5 == ldim || 6 == ldim,
+        "expected 5 (rho,u,v,w,p) or 6 (rho,u,v,w,p,turb)");
+
+    ref_free(field);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   if (laminar_flux_pos != REF_EMPTY) {
     REF_GRID ref_grid;
