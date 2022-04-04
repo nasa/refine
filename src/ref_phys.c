@@ -677,7 +677,7 @@ REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
   tau_wall = mu * dudn * mach / re;
   u_tau = sqrt(tau_wall / rho);
   nu = mu / rho;
-  *yplus_dist = nu / u_tau * (re / mach);
+  *yplus_dist = nu / u_tau * (mach / re);
   return REF_SUCCESS;
 }
 

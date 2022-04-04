@@ -1966,7 +1966,7 @@ int main(int argc, char *argv[]) {
     REF_DBL yplus_dist;
     RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dudn, &yplus_dist),
         "yplus distance");
-    RWDS(3.535533905932738e+08, yplus_dist, -1, "uplus");
+    RWDS(1.414213562373095e-05, yplus_dist, -1, "uplus");
   }
 
   { /* minspac */
