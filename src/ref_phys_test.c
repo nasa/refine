@@ -28,6 +28,7 @@
 #include "ref_gather.h"
 #include "ref_grid.h"
 #include "ref_histogram.h"
+#include "ref_layer.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_mpi.h"
@@ -263,14 +264,50 @@ int main(int argc, char *argv[]) {
       REF_INT edg_nodes[REF_CELL_MAX_SIZE_PER];
       REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
       REF_INT ntri, tri_list[2];
-
+      REF_INT off_node, on_node;
+      REF_DBL dn, du, dvel[3], dxyz[3], edg_norm[3], dudn;
+      REF_DBL rho, t, yplus_dist;
+      REF_DBL gamma = 1.4, press;
       each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+        RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm),
+            "edge norm");
         RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), edg_nodes[0],
                                 edg_nodes[1], 2, &ntri, tri_list),
             "tri with2");
         REIS(1, ntri, "edg expects one tri");
         tri = tri_list[0];
         RSS(ref_cell_nodes(tri_cell, tri, tri_nodes), "tri nodes");
+        on_node = edg_nodes[0];
+        off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
+                   edg_nodes[1];
+        dvel[0] = field[1 + ldim * off_node] - field[1 + ldim * on_node];
+        dvel[1] = field[2 + ldim * off_node] - field[2 + ldim * on_node];
+        dvel[2] = 0.0;
+        dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
+                  ref_node_xyz(ref_node, 0, on_node);
+        dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
+                  ref_node_xyz(ref_node, 1, on_node);
+        dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
+                  ref_node_xyz(ref_node, 2, on_node);
+        du = ref_math_dot(dvel, edg_norm);
+        dn = ref_math_dot(dxyz, edg_norm);
+        dudn = ABS(du / dn);
+        rho = field[0 + ldim * on_node];
+        press = field[4 + ldim * on_node];
+        t = gamma * (press / rho);
+        RSS(ref_phys_yplus_dist(mach, re, temperature, rho, t, dudn,
+                                &yplus_dist),
+            "yplus dist");
+        if (yplus[edg_nodes[0]] < 1e-12) {
+          yplus[edg_nodes[0]] = dn / yplus_dist;
+        } else {
+          yplus[edg_nodes[0]] = MIN(yplus[edg_nodes[0]], dn / yplus_dist);
+        }
+        if (yplus[edg_nodes[1]] < 1e-12) {
+          yplus[edg_nodes[1]] = dn / yplus_dist;
+        } else {
+          yplus[edg_nodes[1]] = MIN(yplus[edg_nodes[1]], dn / yplus_dist);
+        }
       }
     } else {
       RSS(REF_IMPLEMENT, "implement 3D");
