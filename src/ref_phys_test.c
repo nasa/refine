@@ -1817,6 +1817,9 @@ int main(int argc, char *argv[]) {
     RWDS(y, yplus, -1, "uplus");
   }
 
+  { /* yplus normal derivative */
+  }
+
   { /* minspac */
     REF_DBL reynolds_number, yplus1;
     reynolds_number = 20558.0; /* 5.67e6 / 275.8 */
