@@ -183,7 +183,7 @@ REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
   return REF_SUCCESS;
 }
 
-REF_STATUS sutherlands_law(REF_DBL t, REF_DBL reference_temp_k, REF_DBL *mu) {
+REF_STATUS viscosity_law(REF_DBL t, REF_DBL reference_temp_k, REF_DBL *mu) {
   REF_DBL sutherland_constant_k = 110.56;
   REF_DBL sutherland_temp;
   *mu = 1.0;

@@ -1379,12 +1379,12 @@ int main(int argc, char *argv[]) {
     REF_DBL tol = -1.0;
     nondim_temperature = 1.0;
     reference_temperature_k = -1.0;
-    RSS(sutherlands_law(nondim_temperature, reference_temperature_k, &mu),
+    RSS(viscosity_law(nondim_temperature, reference_temperature_k, &mu),
         "constant viscosity");
     RWDS(1.0, mu, tol, "not constant");
     nondim_temperature = 2.0;
     reference_temperature_k = -1.0;
-    RSS(sutherlands_law(nondim_temperature, reference_temperature_k, &mu),
+    RSS(viscosity_law(nondim_temperature, reference_temperature_k, &mu),
         "constant viscosity");
     RWDS(1.0, mu, tol, "not constant");
   }
