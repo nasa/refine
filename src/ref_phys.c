@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "ref_egads.h"
+#include "ref_layer.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_part.h"
@@ -678,6 +679,122 @@ REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
   u_tau = sqrt(tau_wall / rho);
   nu = mu / rho;
   *yplus_dist = nu / u_tau * (mach / re);
+  return REF_SUCCESS;
+}
+REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
+                                      REF_DBL re, REF_DBL reference_t_k,
+                                      REF_INT ldim, REF_DBL *field,
+                                      REF_DBL *lengthscale) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT *hits;
+  REF_INT node;
+  each_ref_node_valid_node(ref_node, node) { lengthscale[node] = 0.0; }
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL edg_cell = ref_grid_edg(ref_grid);
+    REF_CELL tri_cell = ref_grid_tri(ref_grid);
+    REF_INT edg, tri;
+    REF_INT edg_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT ntri, tri_list[2];
+    REF_INT off_node, on_node;
+    REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], dudn;
+    REF_DBL rho, t, yplus_dist;
+    REF_DBL gamma = 1.4, press;
+    each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+      RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
+      RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), edg_nodes[0],
+                              edg_nodes[1], 2, &ntri, tri_list),
+          "tri with2");
+      REIS(1, ntri, "edg expects one tri");
+      tri = tri_list[0];
+      RSS(ref_cell_nodes(tri_cell, tri, tri_nodes), "tri nodes");
+      on_node = edg_nodes[0];
+      off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
+                 edg_nodes[1];
+      u0 = sqrt(ref_math_dot(&(field[1 + ldim * on_node]),
+                             &(field[1 + ldim * on_node])));
+      u1 = sqrt(ref_math_dot(&(field[1 + ldim * off_node]),
+                             &(field[1 + ldim * off_node])));
+      dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
+                ref_node_xyz(ref_node, 0, on_node);
+      dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
+                ref_node_xyz(ref_node, 1, on_node);
+      dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
+                ref_node_xyz(ref_node, 2, on_node);
+      du = ABS(u0 - u1);
+      dn = ref_math_dot(dxyz, edg_norm);
+      dudn = ABS(du / dn);
+      rho = field[0 + ldim * on_node];
+      press = field[4 + ldim * on_node];
+      t = gamma * (press / rho);
+      RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dudn,
+                              &yplus_dist),
+          "yplus dist");
+      lengthscale[edg_nodes[0]] += yplus_dist;
+      hits[edg_nodes[0]] += 1;
+      lengthscale[edg_nodes[1]] += yplus_dist;
+      hits[edg_nodes[1]] += 1;
+    }
+  } else {
+    RSS(REF_IMPLEMENT, "implement 3D");
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      lengthscale[node] /= (REF_DBL)hits[node];
+    }
+  }
+  ref_free(hits);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid, REF_DBL *normalspacing) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT *hits;
+  REF_INT node;
+  each_ref_node_valid_node(ref_node, node) { normalspacing[node] = 0.0; }
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL edg_cell = ref_grid_edg(ref_grid);
+    REF_CELL tri_cell = ref_grid_tri(ref_grid);
+    REF_INT edg, tri;
+    REF_INT edg_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT ntri, tri_list[2];
+    REF_INT off_node, on_node;
+    REF_DBL dn, dxyz[3], edg_norm[3];
+    each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+      RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
+      RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), edg_nodes[0],
+                              edg_nodes[1], 2, &ntri, tri_list),
+          "tri with2");
+      REIS(1, ntri, "edg expects one tri");
+      tri = tri_list[0];
+      RSS(ref_cell_nodes(tri_cell, tri, tri_nodes), "tri nodes");
+      on_node = edg_nodes[0];
+      off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
+                 edg_nodes[1];
+      dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
+                ref_node_xyz(ref_node, 0, on_node);
+      dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
+                ref_node_xyz(ref_node, 1, on_node);
+      dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
+                ref_node_xyz(ref_node, 2, on_node);
+      dn = ref_math_dot(dxyz, edg_norm);
+      normalspacing[edg_nodes[0]] += dn;
+      hits[edg_nodes[0]] += 1;
+      normalspacing[edg_nodes[1]] += dn;
+      hits[edg_nodes[1]] += 1;
+    }
+  } else {
+    RSS(REF_IMPLEMENT, "implement 3D");
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      normalspacing[node] /= (REF_DBL)hits[node];
+    }
+  }
+  ref_free(hits);
   return REF_SUCCESS;
 }
 
