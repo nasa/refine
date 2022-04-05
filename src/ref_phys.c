@@ -746,6 +746,9 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
     }
   }
   ref_free(hits);
+
+  RSS(ref_node_ghost_dbl(ref_node, lengthscale, 1), "ghost lengthscale");
+
   return REF_SUCCESS;
 }
 
@@ -796,6 +799,9 @@ REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid, REF_DBL *normalspacing) {
     }
   }
   ref_free(hits);
+
+  RSS(ref_node_ghost_dbl(ref_node, normalspacing, 1), "ghost normalspacing");
+
   return REF_SUCCESS;
 }
 
@@ -870,6 +876,8 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       RSS(ref_matrix_exp_m(logm, &(metric[6 * node])), "form");
     }
   }
+
+  RSS(ref_node_ghost_dbl(ref_node, metric, 6), "ghost metric");
 
   ref_free(lengthscale);
   ref_free(new_metric);
