@@ -313,6 +313,7 @@ int main(int argc, char *argv[]) {
       RSS(REF_IMPLEMENT, "implement 3D");
     }
 
+    if (ref_mpi_once(ref_mpi)) printf("writing yplus to %s\n", argv[7]);
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, yplus, NULL, argv[7]),
         "gather yplus");
     ref_free(yplus);
