@@ -25,6 +25,7 @@
 #include "ref_layer.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 #include "ref_part.h"
 #include "ref_recon.h"
 #include "ref_sort.h"
@@ -794,6 +795,84 @@ REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid, REF_DBL *normalspacing) {
       normalspacing[node] /= (REF_DBL)hits[node];
     }
   }
+  ref_free(hits);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
+                                 REF_DBL mach, REF_DBL re, REF_DBL temperature,
+                                 REF_DBL target, REF_INT ldim, REF_DBL *field,
+                                 REF_DICT ref_dict_bcs) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *lengthscale, *new_metric;
+  REF_INT *hits;
+  REF_INT node, i;
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+  ref_malloc_init(new_metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(lengthscale, ref_node_max(ref_node), REF_DBL, 0.0);
+  RSS(ref_phys_yplus_lengthscale(ref_grid, mach, re, temperature, ldim, field,
+                                 lengthscale),
+      "length scale");
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL edg_cell = ref_grid_edg(ref_grid);
+    REF_INT bc;
+    REF_INT edg, edg_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_DBL edg_norm[3], h;
+    REF_DBL d[12], m[6], logm[6];
+    each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict_bcs, edg_nodes[ref_cell_id_index(edg_cell)],
+                         &bc),
+          REF_NOT_FOUND, "bc");
+      if (!ref_phys_wall_distance_bc(bc)) continue;
+      h = target * 0.5 *
+          (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
+      RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
+      ref_matrix_eig(d, 0) = 1.0 / (h * h);
+      ref_matrix_vec(d, 0, 0) = edg_norm[0];
+      ref_matrix_vec(d, 1, 0) = edg_norm[1];
+      ref_matrix_vec(d, 2, 0) = edg_norm[2];
+
+      ref_matrix_eig(d, 2) = 1.0;
+      ref_matrix_vec(d, 0, 2) = 0.0;
+      ref_matrix_vec(d, 1, 2) = 0.0;
+      ref_matrix_vec(d, 2, 2) = 1.0;
+      ref_math_cross_product(ref_matrix_vec_ptr(d, 2), ref_matrix_vec_ptr(d, 0),
+                             ref_matrix_vec_ptr(d, 1));
+
+      h = 0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]),
+                                        ref_matrix_vec_ptr(d, 1)) +
+                 ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
+                                        ref_matrix_vec_ptr(d, 1)));
+      ref_matrix_eig(d, 2) = 1.0 / (h * h);
+
+      RSS(ref_matrix_form_m(d, m), "form");
+      RSS(ref_matrix_log_m(m, logm), "form");
+      for (i = 0; i < 6; i++) {
+        new_metric[i + 6 * edg_nodes[0]] += logm[i];
+      }
+      hits[edg_nodes[0]] += 1;
+      for (i = 0; i < 6; i++) {
+        new_metric[i + 6 * edg_nodes[1]] += logm[i];
+      }
+      hits[edg_nodes[1]] += 1;
+    }
+  } else {
+    RSS(REF_IMPLEMENT, "implement 3D");
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      REF_DBL logm[6];
+      for (i = 0; i < 6; i++) {
+        logm[i] = new_metric[i + 6 * node] / (REF_DBL)hits[node];
+      }
+      RSS(ref_matrix_exp_m(logm, &(metric[6 * node])), "form");
+    }
+  }
+
+  ref_free(lengthscale);
+  ref_free(new_metric);
   ref_free(hits);
   return REF_SUCCESS;
 }
