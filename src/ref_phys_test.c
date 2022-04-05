@@ -223,8 +223,8 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_DBL mach, re, temperature;
     REF_DBL *field;
-    REF_INT ldim;
-    REF_DBL *yplus;
+    REF_INT ldim, node;
+    REF_DBL *yplus, *lengthscale, *normalspacing;
 
     REIS(1, yplus_pos,
          "required args: --yplus grid.meshb volume.solb Mach Re "
@@ -257,66 +257,24 @@ int main(int argc, char *argv[]) {
       RSS(ref_phys_flip_twod_yz(ref_node, ldim, field), "flip");
     }
     ref_malloc_init(yplus, ref_node_max(ref_node), REF_DBL, 0.0);
-    if (ref_grid_twod(ref_grid)) {
-      REF_CELL edg_cell = ref_grid_edg(ref_grid);
-      REF_CELL tri_cell = ref_grid_tri(ref_grid);
-      REF_INT edg, tri;
-      REF_INT edg_nodes[REF_CELL_MAX_SIZE_PER];
-      REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
-      REF_INT ntri, tri_list[2];
-      REF_INT off_node, on_node;
-      REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], dudn;
-      REF_DBL rho, t, yplus_dist;
-      REF_DBL gamma = 1.4, press;
-      each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
-        RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm),
-            "edge norm");
-        RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), edg_nodes[0],
-                                edg_nodes[1], 2, &ntri, tri_list),
-            "tri with2");
-        REIS(1, ntri, "edg expects one tri");
-        tri = tri_list[0];
-        RSS(ref_cell_nodes(tri_cell, tri, tri_nodes), "tri nodes");
-        on_node = edg_nodes[0];
-        off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
-                   edg_nodes[1];
-        u0 = sqrt(ref_math_dot(&(field[1 + ldim * on_node]),
-                               &(field[1 + ldim * on_node])));
-        u1 = sqrt(ref_math_dot(&(field[1 + ldim * off_node]),
-                               &(field[1 + ldim * off_node])));
-        dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
-                  ref_node_xyz(ref_node, 0, on_node);
-        dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
-                  ref_node_xyz(ref_node, 1, on_node);
-        dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
-                  ref_node_xyz(ref_node, 2, on_node);
-        du = ABS(u0 - u1);
-        dn = ref_math_dot(dxyz, edg_norm);
-        dudn = ABS(du / dn);
-        rho = field[0 + ldim * on_node];
-        press = field[4 + ldim * on_node];
-        t = gamma * (press / rho);
-        RSS(ref_phys_yplus_dist(mach, re, temperature, rho, t, dudn,
-                                &yplus_dist),
-            "yplus dist");
-        if (yplus[edg_nodes[0]] < 1e-12) {
-          yplus[edg_nodes[0]] = dn / yplus_dist;
-        } else {
-          yplus[edg_nodes[0]] = MIN(yplus[edg_nodes[0]], dn / yplus_dist);
-        }
-        if (yplus[edg_nodes[1]] < 1e-12) {
-          yplus[edg_nodes[1]] = dn / yplus_dist;
-        } else {
-          yplus[edg_nodes[1]] = MIN(yplus[edg_nodes[1]], dn / yplus_dist);
-        }
+    ref_malloc_init(lengthscale, ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(normalspacing, ref_node_max(ref_node), REF_DBL, 0.0);
+    RSS(ref_phys_yplus_lengthscale(ref_grid, mach, re, temperature, ldim, field,
+                                   lengthscale),
+        "length scale");
+    RSS(ref_phys_normal_spacing(ref_grid, normalspacing), "normal spacing");
+
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_math_divisible(normalspacing[node], lengthscale[node])) {
+        yplus[node] = normalspacing[node] / lengthscale[node];
       }
-    } else {
-      RSS(REF_IMPLEMENT, "implement 3D");
     }
 
     if (ref_mpi_once(ref_mpi)) printf("writing yplus to %s\n", argv[7]);
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, yplus, NULL, argv[7]),
         "gather yplus");
+    ref_free(normalspacing);
+    ref_free(lengthscale);
     ref_free(yplus);
     ref_free(field);
 
