@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
       REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
       REF_INT ntri, tri_list[2];
       REF_INT off_node, on_node;
-      REF_DBL dn, du, dvel[3], dxyz[3], edg_norm[3], dudn;
+      REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], dudn;
       REF_DBL rho, t, yplus_dist;
       REF_DBL gamma = 1.4, press;
       each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
@@ -280,16 +280,17 @@ int main(int argc, char *argv[]) {
         on_node = edg_nodes[0];
         off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
                    edg_nodes[1];
-        dvel[0] = field[1 + ldim * off_node] - field[1 + ldim * on_node];
-        dvel[1] = field[2 + ldim * off_node] - field[2 + ldim * on_node];
-        dvel[2] = 0.0;
+        u0 = sqrt(ref_math_dot(&(field[1 + ldim * on_node]),
+                               &(field[1 + ldim * on_node])));
+        u1 = sqrt(ref_math_dot(&(field[1 + ldim * off_node]),
+                               &(field[1 + ldim * off_node])));
         dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
                   ref_node_xyz(ref_node, 0, on_node);
         dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
                   ref_node_xyz(ref_node, 1, on_node);
         dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
                   ref_node_xyz(ref_node, 2, on_node);
-        du = ref_math_dot(dvel, edg_norm);
+        du = ABS(u0 - u1);
         dn = ref_math_dot(dxyz, edg_norm);
         dudn = ABS(du / dn);
         rho = field[0 + ldim * on_node];
