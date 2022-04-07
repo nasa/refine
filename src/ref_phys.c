@@ -869,6 +869,7 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
                                         ref_matrix_vec_ptr(d, 1)) +
                  ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
                                         ref_matrix_vec_ptr(d, 1)));
+      h = 1.0 / h;
       ref_matrix_eig(d, 1) = 1.0 / (h * h);
       RSS(ref_matrix_form_m(d, m), "form");
       RSS(ref_matrix_log_m(m, logm), "form");
