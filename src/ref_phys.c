@@ -21,6 +21,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "ref_edge.h"
 #include "ref_egads.h"
 #include "ref_layer.h"
 #include "ref_malloc.h"
@@ -874,8 +875,45 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       for (i = 0; i < 6; i++) {
         new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
       }
-      RSS(ref_matrix_exp_m(&(new_log_metric[i + 6 * node]),
-                           &(metric[6 * node])),
+      hits[node] = -1;
+      RSS(ref_matrix_exp_m(&(new_log_metric[6 * node]), &(metric[6 * node])),
+          "form");
+    }
+  }
+
+  {
+    REF_EDGE ref_edge;
+    REF_INT edge, node0, node1;
+    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      if (0 <= hits[node0] && -1 == hits[node1]) {
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node0] += new_log_metric[i + 6 * node1];
+        }
+        hits[node0] += 1;
+      }
+      if (0 <= hits[node1] && -1 == hits[node0]) {
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node1] += new_log_metric[i + 6 * node0];
+        }
+        hits[node1] += 1;
+      }
+    }
+    ref_edge_free(ref_edge);
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, new_log_metric, 6), "ghost metric");
+  RSS(ref_node_ghost_int(ref_node, hits, 1), "ghost hits");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
+      }
+      hits[node] = -2;
+      RSS(ref_matrix_exp_m(&(new_log_metric[6 * node]), &(metric[6 * node])),
           "form");
     }
   }
