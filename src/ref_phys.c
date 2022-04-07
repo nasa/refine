@@ -810,11 +810,11 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
                                  REF_DBL target, REF_INT ldim, REF_DBL *field,
                                  REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_DBL *lengthscale, *new_metric;
+  REF_DBL *lengthscale, *new_log_metric;
   REF_INT *hits;
   REF_INT node, i;
   ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
-  ref_malloc_init(new_metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(new_log_metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(lengthscale, ref_node_max(ref_node), REF_DBL, 0.0);
   RSS(ref_phys_yplus_lengthscale(ref_grid, mach, re, temperature, ldim, field,
                                  lengthscale),
@@ -854,11 +854,11 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       RSS(ref_matrix_form_m(d, m), "form");
       RSS(ref_matrix_log_m(m, logm), "form");
       for (i = 0; i < 6; i++) {
-        new_metric[i + 6 * edg_nodes[0]] += logm[i];
+        new_log_metric[i + 6 * edg_nodes[0]] += logm[i];
       }
       hits[edg_nodes[0]] += 1;
       for (i = 0; i < 6; i++) {
-        new_metric[i + 6 * edg_nodes[1]] += logm[i];
+        new_log_metric[i + 6 * edg_nodes[1]] += logm[i];
       }
       hits[edg_nodes[1]] += 1;
     }
@@ -866,20 +866,24 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
     RSS(REF_IMPLEMENT, "implement 3D");
   }
 
+  RSS(ref_node_ghost_dbl(ref_node, new_log_metric, 6), "ghost metric");
+  RSS(ref_node_ghost_int(ref_node, hits, 1), "ghost hits");
+
   each_ref_node_valid_node(ref_node, node) {
     if (hits[node] > 0) {
-      REF_DBL logm[6];
       for (i = 0; i < 6; i++) {
-        logm[i] = new_metric[i + 6 * node] / (REF_DBL)hits[node];
+        new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
       }
-      RSS(ref_matrix_exp_m(logm, &(metric[6 * node])), "form");
+      RSS(ref_matrix_exp_m(&(new_log_metric[i + 6 * node]),
+                           &(metric[6 * node])),
+          "form");
     }
   }
 
   RSS(ref_node_ghost_dbl(ref_node, metric, 6), "ghost metric");
 
   ref_free(lengthscale);
-  ref_free(new_metric);
+  ref_free(new_log_metric);
   ref_free(hits);
   return REF_SUCCESS;
 }
