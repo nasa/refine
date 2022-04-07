@@ -225,14 +225,15 @@ int main(int argc, char *argv[]) {
     REF_DBL *field;
     REF_INT ldim, node;
     REF_DBL *yplus, *lengthscale, *normalspacing;
+    char filename[1024];
 
     REIS(1, yplus_pos,
          "required args: --yplus grid.meshb volume.solb Mach Re "
-         "Temperature(Kelvin) yplus.tec");
-    if (8 > argc) {
+         "Temperature(Kelvin)");
+    if (7 > argc) {
       printf(
           "required args: --yplus grid.meshb volume.solb Mach Re "
-          "Temperature(Kelvin) yplus.tec\n");
+          "Temperature(Kelvin)\n");
       return REF_FAILURE;
     }
     mach = atof(argv[4]);
@@ -270,8 +271,20 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    if (ref_mpi_once(ref_mpi)) printf("writing yplus to %s\n", argv[7]);
-    RSS(ref_gather_scalar_by_extension(ref_grid, 1, yplus, NULL, argv[7]),
+    sprintf(filename, "%s-yplus-edge.tec", argv[2]);
+    if (ref_mpi_once(ref_mpi)) printf("writing yplus to %s\n", filename);
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, yplus, NULL, filename),
+        "gather yplus");
+    sprintf(filename, "%s-lengthscale-edge.tec", argv[2]);
+    if (ref_mpi_once(ref_mpi)) printf("writing lengthscale to %s\n", filename);
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, lengthscale, NULL,
+                                       filename),
+        "gather yplus");
+    sprintf(filename, "%s-normalspacing-edge.tec", argv[2]);
+    if (ref_mpi_once(ref_mpi))
+      printf("writing normalspacing to %s\n", filename);
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, normalspacing, NULL,
+                                       filename),
         "gather yplus");
     ref_free(normalspacing);
     ref_free(lengthscale);
