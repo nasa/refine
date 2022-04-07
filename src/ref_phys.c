@@ -813,7 +813,6 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
   REF_DBL *lengthscale, *new_metric;
   REF_INT *hits;
   REF_INT node, i;
-  REF_BOOL verbose = REF_FALSE;
   ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
   ref_malloc_init(new_metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(lengthscale, ref_node_max(ref_node), REF_DBL, 0.0);
@@ -834,10 +833,6 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       if (!ref_phys_wall_distance_bc(bc)) continue;
       h = target * 0.5 *
           (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
-      if (verbose) {
-        printf("id %d x %f yplus h %f\n", edg_nodes[2],
-               ref_node_xyz(ref_node, 0, edg_nodes[0]), h);
-      }
       RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
       ref_matrix_eig(d, 0) = 1.0 / (h * h);
       ref_matrix_vec(d, 0, 0) = edg_norm[0];
@@ -850,21 +845,6 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       ref_matrix_vec(d, 2, 2) = 1.0;
       ref_math_cross_product(ref_matrix_vec_ptr(d, 2), ref_matrix_vec_ptr(d, 0),
                              ref_matrix_vec_ptr(d, 1));
-      if (verbose) {
-        printf(
-            "e0 %f %f %f %f\n", ref_matrix_vec(d, 0, 0),
-            ref_matrix_vec(d, 1, 0), ref_matrix_vec(d, 2, 0),
-            ref_math_dot(ref_matrix_vec_ptr(d, 0), ref_matrix_vec_ptr(d, 0)));
-        printf(
-            "e1 %f %f %f %f\n", ref_matrix_vec(d, 0, 1),
-            ref_matrix_vec(d, 1, 1), ref_matrix_vec(d, 2, 1),
-            ref_math_dot(ref_matrix_vec_ptr(d, 1), ref_matrix_vec_ptr(d, 1)));
-        printf(
-            "e2 %f %f %f %f\n", ref_matrix_vec(d, 0, 2),
-            ref_matrix_vec(d, 1, 2), ref_matrix_vec(d, 2, 2),
-            ref_math_dot(ref_matrix_vec_ptr(d, 2), ref_matrix_vec_ptr(d, 2)));
-        ref_matrix_show_m(&(metric[6 * edg_nodes[0]]));
-      }
       h = 0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]),
                                         ref_matrix_vec_ptr(d, 1)) +
                  ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
@@ -873,11 +853,6 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       ref_matrix_eig(d, 1) = 1.0 / (h * h);
       RSS(ref_matrix_form_m(d, m), "form");
       RSS(ref_matrix_log_m(m, logm), "form");
-      if (verbose) {
-        printf("tanget h %f\n", h);
-        ref_matrix_show_m(m);
-        ref_matrix_show_m(logm);
-      }
       for (i = 0; i < 6; i++) {
         new_metric[i + 6 * edg_nodes[0]] += logm[i];
       }
