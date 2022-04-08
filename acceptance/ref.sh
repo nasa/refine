@@ -37,7 +37,7 @@ trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${strict_dir} \
     CFLAGS='-g -O1 -fsanitize=address -fno-omit-frame-pointer -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    CC=clang  > $LOG 2>&1
+    CC=gcc  > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.asan-make-check
