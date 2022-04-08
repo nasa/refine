@@ -75,9 +75,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
     ref_node = ref_grid_node(ref_grid);
     ref_cell = ref_grid_tri(ref_grid);
-    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
-    ref_node = ref_grid_node(ref_grid);
-    ref_cell = ref_grid_tri(ref_grid);
     global = 0;
     RSS(ref_node_add(ref_node, global, &node), "node");
     ref_node_xyz(ref_node, 0, node) = 0.0;
@@ -132,9 +129,6 @@ int main(int argc, char *argv[]) {
     REF_INT global, node, n;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
-    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
-    ref_node = ref_grid_node(ref_grid);
-    ref_cell = ref_grid_tri(ref_grid);
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
     ref_node = ref_grid_node(ref_grid);
     ref_cell = ref_grid_tri(ref_grid);
