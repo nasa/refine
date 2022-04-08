@@ -42,7 +42,7 @@ trap - EXIT
 
 LOG=${root_dir}/log.asan-make-check
 trap "cat $LOG" EXIT
-( make check > $LOG 2>&1 || touch FAILED ) &
+  make check > $LOG 2>&1
 trap - EXIT
 
 date
