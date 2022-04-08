@@ -4214,7 +4214,7 @@ REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
   REF_DBL left[16];
   REF_DBL right[16];
   REF_DBL saved, temp;
-  RAS(degree < 16, "temp varaibles sized smaller than degree");
+  RAS(degree < 16, "temp variables sized smaller than degree");
   N[0] = 1.0;
   for (j = 1; j <= degree; j++) {
     left[j] = t - knots[span + 1 - j];
@@ -4242,7 +4242,7 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
   REF_DBL n[16];
   REF_INT i, point;
   REF_BOOL verbose = REF_FALSE;
-  RAS(degree < 16, "temp varaibles sized smaller than degree");
+  RAS(degree < 16, "temp variables sized smaller than degree");
   RSS(ref_geom_bspline_span_index(degree, n_control_point, knots, t, &span),
       "index");
   if (verbose) printf("deg %d ncp %d span %d :", degree, n_control_point, span);
@@ -4311,7 +4311,7 @@ REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
   REF_DBL N[16];
   REF_INT i, point;
   *val = 0.0;
-  RAS(degree < 16, "temp varaibles sized smaller than degree");
+  RAS(degree < 16, "temp variables sized smaller than degree");
   RSS(ref_geom_bspline_span_index(degree, n_control_point, knots, t, &span),
       "index");
   RSS(ref_geom_bspline_basis(degree, knots, t, span, N), "basis");

@@ -1405,7 +1405,7 @@ int main(int argc, char *argv[]) {
     REF_INT degree = 2;
     REF_INT n_control_points = 8;
     REF_DBL knots[] = {0, 0, 0, 1, 2, 3, 4, 4, 5, 5, 5};
-    REF_DBL N[7];
+    REF_DBL N[8];
     REF_DBL t;
     REF_DBL tol = -1.0;
     REIS(11, ref_geom_bspline_nknot(degree, n_control_points), "knots");
@@ -1418,6 +1418,7 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, N[4], tol, "N4,2");
     RWDS(0.0, N[5], tol, "N5,2");
     RWDS(0.0, N[6], tol, "N6,2");
+    RWDS(0.0, N[7], tol, "N7,2");
     t = 4.0;
     RSS(ref_geom_bspline_row(degree, n_control_points, knots, t, N), "eval");
     RWDS(0.0, N[0], tol, "N0,2");
@@ -1427,6 +1428,7 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, N[4], tol, "N4,2");
     RWDS(1.0, N[5], tol, "N5,2");
     RWDS(0.0, N[6], tol, "N6,2");
+    RWDS(0.0, N[7], tol, "N7,2");
   }
 
   {
