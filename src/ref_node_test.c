@@ -1216,6 +1216,8 @@ int main(int argc, char *argv[]) {
     RWDS(sqrt(2.0) / 2.0, norm[0], -1.0, "expected norm");
     RWDS(-sqrt(2.0) / 2.0, norm[1], -1.0, "expected norm");
     RWDS(0.0, norm[2], -1.0, "expected norm");
+
+    RSS(ref_node_free(ref_node), "free node");
   }
 
   /* FIXME, break this test up into pieces */
@@ -2553,6 +2555,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_bounding_box_diagonal(ref_node, &diagonal), "diag");
     RWDS(sqrt(2.0 * 2.0 + 4.0 * 4.0 + 7.0 * 7.0), diagonal, -1.0,
          "diagonal expected");
+    RSS(ref_node_free(ref_node), "free node");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
