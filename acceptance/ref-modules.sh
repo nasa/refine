@@ -3,7 +3,7 @@
 module use --append /u/shared/fun3d/fun3d_users/modulefiles
 module use --append /u/shared/wtjones1/Modules/modulefiles
 
-export compile_modules="gcc_6.2.0 clang_12.0.0"
+export compile_modules="gcc_6.2.0"
 export compiler_rpath="/usr/local/pkgs-modules/intel_2017.0.098/compilers_and_libraries_2017.2.174/linux/compiler/lib/intel64_lin"
 
 # expected to move intel to compile mods, but not working with openmpi
