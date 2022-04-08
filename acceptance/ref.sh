@@ -35,9 +35,9 @@ cd ${asan_dir}
 LOG=${root_dir}/log.asan-configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
-    --prefix=${strict_dir} \
+    --prefix=${asan_dir} \
     CFLAGS='-g -O1 -fsanitize=address -fno-omit-frame-pointer -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    CC=gcc  > $LOG 2>&1
+    CC=clang  > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.asan-make-check
