@@ -477,8 +477,8 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid, REF_INT cell,
-                                                REF_DBL *normal) {
+REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid, REF_INT cell,
+                                         REF_DBL *normal) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL edg = ref_grid_edg(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);

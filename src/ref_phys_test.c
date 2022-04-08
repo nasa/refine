@@ -28,6 +28,7 @@
 #include "ref_gather.h"
 #include "ref_grid.h"
 #include "ref_histogram.h"
+#include "ref_layer.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_mpi.h"
@@ -188,6 +189,7 @@ int main(int argc, char *argv[]) {
   REF_INT entropy_output_pos = REF_EMPTY;
   REF_INT timing_pos = REF_EMPTY;
   REF_INT minspac_pos = REF_EMPTY;
+  REF_INT yplus_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -213,6 +215,87 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--minspac", &minspac_pos), REF_NOT_FOUND,
       "arg search");
+  RXS(ref_args_find(argc, argv, "--yplus", &yplus_pos), REF_NOT_FOUND,
+      "arg search");
+
+  if (yplus_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL mach, re, temperature;
+    REF_DBL *field;
+    REF_INT ldim, node;
+    REF_DBL *yplus, *lengthscale, *normalspacing;
+    char filename[1024];
+
+    REIS(1, yplus_pos,
+         "required args: --yplus grid.meshb volume.solb Mach Re "
+         "Temperature(Kelvin)");
+    if (7 > argc) {
+      printf(
+          "required args: --yplus grid.meshb volume.solb Mach Re "
+          "Temperature(Kelvin)\n");
+      return REF_FAILURE;
+    }
+    mach = atof(argv[4]);
+    re = atof(argv[5]);
+    temperature = atof(argv[6]);
+    if (ref_mpi_once(ref_mpi))
+      printf("Reference Mach %f Re %e temperature %f\n", mach, re, temperature);
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+
+    if (ref_mpi_once(ref_mpi)) printf("reading volume %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &field, argv[3]),
+        "unable to load volume in position 3");
+    RAS(5 == ldim || 6 == ldim,
+        "expected 5 (rho,u,v,w,p) or 6 (rho,u,v,w,p,turb)");
+
+    if (ref_grid_twod(ref_grid)) {
+      if (ref_mpi_once(ref_mpi)) printf("flip ref_field v-w for twod\n");
+      RSS(ref_phys_flip_twod_yz(ref_node, ldim, field), "flip");
+    }
+    ref_malloc_init(yplus, ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(lengthscale, ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(normalspacing, ref_node_max(ref_node), REF_DBL, 0.0);
+    RSS(ref_phys_yplus_lengthscale(ref_grid, mach, re, temperature, ldim, field,
+                                   lengthscale),
+        "length scale");
+    RSS(ref_phys_normal_spacing(ref_grid, normalspacing), "normal spacing");
+
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_math_divisible(normalspacing[node], lengthscale[node])) {
+        yplus[node] = normalspacing[node] / lengthscale[node];
+      }
+    }
+
+    sprintf(filename, "%s-yplus-edge.tec", argv[2]);
+    if (ref_mpi_once(ref_mpi)) printf("writing yplus to %s\n", filename);
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, yplus, NULL, filename),
+        "gather yplus");
+    sprintf(filename, "%s-lengthscale-edge.tec", argv[2]);
+    if (ref_mpi_once(ref_mpi)) printf("writing lengthscale to %s\n", filename);
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, lengthscale, NULL,
+                                       filename),
+        "gather yplus");
+    sprintf(filename, "%s-normalspacing-edge.tec", argv[2]);
+    if (ref_mpi_once(ref_mpi))
+      printf("writing normalspacing to %s\n", filename);
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, normalspacing, NULL,
+                                       filename),
+        "gather yplus");
+    ref_free(normalspacing);
+    ref_free(lengthscale);
+    ref_free(yplus);
+    ref_free(field);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   if (laminar_flux_pos != REF_EMPTY) {
     REF_GRID ref_grid;
@@ -1374,6 +1457,35 @@ int main(int argc, char *argv[]) {
     RWDS(jac[4], dflux_dcons[4 + 4 * 5], tol, "energy flux");
   }
 
+  { /* sutherland law */
+    REF_DBL nondim_temperature, reference_temperature_k, mu;
+    REF_DBL tol = -1.0;
+
+    nondim_temperature = 1.0;
+    reference_temperature_k = -1.0;
+    RSS(viscosity_law(nondim_temperature, reference_temperature_k, &mu),
+        "constant viscosity");
+    RWDS(1.0, mu, tol, "not constant");
+
+    nondim_temperature = 2.0;
+    reference_temperature_k = -1.0;
+    RSS(viscosity_law(nondim_temperature, reference_temperature_k, &mu),
+        "constant viscosity");
+    RWDS(1.0, mu, tol, "not constant");
+
+    nondim_temperature = 1.0;
+    reference_temperature_k = 288.15;
+    RSS(viscosity_law(nondim_temperature, reference_temperature_k, &mu),
+        "sutherlands");
+    RWDS(1.0, mu, tol, "not room temperature viscosity");
+
+    nondim_temperature = 2.0;
+    reference_temperature_k = 288.15;
+    RSS(viscosity_law(nondim_temperature, reference_temperature_k, &mu),
+        "sutherlands");
+    RWDS(1.641851583885440, mu, tol, "not hot viscosity");
+  }
+
   { /* Couette laminar flux */
     REF_DBL state[5], gradient[15], direction[3];
     REF_DBL flux[5];
@@ -1817,6 +1929,19 @@ int main(int argc, char *argv[]) {
     RWDS(y, yplus, -1, "uplus");
   }
 
+  { /* yplus normal derivative */
+    REF_DBL t = 1.0;
+    REF_DBL rho = 1.0;
+    REF_DBL dudn = 1000.0;
+    REF_DBL mach = 0.2;
+    REF_DBL re = 1.0e6;
+    REF_DBL reference_t_k = 288.15;
+    REF_DBL yplus_dist;
+    RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dudn, &yplus_dist),
+        "yplus distance");
+    RWDS(1.414213562373095e-05, yplus_dist, -1, "uplus");
+  }
+
   { /* minspac */
     REF_DBL reynolds_number, yplus1;
     reynolds_number = 20558.0; /* 5.67e6 / 275.8 */
@@ -2028,12 +2153,6 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       REIS(0, remove(grid_file), "test clean up");
     }
-  }
-
-  if (timing_pos != REF_EMPTY) { /* stop when --timing */
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

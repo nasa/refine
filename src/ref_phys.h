@@ -25,8 +25,12 @@
 #include "ref_dict.h"
 #include "ref_geom.h"
 #include "ref_grid.h"
+#include "ref_node.h"
 
 BEGIN_C_DECLORATION
+
+REF_STATUS ref_phys_flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
+                                 REF_DBL *field);
 
 REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive);
 REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved);
@@ -36,6 +40,8 @@ REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux);
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux);
 REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
                               REF_DBL *dflux_dcons);
+REF_STATUS viscosity_law(REF_DBL nondim_temperature,
+                         REF_DBL reference_temperature_k, REF_DBL *mu);
 REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
                             REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
                             REF_DBL *dir, REF_DBL *flux);
@@ -67,6 +73,18 @@ REF_STATUS ref_phys_spalding_dyplus_duplus(REF_DBL uplus,
                                            REF_DBL *dyplus_duplus);
 REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus);
 
+REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
+                               REF_DBL rho, REF_DBL t, REF_DBL dudn,
+                               REF_DBL *yplus_dist);
+REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
+                                      REF_DBL re, REF_DBL reference_t_k,
+                                      REF_INT ldim, REF_DBL *field,
+                                      REF_DBL *lengthscale);
+REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid, REF_DBL *normalspacing);
+REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
+                                 REF_DBL mach, REF_DBL re, REF_DBL temperature,
+                                 REF_DBL target, REF_INT ldim,
+                                 REF_DBL *ref_field, REF_DICT ref_dict_bcs);
 REF_STATUS ref_phys_minspac(REF_DBL reynolds_number, REF_DBL *yplus1);
 
 REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance, REF_DBL *nu_tilde);

@@ -56,6 +56,9 @@ REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid);
 
 REF_STATUS ref_layer_align_quad(REF_GRID ref_grid);
 
+REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid, REF_INT cell,
+                                         REF_DBL *normal);
+
 END_C_DECLORATION
 
 #endif /* REF_LAYER_H */

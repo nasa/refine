@@ -21,12 +21,41 @@
 #include <math.h>
 #include <string.h>
 
+#include "ref_edge.h"
 #include "ref_egads.h"
+#include "ref_layer.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 #include "ref_part.h"
 #include "ref_recon.h"
 #include "ref_sort.h"
+
+REF_STATUS ref_phys_flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
+                                 REF_DBL *field) {
+  REF_INT node;
+  REF_DBL temp;
+  REF_INT nequ;
+
+  nequ = 0;
+  if (ldim > 5 && 0 == ldim % 5) nequ = 5;
+  if (ldim > 6 && 0 == ldim % 6) nequ = 6;
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ldim >= 5) {
+      temp = field[2 + ldim * node];
+      field[2 + ldim * node] = field[3 + ldim * node];
+      field[3 + ldim * node] = temp;
+    }
+    if (nequ > 0) {
+      temp = field[nequ + 2 + ldim * node];
+      field[nequ + 2 + ldim * node] = field[nequ + 3 + ldim * node];
+      field[nequ + 3 + ldim * node] = temp;
+    }
+  }
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive) {
   REF_DBL rho, u, v, w, p, e;
@@ -183,13 +212,22 @@ REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
   return REF_SUCCESS;
 }
 
+REF_STATUS viscosity_law(REF_DBL t, REF_DBL reference_temp_k, REF_DBL *mu) {
+  REF_DBL sutherland_constant_k = 110.56;
+  REF_DBL sutherland_temp;
+  *mu = 1.0;
+  if (reference_temp_k > 0.0) {
+    sutherland_temp = sutherland_constant_k / reference_temp_k;
+    *mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
                             REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
                             REF_DBL *dir, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, mu, mu_t, t;
   REF_DBL gamma = 1.4;
-  REF_DBL sutherland_constant = 110.56;
-  REF_DBL sutherland_temp;
   REF_DBL pr = 0.72;
   REF_DBL turbulent_pr = 0.90;
   REF_DBL tau[3][3], qdot[3];
@@ -203,12 +241,7 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
   p = state[4];
   t = gamma * p / rho;
 
-  mu = 1.0;
-  if (reference_temp > 0.0) {
-    sutherland_temp = sutherland_constant / reference_temp;
-    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-  }
-
+  RSS(viscosity_law(t, reference_temp, &mu), "sutherlands");
   RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
   thermal_conductivity =
       -(mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
@@ -635,6 +668,261 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
 
   *uplus = u;
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
+                               REF_DBL rho, REF_DBL t, REF_DBL dudn,
+                               REF_DBL *yplus_dist) {
+  REF_DBL mu, nu, tau_wall, u_tau;
+  *yplus_dist = -1.0;
+  RSS(viscosity_law(t, reference_t_k, &mu), "sutherlands");
+  tau_wall = mu * dudn * mach / re;
+  u_tau = sqrt(tau_wall / rho);
+  nu = mu / rho;
+  *yplus_dist = nu / u_tau * (mach / re);
+  return REF_SUCCESS;
+}
+REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
+                                      REF_DBL re, REF_DBL reference_t_k,
+                                      REF_INT ldim, REF_DBL *field,
+                                      REF_DBL *lengthscale) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT *hits;
+  REF_INT node;
+  each_ref_node_valid_node(ref_node, node) { lengthscale[node] = 0.0; }
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL edg_cell = ref_grid_edg(ref_grid);
+    REF_CELL tri_cell = ref_grid_tri(ref_grid);
+    REF_INT edg, tri;
+    REF_INT edg_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT ntri, tri_list[2];
+    REF_INT off_node, on_node;
+    REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], dudn;
+    REF_DBL rho, t, yplus_dist;
+    REF_DBL gamma = 1.4, press;
+    each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+      RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
+      RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), edg_nodes[0],
+                              edg_nodes[1], 2, &ntri, tri_list),
+          "tri with2");
+      REIS(1, ntri, "edg expects one tri");
+      tri = tri_list[0];
+      RSS(ref_cell_nodes(tri_cell, tri, tri_nodes), "tri nodes");
+      on_node = edg_nodes[0];
+      off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
+                 edg_nodes[1];
+      u0 = sqrt(ref_math_dot(&(field[1 + ldim * on_node]),
+                             &(field[1 + ldim * on_node])));
+      u1 = sqrt(ref_math_dot(&(field[1 + ldim * off_node]),
+                             &(field[1 + ldim * off_node])));
+      dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
+                ref_node_xyz(ref_node, 0, on_node);
+      dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
+                ref_node_xyz(ref_node, 1, on_node);
+      dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
+                ref_node_xyz(ref_node, 2, on_node);
+      du = ABS(u0 - u1);
+      dn = ref_math_dot(dxyz, edg_norm);
+      dudn = ABS(du / dn);
+      rho = field[0 + ldim * on_node];
+      press = field[4 + ldim * on_node];
+      t = gamma * (press / rho);
+      RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dudn,
+                              &yplus_dist),
+          "yplus dist");
+      lengthscale[edg_nodes[0]] += yplus_dist;
+      hits[edg_nodes[0]] += 1;
+      lengthscale[edg_nodes[1]] += yplus_dist;
+      hits[edg_nodes[1]] += 1;
+    }
+  } else {
+    RSS(REF_IMPLEMENT, "implement 3D");
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      lengthscale[node] /= (REF_DBL)hits[node];
+    }
+  }
+  ref_free(hits);
+
+  RSS(ref_node_ghost_dbl(ref_node, lengthscale, 1), "ghost lengthscale");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid, REF_DBL *normalspacing) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT *hits;
+  REF_INT node;
+  each_ref_node_valid_node(ref_node, node) { normalspacing[node] = 0.0; }
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL edg_cell = ref_grid_edg(ref_grid);
+    REF_CELL tri_cell = ref_grid_tri(ref_grid);
+    REF_INT edg, tri;
+    REF_INT edg_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT ntri, tri_list[2];
+    REF_INT off_node, on_node;
+    REF_DBL dn, dxyz[3], edg_norm[3];
+    each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+      RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
+      RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), edg_nodes[0],
+                              edg_nodes[1], 2, &ntri, tri_list),
+          "tri with2");
+      REIS(1, ntri, "edg expects one tri");
+      tri = tri_list[0];
+      RSS(ref_cell_nodes(tri_cell, tri, tri_nodes), "tri nodes");
+      on_node = edg_nodes[0];
+      off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
+                 edg_nodes[1];
+      dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
+                ref_node_xyz(ref_node, 0, on_node);
+      dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
+                ref_node_xyz(ref_node, 1, on_node);
+      dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
+                ref_node_xyz(ref_node, 2, on_node);
+      dn = ref_math_dot(dxyz, edg_norm);
+      normalspacing[edg_nodes[0]] += dn;
+      hits[edg_nodes[0]] += 1;
+      normalspacing[edg_nodes[1]] += dn;
+      hits[edg_nodes[1]] += 1;
+    }
+  } else {
+    RSS(REF_IMPLEMENT, "implement 3D");
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      normalspacing[node] /= (REF_DBL)hits[node];
+    }
+  }
+  ref_free(hits);
+
+  RSS(ref_node_ghost_dbl(ref_node, normalspacing, 1), "ghost normalspacing");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
+                                 REF_DBL mach, REF_DBL re, REF_DBL temperature,
+                                 REF_DBL target, REF_INT ldim, REF_DBL *field,
+                                 REF_DICT ref_dict_bcs) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *lengthscale, *new_log_metric;
+  REF_INT *hits;
+  REF_INT node, i;
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+  ref_malloc_init(new_log_metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(lengthscale, ref_node_max(ref_node), REF_DBL, 0.0);
+  RSS(ref_phys_yplus_lengthscale(ref_grid, mach, re, temperature, ldim, field,
+                                 lengthscale),
+      "length scale");
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL edg_cell = ref_grid_edg(ref_grid);
+    REF_INT bc;
+    REF_INT edg, edg_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_DBL edg_norm[3], h;
+    REF_DBL d[12], m[6], logm[6];
+    each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict_bcs, edg_nodes[ref_cell_id_index(edg_cell)],
+                         &bc),
+          REF_NOT_FOUND, "bc");
+      if (!ref_phys_wall_distance_bc(bc)) continue;
+      h = target * 0.5 *
+          (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
+      RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
+      ref_matrix_eig(d, 0) = 1.0 / (h * h);
+      ref_matrix_vec(d, 0, 0) = edg_norm[0];
+      ref_matrix_vec(d, 1, 0) = edg_norm[1];
+      ref_matrix_vec(d, 2, 0) = edg_norm[2];
+
+      ref_matrix_eig(d, 2) = 1.0;
+      ref_matrix_vec(d, 0, 2) = 0.0;
+      ref_matrix_vec(d, 1, 2) = 0.0;
+      ref_matrix_vec(d, 2, 2) = 1.0;
+      ref_math_cross_product(ref_matrix_vec_ptr(d, 2), ref_matrix_vec_ptr(d, 0),
+                             ref_matrix_vec_ptr(d, 1));
+      h = 0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]),
+                                        ref_matrix_vec_ptr(d, 1)) +
+                 ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
+                                        ref_matrix_vec_ptr(d, 1)));
+      h = 1.0 / h;
+      ref_matrix_eig(d, 1) = 1.0 / (h * h);
+      RSS(ref_matrix_form_m(d, m), "form");
+      RSS(ref_matrix_log_m(m, logm), "form");
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * edg_nodes[0]] += logm[i];
+      }
+      hits[edg_nodes[0]] += 1;
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * edg_nodes[1]] += logm[i];
+      }
+      hits[edg_nodes[1]] += 1;
+    }
+  } else {
+    RSS(REF_IMPLEMENT, "implement 3D");
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, new_log_metric, 6), "ghost metric");
+  RSS(ref_node_ghost_int(ref_node, hits, 1), "ghost hits");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
+      }
+      hits[node] = -1;
+      RSS(ref_matrix_exp_m(&(new_log_metric[6 * node]), &(metric[6 * node])),
+          "form");
+    }
+  }
+
+  {
+    REF_EDGE ref_edge;
+    REF_INT edge, node0, node1;
+    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      if (0 <= hits[node0] && -1 == hits[node1]) {
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node0] += new_log_metric[i + 6 * node1];
+        }
+        hits[node0] += 1;
+      }
+      if (0 <= hits[node1] && -1 == hits[node0]) {
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node1] += new_log_metric[i + 6 * node0];
+        }
+        hits[node1] += 1;
+      }
+    }
+    ref_edge_free(ref_edge);
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, new_log_metric, 6), "ghost metric");
+  RSS(ref_node_ghost_int(ref_node, hits, 1), "ghost hits");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
+      }
+      hits[node] = -2;
+      RSS(ref_matrix_exp_m(&(new_log_metric[6 * node]), &(metric[6 * node])),
+          "form");
+    }
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, metric, 6), "ghost metric");
+
+  ref_free(lengthscale);
+  ref_free(new_log_metric);
+  ref_free(hits);
   return REF_SUCCESS;
 }
 
