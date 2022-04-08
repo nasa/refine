@@ -3115,6 +3115,17 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
           "FUN3D scalar field reduction");
     }
 
+    RXS(ref_args_find(argc, argv, "--strong-sensor-bc", &pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY != pos) {
+      REF_DBL strong_value;
+      RAS(pos + 1 < argc, "--strong-sensor-bc <value>");
+      strong_value = atof(argv[pos + 1]);
+      RSS(ref_phys_strong_sensor_bc(ref_grid, scalar, strong_value,
+                                    ref_dict_bcs),
+          "apply strong sensor bc");
+    }
+
     RXS(ref_args_find(argc, argv, "--deforming", &pos), REF_NOT_FOUND,
         "arg search");
     if (REF_EMPTY != pos) {
