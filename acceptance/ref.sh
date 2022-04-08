@@ -42,6 +42,7 @@ trap - EXIT
 
 LOG=${root_dir}/log.asan-make-check
 trap "cat $LOG" EXIT
+  make -j 8 > $LOG 2>&1
   make check > $LOG 2>&1
 trap - EXIT
 
