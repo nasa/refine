@@ -705,10 +705,10 @@ sleep 10
 
 grep RAC ${root_dir}/log.accept-* > ${root_dir}/log.summary
 
-find ${source_dir} -name FAILED
+find ${root_dir} -name FAILED
 
 echo -e \\n\
 # Build has failed if any failed cases have been reported
-exit `find ${source_dir} -name FAILED | wc -l`
+exit `find ${root_dir} -name FAILED | wc -l`
 
 
