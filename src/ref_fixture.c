@@ -1718,6 +1718,113 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_fixture_quad_brick_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                       REF_INT dim) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT global, node, cell;
+  REF_INT edg[3], quad[5];
+
+  REF_INT m, n;
+  REF_INT i, j;
+
+  REF_DBL x0 = 0.0;
+  REF_DBL x1 = 1.0;
+
+  REF_DBL y0 = 0.0;
+  REF_DBL y1 = 1.0;
+
+  REF_DBL z = 0.0;
+
+  REF_DBL dx, dy;
+
+  m = dim;
+  n = dim;
+
+  dx = (x1 - x0) / ((REF_DBL)(n - 1));
+  dy = (y1 - y0) / ((REF_DBL)(m - 1));
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_grid_twod(ref_grid) = REF_TRUE;
+
+  if (!ref_mpi_once(ref_grid_mpi(ref_grid))) {
+    RSS(ref_node_initialize_n_global(ref_node, m * n), "init glob");
+    return REF_SUCCESS;
+  }
+
+  /*
+  y   3 --- 2
+  ^   |     |
+  |   |     |
+  |   0 --- 1
+  |
+  +----> x
+  */
+
+#define ij2node(i, j, m, n) ((i) + (j) * (m))
+
+  for (j = 0; j < n; j++) {
+    for (i = 0; i < m; i++) {
+      global = ij2node(i, j, m, n);
+      RSS(ref_node_add(ref_node, global, &node), "node");
+      ref_node_xyz(ref_node, 0, node) = x0 + dx * (REF_DBL)i;
+      ref_node_xyz(ref_node, 1, node) = y0 + dy * (REF_DBL)j;
+      ref_node_xyz(ref_node, 2, node) = z;
+    }
+  }
+
+  edg[2] = 1;
+  j = 0;
+  for (i = 0; i < m - 1; i++) {
+    edg[0] = ij2node(i, j, m, n);
+    edg[1] = ij2node(i + 1, j, m, n);
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "qua");
+  }
+
+  edg[2] = 2;
+  i = m - 1;
+  for (j = 0; j < n - 1; j++) {
+    edg[0] = ij2node(i, j, m, n);
+    edg[1] = ij2node(i, j + 1, m, n);
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
+  }
+
+  edg[2] = 3;
+  j = n - 1;
+  for (i = m - 2; i >= 0; i--) {
+    edg[0] = ij2node(i + 1, j, m, n);
+    edg[1] = ij2node(i, j, m, n);
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
+  }
+
+  edg[2] = 4;
+  i = 0;
+  for (j = n - 2; j >= 0; j--) {
+    edg[0] = ij2node(i, j + 1, m, n);
+    edg[1] = ij2node(i, j, m, n);
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
+  }
+
+  quad[4] = 1;
+  j = 1;
+  for (j = 0; j < n - 1; j++) {
+    for (i = 0; i < m - 1; i++) {
+      quad[0] = ij2node(i, j, m, n);
+      quad[1] = ij2node(i + 1, j, m, n);
+      quad[2] = ij2node(i + 1, j + 1, m, n);
+      quad[3] = ij2node(i, j + 1, m, n);
+      RSS(ref_cell_add(ref_grid_qua(ref_grid), quad, &cell), "qua");
+    }
+  }
+
+  RSS(ref_node_initialize_n_global(ref_node, m * n), "init glob");
+
+  return REF_SUCCESS;
+}
+
 /*
       2
    9 8 7 6

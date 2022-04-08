@@ -60,6 +60,8 @@ REF_STATUS ref_fixture_tet_brick_args_grid(REF_GRID *ref_grid, REF_MPI ref_mpi,
                                            REF_INT l, REF_INT m, REF_INT n);
 REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid, REF_MPI ref_mpi,
                                        REF_INT dim);
+REF_STATUS ref_fixture_quad_brick_grid(REF_GRID *ref_grid, REF_MPI ref_mpi,
+                                       REF_INT dim);
 
 REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
