@@ -2147,6 +2147,7 @@ int main(int argc, char *argv[]) {
       RWDS(ref_node_xyz(ref_node, 2, node), distance2[node], -1, "dist=z2");
     }
 
+    ref_free(distance2);
     ref_free(distance);
     ref_dict_free(ref_dict);
     ref_grid_free(ref_grid);
