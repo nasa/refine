@@ -18,12 +18,31 @@ parmetis_dir=${root_dir}/_refine-parmetis-egadslite
 zoltan_dir=${root_dir}/_refine-zoltan-egadslite
 egads_dir=${root_dir}/_refine-egads-full
 strict_dir=${root_dir}/_refine-strict
+asan_dir=${root_dir}/_refine-asan
 cpp_dir=${root_dir}/_refine-cpp
 
 cd ${source_dir}
 LOG=${root_dir}/log.bootstrap
 trap "cat $LOG" EXIT
 ./bootstrap > $LOG 2>&1
+trap - EXIT
+
+date
+
+mkdir -p ${asan_dir}
+cd ${asan_dir}
+
+LOG=${root_dir}/log.asan-configure
+trap "cat $LOG" EXIT
+${source_dir}/configure \
+    --prefix=${strict_dir} \
+    CFLAGS='-g -O1 -fsanitize=address -fno-omit-frame-pointer -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    CC=clang  > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.asan-make-check
+trap "cat $LOG" EXIT
+( make check > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 date
