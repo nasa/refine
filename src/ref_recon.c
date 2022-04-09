@@ -601,6 +601,7 @@ static REF_STATUS ref_recon_kexact_center(REF_DBL *xyz, REF_CLOUD ref_cloud,
   REF_INT m, n;
   REF_INT item, i, j;
   REF_BOOL verbose = REF_FALSE;
+  REF_STATUS ref_status;
 
   /* solve A with QR factorization size m x n */
   m = ref_cloud_n(ref_cloud);
@@ -634,9 +635,22 @@ static REF_STATUS ref_recon_kexact_center(REF_DBL *xyz, REF_CLOUD ref_cloud,
     if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
     i++;
   }
-  REIS(m, i, "A row miscount");
-  RSS(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr");
-  if (verbose) RSS(ref_matrix_show_aqr(m, n, a, q, r), "show qr");
+  REIB(m, i, "A row miscount", {
+    ref_free(r);
+    ref_free(q);
+    ref_free(a);
+  });
+  RSB(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr", {
+    ref_free(r);
+    ref_free(q);
+    ref_free(a);
+  });
+  if (verbose)
+    RSB(ref_matrix_show_aqr(m, n, a, q, r), "show qr", {
+      ref_free(r);
+      ref_free(q);
+      ref_free(a);
+    });
   for (i = 0; i < n * (n + 1); i++) ab[i] = 0.0;
   for (i = 0; i < n; i++) {
     for (j = 0; j < n; j++) {
@@ -650,10 +664,30 @@ static REF_STATUS ref_recon_kexact_center(REF_DBL *xyz, REF_CLOUD ref_cloud,
     }
     i++;
   }
-  REIS(m, i, "b row miscount");
-  if (verbose) RSS(ref_matrix_show_ab(n, n + 1, ab), "show");
-  RAISE(ref_matrix_solve_ab(n, n + 1, ab));
-  if (verbose) RSS(ref_matrix_show_ab(n, n + 1, ab), "show");
+  REIB(m, i, "b row miscount", {
+    ref_free(r);
+    ref_free(q);
+    ref_free(a);
+  });
+  if (verbose)
+    RSB(ref_matrix_show_ab(n, n + 1, ab), "show", {
+      ref_free(r);
+      ref_free(q);
+      ref_free(a);
+    });
+  ref_status = ref_matrix_solve_ab(n, n + 1, ab);
+  if (REF_SUCCESS != ref_status) {
+    ref_free(r);
+    ref_free(q);
+    ref_free(a);
+    return ref_status;
+  }
+  if (verbose)
+    RSB(ref_matrix_show_ab(n, n + 1, ab), "show", {
+      ref_free(r);
+      ref_free(q);
+      ref_free(a);
+    });
   j = n;
   i = n - 1;
   *center = ab[i + n * j];
