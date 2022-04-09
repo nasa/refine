@@ -151,6 +151,7 @@ int main(int argc, char *argv[]) {
     REIS(REF_INVALID, ref_cell_nodes(ref_cell, cell, nodes), "invalid cell");
     cell = max;
     REIS(REF_INVALID, ref_cell_nodes(ref_cell, cell, nodes), "invalid cell");
+    RSS(ref_cell_free(ref_cell), "free cell");
   }
 
   { /* remove */

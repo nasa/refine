@@ -326,7 +326,8 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
 REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                                    REF_DBL *distance) {
   REF_GRID iso_grid;
-  REF_SEARCH ref_search;
+  REF_SEARCH ref_search = NULL;
+  ;
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cand[REF_CELL_MAX_SIZE_PER];
   REF_DBL center[3], radius, dist;
@@ -386,7 +387,8 @@ REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
 
     RSS(ref_list_erase(ref_list), "reset list");
   }
-  RSS(ref_list_free(ref_list), "free");
+  RSS(ref_list_free(ref_list), "free list");
+  RSS(ref_search_free(ref_search), "free search");
 
   RSS(ref_grid_free(iso_grid), "iso free");
 
@@ -513,7 +515,7 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
   REF_FACE ref_face = NULL;
   REF_INT edge, face, i, j, part, cell;
   REF_GLOB global;
-  REF_INT *new_node;
+  REF_INT *new_node = NULL;
   REF_DBL candidate0[3], candidate1[3];
   REF_DBL triangle0[3], triangle1[3], triangle2[3];
   REF_DBL tt[2], ss[2], tuvw[4];
@@ -702,6 +704,14 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
       }
     }
   }
+
+  if (NULL != ref_face) {
+    RSS(ref_face_free(ref_face), "free");
+  }
+  if (NULL != ref_edge) {
+    RSS(ref_edge_free(ref_edge), "free");
+  }
+  ref_free(new_node);
   return REF_SUCCESS;
 }
 
