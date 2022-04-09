@@ -824,7 +824,7 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
     REF_CELL edg_cell = ref_grid_edg(ref_grid);
     REF_INT bc;
     REF_INT edg, edg_nodes[REF_CELL_MAX_SIZE_PER];
-    REF_DBL edg_norm[3], h;
+    REF_DBL edg_norm[3], h0, h1, ratio;
     REF_DBL d[12], m[6], logm[6];
     each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
       bc = REF_EMPTY;
@@ -832,26 +832,27 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
                          &bc),
           REF_NOT_FOUND, "bc");
       if (!ref_phys_wall_distance_bc(bc)) continue;
-      h = target * 0.5 *
-          (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
       RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
-      ref_matrix_eig(d, 0) = 1.0 / (h * h);
       ref_matrix_vec(d, 0, 0) = edg_norm[0];
       ref_matrix_vec(d, 1, 0) = edg_norm[1];
       ref_matrix_vec(d, 2, 0) = edg_norm[2];
+      h0 = target * 0.5 *
+           (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
+      ref_matrix_eig(d, 0) = 1.0 / (h0 * h0);
 
-      ref_matrix_eig(d, 2) = 1.0;
       ref_matrix_vec(d, 0, 2) = 0.0;
       ref_matrix_vec(d, 1, 2) = 0.0;
       ref_matrix_vec(d, 2, 2) = 1.0;
+      ref_matrix_eig(d, 2) = 1.0;
+
       ref_math_cross_product(ref_matrix_vec_ptr(d, 2), ref_matrix_vec_ptr(d, 0),
                              ref_matrix_vec_ptr(d, 1));
-      h = 0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]),
-                                        ref_matrix_vec_ptr(d, 1)) +
-                 ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
-                                        ref_matrix_vec_ptr(d, 1)));
-      h = 1.0 / h;
-      ref_matrix_eig(d, 1) = 1.0 / (h * h);
+      ratio = 0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]),
+                                            ref_matrix_vec_ptr(d, 1)) +
+                     ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
+                                            ref_matrix_vec_ptr(d, 1)));
+      h1 = 1.0 / ratio;
+      ref_matrix_eig(d, 1) = 1.0 / (h1 * h1);
       RSS(ref_matrix_form_m(d, m), "form");
       RSS(ref_matrix_log_m(m, logm), "form");
       for (i = 0; i < 6; i++) {
