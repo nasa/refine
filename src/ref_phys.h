@@ -85,6 +85,9 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
                                  REF_DBL mach, REF_DBL re, REF_DBL temperature,
                                  REF_DBL target, REF_INT ldim,
                                  REF_DBL *ref_field, REF_DICT ref_dict_bcs);
+REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
+                                     REF_DBL strong_value,
+                                     REF_DICT ref_dict_bcs);
 REF_STATUS ref_phys_minspac(REF_DBL reynolds_number, REF_DBL *yplus1);
 
 REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance, REF_DBL *nu_tilde);

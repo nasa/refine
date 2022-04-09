@@ -1531,6 +1531,8 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, shape[7], -1, "s7");
     RWDS(0.0, shape[8], -1, "s8");
     RWDS(1.0, shape[9], -1, "s9");
+
+    RSS(ref_cell_free(ref_cell), "free cell");
   }
 
   RSS(ref_mpi_free(ref_mpi), "cleanup");
