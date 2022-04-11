@@ -700,7 +700,7 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
     REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
     REF_INT ntri, tri_list[2];
     REF_INT off_node, on_node;
-    REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], dudn;
+    REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], dudn, tangent[3];
     REF_DBL rho, t, yplus_dist;
     REF_DBL gamma = 1.4, press;
     each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
@@ -714,10 +714,17 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
       on_node = edg_nodes[0];
       off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
                  edg_nodes[1];
-      u0 = sqrt(ref_math_dot(&(field[1 + ldim * on_node]),
-                             &(field[1 + ldim * on_node])));
-      u1 = sqrt(ref_math_dot(&(field[1 + ldim * off_node]),
-                             &(field[1 + ldim * off_node])));
+      tangent[0] = ref_node_xyz(ref_node, 0, edg_nodes[1]) -
+                   ref_node_xyz(ref_node, 0, edg_nodes[0]);
+      tangent[1] = ref_node_xyz(ref_node, 1, edg_nodes[1]) -
+                   ref_node_xyz(ref_node, 1, edg_nodes[0]);
+      tangent[2] = ref_node_xyz(ref_node, 2, edg_nodes[1]) -
+                   ref_node_xyz(ref_node, 2, edg_nodes[0]);
+      RSS(ref_math_normalize(tangent), "normalize tangent");
+
+      u0 = ref_math_dot(&(field[1 + ldim * on_node]), tangent);
+      u1 = ref_math_dot(&(field[1 + ldim * off_node]), tangent);
+      u0 = 0.0; /* assume no-slip bc */
       dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
                 ref_node_xyz(ref_node, 0, on_node);
       dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
