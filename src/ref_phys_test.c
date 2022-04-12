@@ -1954,6 +1954,14 @@ int main(int argc, char *argv[]) {
     RSS(viscosity_law(t, reference_temperature_k, &mu), "sutherlands");
     nu_mach_re = mu / rho * mach / re;
 
+    y = -0.01;
+    u = -0.01;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = ABS(y) * u_tau / nu_mach_re;
+    uplus = ABS(u) / u_tau;
+    RWDS(213.932, yplus, 0.01, "yplus");
+    RWDS(18.698, uplus, 0.01, "uplus");
+
     y = 0.0;
     u = 0.0;
     RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
