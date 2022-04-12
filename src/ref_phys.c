@@ -686,13 +686,14 @@ REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
 REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
                           REF_DBL *u_tau) {
   REF_DBL uplus, yplus;
-  REF_DBL yplus_error;
+  REF_DBL uplus_error;
   REF_DBL dyplus_duplus;
-  REF_DBL yplus_error_du_tau;
+  REF_DBL uplus_error_du_tau;
   REF_DBL duplus_du_tau, dyplus_du_tau;
   REF_DBL du_tau;
   REF_BOOL keep_going;
   REF_INT iters;
+  REF_BOOL verbose = REF_TRUE;
   *u_tau = sqrt(u / y * nu_mach_re); /* guess to start newton */
   iters = 0;
   keep_going = REF_TRUE;
@@ -701,26 +702,27 @@ REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
     duplus_du_tau = -u / ((*u_tau) * (*u_tau));
     yplus = y * (*u_tau) / nu_mach_re;
     dyplus_du_tau = y / nu_mach_re;
-    RSS(ref_phys_spalding_yplus(uplus, &yplus_error), "yplus");
-    yplus_error -= yplus;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus_error), "uplus");
+    uplus_error -= uplus;
     RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus),
         "dyplus_duplus");
-    yplus_error_du_tau = dyplus_duplus * duplus_du_tau - dyplus_du_tau;
-    du_tau = -yplus_error / yplus_error_du_tau;
-    printf("u_tau %f yplus %f uplus %f error %e y %e\n", *u_tau, yplus, uplus,
-           yplus_error, y);
+    uplus_error_du_tau = dyplus_du_tau / dyplus_duplus - duplus_du_tau;
+    du_tau = -uplus_error / uplus_error_du_tau;
+    if (verbose)
+      printf("u_tau %f yplus %f uplus %f error %e y %e\n", *u_tau, yplus, uplus,
+             uplus_error, y);
     (*u_tau) += du_tau;
 
-    if (ref_math_divisible(yplus_error, yplus) && ABS(yplus) > 1.0e-3) {
-      keep_going = (ABS(yplus_error / yplus) > 1.0e-12);
+    if (ref_math_divisible(uplus_error, uplus) && ABS(uplus) > 1.0e-3) {
+      keep_going = (ABS(uplus_error / uplus) > 1.0e-12);
     } else {
-      keep_going = (ABS(yplus_error) > 1.0e-15);
+      keep_going = (ABS(uplus_error) > 1.0e-15);
     }
 
     iters++;
     RAB(iters < 100, "iteration count exceeded", {
       printf(" y %e u %e yplus %e uplus %e error %e u_tau %e\n", y, u, yplus,
-             uplus, yplus_error, *u_tau);
+             uplus, uplus_error, *u_tau);
     });
   }
   return REF_SUCCESS;
