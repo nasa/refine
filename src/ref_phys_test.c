@@ -1972,9 +1972,19 @@ int main(int argc, char *argv[]) {
 
     y = 0.0600773729383945465 - 0.0600071102380752563;
     u = 0.0801576524972915649;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(20.183, yplus, 0.01, "yplus");
+    RWDS(11.162, uplus, 0.01, "uplus");
 
     y = 0.0621619261801242828 - 0.0600071102380752563;
     u = 0.148353725671768188;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(597.636, yplus, 0.01, "yplus");
+    RWDS(21.396, uplus, 0.01, "uplus");
   }
 
   { /* minspac */
