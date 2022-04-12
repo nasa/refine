@@ -1016,7 +1016,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
             int *int_bundle;
             double *dbl_bundle;
             degree = 3;
-            n_control_point = 8;//MAX(8, pcurve_ints[2]);
+            n_control_point = MAX(8, pcurve_ints[2]);
             edgeid = EG_indexBodyTopo((ego)(ref_geom->body), edge);
             RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid, degree,
                                       n_control_point, &int_bundle,
