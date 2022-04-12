@@ -1932,14 +1932,92 @@ int main(int argc, char *argv[]) {
   { /* yplus normal derivative */
     REF_DBL t = 1.0;
     REF_DBL rho = 1.0;
-    REF_DBL dudn = 1000.0;
+    REF_DBL y = 1.0e-4;
+    REF_DBL u = 0.1;
     REF_DBL mach = 0.2;
     REF_DBL re = 1.0e6;
     REF_DBL reference_t_k = 288.15;
     REF_DBL yplus_dist;
-    RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dudn, &yplus_dist),
+    RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, y, u, &yplus_dist),
         "yplus distance");
-    RWDS(1.414213562373095e-05, yplus_dist, -1, "uplus");
+    RWDS(1.307272859981315e-05, yplus_dist, -1, "uplus");
+  }
+
+  { /* spalding look up u_tau */
+    REF_DBL y, u, nu_mach_re, u_tau;
+    REF_DBL t = 1.0;
+    REF_DBL reference_temperature_k = 300;
+    REF_DBL mu;
+    REF_DBL rho = 1.0;
+    REF_DBL mach = 0.15;
+    REF_DBL re = 6e6;
+    REF_DBL yplus, uplus;
+    RSS(viscosity_law(t, reference_temperature_k, &mu), "sutherlands");
+    nu_mach_re = mu / rho * mach / re;
+
+    y = -0.01;
+    u = -0.01;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = ABS(y) * u_tau / nu_mach_re;
+    uplus = ABS(u) / u_tau;
+    RWDS(213.932, yplus, 0.01, "yplus");
+    RWDS(18.698, uplus, 0.01, "uplus");
+
+    y = 0.0;
+    u = 0.0;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(0.0, yplus, 0.01, "yplus");
+    RWDS(0.0, uplus, 0.01, "uplus");
+
+    y = 0.0600108541548252106 - 0.0600071102380752563;
+    u = 0.00664277607575058937;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(0.9974, yplus, 0.01, "yplus");
+    RWDS(0.9974, uplus, 0.01, "uplus");
+
+    y = 0.0600227303802967072 - 0.0600071102380752563;
+    u = 0.0276699680835008621;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(4.292, yplus, 0.01, "yplus");
+    RWDS(4.027, uplus, 0.01, "uplus");
+
+    y = 0.0600773729383945465 - 0.0600071102380752563;
+    u = 0.0801576524972915649;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(20.183, yplus, 0.01, "yplus");
+    RWDS(11.162, uplus, 0.01, "uplus");
+
+    y = 0.0621619261801242828 - 0.0600071102380752563;
+    u = 0.148353725671768188;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(597.636, yplus, 0.01, "yplus");
+    RWDS(21.396, uplus, 0.01, "uplus");
+
+    y = 0.0655641335859719482 - 0.0600071102380752563;
+    u = 0.173750286329742376;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(1613.892, yplus, 0.01, "yplus");
+    RWDS(23.931, uplus, 0.01, "uplus");
+
+    y = 0.02;
+    u = 0.2;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(5884.664, yplus, 0.01, "yplus");
+    RWDS(27.189, uplus, 0.01, "uplus");
   }
 
   { /* minspac */

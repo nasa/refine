@@ -672,17 +672,76 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
 }
 
 REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
-                               REF_DBL rho, REF_DBL t, REF_DBL dudn,
+                               REF_DBL rho, REF_DBL t, REF_DBL y, REF_DBL u,
                                REF_DBL *yplus_dist) {
-  REF_DBL mu, nu, tau_wall, u_tau;
+  REF_DBL mu, nu_mach_re, u_tau;
   *yplus_dist = -1.0;
   RSS(viscosity_law(t, reference_t_k, &mu), "sutherlands");
-  tau_wall = mu * dudn * mach / re;
-  u_tau = sqrt(tau_wall / rho);
-  nu = mu / rho;
-  *yplus_dist = nu / u_tau * (mach / re);
+  nu_mach_re = mu / rho * mach / re;
+  RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+  *yplus_dist = nu_mach_re / u_tau;
   return REF_SUCCESS;
 }
+REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
+                          REF_DBL *u_tau) {
+  REF_DBL uplus, yplus;
+  REF_DBL uplus_error;
+  REF_DBL dyplus_duplus;
+  REF_DBL uplus_error_du_tau;
+  REF_DBL duplus_du_tau, dyplus_du_tau;
+  REF_DBL du_tau;
+  REF_BOOL keep_going;
+  REF_INT iters;
+  REF_BOOL verbose = REF_FALSE;
+  u = ABS(u); /* only admit positive values */
+  y = ABS(y);
+  if (!ref_math_divisible(u, y)) {
+    *u_tau = nu_mach_re;
+    if (verbose) {
+      uplus = u / (*u_tau);
+      yplus = y * (*u_tau) / nu_mach_re;
+      uplus_error = 0.0;
+      printf("u_tau %e yplus %f uplus %f error %e y %e\n", *u_tau, yplus, uplus,
+             uplus_error, y);
+    }
+    return REF_SUCCESS;
+  }
+  *u_tau = sqrt(u / y * nu_mach_re); /* guess to start newton */
+  uplus = 30;                        /* edge of boundary layer guess */
+  (*u_tau) = MAX((*u_tau), (u / uplus));
+  iters = 0;
+  keep_going = REF_TRUE;
+  while (keep_going) {
+    uplus = u / (*u_tau);
+    duplus_du_tau = -u / ((*u_tau) * (*u_tau));
+    yplus = y * (*u_tau) / nu_mach_re;
+    dyplus_du_tau = y / nu_mach_re;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus_error), "uplus");
+    uplus_error -= uplus;
+    RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus),
+        "dyplus_duplus");
+    uplus_error_du_tau = dyplus_du_tau / dyplus_duplus - duplus_du_tau;
+    du_tau = -uplus_error / uplus_error_du_tau;
+    if (verbose)
+      printf("u_tau %f yplus %f uplus %f error %e y %e\n", *u_tau, yplus, uplus,
+             uplus_error, y);
+    (*u_tau) += du_tau;
+
+    if (ref_math_divisible(uplus_error, uplus) && ABS(uplus) > 1.0e-3) {
+      keep_going = (ABS(uplus_error / uplus) > 1.0e-12);
+    } else {
+      keep_going = (ABS(uplus_error) > 1.0e-15);
+    }
+
+    iters++;
+    RAB(iters < 100, "iteration count exceeded", {
+      printf(" y %e u %e yplus %e uplus %e error %e u_tau %e\n", y, u, yplus,
+             uplus, uplus_error, *u_tau);
+    });
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
                                       REF_DBL re, REF_DBL reference_t_k,
                                       REF_INT ldim, REF_DBL *field,
@@ -700,7 +759,7 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
     REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
     REF_INT ntri, tri_list[2];
     REF_INT off_node, on_node;
-    REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], dudn;
+    REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], tangent[3];
     REF_DBL rho, t, yplus_dist;
     REF_DBL gamma = 1.4, press;
     each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
@@ -714,10 +773,17 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
       on_node = edg_nodes[0];
       off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
                  edg_nodes[1];
-      u0 = sqrt(ref_math_dot(&(field[1 + ldim * on_node]),
-                             &(field[1 + ldim * on_node])));
-      u1 = sqrt(ref_math_dot(&(field[1 + ldim * off_node]),
-                             &(field[1 + ldim * off_node])));
+      tangent[0] = ref_node_xyz(ref_node, 0, edg_nodes[1]) -
+                   ref_node_xyz(ref_node, 0, edg_nodes[0]);
+      tangent[1] = ref_node_xyz(ref_node, 1, edg_nodes[1]) -
+                   ref_node_xyz(ref_node, 1, edg_nodes[0]);
+      tangent[2] = ref_node_xyz(ref_node, 2, edg_nodes[1]) -
+                   ref_node_xyz(ref_node, 2, edg_nodes[0]);
+      RSS(ref_math_normalize(tangent), "normalize tangent");
+
+      u0 = ref_math_dot(&(field[1 + ldim * on_node]), tangent);
+      u1 = ref_math_dot(&(field[1 + ldim * off_node]), tangent);
+      u0 = 0.0; /* assume no-slip bc */
       dxyz[0] = ref_node_xyz(ref_node, 0, off_node) -
                 ref_node_xyz(ref_node, 0, on_node);
       dxyz[1] = ref_node_xyz(ref_node, 1, off_node) -
@@ -725,12 +791,11 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
       dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
                 ref_node_xyz(ref_node, 2, on_node);
       du = ABS(u0 - u1);
-      dn = ref_math_dot(dxyz, edg_norm);
-      dudn = ABS(du / dn);
+      dn = ABS(ref_math_dot(dxyz, edg_norm));
       rho = field[0 + ldim * on_node];
       press = field[4 + ldim * on_node];
       t = gamma * (press / rho);
-      RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dudn,
+      RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dn, du,
                               &yplus_dist),
           "yplus dist");
       lengthscale[edg_nodes[0]] += yplus_dist;
@@ -824,7 +889,7 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
     REF_CELL edg_cell = ref_grid_edg(ref_grid);
     REF_INT bc;
     REF_INT edg, edg_nodes[REF_CELL_MAX_SIZE_PER];
-    REF_DBL edg_norm[3], h;
+    REF_DBL edg_norm[3], h0, h1, ratio;
     REF_DBL d[12], m[6], logm[6];
     each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
       bc = REF_EMPTY;
@@ -832,26 +897,27 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
                          &bc),
           REF_NOT_FOUND, "bc");
       if (!ref_phys_wall_distance_bc(bc)) continue;
-      h = target * 0.5 *
-          (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
       RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
-      ref_matrix_eig(d, 0) = 1.0 / (h * h);
       ref_matrix_vec(d, 0, 0) = edg_norm[0];
       ref_matrix_vec(d, 1, 0) = edg_norm[1];
       ref_matrix_vec(d, 2, 0) = edg_norm[2];
+      h0 = target * 0.5 *
+           (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
+      ref_matrix_eig(d, 0) = 1.0 / (h0 * h0);
 
-      ref_matrix_eig(d, 2) = 1.0;
       ref_matrix_vec(d, 0, 2) = 0.0;
       ref_matrix_vec(d, 1, 2) = 0.0;
       ref_matrix_vec(d, 2, 2) = 1.0;
+      ref_matrix_eig(d, 2) = 1.0;
+
       ref_math_cross_product(ref_matrix_vec_ptr(d, 2), ref_matrix_vec_ptr(d, 0),
                              ref_matrix_vec_ptr(d, 1));
-      h = 0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]),
-                                        ref_matrix_vec_ptr(d, 1)) +
-                 ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
-                                        ref_matrix_vec_ptr(d, 1)));
-      h = 1.0 / h;
-      ref_matrix_eig(d, 1) = 1.0 / (h * h);
+      ratio = 0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]),
+                                            ref_matrix_vec_ptr(d, 1)) +
+                     ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
+                                            ref_matrix_vec_ptr(d, 1)));
+      h1 = 1.0 / ratio;
+      ref_matrix_eig(d, 1) = 1.0 / (h1 * h1);
       RSS(ref_matrix_form_m(d, m), "form");
       RSS(ref_matrix_log_m(m, logm), "form");
       for (i = 0; i < 6; i++) {
