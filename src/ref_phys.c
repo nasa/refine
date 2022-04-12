@@ -687,15 +687,26 @@ REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
                           REF_DBL *u_tau) {
   REF_INT iters;
   REF_DBL uplus, yplus;
-  *u_tau = sqrt(u / y * nu_mach_re);
-  uplus = u / (*u_tau);
-  yplus = y * (*u_tau) / nu_mach_re;
-  printf("guess u_tau %e yplus %f uplus %f\n", *u_tau, yplus, uplus);
+  REF_DBL yplus_error;
+  REF_DBL dyplus_duplus;
+  REF_DBL yplus_error_du_tau;
+  REF_DBL duplus_du_tau, dyplus_du_tau;
+  REF_DBL du_tau;
+  *u_tau = sqrt(u / y * nu_mach_re); /* guess to start newton */
   for (iters = 0; iters < 10; iters++) {
     uplus = u / (*u_tau);
-    RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
-    printf("u_tau %e yplus %f uplus %f\n", *u_tau, yplus, uplus);
-    *u_tau = yplus / y * nu_mach_re;
+    duplus_du_tau = -u / ((*u_tau) * (*u_tau));
+    yplus = y * (*u_tau) / nu_mach_re;
+    dyplus_du_tau = y / nu_mach_re;
+    RSS(ref_phys_spalding_yplus(uplus, &yplus_error), "yplus");
+    yplus_error -= yplus;
+    RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus),
+        "dyplus_duplus");
+    yplus_error_du_tau = dyplus_duplus * duplus_du_tau - dyplus_du_tau;
+    du_tau = -yplus_error / yplus_error_du_tau;
+    printf("u_tau %e yplus %f uplus %f error %f derror %e du_tau %e\n", *u_tau,
+           yplus, uplus, yplus_error, yplus_error_du_tau, du_tau);
+    (*u_tau) += du_tau;
   }
   return REF_SUCCESS;
 }

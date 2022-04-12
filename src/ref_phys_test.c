@@ -1967,8 +1967,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
     yplus = y * u_tau / nu_mach_re;
     uplus = u / u_tau;
-    RWDS(4.158, yplus, 0.01, "yplus");
-    RWDS(4.158, uplus, 0.01, "uplus");
+    RWDS(4.292, yplus, 0.01, "yplus");
+    RWDS(4.027, uplus, 0.01, "uplus");
 
     y = 0.0600773729383945465 - 0.0600071102380752563;
     u = 0.0801576524972915649;
