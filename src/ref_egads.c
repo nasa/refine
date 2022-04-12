@@ -901,7 +901,8 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
+REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
+                                 REF_BOOL debug) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   ego face, newface;
   ego surface;
@@ -913,6 +914,8 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
   int face_geom_class, face_geom_type;
   int iloop;
   REF_BOOL verbose = REF_TRUE;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(debug);
 
   face = ((ego *)(ref_geom->faces))[faceid - 1];
   REIS(EGADS_SUCCESS,
@@ -1122,6 +1125,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
   printf("nothing for %s, full EGADS not linked\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+  SUPRESS_UNUSED_COMPILER_WARNING(debug);
 #endif
   return REF_SUCCESS;
 }

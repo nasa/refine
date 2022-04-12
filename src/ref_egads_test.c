@@ -473,7 +473,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "steinmetz"), "create");
     printf("steinmetz reface:\n");
-    RSS(ref_egads_brep_reface(ref_geom, 8), "brep reface");
+    RSS(ref_egads_brep_reface(ref_geom, 8, REF_FALSE), "brep reface");
     if (save)
       RSS(ref_egads_save(ref_geom, "ref_egads_test_steinmetz_reface.egads"),
           "egd");
@@ -493,7 +493,7 @@ int main(int argc, char *argv[]) {
     printf("load %s\n", filename);
     RSS(ref_egads_load(ref_geom, filename), "ld egads");
     printf("reface %d\n", faceid);
-    RSS(ref_egads_brep_reface(ref_geom, faceid), "brep reface");
+    RSS(ref_egads_brep_reface(ref_geom, faceid, REF_TRUE), "brep reface");
     RSS(ref_egads_save(ref_geom, "ref_egads_test_reface.egads"), "egd");
     RSS(ref_geom_free(ref_geom), "free geom");
   }
