@@ -693,7 +693,7 @@ REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
   REF_DBL du_tau;
   REF_BOOL keep_going;
   REF_INT iters;
-  REF_BOOL verbose = REF_TRUE;
+  REF_BOOL verbose = REF_FALSE;
   u = ABS(u); /* only admit positive values */
   y = ABS(y);
   if (!ref_math_divisible(u, y)) {
