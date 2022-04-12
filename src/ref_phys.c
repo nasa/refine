@@ -674,15 +674,12 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
 REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
                                REF_DBL rho, REF_DBL t, REF_DBL y, REF_DBL u,
                                REF_DBL *yplus_dist) {
-  REF_DBL mu, nu, tau_wall, u_tau;
-  REF_DBL dudn;
+  REF_DBL mu, nu_mach_re, tau_wall, u_tau;
   *yplus_dist = -1.0;
   RSS(viscosity_law(t, reference_t_k, &mu), "sutherlands");
-  dudn = u / y;
-  tau_wall = mu * dudn * mach / re;
-  u_tau = sqrt(tau_wall / rho);
-  nu = mu / rho;
-  *yplus_dist = nu / u_tau * (mach / re);
+  nu_mach_re = mu / rho * mach / re;
+  RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+  *yplus_dist = nu_mach_re / u_tau;
   return REF_SUCCESS;
 }
 REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
