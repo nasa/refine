@@ -685,7 +685,18 @@ REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
 }
 REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
                           REF_DBL *u_tau) {
+  REF_INT iters;
+  REF_DBL uplus, yplus;
   *u_tau = sqrt(u / y * nu_mach_re);
+  uplus = u / (*u_tau);
+  yplus = y * (*u_tau) / nu_mach_re;
+  printf("guess u_tau %e yplus %f uplus %f\n", *u_tau, yplus, uplus);
+  for (iters = 0; iters < 10; iters++) {
+    uplus = u / (*u_tau);
+    RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
+    printf("u_tau %e yplus %f uplus %f\n", *u_tau, yplus, uplus);
+    *u_tau = yplus / y * nu_mach_re;
+  }
   return REF_SUCCESS;
 }
 
