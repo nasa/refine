@@ -685,15 +685,18 @@ REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
 }
 REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
                           REF_DBL *u_tau) {
-  REF_INT iters;
   REF_DBL uplus, yplus;
   REF_DBL yplus_error;
   REF_DBL dyplus_duplus;
   REF_DBL yplus_error_du_tau;
   REF_DBL duplus_du_tau, dyplus_du_tau;
   REF_DBL du_tau;
+  REF_BOOL keep_going;
+  REF_INT iters;
   *u_tau = sqrt(u / y * nu_mach_re); /* guess to start newton */
-  for (iters = 0; iters < 10; iters++) {
+  iters = 0;
+  keep_going = REF_TRUE;
+  while (keep_going) {
     uplus = u / (*u_tau);
     duplus_du_tau = -u / ((*u_tau) * (*u_tau));
     yplus = y * (*u_tau) / nu_mach_re;
@@ -704,9 +707,21 @@ REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
         "dyplus_duplus");
     yplus_error_du_tau = dyplus_duplus * duplus_du_tau - dyplus_du_tau;
     du_tau = -yplus_error / yplus_error_du_tau;
-    printf("u_tau %e yplus %f uplus %f error %f derror %e du_tau %e\n", *u_tau,
-           yplus, uplus, yplus_error, yplus_error_du_tau, du_tau);
+    printf("u_tau %f yplus %f uplus %f error %e\n", *u_tau, yplus, uplus,
+           yplus_error);
     (*u_tau) += du_tau;
+
+    if (ref_math_divisible(yplus_error, yplus) && ABS(yplus) > 1.0e-3) {
+      keep_going = (ABS(yplus_error / yplus) > 1.0e-12);
+    } else {
+      keep_going = (ABS(yplus_error) > 1.0e-15);
+    }
+
+    iters++;
+    RAB(iters < 100, "iteration count exceeded", {
+      printf(" y %e u %e yplus %e uplus %e error %e u_tau %e\n", y, u, yplus,
+             uplus, yplus_error, *u_tau);
+    });
   }
   return REF_SUCCESS;
 }
