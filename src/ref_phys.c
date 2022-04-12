@@ -672,11 +672,13 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
 }
 
 REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
-                               REF_DBL rho, REF_DBL t, REF_DBL dudn,
+                               REF_DBL rho, REF_DBL t, REF_DBL y, REF_DBL u,
                                REF_DBL *yplus_dist) {
   REF_DBL mu, nu, tau_wall, u_tau;
+  REF_DBL dudn;
   *yplus_dist = -1.0;
   RSS(viscosity_law(t, reference_t_k, &mu), "sutherlands");
+  dudn = u / y;
   tau_wall = mu * dudn * mach / re;
   u_tau = sqrt(tau_wall / rho);
   nu = mu / rho;
@@ -760,7 +762,7 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
     REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
     REF_INT ntri, tri_list[2];
     REF_INT off_node, on_node;
-    REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], dudn, tangent[3];
+    REF_DBL dn, du, u0, u1, dxyz[3], edg_norm[3], tangent[3];
     REF_DBL rho, t, yplus_dist;
     REF_DBL gamma = 1.4, press;
     each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
@@ -792,12 +794,11 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
       dxyz[2] = ref_node_xyz(ref_node, 2, off_node) -
                 ref_node_xyz(ref_node, 2, on_node);
       du = ABS(u0 - u1);
-      dn = ref_math_dot(dxyz, edg_norm);
-      dudn = ABS(du / dn);
+      dn = ABS(ref_math_dot(dxyz, edg_norm));
       rho = field[0 + ldim * on_node];
       press = field[4 + ldim * on_node];
       t = gamma * (press / rho);
-      RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dudn,
+      RSS(ref_phys_yplus_dist(mach, re, reference_t_k, rho, t, dn, du,
                               &yplus_dist),
           "yplus dist");
       lengthscale[edg_nodes[0]] += yplus_dist;
