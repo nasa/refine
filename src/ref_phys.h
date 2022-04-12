@@ -76,6 +76,9 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus);
 REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
                                REF_DBL rho, REF_DBL t, REF_DBL dudn,
                                REF_DBL *yplus_dist);
+REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
+                          REF_DBL *u_tau);
+
 REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
                                       REF_DBL re, REF_DBL reference_t_k,
                                       REF_INT ldim, REF_DBL *field,

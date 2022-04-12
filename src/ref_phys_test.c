@@ -1942,6 +1942,41 @@ int main(int argc, char *argv[]) {
     RWDS(1.414213562373095e-05, yplus_dist, -1, "uplus");
   }
 
+  { /* spalding look up u_tau */
+    REF_DBL y, u, nu_mach_re, u_tau;
+    REF_DBL t = 1.0;
+    REF_DBL reference_temperature_k = 300;
+    REF_DBL mu;
+    REF_DBL rho = 1.0;
+    REF_DBL mach = 0.15;
+    REF_DBL re = 6e6;
+    REF_DBL yplus, uplus;
+    RSS(viscosity_law(t, reference_temperature_k, &mu), "sutherlands");
+    nu_mach_re = mu / rho * mach / re;
+
+    y = 0.0600108541548252106 - 0.0600071102380752563;
+    u = 0.00664277607575058937;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(0.9974, yplus, 0.01, "yplus");
+    RWDS(0.9974, uplus, 0.01, "uplus");
+
+    y = 0.0600227303802967072 - 0.0600071102380752563;
+    u = 0.0276699680835008621;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(4.158, yplus, 0.01, "yplus");
+    RWDS(4.158, uplus, 0.01, "uplus");
+
+    y = 0.0600773729383945465 - 0.0600071102380752563;
+    u = 0.0801576524972915649;
+
+    y = 0.0621619261801242828 - 0.0600071102380752563;
+    u = 0.148353725671768188;
+  }
+
   { /* minspac */
     REF_DBL reynolds_number, yplus1;
     reynolds_number = 20558.0; /* 5.67e6 / 275.8 */

@@ -683,6 +683,12 @@ REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
   *yplus_dist = nu / u_tau * (mach / re);
   return REF_SUCCESS;
 }
+REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
+                          REF_DBL *u_tau) {
+  *u_tau = sqrt(u / y * nu_mach_re);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
                                       REF_DBL re, REF_DBL reference_t_k,
                                       REF_INT ldim, REF_DBL *field,
