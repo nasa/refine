@@ -707,8 +707,8 @@ REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
         "dyplus_duplus");
     yplus_error_du_tau = dyplus_duplus * duplus_du_tau - dyplus_du_tau;
     du_tau = -yplus_error / yplus_error_du_tau;
-    printf("u_tau %f yplus %f uplus %f error %e\n", *u_tau, yplus, uplus,
-           yplus_error);
+    printf("u_tau %f yplus %f uplus %f error %e y %e\n", *u_tau, yplus, uplus,
+           yplus_error, y);
     (*u_tau) += du_tau;
 
     if (ref_math_divisible(yplus_error, yplus) && ABS(yplus) > 1.0e-3) {
