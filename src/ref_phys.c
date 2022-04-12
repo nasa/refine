@@ -694,6 +694,17 @@ REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
   REF_BOOL keep_going;
   REF_INT iters;
   REF_BOOL verbose = REF_TRUE;
+  if (!ref_math_divisible(u, y)) {
+    *u_tau = nu_mach_re;
+    if (verbose) {
+      uplus = u / (*u_tau);
+      yplus = y * (*u_tau) / nu_mach_re;
+      uplus_error = 0.0;
+      printf("u_tau %e yplus %f uplus %f error %e y %e\n", *u_tau, yplus, uplus,
+             uplus_error, y);
+    }
+    return REF_SUCCESS;
+  }
   *u_tau = sqrt(u / y * nu_mach_re); /* guess to start newton */
   uplus = 30;                        /* edge of boundary layer guess */
   (*u_tau) = MAX((*u_tau), (u / uplus));

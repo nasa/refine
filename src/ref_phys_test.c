@@ -1954,6 +1954,14 @@ int main(int argc, char *argv[]) {
     RSS(viscosity_law(t, reference_temperature_k, &mu), "sutherlands");
     nu_mach_re = mu / rho * mach / re;
 
+    y = 0.0;
+    u = 0.0;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(0.0, yplus, 0.01, "yplus");
+    RWDS(0.0, uplus, 0.01, "uplus");
+
     y = 0.0600108541548252106 - 0.0600071102380752563;
     u = 0.00664277607575058937;
     RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
@@ -1985,6 +1993,22 @@ int main(int argc, char *argv[]) {
     uplus = u / u_tau;
     RWDS(597.636, yplus, 0.01, "yplus");
     RWDS(21.396, uplus, 0.01, "uplus");
+
+    y = 0.0655641335859719482 - 0.0600071102380752563;
+    u = 0.173750286329742376;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(1613.892, yplus, 0.01, "yplus");
+    RWDS(23.931, uplus, 0.01, "uplus");
+
+    y = 0.02;
+    u = 0.2;
+    RSS(ref_phys_u_tau(y, u, nu_mach_re, &u_tau), "u_tau");
+    yplus = y * u_tau / nu_mach_re;
+    uplus = u / u_tau;
+    RWDS(5884.664, yplus, 0.01, "yplus");
+    RWDS(27.189, uplus, 0.01, "uplus");
   }
 
   { /* minspac */
