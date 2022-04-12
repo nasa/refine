@@ -915,8 +915,6 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
   int iloop;
   REF_BOOL verbose = REF_TRUE;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(debug);
-
   face = ((ego *)(ref_geom->faces))[faceid - 1];
   REIS(EGADS_SUCCESS,
        EG_getTopology(face, &surface, &faceclass, &facetype, facebounds, &nloop,
@@ -1018,7 +1016,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
             int *int_bundle;
             double *dbl_bundle;
             degree = 3;
-            n_control_point = MAX(8, pcurve_ints[2]);
+            n_control_point = 8;//MAX(8, pcurve_ints[2]);
             edgeid = EG_indexBodyTopo((ego)(ref_geom->body), edge);
             RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid, degree,
                                       n_control_point, &int_bundle,
@@ -1028,6 +1026,14 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
             EG_free(pcurve_reals);
             pcurve_ints = int_bundle;
             pcurve_reals = dbl_bundle;
+            if (debug) {
+              char filename[1024];
+              snprintf(filename, 1024, "re-face%d-edge%d.tec", faceid, edgeid);
+              RSS(ref_geom_bspline_bundle_on_tec(ref_geom, pcurve_ints[0],
+                                                 pcurve_ints[1], pcurve_reals,
+                                                 faceid, filename),
+                  "tec on face");
+            }
           }
           printf("    new flag %d deg %d ncp %d nkt %d\n", pcurve_ints[0],
                  pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
