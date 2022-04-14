@@ -1018,6 +1018,14 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
             degree = 3;
             n_control_point = MAX(8, pcurve_ints[2]);
             edgeid = EG_indexBodyTopo((ego)(ref_geom->body), edge);
+            if (debug) {
+              char filename[1024];
+              snprintf(filename, 1024, "re-orig%d-edge%d.tec", faceid, edgeid);
+              RSS(ref_geom_bspline_bundle_on_tec(ref_geom, pcurve_ints[0],
+                                                 pcurve_ints[1], pcurve_reals,
+                                                 faceid, filename),
+                  "tec on face");
+            }
             RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid, degree,
                                       n_control_point, &int_bundle,
                                       &dbl_bundle),
