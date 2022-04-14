@@ -4478,3 +4478,31 @@ REF_STATUS ref_geom_bspline_bundle_on_tec(REF_GEOM ref_geom, REF_INT degree,
   fclose(file);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_edge_tec(REF_GEOM ref_geom, REF_INT edgeid,
+                             const char *filename) {
+  REF_INT i, n = 1001;
+  REF_DBL t, s0, s1;
+  REF_DBL trange[2], xyz[3];
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"refine edge\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\" \"t\"\n");
+
+  RSS(ref_egads_edge_trange(ref_geom, edgeid, trange), "trange");
+  fprintf(file, "zone t=\"bundle\", i=%d, datapacking=%s\n", n, "point");
+  for (i = 0; i < n; i++) {
+    s1 = ((REF_DBL)i) / ((REF_DBL)(n - 1));
+    s0 = 1.0 - s1;
+    t = s0 * trange[0] + s1 * trange[1];
+    RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, edgeid, &t, xyz, NULL),
+        "eval edge");
+    fprintf(file, "%f %f %f %f\n", xyz[0], xyz[1], xyz[2], t);
+  }
+  fclose(file);
+  return REF_SUCCESS;
+}
