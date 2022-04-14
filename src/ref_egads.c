@@ -1025,7 +1025,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
                                                  pcurve_ints[2], pcurve_reals,
                                                  faceid, filename),
                   "tec on face");
-              snprintf(filename, 1024, "re-edge%d-edge%d.tec", faceid, edgeid);
+              snprintf(filename, 1024, "re-edge-edge%d.tec", edgeid);
               RSS(ref_geom_edge_tec(ref_geom, edgeid, filename), "tec on edge");
             }
             RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid, degree,
