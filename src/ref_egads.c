@@ -1021,8 +1021,8 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
             if (debug) {
               char filename[1024];
               snprintf(filename, 1024, "re-orig%d-edge%d.tec", faceid, edgeid);
-              RSS(ref_geom_bspline_bundle_on_tec(ref_geom, pcurve_ints[0],
-                                                 pcurve_ints[1], pcurve_reals,
+              RSS(ref_geom_bspline_bundle_on_tec(ref_geom, pcurve_ints[1],
+                                                 pcurve_ints[2], pcurve_reals,
                                                  faceid, filename),
                   "tec on face");
             }
@@ -1037,8 +1037,8 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
             if (debug) {
               char filename[1024];
               snprintf(filename, 1024, "re-face%d-edge%d.tec", faceid, edgeid);
-              RSS(ref_geom_bspline_bundle_on_tec(ref_geom, pcurve_ints[0],
-                                                 pcurve_ints[1], pcurve_reals,
+              RSS(ref_geom_bspline_bundle_on_tec(ref_geom, pcurve_ints[1],
+                                                 pcurve_ints[2], pcurve_reals,
                                                  faceid, filename),
                   "tec on face");
             }
