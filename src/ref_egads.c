@@ -762,7 +762,7 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
     RSS(ref_geom_bspline_bundle_tec(degree, n_control_point, bundle, filename),
         "tec basis");
   }
-  if (NULL == dbl_bundle) {
+  if (NULL == int_bundle) {
   } else {
     ref_malloc(*int_bundle, 4, REF_INT);
     (*int_bundle)[0] = 0; /* bit flag */
