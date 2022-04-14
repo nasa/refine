@@ -4494,7 +4494,8 @@ REF_STATUS ref_geom_edge_tec(REF_GEOM ref_geom, REF_INT edgeid,
   fprintf(file, "variables = \"x\" \"y\" \"z\" \"t\"\n");
 
   RSS(ref_egads_edge_trange(ref_geom, edgeid, trange), "trange");
-  fprintf(file, "zone t=\"bundle\", i=%d, datapacking=%s\n", n, "point");
+  fprintf(file, "zone t=\"edge%d\", i=%d, datapacking=%s\n", edgeid, n,
+          "point");
   for (i = 0; i < n; i++) {
     s1 = ((REF_DBL)i) / ((REF_DBL)(n - 1));
     s0 = 1.0 - s1;
