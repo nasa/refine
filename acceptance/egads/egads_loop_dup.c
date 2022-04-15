@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
   int iloop;
   int loopclass, looptype, nchild, *children_senses;
   ego *children;
+  ego new_loop;
 
   is_equal(2, argc, "usage: egads_loop_dup project.egads");
 
@@ -98,6 +99,11 @@ int main(int argc, char *argv[]) {
       children_senses[iedge] = oldchildren_senses[iedge];
     }
   }
+
+  is_equal(EGADS_SUCCESS,
+           EG_makeTopology(context, loop_ref, loopclass, looptype, NULL, nchild,
+                           children, children_senses, &new_loop),
+           "make topo loop");
 
   return 0;
 }
