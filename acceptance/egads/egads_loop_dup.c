@@ -37,6 +37,11 @@ int main(void) {
   ego body = NULL;
   ego geom, *bodies;
   int oclass, nbody, *senses, mtype;
+  int nface;
+  ego *faces, face;
+  ego surface, *loops;
+  int faceclass, facetype, nloop, *loopsenses;
+  double facebounds[4];
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -48,9 +53,19 @@ int main(void) {
   is_equal(EGADS_SUCCESS,
            EG_getTopology(body, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
                           &senses),
-           "EG topo bodies");
+           "EG topo body");
   is_equal(1, nbody, "expected 1 body");
   body = bodies[0];
+
+  is_equal(EGADS_SUCCESS, EG_getBodyTopos(body, NULL, FACE, &nface, &faces),
+           "EG face topo");
+  is_equal(1, nface, "expected 1 face");
+  face = faces[0];
+
+  is_equal(EGADS_SUCCESS,
+           EG_getTopology(face, &surface, &faceclass, &facetype, facebounds,
+                          &nloop, &loops, &loopsenses),
+           "topo");
 
   return 0;
 }
