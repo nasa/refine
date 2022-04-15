@@ -42,6 +42,10 @@ int main(void) {
   ego surface, *loops;
   int faceclass, facetype, nloop, *loopsenses;
   double facebounds[4];
+  ego loop_ref;
+  int iloop;
+  int loopclass, looptype, nchild, *children_senses;
+  ego *children;
 
   is_equal(EGADS_SUCCESS, EG_open(&context), "EG open");
   /* Success returns the old output level. (0-silent to 3-debug) */
@@ -65,6 +69,13 @@ int main(void) {
   is_equal(EGADS_SUCCESS,
            EG_getTopology(face, &surface, &faceclass, &facetype, facebounds,
                           &nloop, &loops, &loopsenses),
+           "topo");
+  is_equal(1, nloop, "expected 1 loop");
+
+  iloop = 0;
+  is_equal(EGADS_SUCCESS,
+           EG_getTopology(loops[iloop], &loop_ref, &loopclass, &looptype, NULL,
+                          &nchild, &children, &children_senses),
            "topo");
 
   return 0;
