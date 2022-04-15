@@ -79,5 +79,25 @@ int main(int argc, char *argv[]) {
                           &nchild, &children, &children_senses),
            "topo");
   printf("loop_ref %p surface %p\n", (void *)loop_ref, (void *)surface);
+  is_true(loop_ref == surface, "loop reference not face surface")
+
+  {
+    int iedge;
+    int childsize;
+    ego *oldchildren;
+    int *oldchildren_senses;
+    childsize = 2 * nchild;
+    oldchildren = children;
+    children = EG_alloc(childsize * sizeof(ego));
+    for (iedge = 0; iedge < childsize; iedge++) {
+      children[iedge] = oldchildren[iedge];
+    }
+    oldchildren_senses = children_senses;
+    children_senses = EG_alloc(childsize * sizeof(int));
+    for (iedge = 0; iedge < nchild; iedge++) {
+      children_senses[iedge] = oldchildren_senses[iedge];
+    }
+  }
+
   return 0;
 }
