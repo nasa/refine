@@ -78,6 +78,6 @@ int main(int argc, char *argv[]) {
            EG_getTopology(loops[iloop], &loop_ref, &loopclass, &looptype, NULL,
                           &nchild, &children, &children_senses),
            "topo");
-  printf("loop_ref %p\n", (void *)loop_ref);
+  printf("loop_ref %p surface %p\n", (void *)loop_ref, (void *)surface);
   return 0;
 }
