@@ -4507,3 +4507,25 @@ REF_STATUS ref_geom_edge_tec(REF_GEOM ref_geom, REF_INT edgeid,
   fclose(file);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_node_tec(REF_GEOM ref_geom, const char *filename) {
+  REF_INT i;
+  REF_DBL xyz[3];
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"refine node\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\" \"id\"\n");
+  fprintf(file, "zone t=\"node\", i=%d, datapacking=%s\n", ref_geom->nnode,
+          "point");
+  for (i = 0; i < ref_geom->nnode; i++) {
+    RSS(ref_egads_eval_at(ref_geom, REF_GEOM_NODE, i + 1, NULL, xyz, NULL),
+        "eval edge");
+    fprintf(file, "%f %f %f %d\n", xyz[0], xyz[1], xyz[2], i + 1);
+  }
+  fclose(file);
+  return REF_SUCCESS;
+}
