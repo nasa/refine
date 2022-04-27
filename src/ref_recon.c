@@ -993,7 +993,6 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
                  "REF_ILL_CONDITIONED", layer);
         }
       }
-      RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
       if (NULL != gradient) {
         if (ref_grid_twod(ref_grid)) {
           node_gradient[2] = 0.0;
