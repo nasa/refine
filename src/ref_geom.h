@@ -334,6 +334,13 @@ REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
 
 REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
                                        REF_DBL *bundle, const char *filename);
+REF_STATUS ref_geom_bspline_bundle_on_tec(REF_GEOM ref_geom, REF_INT degree,
+                                          REF_INT n_control_point,
+                                          REF_DBL *bundle, REF_INT faceid,
+                                          const char *filename);
+REF_STATUS ref_geom_edge_tec(REF_GEOM ref_geom, REF_INT edgeid,
+                             const char *filename);
+REF_STATUS ref_geom_node_tec(REF_GEOM ref_geom, const char *filename);
 
 END_C_DECLORATION
 

@@ -762,7 +762,7 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
     RSS(ref_geom_bspline_bundle_tec(degree, n_control_point, bundle, filename),
         "tec basis");
   }
-  if (NULL == dbl_bundle) {
+  if (NULL == int_bundle) {
   } else {
     ref_malloc(*int_bundle, 4, REF_INT);
     (*int_bundle)[0] = 0; /* bit flag */
@@ -901,7 +901,8 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
+REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
+                                 REF_BOOL debug) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   ego face, newface;
   ego surface;
@@ -1017,6 +1018,18 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
             degree = 3;
             n_control_point = MAX(8, pcurve_ints[2]);
             edgeid = EG_indexBodyTopo((ego)(ref_geom->body), edge);
+            if (debug) {
+              char filename[1024];
+              snprintf(filename, 1024, "re-orig%d-edge%d.tec", faceid, edgeid);
+              RSS(ref_geom_bspline_bundle_on_tec(ref_geom, pcurve_ints[1],
+                                                 pcurve_ints[2], pcurve_reals,
+                                                 faceid, filename),
+                  "tec on face");
+              snprintf(filename, 1024, "re-edge-edge%d.tec", edgeid);
+              RSS(ref_geom_edge_tec(ref_geom, edgeid, filename), "tec on edge");
+              snprintf(filename, 1024, "re-node.tec");
+              RSS(ref_geom_node_tec(ref_geom, filename), "tec on node");
+            }
             RSS(ref_egads_brep_pcurve(ref_geom, edgeid, faceid, degree,
                                       n_control_point, &int_bundle,
                                       &dbl_bundle),
@@ -1025,6 +1038,14 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
             EG_free(pcurve_reals);
             pcurve_ints = int_bundle;
             pcurve_reals = dbl_bundle;
+            if (debug) {
+              char filename[1024];
+              snprintf(filename, 1024, "re-face%d-edge%d.tec", faceid, edgeid);
+              RSS(ref_geom_bspline_bundle_on_tec(ref_geom, pcurve_ints[1],
+                                                 pcurve_ints[2], pcurve_reals,
+                                                 faceid, filename),
+                  "tec on face");
+            }
           }
           printf("    new flag %d deg %d ncp %d nkt %d\n", pcurve_ints[0],
                  pcurve_ints[1], pcurve_ints[2], pcurve_ints[3]);
@@ -1122,6 +1143,7 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid) {
   printf("nothing for %s, full EGADS not linked\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+  SUPRESS_UNUSED_COMPILER_WARNING(debug);
 #endif
   return REF_SUCCESS;
 }
