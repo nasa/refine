@@ -245,7 +245,7 @@ ooooooooooooooooo
 + curve/tol
 
 + S2S
- + acceptance on fun3d-intg and sfe develop/master
+ + acceptance on fun3d-intg and sfe develop/main
  + update best practice multiscale in docs
    + gradation, reconstruction, parallel, field for speed regime
  + README and FUN3D doc update and sync

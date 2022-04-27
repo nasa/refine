@@ -4182,11 +4182,11 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff field");
     for (i = 0; i < ldim; i++) {
       REF_DBL max_diff = 0.0;
-      REF_DBL master_diff = 0.0;
+      REF_DBL total_diff = 0.0;
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         max_diff = MAX(max_diff, ABS(field[i + ldim * node]));
       }
-      RSS(ref_mpi_max(ref_mpi, &max_diff, &master_diff, REF_DBL_TYPE),
+      RSS(ref_mpi_max(ref_mpi, &max_diff, &total_diff, REF_DBL_TYPE),
           "mpi max");
       if (ref_mpi_once(ref_mpi)) printf("%d max diff %e\n", i, max_diff);
     }
