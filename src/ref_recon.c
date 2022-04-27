@@ -973,14 +973,14 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
         status = ref_recon_kexact_with_aux(ref_node_global(ref_node, node),
                                            ref_cloud, ref_grid_twod(ref_grid),
                                            node_gradient, node_hessian);
-        if (REF_FAILURE == status) {
+        if (REF_NOT_FOUND == status) {
           ref_node_location(ref_node, node);
           printf(
-              " caught %s, for %d layers to kexact cloud; zero gradient and "
-              "hessian\n",
-              "REF_FAILURE", layer);
+              " caught %s, for %d layers to kexact cloud; "
+              "zero gradient and hessian\n",
+              "REF_NOT_FOUND", layer);
           status = REF_SUCCESS;
-          continue;
+          break;
         }
         if (REF_DIV_ZERO == status && layer > 4) {
           ref_node_location(ref_node, node);
