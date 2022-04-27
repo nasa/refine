@@ -58,9 +58,9 @@ merge-cmake-accept-k:
       - "log-*"
     expire_in: 1 week
 
-master-boot-accept-k:
+main-boot-accept-k:
   only:
-    - master
+    - main
   when: manual
   tags:
     - gitlab_runner
