@@ -423,6 +423,13 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   REF_DBL xyzs[4];
   REF_BOOL verbose = REF_FALSE;
 
+  for (im = 0; im < 6; im++) {
+    hessian[im] = 0.0;
+  }
+  for (im = 0; im < 3; im++) {
+    gradient[im] = 0.0;
+  }
+
   RSS(ref_cloud_item(ref_cloud, center_global, &item), "missing center");
   each_ref_cloud_aux(ref_cloud, i) {
     xyzs[i] = ref_cloud_aux(ref_cloud, i, item);
@@ -966,6 +973,15 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
         status = ref_recon_kexact_with_aux(ref_node_global(ref_node, node),
                                            ref_cloud, ref_grid_twod(ref_grid),
                                            node_gradient, node_hessian);
+        if (REF_NOT_FOUND == status) {
+          ref_node_location(ref_node, node);
+          printf(
+              " caught %s, for %d layers to kexact cloud; "
+              "zero gradient and hessian\n",
+              "REF_NOT_FOUND", layer);
+          status = REF_SUCCESS;
+          break;
+        }
         if (REF_DIV_ZERO == status && layer > 4) {
           ref_node_location(ref_node, node);
           printf(" caught %s, for %d layers to kexact cloud; retry\n",
@@ -977,7 +993,6 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
                  "REF_ILL_CONDITIONED", layer);
         }
       }
-      RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
       if (NULL != gradient) {
         if (ref_grid_twod(ref_grid)) {
           node_gradient[2] = 0.0;
