@@ -3202,8 +3202,7 @@ REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
           for (node = 0; node < ref_cell_node_per(ref_cell); node++)
             cell_average += scalar[i + ldim * nodes[node]];
           cell_average /= (REF_DBL)ref_cell_node_per(ref_cell);
-          REIS(1, fwrite(&cell_average, sizeof(REF_DBL), 1, file),
-               "master cell avg");
+          REIS(1, fwrite(&cell_average, sizeof(REF_DBL), 1, file), "cell avg");
         }
       }
     }

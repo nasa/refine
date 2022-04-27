@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
   if (!ref_mpi_para(ref_mpi)) { /* no mpi or mpi with one proc */
     REIS(1, ref_mpi_n(ref_mpi), "n");
     REIS(0, ref_mpi_rank(ref_mpi), "rank");
-    RAS(ref_mpi_once(ref_mpi), "master");
+    RAS(ref_mpi_once(ref_mpi), "rank zero");
   }
 
   /* type */

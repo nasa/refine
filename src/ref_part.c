@@ -240,7 +240,7 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
         geom_to_send[dest[geom]]++;
       }
 
-      /* master keepers */
+      /* rank 0 keepers */
       ngeom_keep = geom_to_send[0];
       for (geom = 0; geom < ngeom_keep; geom++) {
         RSS(ref_node_local(ref_node, sent_node[geom], &node), "g2l");
@@ -523,7 +523,7 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
         elements_to_send[dest[cell]]++;
       }
 
-      /* master keepers */
+      /* rank 0 keepers */
 
       ncell_keep = elements_to_send[0];
       if (0 < ncell_keep) {
@@ -1226,7 +1226,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
         }
       }
       mpi_toc += (clock() - tic);
-      /* master keepers */
+      /* rank 0 keepers */
 
       tic = clock();
       ncell_keep = elements_to_send[0];
