@@ -896,16 +896,17 @@ REF_STATUS ref_metric_hessian_gradation(REF_DBL *metric, REF_GRID ref_grid) {
   temp = max_threshold;
   RSS(ref_mpi_max(ref_mpi, &temp, &max_threshold, REF_DBL_TYPE), "max");
 
-  max_threshold = exp(0.9 * log(max_threshold));
+  max_threshold = 0.5 * max_threshold;
 
   max_valid = 0.0;
-
   each_ref_node_valid_node(ref_node, node) {
-    if (threshold[node] > max_threshold) {
+    if (threshold[node] < max_threshold) {
       eig = pow(min_h[node], -2);
       max_valid = MAX(max_valid, eig);
     }
   }
+  temp = max_valid;
+  RSS(ref_mpi_max(ref_mpi, &temp, &max_valid, REF_DBL_TYPE), "max");
 
   each_ref_node_valid_node(ref_node, node) {
     REF_DBL diag[12];
