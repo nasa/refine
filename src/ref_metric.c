@@ -890,7 +890,7 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
     } else {
       RSS(ref_matrix_ascending_eig(diag), "3D ascend");
     }
-    threshold[node] = log(ABS(ref_matrix_eig(diag, 0)));
+    threshold[node] = log10(ABS(ref_matrix_eig(diag, 0)));
     max_threshold = MAX(max_threshold, threshold[node]);
   }
   temp = max_threshold;

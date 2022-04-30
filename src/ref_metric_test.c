@@ -2215,7 +2215,7 @@ int main(int argc, char *argv[]) {
       } else {
         RSS(ref_matrix_ascending_eig(diag), "3D ascend");
       }
-      eigs[3 + ldim * node] = ref_matrix_eig(diag, 0);
+      eigs[3 + ldim * node] = log10(ABS(ref_matrix_eig(diag, 0)));
     }
 
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, eigs, NULL,
