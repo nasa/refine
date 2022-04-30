@@ -2175,13 +2175,14 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_recon_hessian(ref_grid, field, hess1, REF_RECON_L2PROJECTION),
         "hess");
+    RSS(ref_recon_roundoff_limit(hess2, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
     RSS(ref_recon_hessian(ref_grid, field, hess2, REF_RECON_L2PROJECTION),
         "hess");
+    RSS(ref_recon_roundoff_limit(hess2, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
     RSS(ref_metric_hessian_filter(hess2, ref_grid),
         "limit hessian gradation (i.e., shocks)");
-
-    RSS(ref_recon_roundoff_limit(hess1, ref_grid),
-        "floor metric eigenvalues based on grid size and solution jitter");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL diag[12];
