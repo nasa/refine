@@ -852,7 +852,7 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_hessian_gradation(REF_DBL *metric, REF_GRID ref_grid) {
+REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL *min_h, *hess_min_h, *threshold;

@@ -2177,7 +2177,7 @@ int main(int argc, char *argv[]) {
         "hess");
     RSS(ref_recon_hessian(ref_grid, field, hess2, REF_RECON_L2PROJECTION),
         "hess");
-    RSS(ref_metric_hessian_gradation(hess2, ref_grid),
+    RSS(ref_metric_hessian_filter(hess2, ref_grid),
         "limit hessian gradation (i.e., shocks)");
 
     RSS(ref_recon_roundoff_limit(hess1, ref_grid),
