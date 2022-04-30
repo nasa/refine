@@ -901,8 +901,10 @@ REF_STATUS ref_metric_hessian_gradation(REF_DBL *metric, REF_GRID ref_grid) {
   max_valid = 0.0;
   each_ref_node_valid_node(ref_node, node) {
     if (threshold[node] < max_threshold) {
-      eig = pow(min_h[node], -2);
-      max_valid = MAX(max_valid, eig);
+      if (ref_math_divisible(1.0, (min_h[node] * min_h[node]))) {
+        eig = 1.0 / (min_h[node] * min_h[node]);
+        max_valid = MAX(max_valid, eig);
+      }
     }
   }
   temp = max_valid;
