@@ -838,7 +838,7 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
   for (node = 0; node < nnode; node++) {
     RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
     RSS(ref_matrix_diag_m(m, d), "diag");
-    RSS(ref_matrix_ascending_eig(d), "sort eig");
+    RSS(ref_matrix_descending_eig(d), "sort eig");
     eb = REF_EMPTY;
     best_z = -1.0;
     for (e0 = 0; e0 < 3; e0++) {
@@ -940,7 +940,7 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
   for (node = 0; node < nnode; node++) {
     RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
     RSS(ref_matrix_diag_m(m, d), "diag");
-    RSS(ref_matrix_ascending_eig(d), "sort eig");
+    RSS(ref_matrix_descending_eig(d), "sort eig");
     for (e0 = 0; e0 < 3; e0++) {
       e1 = e0 + 1;
       if (e1 == 3) e1 = 0;

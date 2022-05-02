@@ -546,7 +546,7 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
       RSS(ref_layer_twod_normal(ref_grid, node, normal), "twod normal");
       RSS(ref_node_metric_get(ref_node, node, m), "get");
       RSS(ref_matrix_diag_m(m, d), "eigen decomp");
-      RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
+      RSS(ref_matrix_descending_eig_twod(d), "2D eig sort");
       dot = ref_math_dot(normal, &(d[3]));
       if (ABS(dot) > 0.9848) { /* cos(10 degrees) */
         REF_DBL h, xyz[3], dist;
@@ -619,7 +619,7 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
     }
     RSS(ref_node_metric_get(ref_node, node, m), "get");
     RSS(ref_matrix_diag_m(m, d), "eigen decomp");
-    RSS(ref_matrix_ascending_eig_twod(d), "2D eig sort");
+    RSS(ref_matrix_descending_eig_twod(d), "2D eig sort");
     dot = ref_math_dot(normal, &(d[3]));
     if (ABS(dot) > 0.9848) { /* cos(10 degrees) */
       REF_DBL h, xyz[3], dist;

@@ -866,9 +866,9 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
     REF_DBL diag[12];
     RSS(ref_matrix_diag_m(&(metric[6 * node]), diag), "decomp");
     if (ref_grid_twod(ref_grid)) {
-      RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+      RSS(ref_matrix_descending_eig_twod(diag), "2D ascend");
     } else {
-      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      RSS(ref_matrix_descending_eig(diag), "3D ascend");
     }
     min_h[node] = sqrt(MAX(0.0, ref_matrix_eig(diag, 0)));
     if (ref_math_divisible(1.0, min_h[node])) {
@@ -886,9 +886,9 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
     REF_DBL diag[12];
     RSS(ref_matrix_diag_m(&(hess_min_h[6 * node]), diag), "decomp");
     if (ref_grid_twod(ref_grid)) {
-      RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+      RSS(ref_matrix_descending_eig_twod(diag), "2D ascend");
     } else {
-      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      RSS(ref_matrix_descending_eig(diag), "3D ascend");
     }
     threshold[node] = log10(ABS(ref_matrix_eig(diag, 0)));
     max_threshold = MAX(max_threshold, threshold[node]);
@@ -917,9 +917,9 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
     REF_DBL diag[12];
     RSS(ref_matrix_diag_m(&(metric[6 * node]), diag), "decomp");
     if (ref_grid_twod(ref_grid)) {
-      RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+      RSS(ref_matrix_descending_eig_twod(diag), "2D ascend");
     } else {
-      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      RSS(ref_matrix_descending_eig(diag), "3D ascend");
     }
     ref_matrix_eig(diag, 0) = MIN(ref_matrix_eig(diag, 0), max_valid);
     ref_matrix_eig(diag, 1) = MIN(ref_matrix_eig(diag, 1), max_valid);
@@ -1859,7 +1859,7 @@ REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric, REF_GRID ref_grid,
   if (ref_grid_twod(ref_grid)) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
-      RSS(ref_matrix_ascending_eig_twod(diag_system), "2D eig sort");
+      RSS(ref_matrix_descending_eig_twod(diag_system), "2D eig sort");
       max_eig = ref_matrix_eig(diag_system, 0);
       max_eig = MAX(ref_matrix_eig(diag_system, 1), max_eig);
       RAS(ref_math_divisible(max_eig, (aspect_ratio * aspect_ratio)),
@@ -1904,7 +1904,7 @@ REF_STATUS ref_metric_limit_aspect_ratio_field(REF_DBL *metric,
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       aspect_ratio = aspect_ratio_field[node];
       RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
-      RSS(ref_matrix_ascending_eig_twod(diag_system), "2D eig sort");
+      RSS(ref_matrix_descending_eig_twod(diag_system), "2D eig sort");
       max_eig = ref_matrix_eig(diag_system, 0);
       max_eig = MAX(ref_matrix_eig(diag_system, 1), max_eig);
       if (ref_math_divisible(max_eig, (aspect_ratio * aspect_ratio))) {
@@ -3177,7 +3177,7 @@ REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
     ar = hmin / hmax;
 
     RSS(ref_matrix_diag_m(&(metric[6 * node]), d_met), "eigen decomp");
-    RSS(ref_matrix_ascending_eig(d_met), "really descend?");
+    RSS(ref_matrix_descending_eig(d_met), "really descend?");
     if (ar < 0.5) {
       e = ref_matrix_eig(d_met, 1);
     } else {
