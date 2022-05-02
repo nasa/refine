@@ -852,61 +852,84 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_hessian_gradation(REF_DBL *metric, REF_GRID ref_grid,
-                                        REF_DBL r) {
+REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_EDGE ref_edge;
-  REF_DBL *metric_orig;
-  REF_DBL limit_metric[6], limited[6];
-  REF_INT node, i;
-  REF_INT edge, node0, node1;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_DBL *min_h, *hess_min_h, *threshold;
+  REF_DBL temp, max_threshold, max_valid, eig;
+  REF_INT node;
+  ref_malloc(min_h, ref_node_max(ref_node), REF_DBL);
+  ref_malloc(hess_min_h, 6 * ref_node_max(ref_node), REF_DBL);
+  ref_malloc(threshold, ref_node_max(ref_node), REF_DBL);
 
-  if (r < 1.0) r = 10.0;
-
-  RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
-
-  ref_malloc(metric_orig, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-
-  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    for (i = 0; i < 6; i++) metric_orig[i + 6 * node] = metric[i + 6 * node];
-  }
-
-  each_ref_edge(ref_edge, edge) {
-    node0 = ref_edge_e2n(ref_edge, 0, edge);
-    node1 = ref_edge_e2n(ref_edge, 1, edge);
-
-    for (i = 0; i < 6; i++) {
-      limit_metric[i] = metric_orig[i + 6 * node1] * r;
-    }
-
-    if (REF_SUCCESS ==
-        ref_matrix_bound(&(metric_orig[6 * node0]), limit_metric, limited)) {
-      RSS(ref_matrix_bound(&(metric[6 * node0]), limited, &(metric[6 * node0])),
-          "update m0");
+  each_ref_node_valid_node(ref_node, node) {
+    REF_DBL diag[12];
+    RSS(ref_matrix_diag_m(&(metric[6 * node]), diag), "decomp");
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
     } else {
-      ref_node_location(ref_node, node0);
-      printf("RECOVER %s\n", __func__);
+      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
     }
-
-    for (i = 0; i < 6; i++) {
-      limit_metric[i] = metric_orig[i + 6 * node0] * r;
-    }
-
-    if (REF_SUCCESS ==
-        ref_matrix_bound(&(metric_orig[6 * node1]), limit_metric, limited)) {
-      RSS(ref_matrix_bound(&(metric[6 * node1]), limited, &(metric[6 * node1])),
-          "update m1");
+    min_h[node] = sqrt(MAX(0.0, ref_matrix_eig(diag, 0)));
+    if (ref_math_divisible(1.0, min_h[node])) {
+      min_h[node] = 1.0 / min_h[node];
     } else {
-      ref_node_location(ref_node, node1);
-      printf("RECOVER %s\n", __func__);
+      min_h[node] = REF_DBL_MAX;
     }
   }
 
-  ref_free(metric_orig);
+  RSS(ref_recon_hessian(ref_grid, min_h, hess_min_h, REF_RECON_L2PROJECTION),
+      "hess");
 
-  ref_edge_free(ref_edge);
+  max_threshold = 0.0;
+  each_ref_node_valid_node(ref_node, node) {
+    REF_DBL diag[12];
+    RSS(ref_matrix_diag_m(&(hess_min_h[6 * node]), diag), "decomp");
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+    } else {
+      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+    }
+    threshold[node] = log10(ABS(ref_matrix_eig(diag, 0)));
+    max_threshold = MAX(max_threshold, threshold[node]);
+  }
+  temp = max_threshold;
+  RSS(ref_mpi_max(ref_mpi, &temp, &max_threshold, REF_DBL_TYPE), "max");
 
-  RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), metric, 6), "update ghosts");
+  /* find the largest valid eigenvalue that is not in a discontinuity */
+  max_threshold = 0.5 * max_threshold;
+  max_valid = 0.0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (threshold[node] < max_threshold) {
+      REF_DBL h2 = min_h[node] * min_h[node];
+      if (ref_math_divisible(1.0, h2)) {
+        eig = 1.0 / h2;
+        max_valid = MAX(max_valid, eig);
+      }
+    }
+  }
+  temp = max_valid;
+  RSS(ref_mpi_max(ref_mpi, &temp, &max_valid, REF_DBL_TYPE), "max");
+
+  /* limit hessian eigenvalues everwhere based on what is considered valid
+   * outside a discontinuity */
+  each_ref_node_valid_node(ref_node, node) {
+    REF_DBL diag[12];
+    RSS(ref_matrix_diag_m(&(metric[6 * node]), diag), "decomp");
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+    } else {
+      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+    }
+    ref_matrix_eig(diag, 0) = MIN(ref_matrix_eig(diag, 0), max_valid);
+    ref_matrix_eig(diag, 1) = MIN(ref_matrix_eig(diag, 1), max_valid);
+    if (!ref_grid_twod(ref_grid))
+      ref_matrix_eig(diag, 2) = MIN(ref_matrix_eig(diag, 2), max_valid);
+    RSS(ref_matrix_form_m(diag, &(metric[6 * node])), "reform");
+  }
+  ref_free(threshold);
+  ref_free(hess_min_h);
+  ref_free(min_h);
 
   return REF_SUCCESS;
 }

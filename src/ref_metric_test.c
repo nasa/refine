@@ -2170,14 +2170,18 @@ int main(int argc, char *argv[]) {
 
     ref_malloc(hess1, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(hess2, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ldim = 3;
+    ldim = 4;
     ref_malloc(eigs, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     RSS(ref_recon_hessian(ref_grid, field, hess1, REF_RECON_L2PROJECTION),
         "hess");
+    RSS(ref_recon_roundoff_limit(hess2, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
     RSS(ref_recon_hessian(ref_grid, field, hess2, REF_RECON_L2PROJECTION),
         "hess");
-    RSS(ref_metric_hessian_gradation(hess2, ref_grid, -1.0),
+    RSS(ref_recon_roundoff_limit(hess2, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    RSS(ref_metric_hessian_filter(hess2, ref_grid),
         "limit hessian gradation (i.e., shocks)");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -2190,6 +2194,7 @@ int main(int argc, char *argv[]) {
         RSS(ref_matrix_ascending_eig(diag), "3D ascend");
       }
       eigs[1 + ldim * node] = ref_matrix_eig(diag, 0);
+      field[node] = 1.0 / sqrt(eigs[1 + ldim * node]);
       RSS(ref_matrix_diag_m(&(hess2[6 * node]), diag), "decomp");
       if (ref_grid_twod(ref_grid)) {
         RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
@@ -2197,6 +2202,20 @@ int main(int argc, char *argv[]) {
         RSS(ref_matrix_ascending_eig(diag), "3D ascend");
       }
       eigs[2 + ldim * node] = ref_matrix_eig(diag, 0);
+    }
+
+    RSS(ref_recon_hessian(ref_grid, field, hess1, REF_RECON_L2PROJECTION),
+        "hess");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL diag[12];
+      RSS(ref_matrix_diag_m(&(hess1[6 * node]), diag), "decomp");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+      } else {
+        RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      }
+      eigs[3 + ldim * node] = log10(ABS(ref_matrix_eig(diag, 0)));
     }
 
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, eigs, NULL,
