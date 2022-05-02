@@ -874,7 +874,7 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
     if (ref_math_divisible(1.0, min_h[node])) {
       min_h[node] = 1.0 / min_h[node];
     } else {
-      min_h[node] = 1.0;
+      min_h[node] = REF_DBL_MAX;
     }
   }
 
