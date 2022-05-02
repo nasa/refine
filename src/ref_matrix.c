@@ -314,7 +314,7 @@ REF_STATUS ref_matrix_diag_m2(REF_DBL *m, REF_DBL *d) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_ascending_eig(REF_DBL *d) {
+REF_STATUS ref_matrix_descending_eig(REF_DBL *d) {
   REF_DBL temp;
   REF_INT i;
 

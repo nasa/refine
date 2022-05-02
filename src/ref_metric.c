@@ -868,7 +868,7 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
     if (ref_grid_twod(ref_grid)) {
       RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
     } else {
-      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      RSS(ref_matrix_descending_eig(diag), "3D ascend");
     }
     min_h[node] = sqrt(MAX(0.0, ref_matrix_eig(diag, 0)));
     if (ref_math_divisible(1.0, min_h[node])) {
@@ -888,7 +888,7 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
     if (ref_grid_twod(ref_grid)) {
       RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
     } else {
-      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      RSS(ref_matrix_descending_eig(diag), "3D ascend");
     }
     threshold[node] = log10(ABS(ref_matrix_eig(diag, 0)));
     max_threshold = MAX(max_threshold, threshold[node]);
@@ -919,7 +919,7 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
     if (ref_grid_twod(ref_grid)) {
       RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
     } else {
-      RSS(ref_matrix_ascending_eig(diag), "3D ascend");
+      RSS(ref_matrix_descending_eig(diag), "3D ascend");
     }
     ref_matrix_eig(diag, 0) = MIN(ref_matrix_eig(diag, 0), max_valid);
     ref_matrix_eig(diag, 1) = MIN(ref_matrix_eig(diag, 1), max_valid);
@@ -3177,7 +3177,7 @@ REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
     ar = hmin / hmax;
 
     RSS(ref_matrix_diag_m(&(metric[6 * node]), d_met), "eigen decomp");
-    RSS(ref_matrix_ascending_eig(d_met), "really descend?");
+    RSS(ref_matrix_descending_eig(d_met), "really descend?");
     if (ar < 0.5) {
       e = ref_matrix_eig(d_met, 1);
     } else {

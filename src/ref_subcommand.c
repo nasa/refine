@@ -2269,7 +2269,7 @@ static REF_STATUS fixed_point_metric(
             MAX(ref_matrix_eig(diag_system, 0) * eiglimit,
                 ref_matrix_eig(diag_system, 1));
       } else {
-        RSS(ref_matrix_ascending_eig(diag_system), "3D ascend");
+        RSS(ref_matrix_descending_eig(diag_system), "3D ascend");
         ref_matrix_eig(diag_system, 1) =
             MAX(ref_matrix_eig(diag_system, 0) * eiglimit,
                 ref_matrix_eig(diag_system, 1));
