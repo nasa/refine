@@ -1118,7 +1118,7 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_node, node) {
       RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system), "decomp");
       if (ref_grid_twod(ref_grid)) {
-        RSS(ref_matrix_ascending_eig_twod(multiscale_system), "sort eig twod");
+        RSS(ref_matrix_descending_eig_twod(multiscale_system), "sort eig twod");
       } else {
         RSS(ref_matrix_descending_eig(multiscale_system), "sort eig");
       }
@@ -2189,7 +2189,7 @@ int main(int argc, char *argv[]) {
       eigs[0 + ldim * node] = field[node];
       RSS(ref_matrix_diag_m(&(hess1[6 * node]), diag), "decomp");
       if (ref_grid_twod(ref_grid)) {
-        RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+        RSS(ref_matrix_descending_eig_twod(diag), "2D ascend");
       } else {
         RSS(ref_matrix_descending_eig(diag), "3D ascend");
       }
@@ -2197,7 +2197,7 @@ int main(int argc, char *argv[]) {
       field[node] = 1.0 / sqrt(eigs[1 + ldim * node]);
       RSS(ref_matrix_diag_m(&(hess2[6 * node]), diag), "decomp");
       if (ref_grid_twod(ref_grid)) {
-        RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+        RSS(ref_matrix_descending_eig_twod(diag), "2D ascend");
       } else {
         RSS(ref_matrix_descending_eig(diag), "3D ascend");
       }
@@ -2211,7 +2211,7 @@ int main(int argc, char *argv[]) {
       REF_DBL diag[12];
       RSS(ref_matrix_diag_m(&(hess1[6 * node]), diag), "decomp");
       if (ref_grid_twod(ref_grid)) {
-        RSS(ref_matrix_ascending_eig_twod(diag), "2D ascend");
+        RSS(ref_matrix_descending_eig_twod(diag), "2D ascend");
       } else {
         RSS(ref_matrix_descending_eig(diag), "3D ascend");
       }

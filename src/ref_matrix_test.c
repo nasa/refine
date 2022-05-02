@@ -228,7 +228,7 @@ int main(void) {
 
     RSS(ref_matrix_diag_m(m, d), "diag");
 
-    RSS(ref_matrix_ascending_eig_twod(d), "ascend");
+    RSS(ref_matrix_descending_eig_twod(d), "ascend");
 
     RWDS(2.0, d[0], -1, "eig 0");
     RWDS(0.5, d[1], -1, "eig 1");
