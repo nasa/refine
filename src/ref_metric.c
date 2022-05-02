@@ -896,13 +896,14 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
   temp = max_threshold;
   RSS(ref_mpi_max(ref_mpi, &temp, &max_threshold, REF_DBL_TYPE), "max");
 
+  /* find the largest valid eigenvalue that is not in a discontinuity */
   max_threshold = 0.5 * max_threshold;
-
   max_valid = 0.0;
   each_ref_node_valid_node(ref_node, node) {
     if (threshold[node] < max_threshold) {
-      if (ref_math_divisible(1.0, (min_h[node] * min_h[node]))) {
-        eig = 1.0 / (min_h[node] * min_h[node]);
+      REF_DBL h2 = min_h[node] * min_h[node];
+      if (ref_math_divisible(1.0, h2)) {
+        eig = 1.0 / h2;
         max_valid = MAX(max_valid, eig);
       }
     }
@@ -910,6 +911,8 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
   temp = max_valid;
   RSS(ref_mpi_max(ref_mpi, &temp, &max_valid, REF_DBL_TYPE), "max");
 
+  /* limit hessian eigenvalues everwhere based on what is considered valid
+   * outside a discontinuity */
   each_ref_node_valid_node(ref_node, node) {
     REF_DBL diag[12];
     RSS(ref_matrix_diag_m(&(metric[6 * node]), diag), "decomp");
