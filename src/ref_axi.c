@@ -48,7 +48,7 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
   ref_malloc_init(o2n, ref_node_n(ref_node), REF_INT, REF_EMPTY);
 
   pole_tol = 1.0e-6; /* drop to smaller number */
-  wedge_angle = ref_math_in_radians(5.0);
+  wedge_angle = ref_math_in_radians(1.0);
 
   /* make half logic globals, RCB scrambles local indexes */
   nhalf = ref_node_n(ref_node) / 2;
