@@ -379,19 +379,23 @@ static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
   ref_malloc_init(grady, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(gradz, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  RXS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), REF_DIV_ZERO, "l2 grad");
+  RXS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), REF_DIV_ZERO,
+      "l2 grad");
 
   i = 0;
   each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
-  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradx), REF_DIV_ZERO, "gradx");
+  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradx), REF_DIV_ZERO,
+      "gradx");
 
   i = 1;
   each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
-  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, grady), REF_DIV_ZERO, "grady");
+  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, grady), REF_DIV_ZERO,
+      "grady");
 
   i = 2;
   each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
-  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradz), REF_DIV_ZERO, "gradz");
+  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradz), REF_DIV_ZERO,
+      "gradz");
 
   /* average off-diagonals */
   each_ref_node_valid_node(ref_node, node) {
