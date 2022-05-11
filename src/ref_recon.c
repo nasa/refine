@@ -354,6 +354,8 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
     } else {
       div_by_zero = REF_TRUE;
       for (i = 0; i < 3; i++) grad[i + 3 * node] = 0.0;
+      printf("%s: %d: %s: total vol %e, ignored\n", __FILE__, __LINE__,
+             __func__, vol[node]);
     }
   }
   RSS(ref_mpi_all_or(ref_grid_mpi(ref_grid), &div_by_zero), "mpi all or");
@@ -377,19 +379,23 @@ static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
   ref_malloc_init(grady, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(gradz, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  RSS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), "l2 grad");
+  RXS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), REF_DIV_ZERO,
+      "l2 grad");
 
   i = 0;
   each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
-  RSS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradx), "gradx");
+  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradx), REF_DIV_ZERO,
+      "gradx");
 
   i = 1;
   each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
-  RSS(ref_recon_l2_projection_grad(ref_grid, dsdx, grady), "grady");
+  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, grady), REF_DIV_ZERO,
+      "grady");
 
   i = 2;
   each_ref_node_valid_node(ref_node, node) dsdx[node] = grad[i + 3 * node];
-  RSS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradz), "gradz");
+  RXS(ref_recon_l2_projection_grad(ref_grid, dsdx, gradz), REF_DIV_ZERO,
+      "gradz");
 
   /* average off-diagonals */
   each_ref_node_valid_node(ref_node, node) {
@@ -1317,7 +1323,8 @@ REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
                               REF_RECON_RECONSTRUCTION recon) {
   switch (recon) {
     case REF_RECON_L2PROJECTION:
-      RSS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), "l2");
+      RXS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), REF_DIV_ZERO,
+          "l2");
       break;
     case REF_RECON_KEXACT:
       RSS(ref_recon_kexact_gradient_hessian(ref_grid, scalar, grad, NULL),
