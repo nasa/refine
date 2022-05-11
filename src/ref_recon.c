@@ -1323,7 +1323,8 @@ REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
                               REF_RECON_RECONSTRUCTION recon) {
   switch (recon) {
     case REF_RECON_L2PROJECTION:
-      RSS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), "l2");
+      RXS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), REF_DIV_ZERO,
+          "l2");
       break;
     case REF_RECON_KEXACT:
       RSS(ref_recon_kexact_gradient_hessian(ref_grid, scalar, grad, NULL),
