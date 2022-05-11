@@ -354,6 +354,8 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
     } else {
       div_by_zero = REF_TRUE;
       for (i = 0; i < 3; i++) grad[i + 3 * node] = 0.0;
+      printf("%s: %d: %s: total vol %e, ignored\n", __FILE__, __LINE__,
+             __func__, vol[node]);
     }
   }
   RSS(ref_mpi_all_or(ref_grid_mpi(ref_grid), &div_by_zero), "mpi all or");
