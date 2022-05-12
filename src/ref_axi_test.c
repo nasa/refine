@@ -68,6 +68,8 @@ static REF_STATUS ref_quad_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   ref_node_xyz(ref_node, 1, node) = 1.0;
   ref_node_xyz(ref_node, 2, node) = z0;
 
+  RSS(ref_node_initialize_n_global(ref_node, 4), "init glob");
+
   RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add quad");
 
   return REF_SUCCESS;
@@ -114,6 +116,8 @@ static REF_STATUS ref_prism_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   ref_node_xyz(ref_node, 0, node) = 0.5;
   ref_node_xyz(ref_node, 1, node) = 1.0;
   ref_node_xyz(ref_node, 2, node) = z2;
+
+  RSS(ref_node_initialize_n_global(ref_node, 6), "init glob");
 
   RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &cell), "add prism");
 
@@ -171,6 +175,8 @@ static REF_STATUS ref_hex_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   ref_node_xyz(ref_node, 0, node) = 0.0;
   ref_node_xyz(ref_node, 1, node) = 1.0;
   ref_node_xyz(ref_node, 2, node) = z1;
+
+  RSS(ref_node_initialize_n_global(ref_node, 8), "init glob");
 
   RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &cell), "add prism");
 
