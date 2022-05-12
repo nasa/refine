@@ -2179,8 +2179,8 @@ static REF_STATUS fixed_point_metric(
     REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
     REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
     const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
-    REF_DBL gradation, REF_DBL complexity, REF_BOOL iles,
-    REF_DBL aspect_ratio) {
+    REF_DBL gradation, REF_DBL complexity, REF_BOOL iles, REF_DBL aspect_ratio,
+    REF_BOOL strong_sensor_bc, REF_DBL strong_value, REF_DICT ref_dict_bcs) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL *hess, *scalar;
   REF_INT timestep, total_timesteps;
@@ -2211,6 +2211,11 @@ static REF_STATUS fixed_point_metric(
     RSS(ref_part_scalar(ref_grid, &fixed_point_ldim, &scalar, solb_filename),
         "unable to load scalar");
     REIS(1, fixed_point_ldim, "expected one scalar");
+    if (strong_sensor_bc) {
+      RSS(ref_phys_strong_sensor_bc(ref_grid, scalar, strong_value,
+                                    ref_dict_bcs),
+          "apply strong sensor bc");
+    }
     RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
     if (NULL != min_scalar && NULL != max_scalar) {
       if (first) {
@@ -2667,6 +2672,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   REF_BOOL buffer = REF_FALSE;
   REF_BOOL multiscale_metric;
   REF_DICT ref_dict_bcs = NULL;
+  REF_BOOL strong_sensor_bc = REF_FALSE;
+  REF_DBL strong_value = 0.0;
   REF_INT pos;
   REF_INT fixed_point_pos, deforming_pos;
   const char *mach_interpolant = "mach";
@@ -2804,6 +2811,14 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
     }
     RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
+  }
+
+  RXS(ref_args_find(argc, argv, "--strong-sensor-bc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    RAS(pos + 1 < argc, "--strong-sensor-bc <value>");
+    strong_sensor_bc = REF_TRUE;
+    strong_value = atof(argv[pos + 1]);
   }
 
   RXS(ref_args_find(argc, argv, "--i-like-adaptation", &pos), REF_NOT_FOUND,
@@ -3083,7 +3098,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
                                timestep_increment, in_project, solb_middle,
                                reconstruction, p, gradation, complexity, iles,
-                               aspect_ratio),
+                               aspect_ratio, strong_sensor_bc, strong_value,
+                               ref_dict_bcs),
             "fixed point");
       }
     } else {
@@ -3115,12 +3131,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
           "FUN3D scalar field reduction");
     }
 
-    RXS(ref_args_find(argc, argv, "--strong-sensor-bc", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY != pos) {
-      REF_DBL strong_value;
-      RAS(pos + 1 < argc, "--strong-sensor-bc <value>");
-      strong_value = atof(argv[pos + 1]);
+    if (strong_sensor_bc) {
       RSS(ref_phys_strong_sensor_bc(ref_grid, scalar, strong_value,
                                     ref_dict_bcs),
           "apply strong sensor bc");
