@@ -1765,14 +1765,16 @@ static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
                                          REF_DBL *extruded_field) {
   REF_INT node, local, i;
   REF_GLOB twod_nnode, global;
+  REF_STATUS global_lookup;
   twod_nnode = ref_node_n_global(ref_grid_node(twod_grid));
   each_ref_node_valid_node(ref_grid_node(extruded_grid), node) {
     global = ref_node_global(ref_grid_node(extruded_grid), node);
     if (global >= twod_nnode) global -= twod_nnode;
-    RSS(ref_node_local(ref_grid_node(twod_grid), global, &local),
-        "twod global missing");
-    for (i = 0; i < ldim; i++) {
-      extruded_field[i + ldim * node] = twod_field[i + ldim * local];
+    global_lookup = ref_node_local(ref_grid_node(twod_grid), global, &local);
+    if (REF_SUCCESS == global_lookup) { /* --axi pole duplicates are removed */
+      for (i = 0; i < ldim; i++) {
+        extruded_field[i + ldim * node] = twod_field[i + ldim * local];
+      }
     }
   }
   return REF_SUCCESS;
