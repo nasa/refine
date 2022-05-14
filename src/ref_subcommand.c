@@ -1768,6 +1768,7 @@ static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
   REF_LIST touching;
   REF_INT node, candidate, best, item, i;
   REF_DBL dist, radius, best_dist, position[3];
+  REF_BOOL verbose = REF_FALSE;
   RSS(ref_list_create(&touching), "touching list");
   ref_node = ref_grid_node(twod_grid);
   RSS(ref_search_create(&ref_search, ref_node_n(ref_node)), "create search");
@@ -1806,8 +1807,9 @@ static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
         best = candidate;
       }
     }
-    printf("dist %e position %f %f %f\n", best_dist, position[0], position[1],
-           position[2]);
+    if (verbose)
+      printf("dist %e position %f %f %f\n", best_dist, position[0], position[1],
+             position[2]);
     if (REF_EMPTY != best) {
       for (i = 0; i < ldim; i++) {
         extruded_field[i + ldim * node] = twod_field[i + ldim * best];
