@@ -1783,8 +1783,9 @@ static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
     position[1] = ref_node_xyz(ref_grid_node(extruded_grid), 2, node);
     position[2] = 0.0;
     radius = 100.0 * 1.0e-8 *
-             sqrt(position[0] * position[0] + position[1] * position[1] +
-                  position[2] + position[2]);
+                 sqrt(position[0] * position[0] + position[1] * position[1] +
+                      position[2] + position[2]) +
+             position[1] * (1.0 - cos(ref_math_in_radians(1.0)));
     RSS(ref_search_touching(ref_search, touching, position, radius),
         "search tree");
     best_dist = 1.0e+200;
