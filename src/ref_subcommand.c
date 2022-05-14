@@ -1763,20 +1763,59 @@ static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
                                          REF_DBL *twod_field,
                                          REF_GRID extruded_grid,
                                          REF_DBL *extruded_field) {
-  REF_INT node, local, i;
-  REF_GLOB twod_nnode, global;
-  REF_STATUS global_lookup;
-  twod_nnode = ref_node_n_global(ref_grid_node(twod_grid));
-  each_ref_node_valid_node(ref_grid_node(extruded_grid), node) {
-    global = ref_node_global(ref_grid_node(extruded_grid), node);
-    if (global >= twod_nnode) global -= twod_nnode;
-    global_lookup = ref_node_local(ref_grid_node(twod_grid), global, &local);
-    if (REF_SUCCESS == global_lookup) { /* --axi pole duplicates are removed */
-      for (i = 0; i < ldim; i++) {
-        extruded_field[i + ldim * node] = twod_field[i + ldim * local];
+  REF_NODE ref_node;
+  REF_SEARCH ref_search;
+  REF_LIST touching;
+  REF_INT node, candidate, best, item, i;
+  REF_DBL dist, radius, best_dist, position[3];
+  RSS(ref_list_create(&touching), "touching list");
+  ref_node = ref_grid_node(twod_grid);
+  RSS(ref_search_create(&ref_search, ref_node_n(ref_node)), "create search");
+  each_ref_node_valid_node(ref_node, node) {
+    radius = 0.0;
+    RSS(ref_search_insert(ref_search, node, ref_node_xyz_ptr(ref_node, node),
+                          radius),
+        "ins");
+  }
+  ref_node = ref_grid_node(extruded_grid);
+  each_ref_node_valid_node(ref_node, node) {
+    position[0] = ref_node_xyz(ref_grid_node(extruded_grid), 0, node);
+    position[1] = ref_node_xyz(ref_grid_node(extruded_grid), 2, node);
+    position[2] = 0.0;
+    radius = 100.0 * 1.0e-8 *
+             sqrt(position[0] * position[0] + position[1] * position[1] +
+                  position[2] + position[2]);
+    RSS(ref_search_touching(ref_search, touching, position, radius),
+        "search tree");
+    best_dist = 1.0e+200;
+    best = REF_EMPTY;
+    each_ref_list_item(touching, item) {
+      candidate = ref_list_value(touching, item);
+      dist = sqrt(pow(position[0] -
+                          ref_node_xyz(ref_grid_node(twod_grid), 0, candidate),
+                      2) +
+                  pow(position[1] -
+                          ref_node_xyz(ref_grid_node(twod_grid), 1, candidate),
+                      2) +
+                  pow(position[2] -
+                          ref_node_xyz(ref_grid_node(twod_grid), 2, candidate),
+                      2));
+      if (dist < best_dist) {
+        best_dist = dist;
+        best = candidate;
       }
     }
+    printf("dist %e position %f %f %f\n", best_dist, position[0], position[1],
+           position[2]);
+    if (REF_EMPTY != best) {
+      for (i = 0; i < ldim; i++) {
+        extruded_field[i + ldim * node] = twod_field[i + ldim * best];
+      }
+    }
+    RSS(ref_list_erase(touching), "erase");
   }
+  ref_search_free(ref_search);
+  ref_list_free(touching);
   return REF_SUCCESS;
 }
 
