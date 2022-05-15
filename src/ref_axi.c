@@ -35,7 +35,7 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
   REF_CELL ref_cell;
   REF_DBL pole_tol;
   REF_INT *o2n, node;
-  REF_INT nhalf;
+  REF_GLOB nhalf, global;
 
   REF_INT cell, nodes[8], new_nodes[8], pyr_nodes[8], pri_nodes[8];
   REF_INT nunique, unique[8];
@@ -50,22 +50,30 @@ REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
   pole_tol = 1.0e-6; /* drop to smaller number */
   wedge_angle = ref_math_in_radians(1.0);
 
-  /* make half logic globals, RCB scrambles local indexes */
-  nhalf = ref_node_n(ref_node) / 2;
+  /* make half logic globals, RCB can scrambles local indexes */
+  nhalf = ref_node_n_global(ref_node) / 2;
   each_ref_node_valid_node(ref_node, node) {
     if (ABS(ref_node_xyz(ref_node, 2, node)) < pole_tol &&
         ABS(ref_node_xyz(ref_node, 1, node)) > 0.5) {
-      if (node < nhalf) {
-        o2n[node] = node + nhalf;
+      if (ref_node_global(ref_node, node) < nhalf) {
+        printf("not expecting less than half, unless unit test\n");
+        global = ref_node_global(ref_node, node) + nhalf;
       } else {
-        o2n[node] = node - nhalf;
+        /* set to pair on plane that is kept */
+        global = ref_node_global(ref_node, node) - nhalf;
       }
+      RSS(ref_node_local(ref_node, global, &(o2n[node])), "localize");
       /* remove if you own it, remove without global if you don't own it */
-      RSS(ref_node_remove(ref_node, node), "remove");
+      if (ref_node_owned(ref_node, node)) {
+        RSS(ref_node_remove(ref_node, node), "remove");
+      } else {
+        RSS(ref_node_remove_without_global(ref_node, node), "remove");
+      }
     } else {
       o2n[node] = node;
     }
-    if (ABS(ref_node_xyz(ref_node, 1, node)) > 0.5) {
+    if (ref_node_valid(ref_node, node) && /* ignore collapsed nodes */
+        ABS(ref_node_xyz(ref_node, 1, node)) > 0.5) {
       radius = ref_node_xyz(ref_node, 2, node);
       ref_node_xyz(ref_node, 1, node) = radius * sin(wedge_angle);
       ref_node_xyz(ref_node, 2, node) = radius * cos(wedge_angle);
