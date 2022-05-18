@@ -996,9 +996,10 @@ REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
                                      REF_DBL strong_value,
                                      REF_DICT ref_dict_bcs) {
   if (ref_grid_twod(ref_grid)) {
-    REF_CELL ref_cell = ref_grid_edg(ref_grid);
+    REF_CELL ref_cell;
     REF_INT bc;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
+    ref_cell = ref_grid_edg(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       bc = REF_EMPTY;
       RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)], &bc),
