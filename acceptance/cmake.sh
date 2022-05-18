@@ -13,11 +13,11 @@ module load cmake_3.15.5
 module list
 set -x # echo commands
 
-log=`pwd`/../log-build.txt
+log=`pwd`/../log-build_c.txt
 trap "cat $log" EXIT
-mkdir -p build
+mkdir -p build_c
 export CMAKE_PREFIX_PATH="${mpi_path}:${parmetis_path}:${egads_path}:${opencascade_path}"
-( cd build && \
+( cd build_c && \
       cmake \
 	  -DCMAKE_INSTALL_PREFIX=`pwd` \
       -DCMAKE_C_FLAGS="-g -O2" \
@@ -27,12 +27,30 @@ export CMAKE_PREFIX_PATH="${mpi_path}:${parmetis_path}:${egads_path}:${opencasca
       && ctest --output-on-failure >> $log 2>&1) || exit 1
 trap - EXIT
 
-log=`pwd`/../log-bootstrap.txt
+log=`pwd`/../log-bootstrap_c.txt
 trap "cat $log" EXIT
-export PATH=${PATH}:`pwd`/build/bin
+export PATH=${PATH}:`pwd`/build_c/bin
 ( cd acceptance/hemisphere/uniform && \
       ./generate.sh >> $log 2>&1 ) || exit 1
 trap - EXIT
 
-cat `pwd`/../log-build.txt
-cat `pwd`/../log-bootstrap.txt
+cat `pwd`/../log-build_c.txt
+cat `pwd`/../log-bootstrap_c.txt
+
+log=`pwd`/../log-build_cxx.txt
+trap "cat $log" EXIT
+mkdir -p build_cxx
+export CMAKE_PREFIX_PATH="${mpi_path}:${parmetis_path}:${egads_path}:${opencascade_path}"
+( cd build_cxx && \
+      cmake \
+	  -DCMAKE_INSTALL_PREFIX=`pwd` \
+      -DCMAKE_C_FLAGS="-g -O2" \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_CXX_COMPILER=g++ \
+      -DREFINE_FORCE_CXX=ON \
+      .. > $log 2>&1\
+      && make -j 8 install >> $log 2>&1\
+      && ctest --output-on-failure >> $log 2>&1) || exit 1
+trap - EXIT
+
+cat `pwd`/../log-build_cxx.txt
