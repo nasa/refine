@@ -996,20 +996,20 @@ REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
                                      REF_DBL strong_value,
                                      REF_DICT ref_dict_bcs) {
   if (ref_grid_twod(ref_grid)) {
-    REF_CELL edg_cell = ref_grid_edg(ref_grid);
+    REF_CELL ref_cell = ref_grid_edg(ref_grid);
     REF_INT bc;
-    REF_INT edg, edg_nodes[REF_CELL_MAX_SIZE_PER];
-    each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       bc = REF_EMPTY;
-      RXS(ref_dict_value(ref_dict_bcs, edg_nodes[ref_cell_id_index(edg_cell)],
-                         &bc),
+      RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)], &bc),
           REF_NOT_FOUND, "bc");
-      if (!ref_phys_wall_distance_bc(bc)) continue;
-      scalar[edg_nodes[0]] = strong_value;
-      scalar[edg_nodes[1]] = strong_value;
+      if (ref_phys_wall_distance_bc(bc)) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          scalar[nodes[cell_node]] = strong_value;
+        }
+      }
     }
   } else {
-    RSS(REF_IMPLEMENT, "implement 3D");
   }
   return REF_SUCCESS;
 }
