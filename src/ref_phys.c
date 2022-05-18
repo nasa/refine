@@ -1011,6 +1011,31 @@ REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
       }
     }
   } else {
+    REF_CELL ref_cell;
+    REF_INT bc;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)], &bc),
+          REF_NOT_FOUND, "bc");
+      if (ref_phys_wall_distance_bc(bc)) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          scalar[nodes[cell_node]] = strong_value;
+        }
+      }
+    }
+    ref_cell = ref_grid_qua(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)], &bc),
+          REF_NOT_FOUND, "bc");
+      if (ref_phys_wall_distance_bc(bc)) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          scalar[nodes[cell_node]] = strong_value;
+        }
+      }
+    }
   }
   return REF_SUCCESS;
 }
