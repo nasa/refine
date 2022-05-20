@@ -22,5 +22,10 @@ foreach(TPL ${THIRD_PARTY_PACKAGES})
     endif()
 endforeach()
 
-add_subdirectory(src)
+if(ENABLE_KOKKOS)
+  enable_language(CXX)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+  find_package(Kokkos REQUIRED)
+endif()
 
+add_subdirectory(src)

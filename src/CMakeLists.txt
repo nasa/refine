@@ -112,6 +112,11 @@ function(create_program TARGET_NAME)
     if (REFINE_VERSION)
         target_compile_definitions(${TARGET_NAME} PRIVATE REFINE_VERSION="${REFINE_VERSION}")
     endif()
+    if (ENABLE_KOKKOS)
+        target_compile_definitions(${TARGET_NAME} PRIVATE HAVE_KOKKOS)
+        target_link_libraries(${TARGET_NAME} PUBLIC Kokkos::kokkos)
+        set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CXX)
+    endif()
     set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
     set_target_rpath(${TARGET_NAME})
     install(TARGETS ${TARGET_NAME} DESTINATION bin)
@@ -124,6 +129,11 @@ function(create_library TARGET_NAME)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include/refine>
             )
+    if (ENABLE_KOKKOS)
+        target_compile_definitions(${TARGET_NAME} PRIVATE HAVE_KOKKOS)
+        target_link_libraries(${TARGET_NAME} PUBLIC Kokkos::kokkos)
+        set_source_files_properties(${ARGN} PROPERTIES LANGUAGE CXX)
+    endif()
     install(TARGETS ${TARGET_NAME}
             EXPORT refine
             LIBRARY DESTINATION lib

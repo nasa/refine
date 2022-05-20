@@ -222,11 +222,17 @@ REF_STATUS ref_mpi_start(int argc, char *argv[]) {
   SUPRESS_UNUSED_COMPILER_WARNING(argc);
   SUPRESS_UNUSED_COMPILER_WARNING(argv);
 #endif
+#ifdef HAVE_KOKKOS
+  Kokkos::initialize();
+#endif
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_mpi_stop(void) {
+#ifdef HAVE_KOKKOS
+  Kokkos::finalize();
+#endif
 #ifdef HAVE_MPI
   MPI_Finalize();
 #endif
