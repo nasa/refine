@@ -94,25 +94,27 @@ struct REF_AGENTS_STRUCT {
   for (; ref_agent_step(ref_agents, id) < (limit); \
        ref_agent_step(ref_agents, id)++)
 
-REF_STATUS ref_agents_create(REF_AGENTS *ref_agents, REF_MPI ref_mpi);
+REF_FCN REF_STATUS ref_agents_create(REF_AGENTS *ref_agents, REF_MPI ref_mpi);
 
-REF_STATUS ref_agents_free(REF_AGENTS ref_agents);
+REF_FCN REF_STATUS ref_agents_free(REF_AGENTS ref_agents);
 
-REF_STATUS ref_agents_inspect(REF_AGENTS ref_agents);
-REF_STATUS ref_agents_tattle(REF_AGENTS ref_agents, REF_INT id,
-                             const char *context);
-REF_STATUS ref_agents_population(REF_AGENTS ref_agents, const char *context);
+REF_FCN REF_STATUS ref_agents_inspect(REF_AGENTS ref_agents);
+REF_FCN REF_STATUS ref_agents_tattle(REF_AGENTS ref_agents, REF_INT id,
+                                     const char *context);
+REF_FCN REF_STATUS ref_agents_population(REF_AGENTS ref_agents,
+                                         const char *context);
 
-REF_STATUS ref_agents_restart(REF_AGENTS ref_agents, REF_INT part, REF_INT seed,
-                              REF_INT id);
-REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node, REF_INT part,
-                           REF_INT seed, REF_DBL *xyz, REF_INT *id);
-REF_STATUS ref_agents_remove(REF_AGENTS ref_agents, REF_INT id);
-REF_STATUS ref_agents_pop(REF_AGENTS ref_agents, REF_INT *node, REF_INT *part,
-                          REF_INT *seed, REF_DBL *xyz);
-REF_STATUS ref_agents_delete(REF_AGENTS ref_agents, REF_INT node);
+REF_FCN REF_STATUS ref_agents_restart(REF_AGENTS ref_agents, REF_INT part,
+                                      REF_INT seed, REF_INT id);
+REF_FCN REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node,
+                                   REF_INT part, REF_INT seed, REF_DBL *xyz,
+                                   REF_INT *id);
+REF_FCN REF_STATUS ref_agents_remove(REF_AGENTS ref_agents, REF_INT id);
+REF_FCN REF_STATUS ref_agents_pop(REF_AGENTS ref_agents, REF_INT *node,
+                                  REF_INT *part, REF_INT *seed, REF_DBL *xyz);
+REF_FCN REF_STATUS ref_agents_delete(REF_AGENTS ref_agents, REF_INT node);
 
-REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents);
+REF_FCN REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents);
 
 END_C_DECLORATION
 
