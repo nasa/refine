@@ -23,12 +23,13 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_args_inspect(REF_INT n, char **args);
-REF_STATUS ref_args_find(REF_INT n, char **args, const char *target,
-                         REF_INT *pos);
+REF_FCN REF_STATUS ref_args_inspect(REF_INT n, char **args);
+REF_FCN REF_STATUS ref_args_find(REF_INT n, char **args, const char *target,
+                                 REF_INT *pos);
 
-REF_STATUS ref_args_char(REF_INT n, char **args, const char *long_target,
-                         const char *short_target, char **value);
+REF_FCN REF_STATUS ref_args_char(REF_INT n, char **args,
+                                 const char *long_target,
+                                 const char *short_target, char **value);
 
 END_C_DECLORATION
 

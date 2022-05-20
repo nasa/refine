@@ -30,7 +30,7 @@
 
 /* assumes in x-z, extrusion is unity in y, global ids are paired accross span
  */
-REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_DBL pole_tol;
