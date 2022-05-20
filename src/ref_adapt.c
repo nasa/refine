@@ -39,7 +39,7 @@
 #include "ref_swap.h"
 #include "ref_validation.h"
 
-REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
+REF_FCN REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   REF_ADAPT ref_adapt;
 
   ref_malloc(*ref_adapt_ptr, 1, REF_ADAPT_STRUCT);
@@ -76,7 +76,8 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
+REF_FCN REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr,
+                                       REF_ADAPT original) {
   REF_ADAPT ref_adapt;
 
   ref_malloc(*ref_adapt_ptr, 1, REF_ADAPT_STRUCT);
@@ -113,13 +114,14 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_free(REF_ADAPT ref_adapt) {
+REF_FCN REF_STATUS ref_adapt_free(REF_ADAPT ref_adapt) {
   ref_free(ref_adapt);
 
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
+REF_FCN static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid,
+                                              REF_BOOL *all_done) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_ADAPT ref_adapt = ref_grid->adapt;
@@ -363,7 +365,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid, const char *mode) {
+REF_FCN static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid,
+                                           const char *mode) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -471,8 +474,9 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid, const char *mode) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_min_sliver_angle(REF_GRID ref_grid, REF_INT *nodes,
-                                             REF_DBL *angle) {
+REF_FCN static REF_STATUS ref_adapt_min_sliver_angle(REF_GRID ref_grid,
+                                                     REF_INT *nodes,
+                                                     REF_DBL *angle) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_BOOL geom_node, has_side;
@@ -596,7 +600,7 @@ REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_swap(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_adapt_swap(REF_GRID ref_grid) {
   REF_INT pass;
   RSS(ref_cavity_pass(ref_grid), "cavity pass");
   if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
@@ -607,12 +611,12 @@ static REF_STATUS ref_adapt_swap(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_topo(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_adapt_topo(REF_GRID ref_grid) {
   RSS(ref_validation_cell_face(ref_grid), "cell face");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
+REF_FCN REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT ngeom;
   REF_BOOL all_done0, all_done1;
   REF_INT i, swap_smooth_passes = 1;
@@ -801,7 +805,7 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
+REF_FCN REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
   REF_BOOL all_done = REF_FALSE;
   REF_INT pass;
 
