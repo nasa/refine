@@ -26,7 +26,8 @@
 #include "ref_malloc.h"
 #include "ref_node.h"
 
-REF_STATUS ref_comprow_create(REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_comprow_create(REF_COMPROW *ref_comprow_ptr,
+                                      REF_GRID ref_grid) {
   REF_COMPROW ref_comprow;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -89,7 +90,7 @@ REF_STATUS ref_comprow_create(REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_comprow_free(REF_COMPROW ref_comprow) {
+REF_FCN REF_STATUS ref_comprow_free(REF_COMPROW ref_comprow) {
   if (NULL == (void *)ref_comprow) return REF_NULL;
 
   ref_free(ref_comprow->col);
@@ -100,7 +101,7 @@ REF_STATUS ref_comprow_free(REF_COMPROW ref_comprow) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_comprow_inspect(REF_COMPROW ref_comprow) {
+REF_FCN REF_STATUS ref_comprow_inspect(REF_COMPROW ref_comprow) {
   REF_INT node, entry;
   for (node = 0; node < ref_comprow_max(ref_comprow); node++)
     if (ref_comprow->first[node + 1] > ref_comprow->first[node]) {
@@ -115,8 +116,8 @@ REF_STATUS ref_comprow_inspect(REF_COMPROW ref_comprow) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_comprow_entry(REF_COMPROW ref_comprow, REF_INT row, REF_INT col,
-                             REF_INT *entry) {
+REF_FCN REF_STATUS ref_comprow_entry(REF_COMPROW ref_comprow, REF_INT row,
+                                     REF_INT col, REF_INT *entry) {
   (*entry) = REF_EMPTY;
   if (row < 0 || ref_comprow_max(ref_comprow) <= row || col < 0 ||
       ref_comprow_max(ref_comprow) <= col)

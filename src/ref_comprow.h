@@ -43,13 +43,14 @@ struct REF_COMPROW_STRUCT {
   for ((entry) = ref_comprow->first[(row)];                 \
        (entry) < ref_comprow->first[(row) + 1]; (entry)++)
 
-REF_STATUS ref_comprow_create(REF_COMPROW *ref_comprow, REF_GRID ref_grid);
-REF_STATUS ref_comprow_free(REF_COMPROW ref_comprow);
+REF_FCN REF_STATUS ref_comprow_create(REF_COMPROW *ref_comprow,
+                                      REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_comprow_free(REF_COMPROW ref_comprow);
 
-REF_STATUS ref_comprow_inspect(REF_COMPROW ref_comprow);
+REF_FCN REF_STATUS ref_comprow_inspect(REF_COMPROW ref_comprow);
 
-REF_STATUS ref_comprow_entry(REF_COMPROW ref_comprow, REF_INT row, REF_INT col,
-                             REF_INT *entry);
+REF_FCN REF_STATUS ref_comprow_entry(REF_COMPROW ref_comprow, REF_INT row,
+                                     REF_INT col, REF_INT *entry);
 
 END_C_DECLORATION
 

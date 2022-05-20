@@ -24,7 +24,7 @@
 #include "ref_malloc.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_dict_create(REF_DICT *ref_dict_ptr) {
+REF_FCN REF_STATUS ref_dict_create(REF_DICT *ref_dict_ptr) {
   REF_DICT ref_dict;
 
   ref_malloc(*ref_dict_ptr, 1, REF_DICT_STRUCT);
@@ -40,7 +40,7 @@ REF_STATUS ref_dict_create(REF_DICT *ref_dict_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_free(REF_DICT ref_dict) {
+REF_FCN REF_STATUS ref_dict_free(REF_DICT ref_dict) {
   if (NULL == (void *)ref_dict) return REF_NULL;
   ref_free(ref_dict->value);
   ref_free(ref_dict->key);
@@ -48,7 +48,8 @@ REF_STATUS ref_dict_free(REF_DICT ref_dict) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict_ptr, REF_DICT original) {
+REF_FCN REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict_ptr,
+                                      REF_DICT original) {
   REF_DICT ref_dict;
   REF_INT key_index, dict_key, dict_value;
 
@@ -70,7 +71,8 @@ REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict_ptr, REF_DICT original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key, REF_INT value) {
+REF_FCN REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key,
+                                  REF_INT value) {
   REF_INT i, insert_point;
 
   if (ref_dict_max(ref_dict) == ref_dict_n(ref_dict)) {
@@ -105,8 +107,8 @@ REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key, REF_INT value) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_location(REF_DICT ref_dict, REF_INT key,
-                             REF_INT *location) {
+REF_FCN REF_STATUS ref_dict_location(REF_DICT ref_dict, REF_INT key,
+                                     REF_INT *location) {
   REF_INT i;
 
   if (10 < ref_dict_n(ref_dict)) {
@@ -124,7 +126,7 @@ REF_STATUS ref_dict_location(REF_DICT ref_dict, REF_INT key,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_dict_remove(REF_DICT ref_dict, REF_INT key) {
+REF_FCN REF_STATUS ref_dict_remove(REF_DICT ref_dict, REF_INT key) {
   REF_INT i, location;
 
   RAISE(ref_dict_location(ref_dict, key, &location));
@@ -141,7 +143,8 @@ REF_STATUS ref_dict_remove(REF_DICT ref_dict, REF_INT key) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_value(REF_DICT ref_dict, REF_INT key, REF_INT *value) {
+REF_FCN REF_STATUS ref_dict_value(REF_DICT ref_dict, REF_INT key,
+                                  REF_INT *value) {
   REF_INT location;
 
   RAISE(ref_dict_location(ref_dict, key, &location));
@@ -151,7 +154,7 @@ REF_STATUS ref_dict_value(REF_DICT ref_dict, REF_INT key, REF_INT *value) {
   return REF_SUCCESS;
 }
 
-REF_BOOL ref_dict_has_key(REF_DICT ref_dict, REF_INT key) {
+REF_FCN REF_BOOL ref_dict_has_key(REF_DICT ref_dict, REF_INT key) {
   REF_INT i;
 
   for (i = 0; i < ref_dict_n(ref_dict); i++)
@@ -162,7 +165,7 @@ REF_BOOL ref_dict_has_key(REF_DICT ref_dict, REF_INT key) {
   return REF_FALSE;
 }
 
-REF_BOOL ref_dict_has_value(REF_DICT ref_dict, REF_INT value) {
+REF_FCN REF_BOOL ref_dict_has_value(REF_DICT ref_dict, REF_INT value) {
   REF_INT i;
 
   for (i = 0; i < ref_dict_n(ref_dict); i++) {
@@ -174,7 +177,7 @@ REF_BOOL ref_dict_has_value(REF_DICT ref_dict, REF_INT value) {
   return REF_FALSE;
 }
 
-REF_STATUS ref_dict_inspect(REF_DICT ref_dict) {
+REF_FCN REF_STATUS ref_dict_inspect(REF_DICT ref_dict) {
   REF_INT i;
 
   printf("ref_dict = %p\n", (void *)ref_dict);
@@ -187,7 +190,7 @@ REF_STATUS ref_dict_inspect(REF_DICT ref_dict) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict) {
+REF_FCN REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict) {
   REF_INT i;
 
   each_ref_dict_key_index(ref_dict, i) {
@@ -197,7 +200,7 @@ REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_bcast(REF_DICT ref_dict, REF_MPI ref_mpi) {
+REF_FCN REF_STATUS ref_dict_bcast(REF_DICT ref_dict, REF_MPI ref_mpi) {
   REF_INT n;
   REF_INT *keys, *values;
   REF_INT i, index, key, value;
