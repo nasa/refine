@@ -1237,7 +1237,7 @@ static REF_STATUS ref_egads_node_faces(REF_GEOM ref_geom,
          "EG topo node");
 
     if (0 < nchild) {
-      toponode = EG_indexBodyTopo(ref_geom->body, pchldrn[0]);
+      toponode = EG_indexBodyTopo((ego)(ref_geom->body), pchldrn[0]);
       if (0 < e2f[0 + 2 * (id - 1)]) {
         RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[0 + 2 * (id - 1)]),
             "add");
@@ -1249,7 +1249,7 @@ static REF_STATUS ref_egads_node_faces(REF_GEOM ref_geom,
     }
 
     if (1 < nchild) {
-      toponode = EG_indexBodyTopo(ref_geom->body, pchldrn[1]);
+      toponode = EG_indexBodyTopo((ego)(ref_geom->body), pchldrn[1]);
       if (0 < e2f[0 + 2 * (id - 1)]) {
         RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[0 + 2 * (id - 1)]),
             "add");
@@ -1496,9 +1496,11 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
            "EG topo edge0");
       if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
       RAS(0 < ncadnode0 && ncadnode0 < 3, "edge children");
-      ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->body, cadnodes0[0]);
+      ineligible_cad_node0 =
+          EG_indexBodyTopo((ego)(ref_geom->body), cadnodes0[0]);
       if (2 == ncadnode0) {
-        ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->body, cadnodes0[1]);
+        ineligible_cad_node1 =
+            EG_indexBodyTopo((ego)(ref_geom->body), cadnodes0[1]);
       } else {
         ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
       }
@@ -1517,9 +1519,9 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
                "EG topo edge0");
           if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
           RAS(0 < ncadnode1 && ncadnode1 < 3, "edge children");
-          cad_node0 = EG_indexBodyTopo(ref_geom->body, cadnodes1[0]);
+          cad_node0 = EG_indexBodyTopo((ego)(ref_geom->body), cadnodes1[0]);
           if (2 == ncadnode1) {
-            cad_node1 = EG_indexBodyTopo(ref_geom->body, cadnodes1[1]);
+            cad_node1 = EG_indexBodyTopo((ego)(ref_geom->body), cadnodes1[1]);
           } else {
             cad_node1 = cad_node0; /* ONENODE edge */
           }
@@ -1544,7 +1546,7 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
           }
         }
       }
-      edgeid = EG_indexBodyTopo(ref_geom->body, edgeobj0);
+      edgeid = EG_indexBodyTopo((ego)(ref_geom->body), edgeobj0);
       if (ref_math_divisible(diag, width)) {
         aspect_ratio = diag / width;
         adjusted = MIN(MAX(1.0, aspect_ratio - 10.0), 10.0) * width;
@@ -2240,7 +2242,7 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
          "edge topo");
     if (mtype == ONENODE) {
       REIS(1, nchild, "ONENODE should have one node");
-      cad_node = EG_indexBodyTopo(ref_geom->body, echilds[0]);
+      cad_node = EG_indexBodyTopo((ego)(ref_geom->body), echilds[0]);
       if (ref_grid_once(ref_grid)) {
         printf("edge id %d is ONENODE at geom node %d\n", edge + 1, cad_node);
       }
@@ -2479,8 +2481,8 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
       REF_INT geom;
       REIS(TWONODE, mtype, "ONENODE edge not implemented");
       REIS(2, nchild, "expect two topo node for edge");
-      toponode0 = EG_indexBodyTopo(ref_geom->body, pchldrn[0]);
-      toponode1 = EG_indexBodyTopo(ref_geom->body, pchldrn[1]);
+      toponode0 = EG_indexBodyTopo((ego)(ref_geom->body), pchldrn[0]);
+      toponode1 = EG_indexBodyTopo((ego)(ref_geom->body), pchldrn[1]);
       node0 = cad_nodes[toponode0 - 1];
       node1 = cad_nodes[toponode1 - 1];
       printf(" topo edge id %3d fid %d %d trange [%f,%f]\n", id,
@@ -3872,9 +3874,11 @@ REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
         tangent[2] = 0.0;
       }
       RAS(0 < ncadnode && ncadnode < 3, "edge children");
-      ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->body, cadnodes[0]);
+      ineligible_cad_node0 =
+          EG_indexBodyTopo((ego)(ref_geom->body), cadnodes[0]);
       if (2 == ncadnode) {
-        ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->body, cadnodes[1]);
+        ineligible_cad_node1 =
+            EG_indexBodyTopo((ego)(ref_geom->body), cadnodes[1]);
       } else {
         ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
       }
@@ -3902,9 +3906,10 @@ REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                    "EG topo node");
               if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
               RAS(0 < ncadnode && ncadnode < 3, "edge children");
-              cad_node0 = EG_indexBodyTopo(ref_geom->body, cadnodes[0]);
+              cad_node0 = EG_indexBodyTopo((ego)(ref_geom->body), cadnodes[0]);
               if (2 == ncadnode) {
-                cad_node1 = EG_indexBodyTopo(ref_geom->body, cadnodes[1]);
+                cad_node1 =
+                    EG_indexBodyTopo((ego)(ref_geom->body), cadnodes[1]);
               } else {
                 cad_node1 = cad_node0; /* ONENODE edge */
               }
