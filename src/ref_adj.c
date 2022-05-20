@@ -23,7 +23,7 @@
 
 #include "ref_malloc.h"
 
-REF_STATUS ref_adj_create(REF_ADJ *ref_adj_ptr) {
+REF_FCN REF_STATUS ref_adj_create(REF_ADJ *ref_adj_ptr) {
   REF_ADJ ref_adj;
   REF_INT i;
 
@@ -47,7 +47,7 @@ REF_STATUS ref_adj_create(REF_ADJ *ref_adj_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_free(REF_ADJ ref_adj) {
+REF_FCN REF_STATUS ref_adj_free(REF_ADJ ref_adj) {
   if (NULL == (void *)ref_adj) return REF_NULL;
   ref_free(ref_adj->first);
   ref_free(ref_adj->item);
@@ -55,7 +55,7 @@ REF_STATUS ref_adj_free(REF_ADJ ref_adj) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_deep_copy(REF_ADJ *ref_adj_ptr, REF_ADJ original) {
+REF_FCN REF_STATUS ref_adj_deep_copy(REF_ADJ *ref_adj_ptr, REF_ADJ original) {
   REF_ADJ ref_adj;
   REF_INT i;
 
@@ -79,7 +79,7 @@ REF_STATUS ref_adj_deep_copy(REF_ADJ *ref_adj_ptr, REF_ADJ original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_inspect(REF_ADJ ref_adj) {
+REF_FCN REF_STATUS ref_adj_inspect(REF_ADJ ref_adj) {
   REF_INT node, item;
   printf("ref_adj = %p\n", (void *)ref_adj);
   printf(" blank = %d\n", ref_adj->blank);
@@ -92,7 +92,7 @@ REF_STATUS ref_adj_inspect(REF_ADJ ref_adj) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_node_inspect(REF_ADJ ref_adj, REF_INT node) {
+REF_FCN REF_STATUS ref_adj_node_inspect(REF_ADJ ref_adj, REF_INT node) {
   REF_INT item, ref;
   printf(" %d :", node);
   each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
@@ -103,7 +103,8 @@ REF_STATUS ref_adj_node_inspect(REF_ADJ ref_adj, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_add(REF_ADJ ref_adj, REF_INT node, REF_INT reference) {
+REF_FCN REF_STATUS ref_adj_add(REF_ADJ ref_adj, REF_INT node,
+                               REF_INT reference) {
   REF_INT item;
   REF_INT orig, chunk, i;
   REF_INT max_limit = REF_INT_MAX;
@@ -151,7 +152,8 @@ REF_STATUS ref_adj_add(REF_ADJ ref_adj, REF_INT node, REF_INT reference) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_remove(REF_ADJ ref_adj, REF_INT node, REF_INT reference) {
+REF_FCN REF_STATUS ref_adj_remove(REF_ADJ ref_adj, REF_INT node,
+                                  REF_INT reference) {
   REF_INT item, ref;
   REF_INT target, parent;
 
@@ -190,8 +192,8 @@ REF_STATUS ref_adj_remove(REF_ADJ ref_adj, REF_INT node, REF_INT reference) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_add_uniquely(REF_ADJ ref_adj, REF_INT node,
-                                REF_INT reference) {
+REF_FCN REF_STATUS ref_adj_add_uniquely(REF_ADJ ref_adj, REF_INT node,
+                                        REF_INT reference) {
   REF_INT item, ref;
 
   each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
@@ -203,7 +205,8 @@ REF_STATUS ref_adj_add_uniquely(REF_ADJ ref_adj, REF_INT node,
   return ref_adj_add(ref_adj, node, reference);
 }
 
-REF_STATUS ref_adj_degree(REF_ADJ ref_adj, REF_INT node, REF_INT *degree) {
+REF_FCN REF_STATUS ref_adj_degree(REF_ADJ ref_adj, REF_INT node,
+                                  REF_INT *degree) {
   REF_INT item;
   *degree = 0;
 
@@ -214,8 +217,8 @@ REF_STATUS ref_adj_degree(REF_ADJ ref_adj, REF_INT node, REF_INT *degree) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
-                                   REF_INT *min_degree_node) {
+REF_FCN REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
+                                           REF_INT *min_degree_node) {
   REF_INT node, degree;
   *min_degree = REF_EMPTY;
   *min_degree_node = REF_EMPTY;
@@ -233,7 +236,7 @@ REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_tec_fill(REF_ADJ ref_adj, const char *filename) {
+REF_FCN REF_STATUS ref_adj_tec_fill(REF_ADJ ref_adj, const char *filename) {
   REF_INT node, item, nadj;
 
   FILE *file;

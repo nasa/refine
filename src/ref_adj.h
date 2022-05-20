@@ -41,10 +41,10 @@ struct REF_ADJ_ITEM_STRUCT {
   REF_INT ref;
 };
 
-REF_STATUS ref_adj_create(REF_ADJ *ref_adj);
-REF_STATUS ref_adj_free(REF_ADJ ref_adj);
+REF_FCN REF_STATUS ref_adj_create(REF_ADJ *ref_adj);
+REF_FCN REF_STATUS ref_adj_free(REF_ADJ ref_adj);
 
-REF_STATUS ref_adj_deep_copy(REF_ADJ *ref_adj, REF_ADJ original);
+REF_FCN REF_STATUS ref_adj_deep_copy(REF_ADJ *ref_adj, REF_ADJ original);
 
 #define ref_adj_nnode(ref_adj) ((ref_adj)->nnode)
 #define ref_adj_nitem(ref_adj) ((ref_adj)->nitem)
@@ -73,19 +73,22 @@ REF_STATUS ref_adj_deep_copy(REF_ADJ *ref_adj, REF_ADJ original);
   for ((item) = ref_adj_first(ref_adj, node); ref_adj_valid(item); \
        (item) = ref_adj_item_next(ref_adj, item))
 
-REF_STATUS ref_adj_inspect(REF_ADJ ref_adj);
-REF_STATUS ref_adj_node_inspect(REF_ADJ ref_adj, REF_INT node);
+REF_FCN REF_STATUS ref_adj_inspect(REF_ADJ ref_adj);
+REF_FCN REF_STATUS ref_adj_node_inspect(REF_ADJ ref_adj, REF_INT node);
 
-REF_STATUS ref_adj_add(REF_ADJ ref_adj, REF_INT node, REF_INT reference);
-REF_STATUS ref_adj_remove(REF_ADJ ref_adj, REF_INT node, REF_INT reference);
+REF_FCN REF_STATUS ref_adj_add(REF_ADJ ref_adj, REF_INT node,
+                               REF_INT reference);
+REF_FCN REF_STATUS ref_adj_remove(REF_ADJ ref_adj, REF_INT node,
+                                  REF_INT reference);
 
-REF_STATUS ref_adj_add_uniquely(REF_ADJ ref_adj, REF_INT node,
-                                REF_INT reference);
-REF_STATUS ref_adj_degree(REF_ADJ ref_adj, REF_INT node, REF_INT *degree);
-REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
-                                   REF_INT *min_degree_node);
+REF_FCN REF_STATUS ref_adj_add_uniquely(REF_ADJ ref_adj, REF_INT node,
+                                        REF_INT reference);
+REF_FCN REF_STATUS ref_adj_degree(REF_ADJ ref_adj, REF_INT node,
+                                  REF_INT *degree);
+REF_FCN REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
+                                           REF_INT *min_degree_node);
 
-REF_STATUS ref_adj_tec_fill(REF_ADJ ref_adj, const char *filename);
+REF_FCN REF_STATUS ref_adj_tec_fill(REF_ADJ ref_adj, const char *filename);
 
 END_C_DECLORATION
 
