@@ -26,7 +26,8 @@
 #include "ref_edge.h"
 #include "ref_grid.h"
 
-static REF_BOOL ref_dist_exclude(REF_INT node0, REF_INT node1, REF_INT *nodes) {
+REF_FCN static REF_BOOL ref_dist_exclude(REF_INT node0, REF_INT node1,
+                                         REF_INT *nodes) {
   if (node0 == nodes[0] && node1 == nodes[1]) return REF_TRUE;
   if (node0 == nodes[1] && node1 == nodes[2]) return REF_TRUE;
   if (node0 == nodes[2] && node1 == nodes[0]) return REF_TRUE;
@@ -37,9 +38,9 @@ static REF_BOOL ref_dist_exclude(REF_INT node0, REF_INT node1, REF_INT *nodes) {
 
   return REF_FALSE;
 }
-static REF_STATUS ref_dist_pierce(REF_NODE ref_node, REF_INT node0,
-                                  REF_INT node1, REF_INT *nodes,
-                                  REF_BOOL *pierce) {
+REF_FCN static REF_STATUS ref_dist_pierce(REF_NODE ref_node, REF_INT node0,
+                                          REF_INT node1, REF_INT *nodes,
+                                          REF_BOOL *pierce) {
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL vol0, vol1;
   REF_DBL side0, side1, side2;
@@ -74,8 +75,10 @@ static REF_STATUS ref_dist_pierce(REF_NODE ref_node, REF_INT node0,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_dist_bounding_sphere3(REF_NODE ref_node, REF_INT *nodes,
-                                            REF_DBL *center, REF_DBL *radius) {
+REF_FCN static REF_STATUS ref_dist_bounding_sphere3(REF_NODE ref_node,
+                                                    REF_INT *nodes,
+                                                    REF_DBL *center,
+                                                    REF_DBL *radius) {
   REF_INT i;
   for (i = 0; i < 3; i++)
     center[i] = (1.0 / 3.0) * (ref_node_xyz(ref_node, i, nodes[0]) +
@@ -90,9 +93,11 @@ static REF_STATUS ref_dist_bounding_sphere3(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_dist_bounding_sphere2(REF_NODE ref_node, REF_INT node0,
-                                            REF_INT node1, REF_DBL *center,
-                                            REF_DBL *radius) {
+REF_FCN static REF_STATUS ref_dist_bounding_sphere2(REF_NODE ref_node,
+                                                    REF_INT node0,
+                                                    REF_INT node1,
+                                                    REF_DBL *center,
+                                                    REF_DBL *radius) {
   REF_INT i;
   for (i = 0; i < 3; i++)
     center[i] = 0.5 * (ref_node_xyz(ref_node, i, node0) +
@@ -103,8 +108,9 @@ static REF_STATUS ref_dist_bounding_sphere2(REF_NODE ref_node, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
-                               const char *filename, REF_INT *n_collisions) {
+REF_FCN REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
+                                       const char *filename,
+                                       REF_INT *n_collisions) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;

@@ -34,81 +34,95 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_egads_open(REF_GEOM ref_geom);
-REF_STATUS ref_egads_close(REF_GEOM ref_geom);
-REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level);
-REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename);
-REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename);
+REF_FCN REF_STATUS ref_egads_open(REF_GEOM ref_geom);
+REF_FCN REF_STATUS ref_egads_close(REF_GEOM ref_geom);
+REF_FCN REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level);
+REF_FCN REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename);
+REF_FCN REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename);
 
-REF_BOOL ref_egads_allows_construction(void);
-REF_BOOL ref_egads_allows_effective(void);
-REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description);
-REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom);
-REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
-                                 REF_INT faceid, REF_INT degree,
-                                 REF_INT n_control_point, REF_INT **int_bundle,
-                                 REF_DBL **dbl_bundle);
-REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
-                                 REF_BOOL debug);
+REF_FCN REF_BOOL ref_egads_allows_construction(void);
+REF_FCN REF_BOOL ref_egads_allows_effective(void);
+REF_FCN REF_STATUS ref_egads_construct(REF_GEOM ref_geom,
+                                       const char *description);
+REF_FCN REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom);
+REF_FCN REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
+                                         REF_INT faceid, REF_INT degree,
+                                         REF_INT n_control_point,
+                                         REF_INT **int_bundle,
+                                         REF_DBL **dbl_bundle);
+REF_FCN REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
+                                         REF_BOOL debug);
 
-REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom, REF_INT **edge_faces);
+REF_FCN REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom,
+                                        REF_INT **edge_faces);
 
-REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
-                          REF_DBL *global_params);
+REF_FCN REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
+                                  REF_DBL *global_params);
 
-REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid);
 
-REF_STATUS ref_egads_recon(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_egads_recon(REF_GRID ref_grid);
 
-REF_STATUS ref_egads_twod_flat_z(REF_GEOM ref_geom, REF_BOOL *flat);
-REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag);
-REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                               REF_DBL *tolerance);
+REF_FCN REF_STATUS ref_egads_twod_flat_z(REF_GEOM ref_geom, REF_BOOL *flat);
+REF_FCN REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom,
+                                      REF_DBL *diag);
+REF_FCN REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type,
+                                       REF_INT id, REF_DBL *tolerance);
 
-REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
-                                    REF_DBL *normal);
-REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
-                                    REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
-                                    REF_DBL *s);
-REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
-                                       REF_INT degen, REF_DBL *uv, REF_DBL *kr,
-                                       REF_DBL *r, REF_DBL *ks, REF_DBL *s);
-REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
-                                 REF_DBL *trange);
-REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT id,
-                                 REF_DBL *min_angle, REF_DBL *max_angle);
-REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
-                                  REF_INT faceid, REF_INT sense, REF_DBL t,
-                                  REF_DBL *uv);
+REF_FCN REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                            REF_DBL *k, REF_DBL *normal);
+REF_FCN REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                            REF_DBL *kr, REF_DBL *r,
+                                            REF_DBL *ks, REF_DBL *s);
+REF_FCN REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom,
+                                               REF_INT faceid, REF_INT degen,
+                                               REF_DBL *uv, REF_DBL *kr,
+                                               REF_DBL *r, REF_DBL *ks,
+                                               REF_DBL *s);
+REF_FCN REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
+                                         REF_DBL *trange);
+REF_FCN REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT id,
+                                         REF_DBL *min_angle,
+                                         REF_DBL *max_angle);
+REF_FCN REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
+                                          REF_INT faceid, REF_INT sense,
+                                          REF_DBL t, REF_DBL *uv);
 
-REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
-                          REF_DBL *dxyz_dtuv);
-REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                             REF_DBL *params, REF_DBL *xyz, REF_DBL *dxyz_dtuv);
-REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                                  REF_DBL *xyz, REF_DBL *param);
-REF_STATUS ref_egads_invert(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                            REF_DBL *xyz, REF_DBL *param);
+REF_FCN REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
+                                  REF_DBL *dxyz_dtuv);
+REF_FCN REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type,
+                                     REF_INT id, REF_DBL *params, REF_DBL *xyz,
+                                     REF_DBL *dxyz_dtuv);
+REF_FCN REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type,
+                                          REF_INT id, REF_DBL *xyz,
+                                          REF_DBL *param);
+REF_FCN REF_STATUS ref_egads_invert(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                    REF_DBL *xyz, REF_DBL *param);
 
-REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap);
+REF_FCN REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap);
 
-REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
-                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
-                                  REF_DBL *h2, REF_DBL *dir2);
-REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id);
+REF_FCN REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node,
+                                          REF_DBL *h0, REF_DBL *dir0,
+                                          REF_DBL *h1, REF_DBL *dir1,
+                                          REF_DBL *h2, REF_DBL *dir2);
+REF_FCN REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type,
+                                       REF_INT id);
 
-REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
-                           REF_DBL *global_params);
+REF_FCN REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
+                                   REF_DBL *global_params);
 
-REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                                   const char *name, const char *value);
-REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                                   const char *name, const char **value);
-REF_STATUS ref_egads_get_real_attribute(REF_GEOM ref_geom, REF_INT type,
-                                        REF_INT id, const char *name,
-                                        const REF_DBL **value, REF_INT *length);
-REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc,
-                                   REF_BOOL axi);
+REF_FCN REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type,
+                                           REF_INT id, const char *name,
+                                           const char *value);
+REF_FCN REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type,
+                                           REF_INT id, const char *name,
+                                           const char **value);
+REF_FCN REF_STATUS ref_egads_get_real_attribute(REF_GEOM ref_geom, REF_INT type,
+                                                REF_INT id, const char *name,
+                                                const REF_DBL **value,
+                                                REF_INT *length);
+REF_FCN REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc,
+                                           REF_BOOL axi);
 
 END_C_DECLORATION
 
