@@ -59,15 +59,16 @@ struct REF_ADAPT_STRUCT {
   REF_BOOL watch_topo;
 };
 
-REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt);
-REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original);
-REF_STATUS ref_adapt_free(REF_ADAPT ref_adapt);
+REF_FCN REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt);
+REF_FCN REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr,
+                                       REF_ADAPT original);
+REF_FCN REF_STATUS ref_adapt_free(REF_ADAPT ref_adapt);
 
-REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done);
+REF_FCN REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done);
 
-REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid);
 
-REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes);
+REF_FCN REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes);
 
 END_C_DECLORATION
 
