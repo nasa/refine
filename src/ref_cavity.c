@@ -816,12 +816,12 @@ REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node(ref_cell, site, item, cell) {
     REF_INT cell_node;
-    REF_BOOL protected = REF_FALSE;
+    REF_BOOL protected_cell = REF_FALSE;
     each_ref_cell_cell_node(ref_cell, cell_node) {
-     protected
-      = protected || (protect == ref_cell_c2n(ref_cell, cell_node, cell));
+      protected_cell = protected_cell ||
+                       (protect == ref_cell_c2n(ref_cell, cell_node, cell));
     }
-    if (protected) continue;
+    if (protected_cell) continue;
     RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
                           &already_have_it),
         "have tet?");
@@ -848,12 +848,12 @@ REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_having_node(ref_cell, site, item, cell) {
     REF_INT cell_node;
-    REF_BOOL protected = REF_FALSE;
+    REF_BOOL protected_cell = REF_FALSE;
     each_ref_cell_cell_node(ref_cell, cell_node) {
-     protected
-      = protected || (protect == ref_cell_c2n(ref_cell, cell_node, cell));
+      protected_cell = protected_cell ||
+                       (protect == ref_cell_c2n(ref_cell, cell_node, cell));
     }
-    if (protected) continue;
+    if (protected_cell) continue;
     RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell,
                           &already_have_it),
         "have tet?");

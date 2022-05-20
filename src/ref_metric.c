@@ -3281,7 +3281,7 @@ REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
 REF_STATUS ref_metric_integrand_err2(void *void_m_diag_sys_hess,
                                      REF_DBL theta_over_2pi,
                                      REF_DBL *radial_error) {
-  REF_DBL *m_diag_sys_hess = void_m_diag_sys_hess;
+  REF_DBL *m_diag_sys_hess = (REF_DBL *)void_m_diag_sys_hess;
   REF_DBL theta = 2.0 * ref_math_pi * theta_over_2pi;
   REF_DBL xx, yy;
   REF_DBL h0, h1;
@@ -3374,7 +3374,7 @@ REF_STATUS ref_metric_integrate2(ref_metric_integrand2 integrand, void *state,
 static REF_STATUS ref_metric_integrand_quad_err2(void *void_node_area,
                                                  REF_DBL *bary,
                                                  REF_DBL *error) {
-  REF_DBL *node_area = void_node_area;
+  REF_DBL *node_area = (REF_DBL *)void_node_area;
   REF_DBL shape[REF_CELL_MAX_SIZE_PER];
   REF_INT i;
   REF_DBL quadratic, linear;

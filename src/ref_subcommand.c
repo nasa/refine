@@ -73,7 +73,7 @@ static void usage(const char *name) {
   printf("  multiscale   Compute a multiscale metric.\n");
   /*printf("  node       Reports location of a node by index\n");*/
   /*printf("  quilt      Construct effective EGADS model.\n");*/
-  printf("  surface      Extract mesh surface.\n");
+  printf("  surface      depreciated, see translate ... --surface.\n");
   printf("  translate    Convert mesh formats.\n");
   printf("  visualize    Convert solution formats.\n");
   printf("\n");
@@ -270,11 +270,6 @@ static void quilt_help(const char *name) {
   printf("usage: \n %s quilt original.egads\n", name);
   printf("  originaleff.egads is output EGADS model with EBODY\n");
   option_auto_tprarms_help();
-  printf("\n");
-}
-static void surface_help(const char *name) {
-  printf("usage: \n %s surface input_mesh.extension [surface_mesh.tec] \n",
-         name);
   printf("\n");
 }
 static void translate_help(const char *name) {
@@ -3830,58 +3825,6 @@ shutdown:
   return REF_FAILURE;
 }
 
-static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
-  char *out_file;
-  char *in_file;
-  char filename[1024];
-  REF_GRID ref_grid = NULL;
-
-  if (argc < 3) goto shutdown;
-  in_file = argv[2];
-  if (argc < 4) {
-    RAS(strlen(in_file) < 1014, "input filename too long (>1014)");
-    sprintf(filename, "%s-surf.tec", in_file);
-    out_file = filename;
-  } else {
-    out_file = argv[3];
-  }
-
-  ref_mpi_stopwatch_start(ref_mpi);
-
-  if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_file);
-    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_file), "part");
-    ref_mpi_stopwatch_stop(ref_mpi, "part");
-  } else {
-    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
-    ref_mpi_stopwatch_stop(ref_mpi, "import");
-  }
-  if (ref_mpi_once(ref_mpi))
-    printf("  read " REF_GLOB_FMT " vertices\n",
-           ref_node_n_global(ref_grid_node(ref_grid)));
-
-  if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
-    RSS(ref_gather_scalar_surf_tec(ref_grid, 0, NULL, NULL, out_file),
-        "gather surf tec");
-    ref_mpi_stopwatch_stop(ref_mpi, "gather");
-  } else {
-    if (ref_mpi_once(ref_mpi))
-      printf("export " REF_GLOB_FMT " nodes to %s\n",
-             ref_node_n_global(ref_grid_node(ref_grid)), out_file);
-    RSS(ref_export_tec_surf(ref_grid, out_file), "export tec surf");
-    ref_mpi_stopwatch_stop(ref_mpi, "export");
-  }
-
-  RSS(ref_grid_free(ref_grid), "free grid");
-
-  return REF_SUCCESS;
-shutdown:
-  if (ref_mpi_once(ref_mpi)) surface_help(argv[0]);
-  return REF_FAILURE;
-}
-
 static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_file;
   char *in_file;
@@ -4544,12 +4487,9 @@ int main(int argc, char *argv[]) {
       goto shutdown;
     }
   } else if (strncmp(argv[1], "s", 1) == 0) {
-    if (REF_EMPTY == help_pos) {
-      RSS(surface(ref_mpi, argc, argv), "surface");
-    } else {
-      if (ref_mpi_once(ref_mpi)) surface_help(argv[0]);
-      goto shutdown;
-    }
+    if (ref_mpi_once(ref_mpi))
+      printf("  surface      depreciated, use translate ... --surface.\n");
+    goto shutdown;
   } else if (strncmp(argv[1], "t", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(translate(ref_mpi, argc, argv), "translate");
