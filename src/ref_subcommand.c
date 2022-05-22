@@ -411,7 +411,7 @@ static REF_STATUS stepexp_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
 
-  if (aspect_ratio > 1.0) {
+  if (aspect_ratio > 0.0) {
     REF_DBL *grad_dist;
     REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
     ref_malloc(grad_dist, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -2327,7 +2327,7 @@ static REF_STATUS fixed_point_metric(
   ref_free(min_scalar);
   ref_free(max_scalar);
 
-  if (aspect_ratio > 1.0) {
+  if (aspect_ratio > 0.0) {
     if (ref_mpi_once(ref_mpi))
       printf("limit --aspect-ratio to %f\n", aspect_ratio);
     RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
@@ -3654,7 +3654,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
       REIS(1, ldim, "expected one scalar");
       ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
-      if (aspect_ratio > 1.0) {
+      if (aspect_ratio > 0.0) {
         if (ref_mpi_once(ref_mpi))
           printf("reconstruct Hessian, compute metric\n");
         RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction),
