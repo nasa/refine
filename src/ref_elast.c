@@ -29,7 +29,8 @@
 #include "ref_matrix.h"
 #include "ref_node.h"
 
-REF_STATUS ref_elast_create(REF_ELAST *ref_elast_ptr, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_elast_create(REF_ELAST *ref_elast_ptr,
+                                    REF_GRID ref_grid) {
   REF_ELAST ref_elast;
 
   ref_malloc(*ref_elast_ptr, 1, REF_ELAST_STRUCT);
@@ -53,7 +54,7 @@ REF_STATUS ref_elast_create(REF_ELAST *ref_elast_ptr, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_elast_free(REF_ELAST ref_elast) {
+REF_FCN REF_STATUS ref_elast_free(REF_ELAST ref_elast) {
   if (NULL == (void *)ref_elast) return REF_NULL;
 
   ref_free(ref_elast->bc);
@@ -66,7 +67,7 @@ REF_STATUS ref_elast_free(REF_ELAST ref_elast) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_elast_inspect(REF_ELAST ref_elast) {
+REF_FCN REF_STATUS ref_elast_inspect(REF_ELAST ref_elast) {
   REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
   REF_INT row, col, entry, i, j;
   for (row = 0; row < ref_comprow_max(ref_comprow); row++)
@@ -87,8 +88,8 @@ REF_STATUS ref_elast_inspect(REF_ELAST ref_elast) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_elast_displace(REF_ELAST ref_elast, REF_INT node,
-                              REF_DBL *dxyz) {
+REF_FCN REF_STATUS ref_elast_displace(REF_ELAST ref_elast, REF_INT node,
+                                      REF_DBL *dxyz) {
   REF_GRID ref_grid = ref_elast_grid(ref_elast);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i;
@@ -98,7 +99,7 @@ REF_STATUS ref_elast_displace(REF_ELAST ref_elast, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_elast_assemble(REF_ELAST ref_elast) {
+REF_FCN REF_STATUS ref_elast_assemble(REF_ELAST ref_elast) {
   REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
   REF_GRID ref_grid = ref_elast_grid(ref_elast);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -507,7 +508,7 @@ REF_STATUS ref_elast_assemble(REF_ELAST ref_elast) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_elast_relax(REF_ELAST ref_elast, REF_DBL *l2norm) {
+REF_FCN REF_STATUS ref_elast_relax(REF_ELAST ref_elast, REF_DBL *l2norm) {
   REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
   REF_GRID ref_grid = ref_elast_grid(ref_elast);
   REF_NODE ref_node = ref_grid_node(ref_grid);
