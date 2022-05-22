@@ -2767,6 +2767,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       goto shutdown;
     }
     aspect_ratio = atof(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "  --aspect-ratio %f detected, not implemented for all metric "
+          "options\n",
+          aspect_ratio);
   }
 
   buffer = REF_FALSE;
