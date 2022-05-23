@@ -25,7 +25,7 @@
 #include "ref_math.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_face_create(REF_FACE *ref_face_ptr, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_face_create(REF_FACE *ref_face_ptr, REF_GRID ref_grid) {
   REF_FACE ref_face;
   REF_INT group, cell, cell_face;
   REF_INT node;
@@ -57,7 +57,7 @@ REF_STATUS ref_face_create(REF_FACE *ref_face_ptr, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_face_free(REF_FACE ref_face) {
+REF_FCN REF_STATUS ref_face_free(REF_FACE ref_face) {
   if (NULL == (void *)ref_face) return REF_NULL;
 
   RSS(ref_adj_free(ref_face_adj(ref_face)), "free adj");
@@ -68,7 +68,7 @@ REF_STATUS ref_face_free(REF_FACE ref_face) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_face_inspect(REF_FACE ref_face) {
+REF_FCN REF_STATUS ref_face_inspect(REF_FACE ref_face) {
   REF_INT face, node, orig[4], sort[4];
 
   printf("ref_face = %p\n", (void *)ref_face);
@@ -88,8 +88,8 @@ REF_STATUS ref_face_inspect(REF_FACE ref_face) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_face_make_canonical(REF_INT *original,
-                                          REF_INT *canonical) {
+REF_FCN static REF_STATUS ref_face_make_canonical(REF_INT *original,
+                                                  REF_INT *canonical) {
   RSS(ref_sort_insertion_int(4, original, canonical), "sort");
 
   if (canonical[0] == canonical[1]) {
@@ -113,7 +113,8 @@ static REF_STATUS ref_face_make_canonical(REF_INT *original,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_face_with(REF_FACE ref_face, REF_INT *nodes, REF_INT *face) {
+REF_FCN REF_STATUS ref_face_with(REF_FACE ref_face, REF_INT *nodes,
+                                 REF_INT *face) {
   REF_INT item, ref, node;
   REF_INT target[4], candidate[4], orig[4];
 
@@ -135,8 +136,8 @@ REF_STATUS ref_face_with(REF_FACE ref_face, REF_INT *nodes, REF_INT *face) {
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_face_spanning(REF_FACE ref_face, REF_INT node0, REF_INT node1,
-                             REF_INT *face) {
+REF_FCN REF_STATUS ref_face_spanning(REF_FACE ref_face, REF_INT node0,
+                                     REF_INT node1, REF_INT *face) {
   REF_INT item, ref;
 
   (*face) = REF_EMPTY;
@@ -158,7 +159,7 @@ REF_STATUS ref_face_spanning(REF_FACE ref_face, REF_INT node0, REF_INT node1,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_face_add_uniquely(REF_FACE ref_face, REF_INT *nodes) {
+REF_FCN REF_STATUS ref_face_add_uniquely(REF_FACE ref_face, REF_INT *nodes) {
   REF_INT face, node;
   REF_STATUS status;
 
@@ -192,8 +193,8 @@ REF_STATUS ref_face_add_uniquely(REF_FACE ref_face, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_face_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
-                           REF_DBL *xyz3, REF_DBL *normal) {
+REF_FCN REF_STATUS ref_face_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
+                                   REF_DBL *xyz3, REF_DBL *normal) {
   REF_DBL edge1[3], edge2[3];
 
   normal[0] = 0.0;
@@ -227,8 +228,9 @@ REF_STATUS ref_face_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
-                              REF_DBL *xyz3, REF_INT *open_node, REF_DBL *dot) {
+REF_FCN REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1,
+                                      REF_DBL *xyz2, REF_DBL *xyz3,
+                                      REF_INT *open_node, REF_DBL *dot) {
   REF_DBL edge1[3], edge2[3];
   REF_DBL open_dot;
 
@@ -297,8 +299,8 @@ REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_face_part(REF_FACE ref_face, REF_NODE ref_node, REF_INT face,
-                         REF_INT *part) {
+REF_FCN REF_STATUS ref_face_part(REF_FACE ref_face, REF_NODE ref_node,
+                                 REF_INT face, REF_INT *part) {
   REF_GLOB global, smallest_global;
   REF_INT node, smallest_global_node;
 
