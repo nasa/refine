@@ -25,7 +25,7 @@
 #include "ref_edge.h"
 #include "ref_malloc.h"
 
-REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
+REF_FCN REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   REF_INT group;
   REF_GRID ref_grid;
 
@@ -71,7 +71,8 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
+REF_FCN REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr,
+                                      REF_GRID original) {
   REF_INT group;
   REF_GRID ref_grid;
 
@@ -123,7 +124,7 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_cache_background(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_grid_cache_background(REF_GRID ref_grid) {
   RAS(NULL == ref_grid_interp(ref_grid), "expected NULL interp, called twice?");
   RSS(ref_interp_create_identity(&ref_grid_interp(ref_grid), ref_grid),
       "make interp");
@@ -131,7 +132,7 @@ REF_STATUS ref_grid_cache_background(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_stable_pack(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_grid_stable_pack(REF_GRID ref_grid) {
   REF_INT group;
   REF_INT *o2n, *n2o;
   REF_CELL ref_cell;
@@ -154,7 +155,7 @@ REF_STATUS ref_grid_stable_pack(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   REF_INT group;
   REF_INT *o2n, *n2o;
   REF_CELL ref_cell;
@@ -186,7 +187,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_free(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_grid_free(REF_GRID ref_grid) {
   REF_INT group;
   REF_CELL ref_cell;
 
@@ -213,8 +214,8 @@ REF_STATUS ref_grid_free(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_parse_coordinate_system(REF_GRID ref_grid,
-                                            const char *coordinate_system) {
+REF_FCN REF_STATUS ref_grid_parse_coordinate_system(
+    REF_GRID ref_grid, const char *coordinate_system) {
   ref_grid_coordinate_system(ref_grid) = REF_GRID_COORDSYS_LAST;
   if (0 == strcmp("xByUzL", coordinate_system))
     ref_grid_coordinate_system(ref_grid) = REF_GRID_XBYUZL;
@@ -226,7 +227,7 @@ REF_STATUS ref_grid_parse_coordinate_system(REF_GRID ref_grid,
       "coordinate_system not recognized");
   return REF_SUCCESS;
 }
-REF_STATUS ref_grid_parse_unit(REF_GRID ref_grid, const char *unit) {
+REF_FCN REF_STATUS ref_grid_parse_unit(REF_GRID ref_grid, const char *unit) {
   ref_grid_unit(ref_grid) = REF_GRID_UNIT_LAST;
   if (0 == strcmp("in", unit)) ref_grid_unit(ref_grid) = REF_GRID_IN;
   if (0 == strcmp("ft", unit)) ref_grid_unit(ref_grid) = REF_GRID_FT;
@@ -236,7 +237,7 @@ REF_STATUS ref_grid_parse_unit(REF_GRID ref_grid, const char *unit) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
   printf("ref_grid = %p\n", (void *)ref_grid);
   printf(" %d node\n", ref_node_n(ref_grid_node(ref_grid)));
   printf(" %d tet\n", ref_cell_n(ref_grid_tet(ref_grid)));
@@ -262,7 +263,7 @@ REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_tattle(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_grid_tattle(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
@@ -275,8 +276,8 @@ REF_STATUS ref_grid_tattle(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_cell_with(REF_GRID ref_grid, REF_INT node_per,
-                              REF_CELL *ref_cell) {
+REF_FCN REF_STATUS ref_grid_cell_with(REF_GRID ref_grid, REF_INT node_per,
+                                      REF_CELL *ref_cell) {
   *ref_cell = NULL;
 
   switch (node_per) {
@@ -301,8 +302,8 @@ REF_STATUS ref_grid_cell_with(REF_GRID ref_grid, REF_INT node_per,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_face_with(REF_GRID ref_grid, REF_INT node_per,
-                              REF_CELL *ref_cell) {
+REF_FCN REF_STATUS ref_grid_face_with(REF_GRID ref_grid, REF_INT node_per,
+                                      REF_CELL *ref_cell) {
   *ref_cell = NULL;
 
   switch (node_per) {
@@ -321,8 +322,9 @@ REF_STATUS ref_grid_face_with(REF_GRID ref_grid, REF_INT node_per,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_cell_has_face(REF_GRID ref_grid, REF_INT *face_nodes,
-                                  REF_BOOL *has_face) {
+REF_FCN REF_STATUS ref_grid_cell_has_face(REF_GRID ref_grid,
+                                          REF_INT *face_nodes,
+                                          REF_BOOL *has_face) {
   REF_CELL ref_cell;
   REF_INT group;
   REF_INT cell0, cell1;
@@ -339,8 +341,8 @@ REF_STATUS ref_grid_cell_has_face(REF_GRID ref_grid, REF_INT *face_nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_faceid_range(REF_GRID ref_grid, REF_INT *min_faceid,
-                                 REF_INT *max_faceid) {
+REF_FCN REF_STATUS ref_grid_faceid_range(REF_GRID ref_grid, REF_INT *min_faceid,
+                                         REF_INT *max_faceid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell;
@@ -378,9 +380,9 @@ REF_STATUS ref_grid_faceid_range(REF_GRID ref_grid, REF_INT *min_faceid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_tri_qua_id_nodes(REF_GRID ref_grid, REF_INT cell_id,
-                                     REF_INT *nnode, REF_INT *ncell,
-                                     REF_INT **g2l, REF_INT **l2g) {
+REF_FCN REF_STATUS ref_grid_tri_qua_id_nodes(REF_GRID ref_grid, REF_INT cell_id,
+                                             REF_INT *nnode, REF_INT *ncell,
+                                             REF_INT **g2l, REF_INT **l2g) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT cell, node, cell_node;
@@ -433,10 +435,10 @@ REF_STATUS ref_grid_tri_qua_id_nodes(REF_GRID ref_grid, REF_INT cell_id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
-                                  REF_INT cell_id, REF_INT *nnode,
-                                  REF_INT *ncell, REF_INT **g2l,
-                                  REF_INT **l2g) {
+REF_FCN REF_STATUS ref_grid_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
+                                          REF_INT cell_id, REF_INT *nnode,
+                                          REF_INT *ncell, REF_INT **g2l,
+                                          REF_INT **l2g) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell, node, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -474,9 +476,11 @@ REF_STATUS ref_grid_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
-                                       REF_GLOB *nnode_global,
-                                       REF_LONG *ncell_global, REF_GLOB **l2c) {
+REF_FCN REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid,
+                                               REF_CELL ref_cell,
+                                               REF_GLOB *nnode_global,
+                                               REF_LONG *ncell_global,
+                                               REF_GLOB **l2c) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT cell, node, cell_node, part;
@@ -528,11 +532,9 @@ REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
-                                          REF_INT cell_id,
-                                          REF_GLOB *nnode_global,
-                                          REF_LONG *ncell_global,
-                                          REF_GLOB **l2c) {
+REF_FCN REF_STATUS ref_grid_compact_cell_id_nodes(
+    REF_GRID ref_grid, REF_CELL ref_cell, REF_INT cell_id,
+    REF_GLOB *nnode_global, REF_LONG *ncell_global, REF_GLOB **l2c) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT cell, node, cell_node, part;
@@ -587,10 +589,11 @@ REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_compact_surf_id_nodes(REF_GRID ref_grid, REF_INT cell_id,
-                                          REF_GLOB *nnode_global,
-                                          REF_LONG *ncell_global,
-                                          REF_GLOB **l2c) {
+REF_FCN REF_STATUS ref_grid_compact_surf_id_nodes(REF_GRID ref_grid,
+                                                  REF_INT cell_id,
+                                                  REF_GLOB *nnode_global,
+                                                  REF_LONG *ncell_global,
+                                                  REF_GLOB **l2c) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT cell, node, cell_node, part;
@@ -648,7 +651,7 @@ RSS(ref_node_ghost_glob(ref_node, (*l2c), 1), "xfer");
 return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid) {
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL qua = ref_grid_qua(ref_grid);
   REF_CELL ref_cell;
@@ -767,9 +770,9 @@ REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_update_tet_guess(REF_CELL ref_cell, REF_INT node0,
-                                       REF_INT node1, REF_INT node2,
-                                       REF_INT *guess) {
+REF_FCN static REF_STATUS ref_update_tet_guess(REF_CELL ref_cell, REF_INT node0,
+                                               REF_INT node1, REF_INT node2,
+                                               REF_INT *guess) {
   REF_INT face_nodes[4], cell0, cell1;
 
   face_nodes[0] = node0;
@@ -796,9 +799,9 @@ static REF_STATUS ref_update_tet_guess(REF_CELL ref_cell, REF_INT node0,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_grid_node_list_around(REF_GRID ref_grid, REF_INT node,
-                                     REF_INT max_node, REF_INT *nnode,
-                                     REF_INT *node_list) {
+REF_FCN REF_STATUS ref_grid_node_list_around(REF_GRID ref_grid, REF_INT node,
+                                             REF_INT max_node, REF_INT *nnode,
+                                             REF_INT *node_list) {
   REF_INT cell, item, cell_node, haves, group;
   REF_CELL ref_cell;
   REF_BOOL already_have_it;
@@ -829,9 +832,10 @@ REF_STATUS ref_grid_node_list_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_grid_exhaustive_enclosing_tet(REF_GRID ref_grid,
-                                                    REF_DBL *xyz, REF_INT *tet,
-                                                    REF_DBL *bary) {
+REF_FCN static REF_STATUS ref_grid_exhaustive_enclosing_tet(REF_GRID ref_grid,
+                                                            REF_DBL *xyz,
+                                                            REF_INT *tet,
+                                                            REF_DBL *bary) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -859,8 +863,8 @@ static REF_STATUS ref_grid_exhaustive_enclosing_tet(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tet,
-                                  REF_DBL *bary) {
+REF_FCN REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz,
+                                          REF_INT *tet, REF_DBL *bary) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -957,8 +961,8 @@ REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tet,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid,
-                                 REF_INT n_planes) {
+REF_FCN REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid,
+                                         REF_GRID twod_grid, REF_INT n_planes) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_NODE twod_node = ref_grid_node(twod_grid);
@@ -1084,7 +1088,7 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid,
 }
 
 /* use triangle or quad to orient edge correctly */
-REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes) {
+REF_FCN REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes) {
   REF_INT ntri, edg_tri, nqua, edg_qua;
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua_nodes[REF_CELL_MAX_SIZE_PER];
@@ -1151,7 +1155,7 @@ REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
@@ -1179,7 +1183,7 @@ REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_INT *ncell) {
+REF_FCN REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_INT *ncell) {
   REF_INT group;
   REF_CELL ref_cell;
   *ncell = 0;
@@ -1189,9 +1193,10 @@ REF_STATUS ref_grid_ncell(REF_GRID ref_grid, REF_INT *ncell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_contiguous_group_cell(REF_GRID ref_grid,
-                                          REF_INT contiguous_cell,
-                                          REF_INT *cell_group, REF_INT *cell) {
+REF_FCN REF_STATUS ref_grid_contiguous_group_cell(REF_GRID ref_grid,
+                                                  REF_INT contiguous_cell,
+                                                  REF_INT *cell_group,
+                                                  REF_INT *cell) {
   REF_CELL ref_cell;
   REF_INT group;
   if (contiguous_cell < 0) {
@@ -1216,8 +1221,8 @@ REF_STATUS ref_grid_contiguous_group_cell(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_contiguous_cell_global(REF_GRID ref_grid,
-                                           REF_LONG *global) {
+REF_FCN REF_STATUS ref_grid_contiguous_cell_global(REF_GRID ref_grid,
+                                                   REF_LONG *global) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT group, ncell, cell;
   REF_CELL ref_cell;

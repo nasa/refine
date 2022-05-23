@@ -35,7 +35,7 @@
 #include "ref_split.h"
 #include "ref_validation.h"
 
-REF_STATUS ref_layer_create(REF_LAYER *ref_layer_ptr, REF_MPI ref_mpi) {
+REF_FCN REF_STATUS ref_layer_create(REF_LAYER *ref_layer_ptr, REF_MPI ref_mpi) {
   REF_LAYER ref_layer;
 
   ref_malloc(*ref_layer_ptr, 1, REF_LAYER_STRUCT);
@@ -51,7 +51,7 @@ REF_STATUS ref_layer_create(REF_LAYER *ref_layer_ptr, REF_MPI ref_mpi) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_free(REF_LAYER ref_layer) {
+REF_FCN REF_STATUS ref_layer_free(REF_LAYER ref_layer) {
   if (NULL == (void *)ref_layer) return REF_NULL;
 
   ref_grid_free(ref_layer_grid(ref_layer));
@@ -61,8 +61,8 @@ REF_STATUS ref_layer_free(REF_LAYER ref_layer) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_attach(REF_LAYER ref_layer, REF_GRID ref_grid,
-                            REF_INT faceid) {
+REF_FCN REF_STATUS ref_layer_attach(REF_LAYER ref_layer, REF_GRID ref_grid,
+                                    REF_INT faceid) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -74,8 +74,9 @@ REF_STATUS ref_layer_attach(REF_LAYER ref_layer, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_normal(REF_LAYER ref_layer, REF_GRID ref_grid,
-                                   REF_INT node, REF_DBL *norm) {
+REF_FCN static REF_STATUS ref_layer_normal(REF_LAYER ref_layer,
+                                           REF_GRID ref_grid, REF_INT node,
+                                           REF_DBL *norm) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT i, item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL contains;
@@ -112,7 +113,7 @@ static REF_STATUS ref_layer_normal(REF_LAYER ref_layer, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
   REF_CELL layer_prism = ref_grid_pri(ref_layer_grid(ref_layer));
@@ -204,7 +205,7 @@ REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_insert(REF_LAYER ref_layer, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_layer_insert(REF_LAYER ref_layer, REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
@@ -325,7 +326,7 @@ REF_STATUS ref_layer_insert(REF_LAYER ref_layer, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
   REF_CELL layer_edge = ref_grid_edg(ref_layer_grid(ref_layer));
@@ -347,7 +348,7 @@ REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;
@@ -477,8 +478,9 @@ static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid, REF_INT cell,
-                                         REF_DBL *normal) {
+REF_FCN REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid,
+                                                 REF_INT cell,
+                                                 REF_DBL *normal) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL edg = ref_grid_edg(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -511,8 +513,8 @@ REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid, REF_INT cell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_twod_normal(REF_GRID ref_grid, REF_INT node,
-                                        REF_DBL *normal) {
+REF_FCN static REF_STATUS ref_layer_twod_normal(REF_GRID ref_grid, REF_INT node,
+                                                REF_DBL *normal) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_DBL seg_normal[3];
   REF_INT item, cell;
@@ -529,9 +531,9 @@ static REF_STATUS ref_layer_twod_normal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
-                                              REF_CLOUD ref_cloud,
-                                              REF_LIST ref_list) {
+REF_FCN static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
+                                                      REF_CLOUD ref_cloud,
+                                                      REF_LIST ref_list) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -597,11 +599,11 @@ static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
-                                               REF_CLOUD last,
-                                               REF_LIST last_list,
-                                               REF_CLOUD next,
-                                               REF_LIST next_list) {
+REF_FCN static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
+                                                       REF_CLOUD last,
+                                                       REF_LIST last_list,
+                                                       REF_CLOUD next,
+                                                       REF_LIST next_list) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node, item;
@@ -676,7 +678,7 @@ static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_layer_align_quad_seq(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_layer_align_quad_seq(REF_GRID ref_grid) {
   REF_INT layers = 2;
   REF_CLOUD previous_cloud, next_cloud;
   REF_LIST previous_list, next_list;
@@ -707,7 +709,7 @@ static REF_STATUS ref_layer_align_quad_seq(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
   REF_MIGRATE_PARTIONER previous;
   previous = ref_grid_partitioner(ref_grid);
   ref_grid_partitioner(ref_grid) = REF_MIGRATE_SINGLE;

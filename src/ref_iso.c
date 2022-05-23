@@ -28,8 +28,8 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 
-static REF_STATUS ref_iso_ghost(REF_GRID iso_grid, REF_EDGE ref_edge,
-                                REF_INT *new_node) {
+REF_FCN static REF_STATUS ref_iso_ghost(REF_GRID iso_grid, REF_EDGE ref_edge,
+                                        REF_INT *new_node) {
   REF_MPI ref_mpi = ref_grid_mpi(iso_grid);
   REF_GLOB *edge_global;
   REF_INT *edge_part;
@@ -81,9 +81,10 @@ static REF_STATUS ref_iso_ghost(REF_GRID iso_grid, REF_EDGE ref_edge,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_iso_interp(REF_GRID iso_grid, REF_EDGE ref_edge,
-                                 REF_INT *new_node, REF_DBL *field,
-                                 REF_INT ldim, REF_DBL *in, REF_DBL **out) {
+REF_FCN static REF_STATUS ref_iso_interp(REF_GRID iso_grid, REF_EDGE ref_edge,
+                                         REF_INT *new_node, REF_DBL *field,
+                                         REF_INT ldim, REF_DBL *in,
+                                         REF_DBL **out) {
   REF_MPI ref_mpi = ref_grid_mpi(iso_grid);
   REF_INT i, edge, part;
   REF_INT node0, node1;
@@ -137,9 +138,9 @@ static REF_STATUS ref_iso_interp(REF_GRID iso_grid, REF_EDGE ref_edge,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
-                          REF_DBL *field, REF_INT ldim, REF_DBL *in,
-                          REF_DBL **out) {
+REF_FCN REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
+                                  REF_DBL *field, REF_INT ldim, REF_DBL *in,
+                                  REF_DBL **out) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GRID iso_grid;
   REF_EDGE ref_edge;
@@ -323,8 +324,8 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
-                                   REF_DBL *distance) {
+REF_FCN REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
+                                           REF_DBL *distance) {
   REF_GRID iso_grid;
   REF_SEARCH ref_search = NULL;
   ;
@@ -410,9 +411,11 @@ static REF_DBL ref_iso_volume(double *a, double *b, double *c, double *d) {
   return (-det);
 }
 
-REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
-                                    REF_DBL *triangle2, REF_DBL *segment0,
-                                    REF_DBL *segment1, REF_DBL *tuvw) {
+REF_FCN REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0,
+                                            REF_DBL *triangle1,
+                                            REF_DBL *triangle2,
+                                            REF_DBL *segment0,
+                                            REF_DBL *segment1, REF_DBL *tuvw) {
   double top_volume, bot_volume;
   double side0_volume, side1_volume, side2_volume;
   double total_volume;
@@ -465,9 +468,10 @@ static REF_DBL ref_iso_area(double *xyz0, double *xyz1, double *xyz2) {
   return area;
 }
 
-REF_STATUS ref_iso_segment_segment(REF_DBL *candidate0, REF_DBL *candidate1,
-                                   REF_DBL *segment0, REF_DBL *segment1,
-                                   REF_DBL *tt) {
+REF_FCN REF_STATUS ref_iso_segment_segment(REF_DBL *candidate0,
+                                           REF_DBL *candidate1,
+                                           REF_DBL *segment0, REF_DBL *segment1,
+                                           REF_DBL *tt) {
   double cand0_area, cand1_area;
   double seg0_area, seg1_area;
   double total_area;
@@ -504,9 +508,9 @@ REF_STATUS ref_iso_segment_segment(REF_DBL *candidate0, REF_DBL *candidate1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
-                        REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
-                        REF_DBL *segment0, REF_DBL *segment1) {
+REF_FCN REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
+                                REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
+                                REF_DBL *segment0, REF_DBL *segment1) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = NULL;
@@ -715,9 +719,9 @@ REF_STATUS ref_iso_cast(REF_GRID *iso_grid_ptr, REF_DBL **iso_field_ptr,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
-                           REF_DBL phi, REF_DBL h, REF_DBL *segment0,
-                           REF_DBL *segment1) {
+REF_FCN REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center,
+                                   REF_DBL aoa, REF_DBL phi, REF_DBL h,
+                                   REF_DBL *segment0, REF_DBL *segment1) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL x, x0, x1, dx;
@@ -783,9 +787,9 @@ REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_boom_header(FILE **file_ptr, REF_INT ldim,
-                               const char **scalar_names,
-                               const char *filename) {
+REF_FCN REF_STATUS ref_iso_boom_header(FILE **file_ptr, REF_INT ldim,
+                                       const char **scalar_names,
+                                       const char *filename) {
   REF_INT i;
   *file_ptr = fopen(filename, "w");
   if (NULL == ((void *)*file_ptr)) printf("unable to open %s\n", filename);
@@ -802,9 +806,10 @@ REF_STATUS ref_iso_boom_header(FILE **file_ptr, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid, REF_DBL *field,
-                             REF_INT ldim, REF_DBL *center, REF_DBL aoa,
-                             REF_DBL phi, REF_DBL h) {
+REF_FCN REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid,
+                                     REF_DBL *field, REF_INT ldim,
+                                     REF_DBL *center, REF_DBL aoa, REF_DBL phi,
+                                     REF_DBL h) {
   REF_DBL segment0[3], segment1[3], ds[3], dt[3];
   REF_GRID ray_grid;
   REF_DBL *ray_field;
@@ -871,9 +876,9 @@ REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid, REF_DBL *field,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *normal,
-                         REF_DBL offset, REF_INT ldim, REF_DBL *in,
-                         REF_DBL **out) {
+REF_FCN REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid,
+                                 REF_DBL *normal, REF_DBL offset, REF_INT ldim,
+                                 REF_DBL *in, REF_DBL **out) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *field;
   REF_INT node;

@@ -27,7 +27,8 @@
 #include "ref_math.h"
 #include "ref_matrix.h"
 
-REF_STATUS ref_html_create(REF_HTML *ref_html_ptr, const char *filename) {
+REF_FCN REF_STATUS ref_html_create(REF_HTML *ref_html_ptr,
+                                   const char *filename) {
   FILE *f;
 
   f = fopen(filename, "w");
@@ -63,8 +64,8 @@ REF_STATUS ref_html_create(REF_HTML *ref_html_ptr, const char *filename) {
 /* http://www.web3d.org/x3d/content/examples/Conformance/Geometry/IndexedLineSet/_pages/page09.html
  */
 
-REF_STATUS ref_html_diagonal_system(REF_HTML ref_html, REF_DBL *origin,
-                                    REF_DBL *d) {
+REF_FCN REF_STATUS ref_html_diagonal_system(REF_HTML ref_html, REF_DBL *origin,
+                                            REF_DBL *d) {
   FILE *f = ref_html_file(ref_html);
   REF_INT i, j, n;
   REF_DBL dt, t;
@@ -128,7 +129,7 @@ REF_STATUS ref_html_diagonal_system(REF_HTML ref_html, REF_DBL *origin,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_html_free(REF_HTML ref_html) {
+REF_FCN REF_STATUS ref_html_free(REF_HTML ref_html) {
   if (NULL != (void *)ref_html_file(ref_html)) {
     fprintf(ref_html_file(ref_html), "    </shape></scene></x3d>\n");
     fprintf(ref_html_file(ref_html), "  </body>\n");

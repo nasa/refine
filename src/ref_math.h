@@ -46,10 +46,10 @@ BEGIN_C_DECLORATION
   (product)[1] = (v0)[2] * (v1)[0] - (v0)[0] * (v1)[2]; \
   (product)[2] = (v0)[0] * (v1)[1] - (v0)[1] * (v1)[0];
 
-REF_STATUS ref_math_normalize(REF_DBL *normal);
+REF_FCN REF_STATUS ref_math_normalize(REF_DBL *normal);
 
-REF_STATUS ref_math_orthonormal_system(REF_DBL *orth0, REF_DBL *orth1,
-                                       REF_DBL *orth2);
+REF_FCN REF_STATUS ref_math_orthonormal_system(REF_DBL *orth0, REF_DBL *orth1,
+                                               REF_DBL *orth2);
 
 END_C_DECLORATION
 

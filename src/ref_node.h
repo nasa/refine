@@ -107,164 +107,191 @@ struct REF_NODE_STRUCT {
 #define ref_node_min_uv_area(ref_node) ((ref_node)->min_uv_area)
 #define ref_node_same_normal_tol(ref_node) ((ref_node)->same_normal_tol)
 
-REF_STATUS ref_node_create(REF_NODE *ref_node, REF_MPI ref_mpi);
-REF_STATUS ref_node_free(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_create(REF_NODE *ref_node, REF_MPI ref_mpi);
+REF_FCN REF_STATUS ref_node_free(REF_NODE ref_node);
 
-REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_MPI ref_mpi,
-                              REF_NODE original);
-REF_STATUS ref_node_pack(REF_NODE ref_node, REF_INT *o2n, REF_INT *n2o);
+REF_FCN REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_MPI ref_mpi,
+                                      REF_NODE original);
+REF_FCN REF_STATUS ref_node_pack(REF_NODE ref_node, REF_INT *o2n, REF_INT *n2o);
 
-REF_STATUS ref_node_inspect(REF_NODE ref_node);
-REF_STATUS ref_node_location(REF_NODE ref_node, REF_INT node);
-REF_STATUS ref_node_tattle_global(REF_NODE ref_node, REF_INT global);
+REF_FCN REF_STATUS ref_node_inspect(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_location(REF_NODE ref_node, REF_INT node);
+REF_FCN REF_STATUS ref_node_tattle_global(REF_NODE ref_node, REF_INT global);
 
-REF_STATUS ref_node_initialize_n_global(REF_NODE ref_node, REF_GLOB n_global);
-REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global);
+REF_FCN REF_STATUS ref_node_initialize_n_global(REF_NODE ref_node,
+                                                REF_GLOB n_global);
+REF_FCN REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global);
 
-REF_STATUS ref_node_synchronize_globals(REF_NODE ref_node);
-REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_synchronize_globals(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node);
 
-REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global);
-REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
-REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
-                                 REF_GLOB shift);
-REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_push_unused(REF_NODE ref_node,
+                                        REF_GLOB unused_global);
+REF_FCN REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
+REF_FCN REF_STATUS ref_node_shift_unused(REF_NODE ref_node,
+                                         REF_GLOB equal_and_above,
+                                         REF_GLOB shift);
+REF_FCN REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node);
 /* public for testing */
-REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
-                                           REF_INT chunk, REF_INT active0,
-                                           REF_INT *active1, REF_INT *nactive);
-REF_STATUS ref_node_eliminate_unused_offset(REF_INT nglobal,
-                                            REF_GLOB *sorted_globals,
-                                            REF_INT nunused,
-                                            REF_GLOB *sorted_unused);
+REF_FCN REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
+                                                   REF_INT chunk,
+                                                   REF_INT active0,
+                                                   REF_INT *active1,
+                                                   REF_INT *nactive);
+REF_FCN REF_STATUS ref_node_eliminate_unused_offset(REF_INT nglobal,
+                                                    REF_GLOB *sorted_globals,
+                                                    REF_INT nunused,
+                                                    REF_GLOB *sorted_unused);
 
-REF_STATUS ref_node_add(REF_NODE ref_node, REF_GLOB global, REF_INT *node);
-REF_STATUS ref_node_add_many(REF_NODE ref_node, REF_INT n, REF_GLOB *global);
+REF_FCN REF_STATUS ref_node_add(REF_NODE ref_node, REF_GLOB global,
+                                REF_INT *node);
+REF_FCN REF_STATUS ref_node_add_many(REF_NODE ref_node, REF_INT n,
+                                     REF_GLOB *global);
 
-REF_STATUS ref_node_remove(REF_NODE ref_node, REF_INT node);
-REF_STATUS ref_node_remove_invalidates_sorted(REF_NODE ref_node, REF_INT node);
-REF_STATUS ref_node_remove_without_global(REF_NODE ref_node, REF_INT node);
-REF_STATUS ref_node_remove_without_global_invalidates_sorted(REF_NODE ref_node,
-                                                             REF_INT node);
-REF_STATUS ref_node_rebuild_sorted_global(REF_NODE ref_node);
-REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_remove(REF_NODE ref_node, REF_INT node);
+REF_FCN REF_STATUS ref_node_remove_invalidates_sorted(REF_NODE ref_node,
+                                                      REF_INT node);
+REF_FCN REF_STATUS ref_node_remove_without_global(REF_NODE ref_node,
+                                                  REF_INT node);
+REF_FCN REF_STATUS ref_node_remove_without_global_invalidates_sorted(
+    REF_NODE ref_node, REF_INT node);
+REF_FCN REF_STATUS ref_node_rebuild_sorted_global(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node);
 
-REF_STATUS ref_node_collect_ghost_age(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_collect_ghost_age(REF_NODE ref_node);
 
-REF_STATUS ref_node_local(REF_NODE ref_node, REF_GLOB global, REF_INT *node);
+REF_FCN REF_STATUS ref_node_local(REF_NODE ref_node, REF_GLOB global,
+                                  REF_INT *node);
 
-REF_STATUS ref_node_stable_compact(REF_NODE ref_node, REF_INT **o2n,
-                                   REF_INT **n2o);
-REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n, REF_INT **n2o);
+REF_FCN REF_STATUS ref_node_stable_compact(REF_NODE ref_node, REF_INT **o2n,
+                                           REF_INT **n2o);
+REF_FCN REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n,
+                                    REF_INT **n2o);
 
-REF_STATUS ref_node_ghost_real(REF_NODE ref_node);
-REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector, REF_INT ldim);
-REF_STATUS ref_node_ghost_glob(REF_NODE ref_node, REF_GLOB *vector,
-                               REF_INT ldim);
-REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector, REF_INT ldim);
-REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node, REF_INT *scalar);
+REF_FCN REF_STATUS ref_node_ghost_real(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector,
+                                      REF_INT ldim);
+REF_FCN REF_STATUS ref_node_ghost_glob(REF_NODE ref_node, REF_GLOB *vector,
+                                       REF_INT ldim);
+REF_FCN REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
+                                      REF_INT ldim);
+REF_FCN REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node,
+                                               REF_INT *scalar);
 
-REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
-                                REF_DBL m12, REF_DBL m13, REF_DBL m22,
-                                REF_DBL m23, REF_DBL m33);
-REF_STATUS ref_node_metric_set(REF_NODE ref_node, REF_INT node, REF_DBL *m);
-REF_STATUS ref_node_metric_get(REF_NODE ref_node, REF_INT node, REF_DBL *m);
-REF_STATUS ref_node_metric_set_log(REF_NODE ref_node, REF_INT node,
-                                   REF_DBL *log_m);
-REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
-                                   REF_DBL *log_m);
+REF_FCN REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node,
+                                        REF_DBL m11, REF_DBL m12, REF_DBL m13,
+                                        REF_DBL m22, REF_DBL m23, REF_DBL m33);
+REF_FCN REF_STATUS ref_node_metric_set(REF_NODE ref_node, REF_INT node,
+                                       REF_DBL *m);
+REF_FCN REF_STATUS ref_node_metric_get(REF_NODE ref_node, REF_INT node,
+                                       REF_DBL *m);
+REF_FCN REF_STATUS ref_node_metric_set_log(REF_NODE ref_node, REF_INT node,
+                                           REF_DBL *log_m);
+REF_FCN REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
+                                           REF_DBL *log_m);
 
-REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
-                          REF_DBL *ratio);
-REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
-                                  REF_INT node1, REF_DBL *ratio,
-                                  REF_DBL *dratio_dnode0);
-REF_STATUS ref_node_ratio_node0(REF_NODE ref_node, REF_INT node0, REF_INT node1,
-                                REF_DBL *ratio_node0);
+REF_FCN REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0,
+                                  REF_INT node1, REF_DBL *ratio);
+REF_FCN REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
+                                          REF_INT node1, REF_DBL *ratio,
+                                          REF_DBL *dratio_dnode0);
+REF_FCN REF_STATUS ref_node_ratio_node0(REF_NODE ref_node, REF_INT node0,
+                                        REF_INT node1, REF_DBL *ratio_node0);
 
-REF_STATUS ref_node_seg_normal(REF_NODE ref_node, REF_INT *nodes,
-                               REF_DBL *normal);
+REF_FCN REF_STATUS ref_node_seg_normal(REF_NODE ref_node, REF_INT *nodes,
+                                       REF_DBL *normal);
 
-REF_STATUS ref_node_tri_normal(REF_NODE ref_node, REF_INT *nodes,
-                               REF_DBL *normal);
-REF_STATUS ref_node_tri_centroid(REF_NODE ref_node, REF_INT *nodes,
-                                 REF_DBL *centroid);
+REF_FCN REF_STATUS ref_node_tri_normal(REF_NODE ref_node, REF_INT *nodes,
+                                       REF_DBL *normal);
+REF_FCN REF_STATUS ref_node_tri_centroid(REF_NODE ref_node, REF_INT *nodes,
+                                         REF_DBL *centroid);
 
-REF_STATUS ref_node_tri_twod_orientation(REF_NODE ref_node, REF_INT *nodes,
-                                         REF_BOOL *valid);
-REF_STATUS ref_node_tri_node_angle(REF_NODE ref_node, REF_INT *nodes,
-                                   REF_INT node, REF_DBL *angle);
-REF_STATUS ref_node_tri_metric_area(REF_NODE ref_node, REF_INT *nodes,
-                                    REF_DBL *area);
-REF_STATUS ref_node_tri_area(REF_NODE ref_node, REF_INT *nodes, REF_DBL *area);
-REF_STATUS ref_node_tri_darea_dnode0(REF_NODE ref_node, REF_INT *nodes,
-                                     REF_DBL *area, REF_DBL *darea_dnode0);
+REF_FCN REF_STATUS ref_node_tri_twod_orientation(REF_NODE ref_node,
+                                                 REF_INT *nodes,
+                                                 REF_BOOL *valid);
+REF_FCN REF_STATUS ref_node_tri_node_angle(REF_NODE ref_node, REF_INT *nodes,
+                                           REF_INT node, REF_DBL *angle);
+REF_FCN REF_STATUS ref_node_tri_metric_area(REF_NODE ref_node, REF_INT *nodes,
+                                            REF_DBL *area);
+REF_FCN REF_STATUS ref_node_tri_area(REF_NODE ref_node, REF_INT *nodes,
+                                     REF_DBL *area);
+REF_FCN REF_STATUS ref_node_tri_darea_dnode0(REF_NODE ref_node, REF_INT *nodes,
+                                             REF_DBL *area,
+                                             REF_DBL *darea_dnode0);
 
-REF_STATUS ref_node_tri_quality(REF_NODE ref_node, REF_INT *nodes,
-                                REF_DBL *quality);
-REF_STATUS ref_node_tri_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
-                                        REF_DBL *quality,
-                                        REF_DBL *dquality_dnode0);
+REF_FCN REF_STATUS ref_node_tri_quality(REF_NODE ref_node, REF_INT *nodes,
+                                        REF_DBL *quality);
+REF_FCN REF_STATUS ref_node_tri_dquality_dnode0(REF_NODE ref_node,
+                                                REF_INT *nodes,
+                                                REF_DBL *quality,
+                                                REF_DBL *dquality_dnode0);
 
-REF_STATUS ref_node_tri_fitness(REF_NODE ref_node, REF_INT *nodes,
-                                REF_DBL *fitness);
+REF_FCN REF_STATUS ref_node_tri_fitness(REF_NODE ref_node, REF_INT *nodes,
+                                        REF_DBL *fitness);
 
-REF_STATUS ref_node_xyz_vol(REF_DBL *xyzs[4], REF_DBL *volume);
-REF_STATUS ref_node_tet_vol(REF_NODE ref_node, REF_INT *nodes, REF_DBL *volume);
-REF_STATUS ref_node_tet_dvol_dnode0(REF_NODE ref_node, REF_INT *nodes,
-                                    REF_DBL *vol, REF_DBL *dvol_dnode0);
+REF_FCN REF_STATUS ref_node_xyz_vol(REF_DBL *xyzs[4], REF_DBL *volume);
+REF_FCN REF_STATUS ref_node_tet_vol(REF_NODE ref_node, REF_INT *nodes,
+                                    REF_DBL *volume);
+REF_FCN REF_STATUS ref_node_tet_dvol_dnode0(REF_NODE ref_node, REF_INT *nodes,
+                                            REF_DBL *vol, REF_DBL *dvol_dnode0);
 
-REF_STATUS ref_node_tet_quality(REF_NODE ref_node, REF_INT *nodes,
-                                REF_DBL *quality);
-REF_STATUS ref_node_tet_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
-                                        REF_DBL *quality,
-                                        REF_DBL *dquality_dnode0);
+REF_FCN REF_STATUS ref_node_tet_quality(REF_NODE ref_node, REF_INT *nodes,
+                                        REF_DBL *quality);
+REF_FCN REF_STATUS ref_node_tet_dquality_dnode0(REF_NODE ref_node,
+                                                REF_INT *nodes,
+                                                REF_DBL *quality,
+                                                REF_DBL *dquality_dnode0);
 
-REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
-                                     REF_INT node1, REF_DBL node1_weight,
-                                     REF_INT new_node);
-REF_STATUS ref_node_interpolate_face(REF_NODE ref_node, REF_INT node0,
-                                     REF_INT node1, REF_INT node2,
-                                     REF_INT new_node);
-REF_STATUS ref_node_resize_aux(REF_NODE ref_node);
-REF_STATUS ref_node_store_aux(REF_NODE ref_node, REF_INT ldim, REF_DBL *aux);
-REF_STATUS ref_node_extract_aux(REF_NODE ref_node, REF_INT *ldim,
-                                REF_DBL **aux);
+REF_FCN REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
+                                             REF_INT node1,
+                                             REF_DBL node1_weight,
+                                             REF_INT new_node);
+REF_FCN REF_STATUS ref_node_interpolate_face(REF_NODE ref_node, REF_INT node0,
+                                             REF_INT node1, REF_INT node2,
+                                             REF_INT new_node);
+REF_FCN REF_STATUS ref_node_resize_aux(REF_NODE ref_node);
+REF_FCN REF_STATUS ref_node_store_aux(REF_NODE ref_node, REF_INT ldim,
+                                      REF_DBL *aux);
+REF_FCN REF_STATUS ref_node_extract_aux(REF_NODE ref_node, REF_INT *ldim,
+                                        REF_DBL **aux);
 
-REF_STATUS ref_node_bounding_sphere(REF_NODE ref_node, REF_INT *nodes,
-                                    REF_INT n, REF_DBL *center,
-                                    REF_DBL *radius);
-REF_STATUS ref_node_bounding_sphere_xyz(REF_DBL *xyz, REF_INT n,
-                                        REF_DBL *center, REF_DBL *radius);
+REF_FCN REF_STATUS ref_node_bounding_sphere(REF_NODE ref_node, REF_INT *nodes,
+                                            REF_INT n, REF_DBL *center,
+                                            REF_DBL *radius);
+REF_FCN REF_STATUS ref_node_bounding_sphere_xyz(REF_DBL *xyz, REF_INT n,
+                                                REF_DBL *center,
+                                                REF_DBL *radius);
 
-REF_STATUS ref_node_bary3(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
-                          REF_DBL *bary);
-REF_STATUS ref_node_bary3d(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
-                           REF_DBL *bary);
-REF_STATUS ref_node_bary4(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
-                          REF_DBL *bary);
-REF_STATUS ref_node_clip_bary4(REF_DBL *orig_bary, REF_DBL *clip_bary);
-REF_STATUS ref_node_clip_bary3(REF_DBL *orig_bary, REF_DBL *clip_bary);
-REF_STATUS ref_node_clip_bary2(REF_DBL *orig_bary, REF_DBL *clip_bary);
+REF_FCN REF_STATUS ref_node_bary3(REF_NODE ref_node, REF_INT *nodes,
+                                  REF_DBL *xyz, REF_DBL *bary);
+REF_FCN REF_STATUS ref_node_bary3d(REF_NODE ref_node, REF_INT *nodes,
+                                   REF_DBL *xyz, REF_DBL *bary);
+REF_FCN REF_STATUS ref_node_bary4(REF_NODE ref_node, REF_INT *nodes,
+                                  REF_DBL *xyz, REF_DBL *bary);
+REF_FCN REF_STATUS ref_node_clip_bary4(REF_DBL *orig_bary, REF_DBL *clip_bary);
+REF_FCN REF_STATUS ref_node_clip_bary3(REF_DBL *orig_bary, REF_DBL *clip_bary);
+REF_FCN REF_STATUS ref_node_clip_bary2(REF_DBL *orig_bary, REF_DBL *clip_bary);
 
-REF_STATUS ref_node_tri_projection(REF_NODE ref_node, REF_INT *nodes,
-                                   REF_DBL *xyz, REF_DBL *projection);
-REF_STATUS ref_node_dist_to_edge(REF_NODE ref_node, REF_INT *nodes,
-                                 REF_DBL *xyz, REF_DBL *distance);
-REF_STATUS ref_node_dist_to_tri(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
-                                REF_DBL *distance);
+REF_FCN REF_STATUS ref_node_tri_projection(REF_NODE ref_node, REF_INT *nodes,
+                                           REF_DBL *xyz, REF_DBL *projection);
+REF_FCN REF_STATUS ref_node_dist_to_edge(REF_NODE ref_node, REF_INT *nodes,
+                                         REF_DBL *xyz, REF_DBL *distance);
+REF_FCN REF_STATUS ref_node_dist_to_tri(REF_NODE ref_node, REF_INT *nodes,
+                                        REF_DBL *xyz, REF_DBL *distance);
 
-REF_STATUS ref_node_xyz_grad(REF_DBL *xyzs[4], REF_DBL *scalar,
-                             REF_DBL *gradient);
-REF_STATUS ref_node_tet_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
-                                   REF_DBL *scalar, REF_DBL *gradient);
-REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
-                                   REF_DBL *scalar, REF_DBL *gradient);
+REF_FCN REF_STATUS ref_node_xyz_grad(REF_DBL *xyzs[4], REF_DBL *scalar,
+                                     REF_DBL *gradient);
+REF_FCN REF_STATUS ref_node_tet_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
+                                           REF_DBL *scalar, REF_DBL *gradient);
+REF_FCN REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
+                                           REF_DBL *scalar, REF_DBL *gradient);
 
-REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
-                                REF_INT *closest_node, REF_DBL *distance);
+REF_FCN REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
+                                        REF_INT *closest_node,
+                                        REF_DBL *distance);
 
-REF_STATUS ref_node_bounding_box_diagonal(REF_NODE ref_node, REF_DBL *diagonal);
+REF_FCN REF_STATUS ref_node_bounding_box_diagonal(REF_NODE ref_node,
+                                                  REF_DBL *diagonal);
 
 END_C_DECLORATION
 

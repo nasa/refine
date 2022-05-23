@@ -25,7 +25,8 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-REF_STATUS ref_shard_create(REF_SHARD *ref_shard_ptr, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_shard_create(REF_SHARD *ref_shard_ptr,
+                                    REF_GRID ref_grid) {
   REF_SHARD ref_shard;
   REF_INT face;
 
@@ -46,7 +47,7 @@ REF_STATUS ref_shard_create(REF_SHARD *ref_shard_ptr, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_free(REF_SHARD ref_shard) {
+REF_FCN REF_STATUS ref_shard_free(REF_SHARD ref_shard) {
   if (NULL == (void *)ref_shard) return REF_NULL;
 
   ref_free(ref_shard->mark);
@@ -57,8 +58,8 @@ REF_STATUS ref_shard_free(REF_SHARD ref_shard) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_mark_to_split(REF_SHARD ref_shard, REF_INT node0,
-                                   REF_INT node1) {
+REF_FCN REF_STATUS ref_shard_mark_to_split(REF_SHARD ref_shard, REF_INT node0,
+                                           REF_INT node1) {
   REF_INT face;
 
   RSS(ref_face_spanning(ref_shard_face(ref_shard), node0, node1, &face),
@@ -83,8 +84,8 @@ REF_STATUS ref_shard_mark_to_split(REF_SHARD ref_shard, REF_INT node0,
   return REF_FAILURE;
 }
 
-REF_STATUS ref_shard_marked(REF_SHARD ref_shard, REF_INT node0, REF_INT node1,
-                            REF_BOOL *marked) {
+REF_FCN REF_STATUS ref_shard_marked(REF_SHARD ref_shard, REF_INT node0,
+                                    REF_INT node1, REF_BOOL *marked) {
   REF_INT face;
 
   *marked = REF_FALSE;
@@ -117,8 +118,8 @@ REF_STATUS ref_shard_marked(REF_SHARD ref_shard, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_mark_n(REF_SHARD ref_shard, REF_INT *face_marks,
-                            REF_INT *hex_marks) {
+REF_FCN REF_STATUS ref_shard_mark_n(REF_SHARD ref_shard, REF_INT *face_marks,
+                                    REF_INT *hex_marks) {
   REF_INT face;
   REF_INT cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL marked14, marked05;
@@ -158,8 +159,9 @@ REF_STATUS ref_shard_mark_n(REF_SHARD ref_shard, REF_INT *face_marks,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_mark_cell_edge_split(REF_SHARD ref_shard, REF_INT cell,
-                                          REF_INT cell_edge) {
+REF_FCN REF_STATUS ref_shard_mark_cell_edge_split(REF_SHARD ref_shard,
+                                                  REF_INT cell,
+                                                  REF_INT cell_edge) {
   REF_CELL ref_cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -203,9 +205,9 @@ REF_STATUS ref_shard_mark_cell_edge_split(REF_SHARD ref_shard, REF_INT cell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_shard_pair(REF_SHARD ref_shard, REF_BOOL *again,
-                                 REF_INT a0, REF_INT a1, REF_INT b0,
-                                 REF_INT b1) {
+REF_FCN static REF_STATUS ref_shard_pair(REF_SHARD ref_shard, REF_BOOL *again,
+                                         REF_INT a0, REF_INT a1, REF_INT b0,
+                                         REF_INT b1) {
   REF_BOOL a_marked, b_marked;
 
   RSS(ref_shard_marked(ref_shard, a0, a1, &a_marked), "marked? a0-a1");
@@ -219,7 +221,7 @@ static REF_STATUS ref_shard_pair(REF_SHARD ref_shard, REF_BOOL *again,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_mark_relax(REF_SHARD ref_shard) {
+REF_FCN REF_STATUS ref_shard_mark_relax(REF_SHARD ref_shard) {
   REF_CELL ref_cell;
   REF_BOOL again;
   REF_INT cell;
@@ -259,7 +261,7 @@ REF_STATUS ref_shard_mark_relax(REF_SHARD ref_shard) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_split(REF_SHARD ref_shard) {
+REF_FCN REF_STATUS ref_shard_split(REF_SHARD ref_shard) {
   REF_GRID ref_grid;
   REF_CELL hex, pri, tri, qua;
   REF_INT cell, hex_nodes[REF_CELL_MAX_SIZE_PER];
@@ -435,8 +437,9 @@ REF_STATUS ref_shard_split(REF_SHARD ref_shard) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_shard_cell_add_local(REF_NODE ref_node, REF_CELL ref_cell,
-                                           REF_INT *nodes) {
+REF_FCN static REF_STATUS ref_shard_cell_add_local(REF_NODE ref_node,
+                                                   REF_CELL ref_cell,
+                                                   REF_INT *nodes) {
   REF_BOOL has_local;
   REF_INT node, new_cell;
 
@@ -467,9 +470,10 @@ static REF_STATUS ref_shard_cell_add_local(REF_NODE ref_node, REF_CELL ref_cell,
     }                                                                       \
   }
 
-static REF_STATUS ref_shard_add_pri_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
-                                           REF_INT *nodes,
-                                           REF_BOOL check_volume) {
+REF_FCN static REF_STATUS ref_shard_add_pri_as_tet(REF_NODE ref_node,
+                                                   REF_CELL ref_cell,
+                                                   REF_INT *nodes,
+                                                   REF_BOOL check_volume) {
   REF_INT node;
   REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
   REF_GLOB pri_global[REF_CELL_MAX_SIZE_PER];
@@ -593,9 +597,10 @@ static REF_STATUS ref_shard_add_pri_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
     }                                                                          \
   }
 
-static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
-                                           REF_INT *nodes,
-                                           REF_BOOL check_volume) {
+REF_FCN static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node,
+                                                   REF_CELL ref_cell,
+                                                   REF_INT *nodes,
+                                                   REF_BOOL check_volume) {
   REF_INT node;
   REF_GLOB global[REF_CELL_MAX_SIZE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
@@ -652,8 +657,9 @@ static void ref_shard_permute_hex_120(REF_INT *I) {
   I[2] = temp;
 }
 
-static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
-                                           REF_INT *nodes) {
+REF_FCN static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node,
+                                                   REF_CELL ref_cell,
+                                                   REF_INT *nodes) {
   REF_INT node;
   REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
   REF_INT I[REF_CELL_MAX_SIZE_PER];
@@ -904,8 +910,9 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
-                                    REF_INT of_faceid) {
+REF_FCN REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid,
+                                            REF_INT keeping_n_layers,
+                                            REF_INT of_faceid) {
   REF_INT cell, tri_mark;
 
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
@@ -1051,8 +1058,9 @@ REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_shard_add_qua_as_tri(REF_NODE ref_node, REF_CELL ref_cell,
-                                           REF_INT *qua_nodes) {
+REF_FCN static REF_STATUS ref_shard_add_qua_as_tri(REF_NODE ref_node,
+                                                   REF_CELL ref_cell,
+                                                   REF_INT *qua_nodes) {
   REF_GLOB qua_global[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
@@ -1092,7 +1100,8 @@ static REF_STATUS ref_shard_add_qua_as_tri(REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
+REF_FCN REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid,
+                                         REF_CELL *ref_cell_ptr) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri, qua;
   REF_INT qua_nodes[REF_CELL_MAX_SIZE_PER];
@@ -1109,7 +1118,8 @@ REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_shard_verify_faces(REF_GRID ref_grid, REF_CELL ref_cell) {
+REF_FCN static REF_STATUS ref_shard_verify_faces(REF_GRID ref_grid,
+                                                 REF_CELL ref_cell) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face_nodes[4];
@@ -1131,7 +1141,8 @@ static REF_STATUS ref_shard_verify_faces(REF_GRID ref_grid, REF_CELL ref_cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
+REF_FCN REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid,
+                                         REF_CELL *ref_cell_ptr) {
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL ref_cell;
   REF_BOOL check_volume = REF_FALSE;
@@ -1166,7 +1177,7 @@ REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_shard_in_place(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;

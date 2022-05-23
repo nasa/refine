@@ -26,29 +26,34 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
-                                   REF_DBL *min_dot);
+REF_FCN REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
+                                           REF_DBL *min_dot);
 
-REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
-                            REF_DBL *origin, REF_DBL thickness, REF_DBL xshift);
+REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
+                                    REF_DBL *origin, REF_DBL thickness,
+                                    REF_DBL xshift);
 
-REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
-                                REF_DBL *origin, REF_DBL thickness,
-                                REF_DBL mach_angle_rad, REF_DBL alpha_rad);
+REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
+                                        REF_DBL *origin, REF_DBL thickness,
+                                        REF_DBL mach_angle_rad,
+                                        REF_DBL alpha_rad);
 
-REF_STATUS ref_inflate_rate(REF_INT nlayers, REF_DBL first_thickness,
-                            REF_DBL total_thickness, REF_DBL *rate);
-REF_STATUS ref_inflate_total_thickness(REF_INT nlayers, REF_DBL first_thickness,
-                                       REF_DBL rate, REF_DBL *total_thickness);
-REF_STATUS ref_inflate_dthickness(REF_INT nlayers, REF_DBL first_thickness,
-                                  REF_DBL rate, REF_DBL *dHdr);
+REF_FCN REF_STATUS ref_inflate_rate(REF_INT nlayers, REF_DBL first_thickness,
+                                    REF_DBL total_thickness, REF_DBL *rate);
+REF_FCN REF_STATUS ref_inflate_total_thickness(REF_INT nlayers,
+                                               REF_DBL first_thickness,
+                                               REF_DBL rate,
+                                               REF_DBL *total_thickness);
+REF_FCN REF_STATUS ref_inflate_dthickness(REF_INT nlayers,
+                                          REF_DBL first_thickness, REF_DBL rate,
+                                          REF_DBL *dHdr);
 
-REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
-                              REF_DBL *origin);
-REF_STATUS ref_inflate_read_usm3d_mapbc(REF_DICT faceids,
-                                        const char *mapbc_file_name,
-                                        const char *family_name,
-                                        REF_INT boundary_condition);
+REF_FCN REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
+                                      REF_DBL *origin);
+REF_FCN REF_STATUS ref_inflate_read_usm3d_mapbc(REF_DICT faceids,
+                                                const char *mapbc_file_name,
+                                                const char *family_name,
+                                                REF_INT boundary_condition);
 END_C_DECLORATION
 
 #endif /* REF_INFLATE_H */

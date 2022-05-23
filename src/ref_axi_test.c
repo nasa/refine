@@ -36,8 +36,8 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 
-static REF_STATUS ref_quad_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                REF_DBL z0, REF_DBL z1) {
+REF_FCN static REF_STATUS ref_quad_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                        REF_DBL z0, REF_DBL z1) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT nodes[5] = {0, 1, 2, 3, 10};
@@ -75,8 +75,9 @@ static REF_STATUS ref_quad_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_prism_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                 REF_DBL z0, REF_DBL z1, REF_DBL z2) {
+REF_FCN static REF_STATUS ref_prism_grid(REF_GRID *ref_grid_ptr,
+                                         REF_MPI ref_mpi, REF_DBL z0,
+                                         REF_DBL z1, REF_DBL z2) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT nodes[6] = {0, 1, 2, 3, 4, 5};
@@ -124,8 +125,8 @@ static REF_STATUS ref_prism_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_hex_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                               REF_DBL z0, REF_DBL z1) {
+REF_FCN static REF_STATUS ref_hex_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                       REF_DBL z0, REF_DBL z1) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT nodes[8] = {0, 1, 2, 3, 4, 5, 6, 7};

@@ -1754,10 +1754,11 @@ shutdown:
   return REF_FAILURE;
 }
 
-static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
-                                         REF_DBL *twod_field,
-                                         REF_GRID extruded_grid,
-                                         REF_DBL *extruded_field) {
+REF_FCN static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid,
+                                                 REF_INT ldim,
+                                                 REF_DBL *twod_field,
+                                                 REF_GRID extruded_grid,
+                                                 REF_DBL *extruded_field) {
   REF_NODE ref_node;
   REF_SEARCH ref_search;
   REF_LIST touching;
@@ -2667,7 +2668,7 @@ static REF_STATUS parse_p(int argc, char *argv[], REF_INT *p) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_subcommand_report_error(
+REF_FCN static REF_STATUS ref_subcommand_report_error(
     REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
     REF_RECON_RECONSTRUCTION reconstruction, REF_DBL complexity) {
   REF_DBL *hess, *error;

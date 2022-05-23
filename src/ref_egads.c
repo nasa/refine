@@ -3546,9 +3546,9 @@ REF_FCN REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                             REF_DBL *params, REF_DBL *xyz,
-                             REF_DBL *dxyz_dtuv) {
+REF_FCN REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type,
+                                     REF_INT id, REF_DBL *params, REF_DBL *xyz,
+                                     REF_DBL *dxyz_dtuv) {
 #ifdef HAVE_EGADS
   double eval[18];
   REF_INT i;

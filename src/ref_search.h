@@ -41,39 +41,43 @@ struct REF_SEARCH_STRUCT {
   REF_DBL *children_ball;
 };
 
-REF_STATUS ref_search_create(REF_SEARCH *ref_search, REF_INT n);
+REF_FCN REF_STATUS ref_search_create(REF_SEARCH *ref_search, REF_INT n);
 
-REF_STATUS ref_search_free(REF_SEARCH ref_search);
+REF_FCN REF_STATUS ref_search_free(REF_SEARCH ref_search);
 
-REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
-                             REF_DBL *position, REF_DBL radius);
-REF_STATUS ref_search_depth(REF_SEARCH ref_search, REF_INT *depth);
-REF_STATUS ref_search_stats(REF_SEARCH ref_search);
+REF_FCN REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
+                                     REF_DBL *position, REF_DBL radius);
+REF_FCN REF_STATUS ref_search_depth(REF_SEARCH ref_search, REF_INT *depth);
+REF_FCN REF_STATUS ref_search_stats(REF_SEARCH ref_search);
 
-REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
-                               REF_DBL *position, REF_DBL radius);
+REF_FCN REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
+                                       REF_DBL *position, REF_DBL radius);
 
-REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search, REF_DBL *position,
-                                  REF_DBL *trim_radius);
-REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
-                                         REF_LIST ref_list, REF_DBL *position);
-REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
-                                                     REF_LIST ref_list,
-                                                     REF_DBL *position,
-                                                     REF_DBL distance);
-REF_STATUS ref_search_nearest_element(REF_SEARCH ref_search, REF_INT node_per,
-                                      REF_DBL *xyz, REF_DBL *position,
-                                      REF_DBL *distance);
+REF_FCN REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search,
+                                          REF_DBL *position,
+                                          REF_DBL *trim_radius);
+REF_FCN REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
+                                                 REF_LIST ref_list,
+                                                 REF_DBL *position);
+REF_FCN REF_STATUS ref_search_nearest_candidates_closer_than(
+    REF_SEARCH ref_search, REF_LIST ref_list, REF_DBL *position,
+    REF_DBL distance);
+REF_FCN REF_STATUS ref_search_nearest_element(REF_SEARCH ref_search,
+                                              REF_INT node_per, REF_DBL *xyz,
+                                              REF_DBL *position,
+                                              REF_DBL *distance);
 
-REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
-                                REF_LONG position, REF_DBL *value);
+REF_FCN REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n,
+                                        REF_DBL *elements, REF_LONG position,
+                                        REF_DBL *value);
 
-REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz,
-                                REF_DBL *distance);
-REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
-                                REF_DBL *xyz, REF_DBL *distance);
-REF_STATUS ref_search_dist3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
-                            REF_DBL *xyz, REF_DBL *distance);
+REF_FCN REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1,
+                                        REF_DBL *xyz, REF_DBL *distance);
+REF_FCN REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1,
+                                        REF_DBL *xyz2, REF_DBL *xyz,
+                                        REF_DBL *distance);
+REF_FCN REF_STATUS ref_search_dist3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
+                                    REF_DBL *xyz, REF_DBL *distance);
 END_C_DECLORATION
 
 #endif /* REF_SEARCH_H */

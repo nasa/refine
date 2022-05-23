@@ -28,7 +28,7 @@
 #include "ref_math.h"
 #include "ref_mpi.h"
 
-REF_STATUS ref_histogram_create(REF_HISTOGRAM *ref_histogram_ptr) {
+REF_FCN REF_STATUS ref_histogram_create(REF_HISTOGRAM *ref_histogram_ptr) {
   REF_HISTOGRAM ref_histogram;
 
   ref_malloc(*ref_histogram_ptr, 1, REF_HISTOGRAM_STRUCT);
@@ -55,8 +55,8 @@ REF_STATUS ref_histogram_create(REF_HISTOGRAM *ref_histogram_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_resolution(REF_HISTOGRAM ref_histogram, REF_INT nbin,
-                                    REF_DBL exp) {
+REF_FCN REF_STATUS ref_histogram_resolution(REF_HISTOGRAM ref_histogram,
+                                            REF_INT nbin, REF_DBL exp) {
   ref_histogram_nbin(ref_histogram) = nbin;
   ref_histogram_exp(ref_histogram) = exp;
 
@@ -67,7 +67,7 @@ REF_STATUS ref_histogram_resolution(REF_HISTOGRAM ref_histogram, REF_INT nbin,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_free(REF_HISTOGRAM ref_histogram) {
+REF_FCN REF_STATUS ref_histogram_free(REF_HISTOGRAM ref_histogram) {
   if (NULL == (void *)ref_histogram) return REF_NULL;
   if (NULL != ref_histogram->df) fclose(ref_histogram->df);
   ref_free(ref_histogram->stats);
@@ -87,7 +87,8 @@ REF_INT ref_histogram_to_bin(REF_HISTOGRAM ref_histogram, REF_DBL observation) {
   return ibin;
 }
 
-REF_STATUS ref_histogram_add(REF_HISTOGRAM ref_histogram, REF_DBL observation) {
+REF_FCN REF_STATUS ref_histogram_add(REF_HISTOGRAM ref_histogram,
+                                     REF_DBL observation) {
   REF_INT i;
 
   if (observation <= 0.0) return REF_INVALID;
@@ -110,7 +111,8 @@ REF_STATUS ref_histogram_add(REF_HISTOGRAM ref_histogram, REF_DBL observation) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_gather(REF_HISTOGRAM ref_histogram, REF_MPI ref_mpi) {
+REF_FCN REF_STATUS ref_histogram_gather(REF_HISTOGRAM ref_histogram,
+                                        REF_MPI ref_mpi) {
   REF_INT *bins;
   REF_DBL min, max, log_total;
   REF_INT i, observations;
@@ -160,8 +162,9 @@ REF_STATUS ref_histogram_gather(REF_HISTOGRAM ref_histogram, REF_MPI ref_mpi) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_print(REF_HISTOGRAM ref_histogram, REF_GRID ref_grid,
-                               const char *description) {
+REF_FCN REF_STATUS ref_histogram_print(REF_HISTOGRAM ref_histogram,
+                                       REF_GRID ref_grid,
+                                       const char *description) {
   REF_INT i, sum;
   REF_DBL log_mean;
 
@@ -195,8 +198,8 @@ REF_STATUS ref_histogram_print(REF_HISTOGRAM ref_histogram, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_gnuplot(REF_HISTOGRAM ref_histogram,
-                                 const char *description) {
+REF_FCN REF_STATUS ref_histogram_gnuplot(REF_HISTOGRAM ref_histogram,
+                                         const char *description) {
   REF_INT i;
   FILE *f;
   char filename[1024];
@@ -241,8 +244,8 @@ REF_STATUS ref_histogram_gnuplot(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
-                             const char *description) {
+REF_FCN REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
+                                     const char *description) {
   REF_INT i;
   FILE *f;
   char filename[1024];
@@ -273,8 +276,8 @@ REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram, FILE *file,
-                              const char *zone_title, REF_DBL time) {
+REF_FCN REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram, FILE *file,
+                                      const char *zone_title, REF_DBL time) {
   REF_INT i;
   REF_INT sum;
   REF_DBL norm, area, portion, center;
@@ -304,8 +307,8 @@ REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram, FILE *file,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_add_stat(REF_HISTOGRAM ref_histogram,
-                                  REF_DBL observation) {
+REF_FCN REF_STATUS ref_histogram_add_stat(REF_HISTOGRAM ref_histogram,
+                                          REF_DBL observation) {
   REF_INT i;
   REF_DBL log_obs;
 
@@ -320,8 +323,8 @@ REF_STATUS ref_histogram_add_stat(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_gather_stat(REF_HISTOGRAM ref_histogram,
-                                     REF_MPI ref_mpi) {
+REF_FCN REF_STATUS ref_histogram_gather_stat(REF_HISTOGRAM ref_histogram,
+                                             REF_MPI ref_mpi) {
   REF_DBL *stats;
   REF_INT i, observations;
 
@@ -348,7 +351,7 @@ REF_STATUS ref_histogram_gather_stat(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_print_stat(REF_HISTOGRAM ref_histogram) {
+REF_FCN REF_STATUS ref_histogram_print_stat(REF_HISTOGRAM ref_histogram) {
   REF_INT i;
   REF_DBL skewness, kurtosis, n, d;
 
@@ -372,8 +375,8 @@ REF_STATUS ref_histogram_print_stat(REF_HISTOGRAM ref_histogram) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
-                                   REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
+                                           REF_GRID ref_grid) {
   REF_EDGE ref_edge;
   REF_INT edge, part;
   REF_DBL ratio;
@@ -419,8 +422,8 @@ REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
-                                     REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
+                                             REF_GRID ref_grid) {
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -450,8 +453,8 @@ REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_add_fitness(REF_HISTOGRAM ref_histogram,
-                                     REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_add_fitness(REF_HISTOGRAM ref_histogram,
+                                             REF_GRID ref_grid) {
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -481,7 +484,7 @@ REF_STATUS ref_histogram_add_fitness(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_ratio(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_ratio(REF_GRID ref_grid) {
   REF_HISTOGRAM ref_histogram;
 
   RSS(ref_histogram_create(&ref_histogram), "create");
@@ -500,7 +503,7 @@ REF_STATUS ref_histogram_ratio(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_quality(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_quality(REF_GRID ref_grid) {
   REF_HISTOGRAM ref_histogram;
 
   RSS(ref_histogram_create(&ref_histogram), "create");
@@ -514,7 +517,7 @@ REF_STATUS ref_histogram_quality(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_fitness(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_fitness(REF_GRID ref_grid) {
   REF_HISTOGRAM ref_histogram;
 
   RSS(ref_histogram_create(&ref_histogram), "create");
@@ -528,7 +531,7 @@ REF_STATUS ref_histogram_fitness(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_ratio_tec(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_ratio_tec(REF_GRID ref_grid) {
   REF_HISTOGRAM ref_histogram;
 
   RSS(ref_histogram_create(&ref_histogram), "create");
@@ -543,7 +546,7 @@ REF_STATUS ref_histogram_ratio_tec(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_quality_tec(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_quality_tec(REF_GRID ref_grid) {
   REF_HISTOGRAM ref_histogram;
 
   RSS(ref_histogram_create(&ref_histogram), "create");
@@ -558,7 +561,7 @@ REF_STATUS ref_histogram_quality_tec(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_fitness_tec(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_histogram_fitness_tec(REF_GRID ref_grid) {
   REF_HISTOGRAM ref_histogram;
 
   RSS(ref_histogram_create(&ref_histogram), "create");
@@ -573,7 +576,8 @@ REF_STATUS ref_histogram_fitness_tec(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_node_tec(REF_GRID ref_grid, REF_DBL *observations) {
+REF_FCN REF_STATUS ref_histogram_node_tec(REF_GRID ref_grid,
+                                          REF_DBL *observations) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_HISTOGRAM ref_histogram;
   REF_INT node;
@@ -595,8 +599,8 @@ REF_STATUS ref_histogram_node_tec(REF_GRID ref_grid, REF_DBL *observations) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_debug(REF_HISTOGRAM ref_histogram,
-                               const char *filename) {
+REF_FCN REF_STATUS ref_histogram_debug(REF_HISTOGRAM ref_histogram,
+                                       const char *filename) {
   ref_histogram->df = fopen(filename, "w");
   if (NULL == (void *)ref_histogram->df)
     printf("unable to open %s\n", filename);

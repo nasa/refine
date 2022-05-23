@@ -87,8 +87,9 @@
     (vtk_nodes)[5] = ugrid_nodes[5];  \
   }
 
-static REF_STATUS ref_import_tri(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                 const char *filename) {
+REF_FCN static REF_STATUS ref_import_tri(REF_GRID *ref_grid_ptr,
+                                         REF_MPI ref_mpi,
+                                         const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -145,8 +146,9 @@ static REF_STATUS ref_import_tri(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   return REF_SUCCESS;
 }
-static REF_STATUS ref_import_fgrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                   const char *filename) {
+REF_FCN static REF_STATUS ref_import_fgrid(REF_GRID *ref_grid_ptr,
+                                           REF_MPI ref_mpi,
+                                           const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -219,8 +221,9 @@ static REF_STATUS ref_import_fgrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                   const char *filename) {
+REF_FCN static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr,
+                                           REF_MPI ref_mpi,
+                                           const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -373,8 +376,9 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   return REF_SUCCESS;
 }
-static REF_STATUS ref_import_surf(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                  const char *filename) {
+REF_FCN static REF_STATUS ref_import_surf(REF_GRID *ref_grid_ptr,
+                                          REF_MPI ref_mpi,
+                                          const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -448,9 +452,9 @@ static REF_STATUS ref_import_surf(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_bin_ugrid_chunk(FILE *file, REF_BOOL swap,
-                                             REF_BOOL fat, REF_INT n,
-                                             REF_INT *chunk) {
+REF_FCN static REF_STATUS ref_import_bin_ugrid_chunk(FILE *file, REF_BOOL swap,
+                                                     REF_BOOL fat, REF_INT n,
+                                                     REF_INT *chunk) {
   REF_INT i;
   if (fat) {
     REF_LONG *actual;
@@ -477,9 +481,10 @@ static REF_STATUS ref_import_bin_ugrid_chunk(FILE *file, REF_BOOL swap,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_bin_ugrid_c2n(REF_CELL ref_cell, REF_INT ncell,
-                                           FILE *file, REF_BOOL swap,
-                                           REF_BOOL fat) {
+REF_FCN static REF_STATUS ref_import_bin_ugrid_c2n(REF_CELL ref_cell,
+                                                   REF_INT ncell, FILE *file,
+                                                   REF_BOOL swap,
+                                                   REF_BOOL fat) {
   REF_INT node_per, max_chunk, nread, chunk, cell, node, new_cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *c2n;
@@ -511,9 +516,8 @@ static REF_STATUS ref_import_bin_ugrid_c2n(REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_bin_ugrid_bound_tag(REF_CELL ref_cell,
-                                                 REF_INT ncell, FILE *file,
-                                                 REF_BOOL swap, REF_BOOL fat) {
+REF_FCN static REF_STATUS ref_import_bin_ugrid_bound_tag(
+    REF_CELL ref_cell, REF_INT ncell, FILE *file, REF_BOOL swap, REF_BOOL fat) {
   REF_INT node_per, max_chunk, nread, chunk, cell;
   REF_INT *tag;
 
@@ -536,9 +540,10 @@ static REF_STATUS ref_import_bin_ugrid_bound_tag(REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                       const char *filename, REF_BOOL swap,
-                                       REF_BOOL fat) {
+REF_FCN static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr,
+                                               REF_MPI ref_mpi,
+                                               const char *filename,
+                                               REF_BOOL swap, REF_BOOL fat) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   FILE *file;
@@ -621,8 +626,9 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                      const char *filename) {
+REF_FCN static REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr,
+                                              REF_MPI ref_mpi,
+                                              const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -789,8 +795,9 @@ static REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                 const char *filename) {
+REF_FCN static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr,
+                                         REF_MPI ref_mpi,
+                                         const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   FILE *file;
@@ -963,8 +970,9 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                 const char *filename) {
+REF_FCN static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr,
+                                         REF_MPI ref_mpi,
+                                         const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1194,9 +1202,9 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_IMPLEMENT;
 }
 
-static REF_STATUS ref_import_i_like_cfd_grid(REF_GRID *ref_grid_ptr,
-                                             REF_MPI ref_mpi,
-                                             const char *filename) {
+REF_FCN static REF_STATUS ref_import_i_like_cfd_grid(REF_GRID *ref_grid_ptr,
+                                                     REF_MPI ref_mpi,
+                                                     const char *filename) {
   FILE *file;
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -1310,8 +1318,9 @@ static REF_STATUS meshb_pos(FILE *file, REF_INT version, REF_FILEPOS *pos) {
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
-                                   REF_FILEPOS *key_pos) {
+REF_FCN REF_STATUS ref_import_meshb_header(const char *filename,
+                                           REF_INT *version,
+                                           REF_FILEPOS *key_pos) {
   FILE *file;
   int int_code, int_version;
   REF_INT keyword_code;
@@ -1367,10 +1376,10 @@ REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version,
-                                 REF_FILEPOS *key_pos, REF_INT keyword,
-                                 REF_BOOL *available,
-                                 REF_FILEPOS *next_position) {
+REF_FCN REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version,
+                                         REF_FILEPOS *key_pos, REF_INT keyword,
+                                         REF_BOOL *available,
+                                         REF_FILEPOS *next_position) {
   REF_INT keyword_code;
   REF_FILEPOS position;
 
@@ -1395,8 +1404,8 @@ REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_meshb_int(FILE *file, REF_INT version,
-                                       REF_INT *value) {
+REF_FCN static REF_STATUS ref_import_meshb_int(FILE *file, REF_INT version,
+                                               REF_INT *value) {
   int int_value;
   long long_value;
   if (version < 4) {
@@ -1409,8 +1418,8 @@ static REF_STATUS ref_import_meshb_int(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_meshb_size(FILE *file, REF_INT version,
-                                        REF_SIZE *value) {
+REF_FCN static REF_STATUS ref_import_meshb_size(FILE *file, REF_INT version,
+                                                REF_SIZE *value) {
   unsigned int int_value;
   unsigned long long_value;
   if (version < 4) {
@@ -1423,8 +1432,9 @@ static REF_STATUS ref_import_meshb_size(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                   const char *filename) {
+REF_FCN static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr,
+                                           REF_MPI ref_mpi,
+                                           const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1589,8 +1599,9 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                   const char *filename) {
+REF_FCN REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr,
+                                           REF_MPI ref_mpi,
+                                           const char *filename) {
   size_t end_of_string;
 
   end_of_string = strlen(filename);
@@ -1653,7 +1664,7 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_examine_header(const char *filename) {
+REF_FCN REF_STATUS ref_import_examine_header(const char *filename) {
   FILE *file;
   REF_FILEPOS next_position, end_position;
   int i4, i4_swapped, version, keyword_code;

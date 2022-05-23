@@ -50,10 +50,10 @@
 #include "ref_split.h"
 #include "ref_validation.h"
 
-static REF_STATUS ref_smooth_tri_single_fixture(REF_GRID *ref_grid_ptr,
-                                                REF_MPI ref_mpi,
-                                                REF_INT *target_node,
-                                                REF_INT *target_cell) {
+REF_FCN static REF_STATUS ref_smooth_tri_single_fixture(REF_GRID *ref_grid_ptr,
+                                                        REF_MPI ref_mpi,
+                                                        REF_INT *target_node,
+                                                        REF_INT *target_cell) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT node;
@@ -98,9 +98,9 @@ static REF_STATUS ref_smooth_tri_single_fixture(REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_smooth_tri_two_fixture(REF_GRID *ref_grid_ptr,
-                                             REF_MPI ref_mpi,
-                                             REF_INT *target_node) {
+REF_FCN static REF_STATUS ref_smooth_tri_two_fixture(REF_GRID *ref_grid_ptr,
+                                                     REF_MPI ref_mpi,
+                                                     REF_INT *target_node) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT node;
@@ -154,9 +154,9 @@ static REF_STATUS ref_smooth_tri_two_fixture(REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_smooth_tri2_two_fixture(REF_GRID *ref_grid_ptr,
-                                              REF_MPI ref_mpi,
-                                              REF_INT *target_node) {
+REF_FCN static REF_STATUS ref_smooth_tri2_two_fixture(REF_GRID *ref_grid_ptr,
+                                                      REF_MPI ref_mpi,
+                                                      REF_INT *target_node) {
   *target_node = REF_EMPTY;
   RSS(ref_fixture_tri2_grid(ref_grid_ptr, ref_mpi), "pri2");
   RXS(ref_node_local(ref_grid_node(*ref_grid_ptr), 0, target_node),
@@ -164,10 +164,10 @@ static REF_STATUS ref_smooth_tri2_two_fixture(REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_smooth_tet_two_fixture(REF_GRID *ref_grid_ptr,
-                                             REF_MPI ref_mpi,
-                                             REF_INT *target_node,
-                                             REF_INT *top_node) {
+REF_FCN static REF_STATUS ref_smooth_tet_two_fixture(REF_GRID *ref_grid_ptr,
+                                                     REF_MPI ref_mpi,
+                                                     REF_INT *target_node,
+                                                     REF_INT *top_node) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT node;
@@ -223,9 +223,9 @@ static REF_STATUS ref_smooth_tet_two_fixture(REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_smooth_tet_tri_fixture(REF_GRID *ref_grid_ptr,
-                                             REF_MPI ref_mpi,
-                                             REF_INT *target_node) {
+REF_FCN static REF_STATUS ref_smooth_tet_tri_fixture(REF_GRID *ref_grid_ptr,
+                                                     REF_MPI ref_mpi,
+                                                     REF_INT *target_node) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];

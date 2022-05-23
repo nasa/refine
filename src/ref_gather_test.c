@@ -41,9 +41,9 @@
 #include "ref_part.h"
 #include "ref_sort.h"
 
-static REF_STATUS ref_gather_meshb_fixture(REF_MPI ref_mpi,
-                                           const char *filename,
-                                           REF_INT version) {
+REF_FCN static REF_STATUS ref_gather_meshb_fixture(REF_MPI ref_mpi,
+                                                   const char *filename,
+                                                   REF_INT version) {
   REF_GRID ref_grid;
   REF_GEOM ref_geom;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -99,8 +99,9 @@ static REF_STATUS ref_gather_meshb_fixture(REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_bbox_intersects(REF_DBL *bbox1, REF_DBL *bbox2,
-                                             REF_BOOL *intersects) {
+REF_FCN static REF_STATUS ref_gather_bbox_intersects(REF_DBL *bbox1,
+                                                     REF_DBL *bbox2,
+                                                     REF_BOOL *intersects) {
   REF_INT i;
 
   *intersects = REF_FALSE;

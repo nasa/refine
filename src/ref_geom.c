@@ -40,7 +40,7 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_geom_initialize(REF_GEOM ref_geom) {
+REF_FCN REF_STATUS ref_geom_initialize(REF_GEOM ref_geom) {
   REF_INT geom;
   ref_geom_n(ref_geom) = 0;
   for (geom = 0; geom < ref_geom_max(ref_geom); geom++) {
@@ -56,7 +56,7 @@ REF_STATUS ref_geom_initialize(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
+REF_FCN REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   REF_GEOM ref_geom;
 
   (*ref_geom_ptr) = NULL;
@@ -111,7 +111,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
+REF_FCN REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
   if (NULL == (void *)ref_geom) return REF_NULL;
   ref_facelift_free(ref_geom_facelift(ref_geom));
   ref_free(ref_geom->cad_data);
@@ -129,7 +129,8 @@ REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
+REF_FCN REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr,
+                                      REF_GEOM original) {
   REF_GEOM ref_geom;
   REF_INT geom, i;
   (*ref_geom_ptr) = NULL;
@@ -182,8 +183,8 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
-                                  REF_GEOM ref_geom_donor) {
+REF_FCN REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
+                                          REF_GEOM ref_geom_donor) {
   if (ref_geom_recipient->contex_owned)
     RSS(ref_egads_close(ref_geom_recipient), "close egads contex");
 
@@ -214,7 +215,7 @@ REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n) {
+REF_FCN REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n) {
   REF_INT geom, compact, i;
   compact = 0;
   each_ref_geom(ref_geom, geom) {
@@ -247,8 +248,8 @@ REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
-                            REF_DBL *uv_area) {
+REF_FCN REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
+                                    REF_DBL *uv_area) {
   REF_DBL uv0[2], uv1[2], uv2[2];
   REF_INT sens;
   double a, b, c, d;
@@ -266,7 +267,8 @@ REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_uv_area_sign(REF_GRID ref_grid, REF_INT id, REF_DBL *sign) {
+REF_FCN REF_STATUS ref_geom_uv_area_sign(REF_GRID ref_grid, REF_INT id,
+                                         REF_DBL *sign) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   if (NULL == ((ref_geom)->uv_area_sign)) {
     REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -301,7 +303,7 @@ REF_STATUS ref_geom_uv_area_sign(REF_GRID ref_grid, REF_INT id, REF_DBL *sign) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_uv_area_report(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_geom_uv_area_report(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT geom, id, min_id, max_id;
@@ -354,7 +356,7 @@ REF_STATUS ref_geom_uv_area_report(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_inspect(REF_GEOM ref_geom) {
+REF_FCN REF_STATUS ref_geom_inspect(REF_GEOM ref_geom) {
   REF_INT geom;
   printf("ref_geom = %p\n", (void *)ref_geom);
   printf(" n = %d, max = %d\n", ref_geom_n(ref_geom), ref_geom_max(ref_geom));
@@ -384,7 +386,7 @@ REF_STATUS ref_geom_inspect(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tattle(REF_GEOM ref_geom, REF_INT node) {
+REF_FCN REF_STATUS ref_geom_tattle(REF_GEOM ref_geom, REF_INT node) {
   REF_INT item, geom;
 
   printf(" tattle on node = %d\n", node);
@@ -414,14 +416,14 @@ REF_STATUS ref_geom_tattle(REF_GEOM ref_geom, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_supported(REF_GEOM ref_geom, REF_INT node,
-                              REF_BOOL *has_support) {
+REF_FCN REF_STATUS ref_geom_supported(REF_GEOM ref_geom, REF_INT node,
+                                      REF_BOOL *has_support) {
   *has_support = !ref_adj_empty(ref_geom_adj(ref_geom), node);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_supported(REF_GEOM ref_geom, REF_INT *nodes,
-                                  REF_BOOL *has_support) {
+REF_FCN REF_STATUS ref_geom_tri_supported(REF_GEOM ref_geom, REF_INT *nodes,
+                                          REF_BOOL *has_support) {
   REF_INT node, id, geom;
   REF_STATUS status;
   *has_support = REF_FALSE;
@@ -438,8 +440,9 @@ REF_STATUS ref_geom_tri_supported(REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_id_supported(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                                 REF_INT id, REF_BOOL *has_support) {
+REF_FCN REF_STATUS ref_geom_id_supported(REF_GEOM ref_geom, REF_INT node,
+                                         REF_INT type, REF_INT id,
+                                         REF_BOOL *has_support) {
   REF_INT geom;
   REF_STATUS status;
   *has_support = REF_FALSE;
@@ -454,7 +457,7 @@ REF_STATUS ref_geom_id_supported(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
+REF_FCN static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
   REF_INT geom;
   REF_INT orig, chunk;
   REF_INT max_limit = REF_INT_MAX / 3;
@@ -489,8 +492,8 @@ static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
-                                   REF_DBL *param) {
+REF_FCN REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
+                                           REF_DBL *param) {
   REF_INT type, id, gref, jump, degen, node, geom;
   type = descr[REF_GEOM_DESCR_TYPE];
   id = descr[REF_GEOM_DESCR_ID];
@@ -505,8 +508,8 @@ REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
   ref_geom_jump(ref_geom, geom) = jump;
   return REF_SUCCESS;
 }
-REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                        REF_INT id, REF_DBL *param) {
+REF_FCN REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
+                                REF_INT id, REF_DBL *param) {
   REF_INT geom;
   REF_STATUS status;
 
@@ -551,7 +554,7 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_remove(REF_GEOM ref_geom, REF_INT geom) {
+REF_FCN REF_STATUS ref_geom_remove(REF_GEOM ref_geom, REF_INT geom) {
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
   REF_INT node;
 
@@ -569,7 +572,7 @@ REF_STATUS ref_geom_remove(REF_GEOM ref_geom, REF_INT geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node) {
+REF_FCN REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node) {
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
   REF_INT item, geom;
 
@@ -585,7 +588,8 @@ REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_remove_without_cell(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_geom_remove_without_cell(REF_GRID ref_grid,
+                                                REF_INT node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
   REF_CELL ref_cell;
@@ -634,8 +638,8 @@ REF_STATUS ref_geom_remove_without_cell(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_is_a(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                         REF_BOOL *it_is) {
+REF_FCN REF_STATUS ref_geom_is_a(REF_GEOM ref_geom, REF_INT node, REF_INT type,
+                                 REF_BOOL *it_is) {
   REF_INT item, geom;
   *it_is = REF_FALSE;
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
@@ -647,8 +651,8 @@ REF_STATUS ref_geom_is_a(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_unique_id(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                              REF_INT *id) {
+REF_FCN REF_STATUS ref_geom_unique_id(REF_GEOM ref_geom, REF_INT node,
+                                      REF_INT type, REF_INT *id) {
   REF_INT item, geom;
   REF_BOOL found_one;
   found_one = REF_FALSE;
@@ -663,8 +667,8 @@ REF_STATUS ref_geom_unique_id(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                         REF_INT id, REF_INT *found) {
+REF_FCN REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
+                                 REF_INT id, REF_INT *found) {
   REF_INT item, geom;
   *found = REF_EMPTY;
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
@@ -677,8 +681,8 @@ REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                        REF_INT id, REF_DBL *param) {
+REF_FCN REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
+                                REF_INT id, REF_DBL *param) {
   REF_INT geom;
 
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
@@ -692,8 +696,9 @@ REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom, REF_INT *nodes,
-                                       REF_INT type, REF_BOOL *supported) {
+REF_FCN REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom,
+                                               REF_INT *nodes, REF_INT type,
+                                               REF_BOOL *supported) {
   REF_INT node_per;
   REF_INT id, geom0, geom1, geom2;
   REF_BOOL tri_supported;
@@ -745,8 +750,9 @@ REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
-                             REF_INT type, REF_DBL *param, REF_INT *sens) {
+REF_FCN REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node,
+                                     REF_INT *nodes, REF_INT type,
+                                     REF_DBL *param, REF_INT *sens) {
   REF_INT node_per;
   REF_INT id, edgeid, geom, from, from_geom;
   REF_INT node_index, cell_node;
@@ -886,8 +892,8 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
-                                             REF_INT edge_geom) {
+REF_FCN static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
+                                                     REF_INT edge_geom) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
@@ -947,9 +953,8 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_add_constrain_inside_midnode(REF_GRID ref_grid,
-                                                        REF_INT *nodes,
-                                                        REF_INT new_node) {
+REF_FCN static REF_STATUS ref_geom_add_constrain_inside_midnode(
+    REF_GRID ref_grid, REF_INT *nodes, REF_INT new_node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT type, id;
@@ -977,9 +982,9 @@ static REF_STATUS ref_geom_add_constrain_inside_midnode(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_between_face_area(REF_GRID ref_grid, REF_INT node0,
-                                      REF_INT node1, REF_INT new_node,
-                                      const char *msg) {
+REF_FCN REF_STATUS ref_geom_between_face_area(REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1, REF_INT new_node,
+                                              const char *msg) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT nodes2[REF_CELL_MAX_SIZE_PER];
@@ -1095,11 +1100,9 @@ REF_STATUS ref_geom_between_face_area(REF_GRID ref_grid, REF_INT node0,
 
   return REF_SUCCESS;
 }
-static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
-                                                     REF_INT node0,
-                                                     REF_INT node1,
-                                                     REF_DBL node1_weight,
-                                                     REF_INT new_node) {
+REF_FCN static REF_STATUS ref_geom_add_between_face_interior(
+    REF_GRID ref_grid, REF_INT node0, REF_INT node1, REF_DBL node1_weight,
+    REF_INT new_node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -1170,8 +1173,9 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_DBL node1_weight, REF_INT new_node) {
+REF_FCN REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0,
+                                        REF_INT node1, REF_DBL node1_weight,
+                                        REF_INT new_node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1331,10 +1335,11 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid,
-                                                 REF_INT node0, REF_INT node1,
-                                                 REF_DBL node1_weight,
-                                                 REF_INT new_node) {
+REF_FCN static REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid,
+                                                         REF_INT node0,
+                                                         REF_INT node1,
+                                                         REF_DBL node1_weight,
+                                                         REF_INT new_node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1429,8 +1434,9 @@ static REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
-                                    REF_INT node1, REF_BOOL *needs_support) {
+REF_FCN REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
+                                            REF_INT node1,
+                                            REF_BOOL *needs_support) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT item0, item1;
   REF_INT geom0, geom1;
@@ -1460,8 +1466,9 @@ REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
-                                        REF_DBL *uv_min, REF_DBL *uv_max) {
+REF_FCN REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
+                                                REF_DBL *uv_min,
+                                                REF_DBL *uv_max) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, cell_node, id, iuv;
@@ -1488,9 +1495,10 @@ REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_DBL *uv_min,
-                                         REF_DBL *uv_max) {
+REF_FCN REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_DBL *uv_min,
+                                                 REF_DBL *uv_max) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, cell_node, iuv;
@@ -1519,7 +1527,7 @@ REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_constrain_all(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_geom_constrain_all(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   each_ref_node_valid_node(ref_node, node) {
@@ -1528,7 +1536,7 @@ REF_STATUS ref_geom_constrain_all(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
@@ -1613,8 +1621,8 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
-                                   REF_DBL *delta_radian) {
+REF_FCN REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
+                                           REF_DBL *delta_radian) {
   REF_INT node, item, face_geom, face;
   REF_DBL segments, face_segments;
   REF_DBL face_set = -998.0;
@@ -1661,8 +1669,8 @@ REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
-                           REF_DBL *drsduv) {
+REF_FCN REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s,
+                                   REF_DBL *n, REF_DBL *drsduv) {
   REF_INT i;
   REF_DBL dot;
   REF_DBL len;
@@ -1697,8 +1705,9 @@ REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
-                             REF_DBL *r, REF_DBL *s, REF_DBL *n) {
+REF_FCN REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid,
+                                     REF_DBL *uv, REF_DBL *r, REF_DBL *s,
+                                     REF_DBL *n) {
   REF_DBL xyz[3];
   REF_DBL dxyz_dtuv[15];
   REF_DBL drsduv[4];
@@ -1708,8 +1717,8 @@ REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT *nodes,
-                                 REF_DBL *uv) {
+REF_FCN REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT *nodes,
+                                         REF_DBL *uv) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell_node;
@@ -1729,8 +1738,9 @@ REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
-                                       REF_DBL *dot_product) {
+REF_FCN REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid,
+                                               REF_INT *nodes,
+                                               REF_DBL *dot_product) {
   REF_DBL uv[2];
   REF_DBL tri_normal[3];
   REF_DBL r[3], s[3], n[3], area_sign;
@@ -1761,7 +1771,8 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node, REF_DBL *dot_prod) {
+REF_FCN REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node,
+                                   REF_DBL *dot_prod) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item0, item1, cell0, cell1, id;
@@ -1800,7 +1811,7 @@ REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node, REF_DBL *dot_prod) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_max_gap(REF_GRID ref_grid, REF_DBL *max_gap) {
+REF_FCN REF_STATUS ref_geom_max_gap(REF_GRID ref_grid, REF_DBL *max_gap) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1859,7 +1870,7 @@ REF_STATUS ref_geom_max_gap(REF_GRID ref_grid, REF_DBL *max_gap) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1946,7 +1957,7 @@ REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
@@ -2088,7 +2099,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_report_topo_at(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_geom_report_topo_at(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
@@ -2132,8 +2143,9 @@ REF_STATUS ref_geom_report_topo_at(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
-                                  const char *options) {
+REF_FCN REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid,
+                                          const char *project,
+                                          const char *options) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   char filename[896];
@@ -2323,8 +2335,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
-                                        const char *filename) {
+REF_FCN static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
+                                                const char *filename) {
   REF_CELL ref_cell;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
@@ -2400,8 +2412,8 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project,
-                                const char *options) {
+REF_FCN REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project,
+                                        const char *options) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   char filename[1024];
   char command[1024];
@@ -2445,7 +2457,7 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT min_id, max_id;
   RSS(ref_cell_id_range(ref_grid_tri(ref_grid), ref_grid_mpi(ref_grid), &min_id,
@@ -2461,7 +2473,8 @@ REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
+REF_FCN REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom,
+                                   REF_BOOL *usable) {
   REF_DBL kr0, r0[3], ks0, s0[3];
   REF_DBL curvature_is_ok = 1.0;
   REF_DBL uv0[2], xyz0[3], dxyz_dtuv[15];
@@ -2592,8 +2605,8 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom,
-                                REF_DBL *slop) {
+REF_FCN REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom,
+                                        REF_DBL *slop) {
   REF_DBL tol, gap;
   *slop = 0.0;
   RSS(ref_egads_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
@@ -2613,8 +2626,9 @@ REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_node_min_angle(REF_GRID ref_grid, REF_INT node,
-                                          REF_DBL *angle) {
+REF_FCN static REF_STATUS ref_geom_node_min_angle(REF_GRID ref_grid,
+                                                  REF_INT node,
+                                                  REF_DBL *angle) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_INT item1, cell1, node1;
@@ -2644,10 +2658,11 @@ static REF_STATUS ref_geom_node_min_angle(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_node_short_edge(REF_GRID ref_grid, REF_INT node,
-                                           REF_DBL *short_edge,
-                                           REF_DBL *short_diag,
-                                           REF_INT *short_id) {
+REF_FCN static REF_STATUS ref_geom_node_short_edge(REF_GRID ref_grid,
+                                                   REF_INT node,
+                                                   REF_DBL *short_edge,
+                                                   REF_DBL *short_diag,
+                                                   REF_INT *short_id) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT item, geom;
   REF_DBL diag, min_diag, max_diag;
@@ -2672,8 +2687,10 @@ static REF_STATUS ref_geom_node_short_edge(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
-                                          REF_DBL *curve, REF_DBL *location) {
+REF_FCN static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid,
+                                                  REF_INT faceid,
+                                                  REF_DBL *curve,
+                                                  REF_DBL *location) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
 
   REF_INT edge_geom, node;
@@ -2732,7 +2749,7 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
@@ -2915,8 +2932,8 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_has_jump(REF_GEOM ref_geom, REF_INT node,
-                             REF_BOOL *has_jump) {
+REF_FCN REF_STATUS ref_geom_has_jump(REF_GEOM ref_geom, REF_INT node,
+                                     REF_BOOL *has_jump) {
   REF_INT item, geom;
   *has_jump = REF_FALSE;
   each_ref_geom_having_node(ref_geom, node, item, geom) {
@@ -2929,7 +2946,8 @@ REF_STATUS ref_geom_has_jump(REF_GEOM ref_geom, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
+REF_FCN REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id,
+                                          FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -3057,10 +3075,12 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
-                                  REF_INT faceid, REF_INT sense, FILE *file);
-REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
-                                  REF_INT faceid, REF_INT sense, FILE *file) {
+REF_FCN REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
+                                          REF_INT faceid, REF_INT sense,
+                                          FILE *file);
+REF_FCN REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
+                                          REF_INT faceid, REF_INT sense,
+                                          FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -3205,7 +3225,8 @@ REF_STATUS ref_geom_pcrv_tec_zone(REF_GRID ref_grid, REF_INT edgeid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
+REF_FCN REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id,
+                                          FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -3398,7 +3419,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
+REF_FCN REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id,
+                                          FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -3464,8 +3486,8 @@ REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id,
-                                          FILE *file) {
+REF_FCN static REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id,
+                                                  FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -3541,7 +3563,7 @@ static REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   FILE *file;
   REF_INT geom, id, min_id, max_id;
@@ -3605,7 +3627,7 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_curve_tec(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_geom_curve_tec(REF_GRID ref_grid, const char *filename) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   FILE *file;
   REF_INT geom, id, min_id, max_id;
@@ -3633,8 +3655,8 @@ REF_STATUS ref_geom_curve_tec(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tec_para_shard(REF_GRID ref_grid,
-                                   const char *root_filename) {
+REF_FCN REF_STATUS ref_geom_tec_para_shard(REF_GRID ref_grid,
+                                           const char *root_filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   char filename[1024];
   if (ref_mpi_para(ref_mpi)) {
@@ -3647,7 +3669,7 @@ REF_STATUS ref_geom_tec_para_shard(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_nnode, *b_nnode;
   REF_INT a_nnode_total, b_nnode_total;
@@ -3791,7 +3813,7 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], id;
@@ -3836,8 +3858,8 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
-                          REF_DBL *bary) {
+REF_FCN REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes,
+                                  REF_DBL *uv, REF_DBL *bary) {
   REF_DBL uv0[2], uv1[2], uv2[2];
   REF_INT sens;
   REF_DBL total;
@@ -3902,8 +3924,10 @@ REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_uv_bounding_sphere3(REF_GEOM ref_geom, REF_INT *nodes,
-                                            REF_DBL *center, REF_DBL *radius) {
+REF_FCN REF_STATUS ref_geom_tri_uv_bounding_sphere3(REF_GEOM ref_geom,
+                                                    REF_INT *nodes,
+                                                    REF_DBL *center,
+                                                    REF_DBL *radius) {
   REF_DBL uv0[2], uv1[2], uv2[2];
   REF_INT sens;
 
@@ -3928,8 +3952,8 @@ REF_STATUS ref_geom_tri_uv_bounding_sphere3(REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_bary2(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL t,
-                          REF_DBL *bary) {
+REF_FCN REF_STATUS ref_geom_bary2(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL t,
+                                  REF_DBL *bary) {
   REF_DBL t0, t1;
   REF_INT sens;
   REF_DBL total;
@@ -3958,8 +3982,10 @@ REF_STATUS ref_geom_bary2(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL t,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
-                                           REF_DBL *center, REF_DBL *radius) {
+REF_FCN REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom,
+                                                   REF_INT *nodes,
+                                                   REF_DBL *center,
+                                                   REF_DBL *radius) {
   REF_DBL t0, t1;
   REF_INT sens;
 
@@ -3977,7 +4003,7 @@ REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -4061,7 +4087,7 @@ REF_STATUS ref_geom_enrich2(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -4177,9 +4203,10 @@ REF_STATUS ref_geom_enrich3(REF_GRID ref_grid) {
   (ref_geom_bspline_nknot(degree, n_control_point) - 1)
 #define ref_geom_bspline_n(degree, n_control_point) \
   (ref_geom_bspline_m(degree, n_control_point) - (degree)-1)
-REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
-                                       REF_DBL *knots, REF_DBL t,
-                                       REF_INT *span) {
+REF_FCN REF_STATUS ref_geom_bspline_span_index(REF_INT degree,
+                                               REF_INT n_control_point,
+                                               REF_DBL *knots, REF_DBL t,
+                                               REF_INT *span) {
   REF_INT low, high, mid;
   REF_INT n = ref_geom_bspline_n(degree, n_control_point);
   *span = REF_EMPTY;
@@ -4208,8 +4235,8 @@ REF_STATUS ref_geom_bspline_span_index(REF_INT degree, REF_INT n_control_point,
 }
 
 /* piegl-tiller nurbs book pg 70 algorithm A2.2 */
-REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
-                                  REF_INT span, REF_DBL *N) {
+REF_FCN REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots,
+                                          REF_DBL t, REF_INT span, REF_DBL *N) {
   REF_INT j, r;
   REF_DBL left[16];
   REF_DBL right[16];
@@ -4236,8 +4263,8 @@ REF_STATUS ref_geom_bspline_basis(REF_INT degree, REF_DBL *knots, REF_DBL t,
 }
 
 /* piegl-tiller nurbs book pg 82 algorithm A3.1 */
-REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
-                                REF_DBL *knots, REF_DBL t, REF_DBL *N) {
+REF_FCN REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
+                                        REF_DBL *knots, REF_DBL t, REF_DBL *N) {
   REF_INT span;
   REF_DBL n[16];
   REF_INT i, point;
@@ -4265,8 +4292,10 @@ REF_STATUS ref_geom_bspline_row(REF_INT degree, REF_INT n_control_point,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
-                                    REF_DBL *knots, const char *filename) {
+REF_FCN REF_STATUS ref_geom_bspline_row_tec(REF_INT degree,
+                                            REF_INT n_control_point,
+                                            REF_DBL *knots,
+                                            const char *filename) {
   REF_INT i, n = 1001, j;
   REF_DBL t, t0, t1, s0, s1;
   REF_DBL *N;
@@ -4304,9 +4333,11 @@ REF_STATUS ref_geom_bspline_row_tec(REF_INT degree, REF_INT n_control_point,
 }
 
 /* piegl-tiller nurbs book pg 82 algorithm A3.1 */
-REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
-                                 REF_DBL *knots, REF_DBL t,
-                                 REF_DBL *control_points, REF_DBL *val) {
+REF_FCN REF_STATUS ref_geom_bspline_eval(REF_INT degree,
+                                         REF_INT n_control_point,
+                                         REF_DBL *knots, REF_DBL t,
+                                         REF_DBL *control_points,
+                                         REF_DBL *val) {
   REF_INT span;
   REF_DBL N[16];
   REF_INT i, point;
@@ -4324,8 +4355,9 @@ REF_STATUS ref_geom_bspline_eval(REF_INT degree, REF_INT n_control_point,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
-                                REF_DBL *t, REF_DBL *uv, REF_DBL *bundle) {
+REF_FCN REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
+                                        REF_DBL *t, REF_DBL *uv,
+                                        REF_DBL *bundle) {
   REF_INT rows = 2 * n_control_point;
   REF_INT cols = 2 * n_control_point + 1;
   REF_DBL *ab;
@@ -4384,8 +4416,10 @@ REF_STATUS ref_geom_bspline_fit(REF_INT degree, REF_INT n_control_point,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
-                                       REF_DBL *bundle, const char *filename) {
+REF_FCN REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree,
+                                               REF_INT n_control_point,
+                                               REF_DBL *bundle,
+                                               const char *filename) {
   REF_INT i, n = 1001;
   REF_DBL t, t0, t1, s0, s1;
   REF_DBL *u, *v, uv[2], *knots;
@@ -4432,10 +4466,9 @@ REF_STATUS ref_geom_bspline_bundle_tec(REF_INT degree, REF_INT n_control_point,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_bspline_bundle_on_tec(REF_GEOM ref_geom, REF_INT degree,
-                                          REF_INT n_control_point,
-                                          REF_DBL *bundle, REF_INT faceid,
-                                          const char *filename) {
+REF_FCN REF_STATUS ref_geom_bspline_bundle_on_tec(
+    REF_GEOM ref_geom, REF_INT degree, REF_INT n_control_point, REF_DBL *bundle,
+    REF_INT faceid, const char *filename) {
   REF_INT i, n = 1001;
   REF_DBL t, t0, t1, s0, s1;
   REF_DBL *u, *v, uv[2], *knots, xyz[3];
@@ -4479,8 +4512,8 @@ REF_STATUS ref_geom_bspline_bundle_on_tec(REF_GEOM ref_geom, REF_INT degree,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_edge_tec(REF_GEOM ref_geom, REF_INT edgeid,
-                             const char *filename) {
+REF_FCN REF_STATUS ref_geom_edge_tec(REF_GEOM ref_geom, REF_INT edgeid,
+                                     const char *filename) {
   REF_INT i, n = 1001;
   REF_DBL t, s0, s1;
   REF_DBL trange[2], xyz[3];
@@ -4508,7 +4541,7 @@ REF_STATUS ref_geom_edge_tec(REF_GEOM ref_geom, REF_INT edgeid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_node_tec(REF_GEOM ref_geom, const char *filename) {
+REF_FCN REF_STATUS ref_geom_node_tec(REF_GEOM ref_geom, const char *filename) {
   REF_INT i;
   REF_DBL xyz[3];
   FILE *file;

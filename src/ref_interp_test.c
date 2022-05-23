@@ -50,8 +50,8 @@
 #include "ref_sort.h"
 #include "ref_split.h"
 
-static REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr,
-                                   REF_MPI ref_mpi) {
+REF_FCN static REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr,
+                                           REF_MPI ref_mpi) {
   REF_GRID from, to;
   RSS(ref_grid_create(&from, ref_mpi), "create");
   RSS(ref_grid_create(&to, ref_mpi), "create");
@@ -59,14 +59,14 @@ static REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_teardown(REF_INTERP ref_interp) {
+REF_FCN static REF_STATUS ref_interp_teardown(REF_INTERP ref_interp) {
   RSS(ref_grid_free(ref_interp_from_grid(ref_interp)), "free");
   RSS(ref_grid_free(ref_interp_to_grid(ref_interp)), "free");
   RSS(ref_interp_free(ref_interp), "interp free");
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_shift_cube_interior(REF_NODE ref_node) {
+REF_FCN static REF_STATUS ref_interp_shift_cube_interior(REF_NODE ref_node) {
   REF_INT node;
   each_ref_node_valid_node(ref_node, node) {
     if ((0.01 < ref_node_xyz(ref_node, 0, node) &&
@@ -83,7 +83,7 @@ static REF_STATUS ref_interp_shift_cube_interior(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_displace_cube(REF_NODE ref_node) {
+REF_FCN static REF_STATUS ref_interp_displace_cube(REF_NODE ref_node) {
   REF_INT node;
   each_ref_node_valid_node(ref_node, node) {
     ref_node_xyz(ref_node, 0, node) += 0.5;

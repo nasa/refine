@@ -67,82 +67,87 @@ struct REF_MPI_STRUCT {
   for ((part) = 1; (part) < ref_mpi_n(ref_mpi); (part)++)
 
 /* pass void pointer to MPI_Comm */
-REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi, void *comm);
+REF_FCN REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi, void *comm);
 
 /* assumes MPI_COMM_WORLD */
-REF_STATUS ref_mpi_create(REF_MPI *ref_mpi);
+REF_FCN REF_STATUS ref_mpi_create(REF_MPI *ref_mpi);
 
-REF_STATUS ref_mpi_half_comm(REF_MPI ref_mpi, REF_MPI *split_mpi);
-REF_STATUS ref_mpi_front_comm(REF_MPI ref_mpi, REF_MPI *split_mpi, REF_INT n);
-REF_STATUS ref_mpi_join_comm(REF_MPI split_mpi);
+REF_FCN REF_STATUS ref_mpi_half_comm(REF_MPI ref_mpi, REF_MPI *split_mpi);
+REF_FCN REF_STATUS ref_mpi_front_comm(REF_MPI ref_mpi, REF_MPI *split_mpi,
+                                      REF_INT n);
+REF_FCN REF_STATUS ref_mpi_join_comm(REF_MPI split_mpi);
 
-REF_STATUS ref_mpi_free(REF_MPI ref_mpi);
-REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi, REF_MPI original);
+REF_FCN REF_STATUS ref_mpi_free(REF_MPI ref_mpi);
+REF_FCN REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi, REF_MPI original);
 
-REF_STATUS ref_mpi_start(int argc, char *argv[]);
-REF_STATUS ref_mpi_stop(void);
+REF_FCN REF_STATUS ref_mpi_start(int argc, char *argv[]);
+REF_FCN REF_STATUS ref_mpi_stop(void);
 
-REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type);
+REF_FCN REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type);
 
-REF_STATUS ref_mpi_elapsed(REF_DBL *seconds);
-REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi);
-REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message);
-REF_STATUS ref_mpi_stopwatch_delta(REF_MPI ref_mpi, REF_DBL *delta);
+REF_FCN REF_STATUS ref_mpi_elapsed(REF_DBL *seconds);
+REF_FCN REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi);
+REF_FCN REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message);
+REF_FCN REF_STATUS ref_mpi_stopwatch_delta(REF_MPI ref_mpi, REF_DBL *delta);
 
-REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type);
-REF_STATUS ref_mpi_bcast_from_rank(REF_MPI ref_mpi, void *data, REF_INT n,
-                                   REF_TYPE type, REF_INT rank);
+REF_FCN REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n,
+                                 REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_bcast_from_rank(REF_MPI ref_mpi, void *data,
+                                           REF_INT n, REF_TYPE type,
+                                           REF_INT rank);
 
-REF_STATUS ref_mpi_scatter_send(REF_MPI ref_mpi, void *data, REF_INT n,
-                                REF_TYPE type, REF_INT dest);
-REF_STATUS ref_mpi_scatter_recv(REF_MPI ref_mpi, void *data, REF_INT n,
-                                REF_TYPE type);
-REF_STATUS ref_mpi_gather_send(REF_MPI ref_mpi, void *data, REF_INT n,
-                               REF_TYPE type);
-REF_STATUS ref_mpi_gather_recv(REF_MPI ref_mpi, void *data, REF_INT n,
-                               REF_TYPE type, REF_INT source);
+REF_FCN REF_STATUS ref_mpi_scatter_send(REF_MPI ref_mpi, void *data, REF_INT n,
+                                        REF_TYPE type, REF_INT dest);
+REF_FCN REF_STATUS ref_mpi_scatter_recv(REF_MPI ref_mpi, void *data, REF_INT n,
+                                        REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_gather_send(REF_MPI ref_mpi, void *data, REF_INT n,
+                                       REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_gather_recv(REF_MPI ref_mpi, void *data, REF_INT n,
+                                       REF_TYPE type, REF_INT source);
 
-REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
-                            REF_TYPE type);
-REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
-                                    REF_INT *send_size, void *recv,
-                                    REF_INT *recv_size, REF_INT n,
+REF_FCN REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
                                     REF_TYPE type);
-REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
-                             void *recv, REF_INT *recv_size, REF_INT n,
-                             REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
+                                            REF_INT *send_size, void *recv,
+                                            REF_INT *recv_size, REF_INT n,
+                                            REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send,
+                                     REF_INT *send_size, void *recv,
+                                     REF_INT *recv_size, REF_INT n,
+                                     REF_TYPE type);
 
-REF_STATUS ref_mpi_all_or(REF_MPI ref_mpi, REF_BOOL *boolean);
-REF_STATUS ref_mpi_min(REF_MPI ref_mpi, void *input, void *output,
-                       REF_TYPE type);
-REF_STATUS ref_mpi_max(REF_MPI ref_mpi, void *input, void *output,
-                       REF_TYPE type);
-REF_STATUS ref_mpi_sum(REF_MPI ref_mpi, void *input, void *output, REF_INT n,
-                       REF_TYPE type);
-REF_STATUS ref_mpi_allsum(REF_MPI ref_mpi, void *value, REF_INT n,
-                          REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_all_or(REF_MPI ref_mpi, REF_BOOL *boolean);
+REF_FCN REF_STATUS ref_mpi_min(REF_MPI ref_mpi, void *input, void *output,
+                               REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_max(REF_MPI ref_mpi, void *input, void *output,
+                               REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_sum(REF_MPI ref_mpi, void *input, void *output,
+                               REF_INT n, REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_allsum(REF_MPI ref_mpi, void *value, REF_INT n,
+                                  REF_TYPE type);
 
-REF_STATUS ref_mpi_allgather(REF_MPI ref_mpi, void *scalar, void *array,
-                             REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_allgather(REF_MPI ref_mpi, void *scalar, void *array,
+                                     REF_TYPE type);
 
-REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
-                              REF_INT *counts, void *concatenated_array,
-                              REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
+                                      REF_INT *counts, void *concatenated_array,
+                                      REF_TYPE type);
 
-REF_STATUS ref_mpi_allconcat(REF_MPI ref_mpi, REF_INT ldim, REF_INT my_size,
-                             void *my_array, REF_INT *total_size,
-                             REF_INT **source, void **concatenated,
-                             REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_allconcat(REF_MPI ref_mpi, REF_INT ldim,
+                                     REF_INT my_size, void *my_array,
+                                     REF_INT *total_size, REF_INT **source,
+                                     void **concatenated, REF_TYPE type);
 
-REF_STATUS ref_mpi_allminwho(REF_MPI ref_mpi, REF_DBL *val, REF_INT *who,
-                             REF_INT n);
+REF_FCN REF_STATUS ref_mpi_allminwho(REF_MPI ref_mpi, REF_DBL *val,
+                                     REF_INT *who, REF_INT n);
 
-REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
-                             REF_INT ldim, REF_INT nsend, void **recv,
-                             REF_INT *nrecv, REF_TYPE type);
-REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
-                           void *items, REF_INT first_rank, REF_INT last_rank,
-                           REF_INT *nbalanced, void **balanced, REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
+                                     REF_INT ldim, REF_INT nsend, void **recv,
+                                     REF_INT *nrecv, REF_TYPE type);
+REF_FCN REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
+                                   void *items, REF_INT first_rank,
+                                   REF_INT last_rank, REF_INT *nbalanced,
+                                   void **balanced, REF_TYPE type);
 
 END_C_DECLORATION
 

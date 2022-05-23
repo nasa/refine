@@ -39,14 +39,14 @@
 
 #define REF_METRIC_MAX_DEGREE (1000)
 
-REF_STATUS ref_metric_show(REF_DBL *m) {
+REF_FCN REF_STATUS ref_metric_show(REF_DBL *m) {
   printf(" %18.10e %18.10e %18.10e\n", m[0], m[1], m[2]);
   printf(" %18.10e %18.10e %18.10e\n", m[1], m[3], m[4]);
   printf(" %18.10e %18.10e %18.10e\n", m[2], m[4], m[5]);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_inspect(REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_metric_inspect(REF_NODE ref_node) {
   REF_INT node;
   REF_DBL m[6];
   each_ref_node_valid_node(ref_node, node) {
@@ -56,7 +56,7 @@ REF_STATUS ref_metric_inspect(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_from_node(REF_DBL *metric, REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_metric_from_node(REF_DBL *metric, REF_NODE ref_node) {
   REF_INT node;
 
   each_ref_node_valid_node(ref_node, node) {
@@ -66,7 +66,7 @@ REF_STATUS ref_metric_from_node(REF_DBL *metric, REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node) {
   REF_INT node;
 
   each_ref_node_valid_node(ref_node, node) {
@@ -76,7 +76,7 @@ REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h) {
+REF_FCN REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h) {
   REF_INT node;
   REF_DBL hh;
 
@@ -90,7 +90,7 @@ REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_side_node(REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_metric_side_node(REF_NODE ref_node) {
   REF_INT node;
   REF_DBL h0 = 0.1;
   REF_DBL h = 0.01;
@@ -106,7 +106,7 @@ REF_STATUS ref_metric_side_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_ring_node(REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_metric_ring_node(REF_NODE ref_node) {
   REF_INT node;
   REF_DBL hh;
   REF_DBL h = 0.01;
@@ -122,8 +122,8 @@ REF_STATUS ref_metric_ring_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
-                                         const char *version) {
+REF_FCN REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
+                                                 const char *version) {
   REF_INT node;
   REF_DBL x = 0, y = 0, r, t;
   REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh, hy, hx, c, k1, d0;
@@ -245,7 +245,7 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version) {
+REF_FCN REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version) {
   REF_INT node;
   REF_DBL x, y, r, t;
   REF_DBL h_z, h_t, h_r, h0, d0;
@@ -287,7 +287,7 @@ REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version) {
   return REF_IMPLEMENT;
 }
 
-REF_STATUS ref_metric_masabl_node(REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_metric_masabl_node(REF_NODE ref_node) {
   REF_INT node;
   REF_DBL hx, hz, c, k1;
 
@@ -305,7 +305,7 @@ REF_STATUS ref_metric_masabl_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_circle_node(REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_metric_circle_node(REF_NODE ref_node) {
   REF_INT node;
   REF_DBL x, z, r, t;
   REF_DBL hy, h1, h2;
@@ -338,7 +338,7 @@ REF_STATUS ref_metric_circle_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
   REF_INT node;
   REF_DBL m[6];
 
@@ -353,7 +353,7 @@ REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_DBL m[6], m_int[6], m_target[6];
@@ -415,7 +415,8 @@ REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid,
+                                               REF_INT node) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INTERP ref_interp;
   REF_GRID from_grid;
@@ -467,8 +468,9 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
-                                          REF_INT node1, REF_INT new_node) {
+REF_FCN REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid,
+                                                  REF_INT node0, REF_INT node1,
+                                                  REF_INT new_node) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INTERP ref_interp;
   REF_GRID from_grid;
@@ -528,7 +530,7 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
+REF_FCN REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
@@ -637,7 +639,7 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
+REF_FCN REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
   REF_INTERP ref_interp = ref_grid_interp(to_grid);
   REF_MPI ref_mpi;
   REF_INT node;
@@ -672,8 +674,9 @@ REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
-                                             REF_DBL r) {
+REF_FCN REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric,
+                                                     REF_GRID ref_grid,
+                                                     REF_DBL r) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_DBL *metric_orig;
@@ -756,8 +759,9 @@ REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
-                                            REF_DBL r, REF_DBL t) {
+REF_FCN REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric,
+                                                    REF_GRID ref_grid,
+                                                    REF_DBL r, REF_DBL t) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_DBL *metric_orig;
@@ -852,7 +856,8 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_hessian_filter(REF_DBL *metric,
+                                             REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL *min_h, *hess_min_h, *threshold;
@@ -934,9 +939,9 @@ REF_STATUS ref_metric_hessian_filter(REF_DBL *metric, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
-                                          REF_GRID ref_grid,
-                                          REF_DBL *interpolation_error) {
+REF_FCN REF_STATUS ref_metric_interpolation_error(
+    REF_DBL *metric, REF_DBL *hess, REF_GRID ref_grid,
+    REF_DBL *interpolation_error) {
   /* Corollary 3.4 CONTINUOUS MESH FRAMEWORK PART I DOI:10.1137/090754078 */
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
@@ -973,9 +978,9 @@ REF_STATUS ref_metric_interpolation_error(REF_DBL *metric, REF_DBL *hess,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_integrate_error(REF_GRID ref_grid,
-                                      REF_DBL *interpolation_error,
-                                      REF_DBL *total_error) {
+REF_FCN REF_STATUS ref_metric_integrate_error(REF_GRID ref_grid,
+                                              REF_DBL *interpolation_error,
+                                              REF_DBL *total_error) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1009,10 +1014,10 @@ REF_STATUS ref_metric_integrate_error(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
-                                              REF_GRID ref_grid,
-                                              REF_DBL gradation,
-                                              REF_DBL complexity) {
+REF_FCN REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
+                                                      REF_GRID ref_grid,
+                                                      REF_DBL gradation,
+                                                      REF_DBL complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT relaxations;
   REF_DBL current_complexity;
@@ -1074,10 +1079,8 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_gradation_at_complexity_mixed(REF_DBL *metric,
-                                                    REF_GRID ref_grid,
-                                                    REF_DBL gradation,
-                                                    REF_DBL complexity) {
+REF_FCN REF_STATUS ref_metric_gradation_at_complexity_mixed(
+    REF_DBL *metric, REF_GRID ref_grid, REF_DBL gradation, REF_DBL complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT relaxations;
   REF_DBL current_complexity;
@@ -1143,7 +1146,7 @@ REF_STATUS ref_metric_gradation_at_complexity_mixed(REF_DBL *metric,
   ref_free(metric_imply) return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_sanitize(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_sanitize(REF_GRID ref_grid) {
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_metric_sanitize_twod(ref_grid), "threed");
   } else {
@@ -1153,7 +1156,7 @@ REF_STATUS ref_metric_sanitize(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_sanitize_threed(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_sanitize_threed(REF_GRID ref_grid) {
   REF_DBL *metric_orig;
   REF_DBL *metric_imply;
   REF_DBL *metric;
@@ -1178,7 +1181,7 @@ REF_STATUS ref_metric_sanitize_threed(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_metric_sanitize_twod(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_sanitize_twod(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *metric_orig;
   REF_DBL *metric_imply;
@@ -1214,7 +1217,7 @@ REF_STATUS ref_metric_sanitize_twod(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolated_curvature(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_interpolated_curvature(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *metric;
   REF_INT gradation;
@@ -1230,7 +1233,7 @@ REF_STATUS ref_metric_interpolated_curvature(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *curvature_metric;
   REF_DBL m[6], m_constrained[6];
@@ -1258,7 +1261,8 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_from_curvature(REF_DBL *metric,
+                                             REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node, face;
@@ -1519,7 +1523,7 @@ static REF_STATUS add_sub_tri(REF_INT n0, REF_INT n1, REF_INT n2,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL m[6], log_m[6];
   REF_DBL *total_node_volume;
@@ -1615,7 +1619,8 @@ REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_metric_imply_non_tet(REF_DBL *metric, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_imply_non_tet(REF_DBL *metric,
+                                            REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *total_node_volume;
   REF_DBL m[6], log_m[6];
@@ -1737,8 +1742,8 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
-                          REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1,
+                                  REF_DBL *metric, REF_GRID ref_grid) {
   REF_INT node;
   REF_DBL metric_inv[6];
   REF_DBL inv_m1_m2[9];
@@ -1782,8 +1787,8 @@ REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
-                                 REF_DBL *complexity) {
+REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
+                                         REF_DBL *complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1820,8 +1825,8 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
-                                     REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
+                                             REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_DBL current_complexity;
@@ -1851,8 +1856,9 @@ REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric, REF_GRID ref_grid,
-                                         REF_DBL aspect_ratio) {
+REF_FCN REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric,
+                                                 REF_GRID ref_grid,
+                                                 REF_DBL aspect_ratio) {
   REF_DBL diag_system[12];
   REF_DBL max_eig, limit_eig;
   REF_INT node;
@@ -1893,9 +1899,8 @@ REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_limit_aspect_ratio_field(REF_DBL *metric,
-                                               REF_GRID ref_grid,
-                                               REF_DBL *aspect_ratio_field) {
+REF_FCN REF_STATUS ref_metric_limit_aspect_ratio_field(
+    REF_DBL *metric, REF_GRID ref_grid, REF_DBL *aspect_ratio_field) {
   REF_DBL diag_system[12];
   REF_DBL max_eig, limit_eig;
   REF_INT node;
@@ -1940,8 +1945,8 @@ REF_STATUS ref_metric_limit_aspect_ratio_field(REF_DBL *metric,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
-                              REF_DBL hmax) {
+REF_FCN REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid,
+                                      REF_DBL hmin, REF_DBL hmax) {
   REF_DBL diag_system[12];
   REF_DBL eig;
   REF_INT node;
@@ -1964,9 +1969,10 @@ REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
-                                            REF_DBL hmin, REF_DBL hmax,
-                                            REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric,
+                                                    REF_GRID ref_grid,
+                                                    REF_DBL hmin, REF_DBL hmax,
+                                                    REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node, relaxations;
   REF_DBL current_complexity;
@@ -1987,7 +1993,7 @@ REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL diag_system[12];
@@ -2051,8 +2057,9 @@ REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
-                                           REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric,
+                                                   REF_GRID ref_grid,
+                                                   REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node, relaxations;
   REF_DBL current_complexity;
@@ -2073,11 +2080,11 @@ REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
-                         REF_DBL *weight,
-                         REF_RECON_RECONSTRUCTION reconstruction,
-                         REF_INT p_norm, REF_DBL gradation,
-                         REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid,
+                                 REF_DBL *scalar, REF_DBL *weight,
+                                 REF_RECON_RECONSTRUCTION reconstruction,
+                                 REF_INT p_norm, REF_DBL gradation,
+                                 REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
@@ -2090,11 +2097,11 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
-                               REF_DBL *scalar,
-                               REF_RECON_RECONSTRUCTION reconstruction,
-                               REF_INT p_norm, REF_DBL gradation,
-                               REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
+                                       REF_DBL *scalar,
+                                       REF_RECON_RECONSTRUCTION reconstruction,
+                                       REF_INT p_norm, REF_DBL gradation,
+                                       REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
@@ -2107,9 +2114,10 @@ REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_multigrad(REF_DBL *metric, REF_GRID ref_grid,
-                                REF_DBL *grad, REF_INT p_norm,
-                                REF_DBL gradation, REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_metric_multigrad(REF_DBL *metric, REF_GRID ref_grid,
+                                        REF_DBL *grad, REF_INT p_norm,
+                                        REF_DBL gradation,
+                                        REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_DBL *dsdx, *gradx, *grady, *gradz;
@@ -2157,11 +2165,10 @@ REF_STATUS ref_metric_multigrad(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
-                                        REF_DBL *displaced, REF_DBL *scalar,
-                                        REF_RECON_RECONSTRUCTION reconstruction,
-                                        REF_INT p_norm, REF_DBL gradation,
-                                        REF_DBL complexity) {
+REF_FCN REF_STATUS ref_metric_moving_multiscale(
+    REF_DBL *metric, REF_GRID ref_grid, REF_DBL *displaced, REF_DBL *scalar,
+    REF_RECON_RECONSTRUCTION reconstruction, REF_INT p_norm, REF_DBL gradation,
+    REF_DBL complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *jac, *x, *grad, *hess, *xyz, det;
   REF_INT i, j, node;
@@ -2228,11 +2235,11 @@ REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
-                              REF_DBL *scalar,
-                              REF_RECON_RECONSTRUCTION reconstruction,
-                              REF_INT p_norm, REF_DBL gradation,
-                              REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
+                                      REF_DBL *scalar,
+                                      REF_RECON_RECONSTRUCTION reconstruction,
+                                      REF_INT p_norm, REF_DBL gradation,
+                                      REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
@@ -2246,8 +2253,8 @@ REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
-                                  REF_GRID ref_grid, REF_INT p_norm) {
+REF_FCN REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
+                                          REF_GRID ref_grid, REF_INT p_norm) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_INT dimension;
@@ -2296,11 +2303,11 @@ REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
-                               REF_INT nequations, REF_DBL *solution,
-                               REF_RECON_RECONSTRUCTION reconstruction,
-                               REF_INT p_norm, REF_DBL gradation,
-                               REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
+                                       REF_INT nequations, REF_DBL *solution,
+                                       REF_RECON_RECONSTRUCTION reconstruction,
+                                       REF_INT p_norm, REF_DBL gradation,
+                                       REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_INT ldim;
@@ -2361,9 +2368,9 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
-                                REF_INT ldim, REF_DBL *prim_dual,
-                                REF_RECON_RECONSTRUCTION reconstruction) {
+REF_FCN REF_STATUS ref_metric_belme_gfe(
+    REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim, REF_DBL *prim_dual,
+    REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, dir, node, i;
   REF_INT nequ;
@@ -2416,10 +2423,10 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
-                               REF_DBL *prim_dual, REF_DBL mach, REF_DBL re,
-                               REF_DBL reference_temp,
-                               REF_RECON_RECONSTRUCTION reconstruction) {
+REF_FCN REF_STATUS ref_metric_belme_gu(
+    REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim, REF_DBL *prim_dual,
+    REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
+    REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node, i, dir;
   REF_INT nequ;
@@ -2618,9 +2625,9 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
-                                   REF_DBL *prim_dual,
-                                   REF_RECON_RECONSTRUCTION reconstruction) {
+REF_FCN REF_STATUS ref_metric_cons_euler_g(
+    REF_DBL *g, REF_GRID ref_grid, REF_INT ldim, REF_DBL *prim_dual,
+    REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, dir, node, i;
   REF_INT nequ;
@@ -2673,11 +2680,10 @@ REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
-                                     REF_INT ldim, REF_DBL *prim_dual,
-                                     REF_DBL mach, REF_DBL re,
-                                     REF_DBL reference_temp,
-                                     REF_RECON_RECONSTRUCTION reconstruction) {
+REF_FCN REF_STATUS ref_metric_cons_viscous_g(
+    REF_DBL *g, REF_GRID ref_grid, REF_INT ldim, REF_DBL *prim_dual,
+    REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
+    REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node;
   REF_INT nequ;
@@ -2788,10 +2794,9 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
-                                    REF_GRID ref_grid, REF_INT ldim,
-                                    REF_DBL *prim_dual,
-                                    REF_RECON_RECONSTRUCTION reconstruction) {
+REF_FCN REF_STATUS ref_metric_cons_assembly(
+    REF_DBL *metric, REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
+    REF_DBL *prim_dual, REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node, i;
   REF_DBL state[5], conserved[5];
@@ -2826,8 +2831,8 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
-                                const char *filename) {
+REF_FCN REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
+                                        const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *eig, diag_system[12];
   REF_INT i, node, n, *sorted_index;
@@ -2869,9 +2874,9 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
  *     0  s1       s2
  */
 
-REF_STATUS ref_metric_step_exp(REF_DBL s, REF_DBL *h, REF_DBL h0, REF_DBL h1,
-                               REF_DBL h2, REF_DBL s1, REF_DBL s2,
-                               REF_DBL width) {
+REF_FCN REF_STATUS ref_metric_step_exp(REF_DBL s, REF_DBL *h, REF_DBL h0,
+                                       REF_DBL h1, REF_DBL h2, REF_DBL s1,
+                                       REF_DBL s2, REF_DBL width) {
   REF_DBL blend, x, e;
   blend = 0.5 * (1.0 + tanh((s - s1) / width));
   x = (s - s1) / (s2 - s1);
@@ -2903,8 +2908,8 @@ static void ref_metric_tattle_truncated_cone_dist(REF_DBL *cone_geom,
   printf("r1 %.18e r2 %.18e\n", cone_geom[6], cone_geom[7]);
 }
 
-REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
-                                          REF_DBL *dist) {
+REF_FCN REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom,
+                                                  REF_DBL *p, REF_DBL *dist) {
   REF_INT d;
   REF_DBL a[3], b[3], ba[3], u[3], pa[3], l, x, y, y2, n, ra, rb, delta, s;
   REF_DBL xprime, yprime;
@@ -2993,8 +2998,8 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_metric_cart_box_dist(REF_DBL *box_geom, REF_DBL *p,
-                                           REF_DBL *dist) {
+REF_FCN static REF_STATUS ref_metric_cart_box_dist(REF_DBL *box_geom,
+                                                   REF_DBL *p, REF_DBL *dist) {
   REF_INT i;
   /* distance to box, zero inside box */
   *dist = 0;
@@ -3006,8 +3011,8 @@ static REF_STATUS ref_metric_cart_box_dist(REF_DBL *box_geom, REF_DBL *p,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
-                            char *args[]) {
+REF_FCN REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
+                                    int narg, char *args[]) {
   REF_INT i, node, pos;
   REF_DBL diag_system[12];
   REF_DBL h0, decay_distance;
@@ -3148,8 +3153,8 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
-                                REF_DBL *hh) {
+REF_FCN REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
+                                        REF_DBL *hh) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_DBL *metric_imply;
@@ -3263,8 +3268,8 @@ static REF_DBL wq[] = {(322.0 - 13.0 * sqrt(70)) / 900.0,
                        (322.0 - 13.0 * sqrt(70)) / 900.0};
 */
 
-REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
-                                REF_DBL *integral) {
+REF_FCN REF_STATUS ref_metric_integrate(ref_metric_integrand integrand,
+                                        void *state, REF_DBL *integral) {
   REF_INT i;
   REF_DBL t;
   REF_DBL value;
@@ -3278,9 +3283,9 @@ REF_STATUS ref_metric_integrate(ref_metric_integrand integrand, void *state,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_integrand_err2(void *void_m_diag_sys_hess,
-                                     REF_DBL theta_over_2pi,
-                                     REF_DBL *radial_error) {
+REF_FCN REF_STATUS ref_metric_integrand_err2(void *void_m_diag_sys_hess,
+                                             REF_DBL theta_over_2pi,
+                                             REF_DBL *radial_error) {
   REF_DBL *m_diag_sys_hess = (REF_DBL *)void_m_diag_sys_hess;
   REF_DBL theta = 2.0 * ref_math_pi * theta_over_2pi;
   REF_DBL xx, yy;
@@ -3358,8 +3363,8 @@ static REF_DBL weightq2[25] = {
     0.0269493525918800, 0.0269493525918800, 0.0269493525918800,
     0.0269493525918800};
 
-REF_STATUS ref_metric_integrate2(ref_metric_integrand2 integrand, void *state,
-                                 REF_DBL *integral) {
+REF_FCN REF_STATUS ref_metric_integrate2(ref_metric_integrand2 integrand,
+                                         void *state, REF_DBL *integral) {
   REF_INT i;
   REF_DBL value;
   *integral = 0.0;
@@ -3371,9 +3376,9 @@ REF_STATUS ref_metric_integrate2(ref_metric_integrand2 integrand, void *state,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_metric_integrand_quad_err2(void *void_node_area,
-                                                 REF_DBL *bary,
-                                                 REF_DBL *error) {
+REF_FCN static REF_STATUS ref_metric_integrand_quad_err2(void *void_node_area,
+                                                         REF_DBL *bary,
+                                                         REF_DBL *error) {
   REF_DBL *node_area = (REF_DBL *)void_node_area;
   REF_DBL shape[REF_CELL_MAX_SIZE_PER];
   REF_INT i;
@@ -3394,7 +3399,8 @@ static REF_STATUS ref_metric_integrand_quad_err2(void *void_node_area,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid, REF_DBL *scalar) {
+REF_FCN REF_STATUS ref_metric_interpolation_error2(REF_GRID ref_grid,
+                                                   REF_DBL *scalar) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tr2(ref_grid);
   REF_INT cell, cell_node;

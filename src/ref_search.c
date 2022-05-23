@@ -27,7 +27,7 @@
 
 #define MAX_NODE_LIST (100)
 
-REF_STATUS ref_search_create(REF_SEARCH *ref_search_ptr, REF_INT n) {
+REF_FCN REF_STATUS ref_search_create(REF_SEARCH *ref_search_ptr, REF_INT n) {
   REF_SEARCH ref_search;
 
   ref_malloc(*ref_search_ptr, 1, REF_SEARCH_STRUCT);
@@ -48,7 +48,7 @@ REF_STATUS ref_search_create(REF_SEARCH *ref_search_ptr, REF_INT n) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_free(REF_SEARCH ref_search) {
+REF_FCN REF_STATUS ref_search_free(REF_SEARCH ref_search) {
   if (NULL == (void *)ref_search) return REF_NULL;
   ref_free(ref_search->children_ball);
   ref_free(ref_search->radius);
@@ -60,8 +60,8 @@ REF_STATUS ref_search_free(REF_SEARCH ref_search) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_search_distance(REF_SEARCH ref_search, REF_INT a,
-                                      REF_INT b, REF_DBL *distance) {
+REF_FCN static REF_STATUS ref_search_distance(REF_SEARCH ref_search, REF_INT a,
+                                              REF_INT b, REF_DBL *distance) {
   REF_INT i;
   *distance = 0.0;
   for (i = 0; i < ref_search->d; i++)
@@ -72,8 +72,8 @@ static REF_STATUS ref_search_distance(REF_SEARCH ref_search, REF_INT a,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_search_home(REF_SEARCH ref_search, REF_INT child,
-                                  REF_INT parent) {
+REF_FCN static REF_STATUS ref_search_home(REF_SEARCH ref_search, REF_INT child,
+                                          REF_INT parent) {
   REF_DBL child_distance;
   REF_DBL left_distance, right_distance;
 
@@ -116,8 +116,8 @@ static REF_STATUS ref_search_home(REF_SEARCH ref_search, REF_INT child,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
-                             REF_DBL *position, REF_DBL radius) {
+REF_FCN REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
+                                     REF_DBL *position, REF_DBL radius) {
   REF_INT i, location;
   if (ref_search->empty >= ref_search->n)
     RSS(REF_INCREASE_LIMIT, "need larger tree for more items");
@@ -152,13 +152,13 @@ static REF_INT ref_search_depth_tree(REF_SEARCH ref_search, REF_INT self) {
   return depth;
 }
 
-REF_STATUS ref_search_depth(REF_SEARCH ref_search, REF_INT *depth) {
+REF_FCN REF_STATUS ref_search_depth(REF_SEARCH ref_search, REF_INT *depth) {
   REF_INT self = 0;
   *depth = ref_search_depth_tree(ref_search, self);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_stats(REF_SEARCH ref_search) {
+REF_FCN REF_STATUS ref_search_stats(REF_SEARCH ref_search) {
   REF_INT i, empty, two, one, zero;
   empty = 0;
   two = 0;
@@ -185,9 +185,9 @@ REF_STATUS ref_search_stats(REF_SEARCH ref_search) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
-                                    REF_INT parent, REF_DBL *position,
-                                    REF_DBL radius) {
+REF_FCN static REF_STATUS ref_search_gather(REF_SEARCH ref_search,
+                                            REF_LIST ref_list, REF_INT parent,
+                                            REF_DBL *position, REF_DBL radius) {
   REF_INT i;
   REF_DBL distance;
 
@@ -223,9 +223,10 @@ static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_search_gather_seg(REF_SEARCH ref_search, REF_DBL *xyz,
-                                        REF_INT parent, REF_DBL *position,
-                                        REF_DBL *distance) {
+REF_FCN static REF_STATUS ref_search_gather_seg(REF_SEARCH ref_search,
+                                                REF_DBL *xyz, REF_INT parent,
+                                                REF_DBL *position,
+                                                REF_DBL *distance) {
   REF_INT i;
   REF_DBL dist;
 
@@ -265,9 +266,10 @@ static REF_STATUS ref_search_gather_seg(REF_SEARCH ref_search, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
-                                        REF_INT parent, REF_DBL *position,
-                                        REF_DBL *distance) {
+REF_FCN static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search,
+                                                REF_DBL *xyz, REF_INT parent,
+                                                REF_DBL *position,
+                                                REF_DBL *distance) {
   REF_INT i;
   REF_DBL dist;
 
@@ -307,14 +309,15 @@ static REF_STATUS ref_search_gather_tri(REF_SEARCH ref_search, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
-                               REF_DBL *position, REF_DBL radius) {
+REF_FCN REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
+                                       REF_DBL *position, REF_DBL radius) {
   RSS(ref_search_gather(ref_search, ref_list, 0, position, radius), "gthr");
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_search_trim(REF_SEARCH ref_search, REF_INT parent,
-                                  REF_DBL *position, REF_DBL *trim_radius) {
+REF_FCN static REF_STATUS ref_search_trim(REF_SEARCH ref_search, REF_INT parent,
+                                          REF_DBL *position,
+                                          REF_DBL *trim_radius) {
   REF_INT i;
   REF_DBL distance;
 
@@ -346,8 +349,9 @@ static REF_STATUS ref_search_trim(REF_SEARCH ref_search, REF_INT parent,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search, REF_DBL *position,
-                                  REF_DBL *trim_radius) {
+REF_FCN REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search,
+                                          REF_DBL *position,
+                                          REF_DBL *trim_radius) {
   REF_INT parent;
   parent = 0;
   *trim_radius = REF_DBL_MAX;
@@ -355,8 +359,9 @@ REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search, REF_DBL *position,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
-                                         REF_LIST ref_list, REF_DBL *position) {
+REF_FCN REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
+                                                 REF_LIST ref_list,
+                                                 REF_DBL *position) {
   REF_DBL trim_radius;
   RSS(ref_search_trim_radius(ref_search, position, &trim_radius), "scope");
   RSS(ref_search_touching(ref_search, ref_list, position, trim_radius),
@@ -364,10 +369,9 @@ REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
-                                                     REF_LIST ref_list,
-                                                     REF_DBL *position,
-                                                     REF_DBL distance) {
+REF_FCN REF_STATUS ref_search_nearest_candidates_closer_than(
+    REF_SEARCH ref_search, REF_LIST ref_list, REF_DBL *position,
+    REF_DBL distance) {
   REF_DBL trim_radius;
   REF_INT parent;
 
@@ -379,9 +383,10 @@ REF_STATUS ref_search_nearest_candidates_closer_than(REF_SEARCH ref_search,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_search_nearest_element(REF_SEARCH ref_search, REF_INT node_per,
-                                      REF_DBL *xyz, REF_DBL *position,
-                                      REF_DBL *distance) {
+REF_FCN REF_STATUS ref_search_nearest_element(REF_SEARCH ref_search,
+                                              REF_INT node_per, REF_DBL *xyz,
+                                              REF_DBL *position,
+                                              REF_DBL *distance) {
   REF_INT parent;
   parent = 0;
   if (2 == node_per) {
@@ -394,8 +399,9 @@ REF_STATUS ref_search_nearest_element(REF_SEARCH ref_search, REF_INT node_per,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
-                                REF_LONG position, REF_DBL *value) {
+REF_FCN REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n,
+                                        REF_DBL *elements, REF_LONG position,
+                                        REF_DBL *value) {
   REF_INT i, bisection;
   REF_LONG low_pos, high_pos, count;
   REF_DBL low_val, high_val, temp, mid_val;
@@ -448,8 +454,8 @@ REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz,
-                                REF_DBL *distance) {
+REF_FCN REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1,
+                                        REF_DBL *xyz, REF_DBL *distance) {
   REF_DBL dl[3], dxyz[3], len2, proj2, t;
   dl[0] = xyz1[0] - xyz0[0];
   dl[1] = xyz1[1] - xyz0[1];
@@ -474,8 +480,9 @@ REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_search_xyz_normal(REF_DBL *xyz0, REF_DBL *xyz1,
-                                        REF_DBL *xyz2, REF_DBL *normal) {
+REF_FCN static REF_STATUS ref_search_xyz_normal(REF_DBL *xyz0, REF_DBL *xyz1,
+                                                REF_DBL *xyz2,
+                                                REF_DBL *normal) {
   REF_DBL edge10[3], edge20[3];
 
   edge10[0] = xyz1[0] - xyz0[0];
@@ -491,8 +498,9 @@ static REF_STATUS ref_search_xyz_normal(REF_DBL *xyz0, REF_DBL *xyz1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
-                                REF_DBL *xyz, REF_DBL *distance) {
+REF_FCN REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1,
+                                        REF_DBL *xyz2, REF_DBL *xyz,
+                                        REF_DBL *distance) {
   REF_DBL dist;
   REF_DBL bary[3], total, total_normal[3], normal[3];
   REF_DBL dxyz[3];
@@ -549,8 +557,8 @@ REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   return REF_SUCCESS;
 }
 /* Ericson Real Time Collision Detection p141 */
-REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c, REF_DBL *p,
-                            REF_DBL *distance) {
+REF_FCN REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c,
+                                    REF_DBL *p, REF_DBL *distance) {
   REF_DBL ab[3], ac[3], ap[3];
   REF_DBL d1, d2;
   REF_DBL bp[3];

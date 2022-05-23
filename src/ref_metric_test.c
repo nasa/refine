@@ -61,29 +61,33 @@
   ../acceptance/2d/linear/two/accept-2d-two-08.metric
 */
 
-REF_STATUS ref_metric_test_constant_integrand(void *constant_double, REF_DBL t,
-                                              REF_DBL *value);
-REF_STATUS ref_metric_test_constant_integrand(void *constant_double, REF_DBL t,
-                                              REF_DBL *value) {
+REF_FCN REF_STATUS ref_metric_test_constant_integrand(void *constant_double,
+                                                      REF_DBL t,
+                                                      REF_DBL *value);
+REF_FCN REF_STATUS ref_metric_test_constant_integrand(void *constant_double,
+                                                      REF_DBL t,
+                                                      REF_DBL *value) {
   SUPRESS_UNUSED_COMPILER_WARNING(t);
   *value = *((REF_DBL *)constant_double);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_test_linear_integrand(void *constant_ax_b, REF_DBL t,
-                                            REF_DBL *value);
-REF_STATUS ref_metric_test_linear_integrand(void *constant_ax_b, REF_DBL t,
-                                            REF_DBL *value) {
+REF_FCN REF_STATUS ref_metric_test_linear_integrand(void *constant_ax_b,
+                                                    REF_DBL t, REF_DBL *value);
+REF_FCN REF_STATUS ref_metric_test_linear_integrand(void *constant_ax_b,
+                                                    REF_DBL t, REF_DBL *value) {
   REF_DBL a = ((REF_DBL *)constant_ax_b)[0];
   REF_DBL b = ((REF_DBL *)constant_ax_b)[1];
   *value = a * t + b;
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_test_quadratic_integrand(void *constant_ax2_bx_c,
-                                               REF_DBL t, REF_DBL *value);
-REF_STATUS ref_metric_test_quadratic_integrand(void *constant_ax2_bx_c,
-                                               REF_DBL t, REF_DBL *value) {
+REF_FCN REF_STATUS ref_metric_test_quadratic_integrand(void *constant_ax2_bx_c,
+                                                       REF_DBL t,
+                                                       REF_DBL *value);
+REF_FCN REF_STATUS ref_metric_test_quadratic_integrand(void *constant_ax2_bx_c,
+                                                       REF_DBL t,
+                                                       REF_DBL *value) {
   REF_DBL a = ((REF_DBL *)constant_ax2_bx_c)[0];
   REF_DBL b = ((REF_DBL *)constant_ax2_bx_c)[1];
   REF_DBL c = ((REF_DBL *)constant_ax2_bx_c)[2];
@@ -91,10 +95,12 @@ REF_STATUS ref_metric_test_quadratic_integrand(void *constant_ax2_bx_c,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_test_constant_integrand2(void *constant_area,
-                                               REF_DBL *bary, REF_DBL *value);
-REF_STATUS ref_metric_test_constant_integrand2(void *constant_area,
-                                               REF_DBL *bary, REF_DBL *value) {
+REF_FCN REF_STATUS ref_metric_test_constant_integrand2(void *constant_area,
+                                                       REF_DBL *bary,
+                                                       REF_DBL *value);
+REF_FCN REF_STATUS ref_metric_test_constant_integrand2(void *constant_area,
+                                                       REF_DBL *bary,
+                                                       REF_DBL *value) {
   REF_DBL constant = ((REF_DBL *)constant_area)[0];
   REF_DBL area = ((REF_DBL *)constant_area)[1];
   SUPRESS_UNUSED_COMPILER_WARNING(bary);
@@ -102,8 +108,10 @@ REF_STATUS ref_metric_test_constant_integrand2(void *constant_area,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_test_xy2(void *state, REF_DBL *bary, REF_DBL *value);
-REF_STATUS ref_metric_test_xy2(void *state, REF_DBL *bary, REF_DBL *value) {
+REF_FCN REF_STATUS ref_metric_test_xy2(void *state, REF_DBL *bary,
+                                       REF_DBL *value);
+REF_FCN REF_STATUS ref_metric_test_xy2(void *state, REF_DBL *bary,
+                                       REF_DBL *value) {
   REF_DBL area = 1.0;
   REF_DBL x = 2.0 * (1.0 - bary[0]);
   REF_DBL y = bary[2];

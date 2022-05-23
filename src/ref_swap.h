@@ -24,33 +24,36 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_swap_remove_two_face_cell(REF_GRID ref_grid, REF_INT cell);
-REF_STATUS ref_swap_remove_three_face_cell(REF_GRID ref_grid, REF_INT cell);
-REF_STATUS ref_swap_pass(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_swap_remove_two_face_cell(REF_GRID ref_grid,
+                                                 REF_INT cell);
+REF_FCN REF_STATUS ref_swap_remove_three_face_cell(REF_GRID ref_grid,
+                                                   REF_INT cell);
+REF_FCN REF_STATUS ref_swap_pass(REF_GRID ref_grid);
 
 /*   orig    swap
  *   0 - 2   0 - 2
  *   | \ |   | / |
  *   3 - 1   3 - 1
  */
-REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                           REF_INT *node2, REF_INT *node3);
-REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_BOOL *allowed);
-REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                             REF_BOOL *allowed);
-REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                              REF_BOOL *allowed);
-REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                               REF_BOOL *allowed);
-REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                               REF_BOOL *allowed);
-REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                          REF_BOOL *allowed);
-REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                            REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0,
+                                   REF_INT node1, REF_INT *node2,
+                                   REF_INT *node3);
+REF_FCN REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
+                                        REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0,
+                                       REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0,
+                                       REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0,
+                                  REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0,
+                                    REF_INT node1, REF_BOOL *allowed);
 
-REF_STATUS ref_swap_tri_pass(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_swap_tri_pass(REF_GRID ref_grid);
 
 END_C_DECLORATION
 

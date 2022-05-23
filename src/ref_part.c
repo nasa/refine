@@ -33,8 +33,8 @@
 #include "ref_migrate.h"
 #include "ref_mpi.h"
 
-static REF_STATUS ref_part_meshb_long(FILE *file, REF_INT version,
-                                      REF_LONG *value) {
+REF_FCN static REF_STATUS ref_part_meshb_long(FILE *file, REF_INT version,
+                                              REF_LONG *value) {
   int int_value;
   long long_value;
   if (version < 4) {
@@ -47,8 +47,8 @@ static REF_STATUS ref_part_meshb_long(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_size(FILE *file, REF_INT version,
-                                      REF_SIZE *value) {
+REF_FCN static REF_STATUS ref_part_meshb_size(FILE *file, REF_INT version,
+                                              REF_SIZE *value) {
   unsigned int int_value;
   unsigned long long_value;
   if (version < 4) {
@@ -61,9 +61,9 @@ static REF_STATUS ref_part_meshb_size(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
-                                REF_INT version, REF_BOOL twod,
-                                REF_NODE ref_node, REF_LONG nnode) {
+REF_FCN static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
+                                        REF_INT version, REF_BOOL twod,
+                                        REF_NODE ref_node, REF_LONG nnode) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT node, new_node;
   REF_INT part;
@@ -147,12 +147,14 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
 }
 
 /* used by SANS? */
-REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
-                                         REF_INT type, REF_NODE ref_node,
-                                         REF_INT nnode, FILE *file);
-REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
-                                         REF_INT type, REF_NODE ref_node,
-                                         REF_INT nnode, FILE *file) {
+REF_FCN REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom,
+                                                 REF_INT ngeom, REF_INT type,
+                                                 REF_NODE ref_node,
+                                                 REF_INT nnode, FILE *file);
+REF_FCN REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom,
+                                                 REF_INT ngeom, REF_INT type,
+                                                 REF_NODE ref_node,
+                                                 REF_INT nnode, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT end_of_message = REF_EMPTY;
   REF_INT chunk;
@@ -326,9 +328,9 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
-                                            REF_INT type, REF_NODE ref_node,
-                                            REF_INT version, FILE *file) {
+REF_FCN static REF_STATUS ref_part_meshb_geom_bcast(
+    REF_GEOM ref_geom, REF_LONG ngeom, REF_INT type, REF_NODE ref_node,
+    REF_INT version, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_LONG *read_node;
@@ -400,10 +402,10 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
-                                      REF_NODE ref_node, REF_LONG nnode,
-                                      REF_INT version, REF_BOOL pad,
-                                      FILE *file) {
+REF_FCN static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
+                                              REF_NODE ref_node, REF_LONG nnode,
+                                              REF_INT version, REF_BOOL pad,
+                                              FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_LONG ncell_read;
   REF_INT chunk;
@@ -600,9 +602,11 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_GLOB ncell,
-                                            REF_NODE ref_node, REF_INT version,
-                                            FILE *file) {
+REF_FCN static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell,
+                                                    REF_GLOB ncell,
+                                                    REF_NODE ref_node,
+                                                    REF_INT version,
+                                                    FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_GLOB ncell_read;
   REF_INT chunk;
@@ -685,8 +689,9 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_GLOB ncell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                 const char *filename) {
+REF_FCN static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr,
+                                         REF_MPI ref_mpi,
+                                         const char *filename) {
   REF_BOOL verbose = REF_FALSE;
   REF_INT version, dim;
   REF_BOOL available;
@@ -839,7 +844,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   FILE *file;
@@ -920,7 +925,8 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_part_cad_association(REF_GRID ref_grid,
+                                            const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -987,7 +993,8 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid,
+                                              const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
@@ -1051,7 +1058,7 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_bin_ugrid_pack_cell(
+REF_FCN static REF_STATUS ref_part_bin_ugrid_pack_cell(
     FILE *file, REF_BOOL swap_endian, REF_BOOL sixty_four_bit,
     REF_FILEPOS conn_offset, REF_FILEPOS faceid_offset, REF_INT section_size,
     REF_LONG ncell_read, REF_INT node_per, REF_INT size_per, REF_GLOB *c2n) {
@@ -1135,12 +1142,10 @@ static REF_STATUS ref_part_bin_ugrid_pack_cell(
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
-                                          REF_NODE ref_node, REF_GLOB nnode,
-                                          FILE *file, REF_FILEPOS conn_offset,
-                                          REF_FILEPOS faceid_offset,
-                                          REF_BOOL swap_endian,
-                                          REF_BOOL sixty_four_bit) {
+REF_FCN static REF_STATUS ref_part_bin_ugrid_cell(
+    REF_CELL ref_cell, REF_LONG ncell, REF_NODE ref_node, REF_GLOB nnode,
+    FILE *file, REF_FILEPOS conn_offset, REF_FILEPOS faceid_offset,
+    REF_BOOL swap_endian, REF_BOOL sixty_four_bit) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_LONG ncell_read;
   REF_INT chunk;
@@ -1314,9 +1319,11 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                     const char *filename, REF_BOOL swap_endian,
-                                     REF_BOOL sixty_four_bit) {
+REF_FCN static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr,
+                                             REF_MPI ref_mpi,
+                                             const char *filename,
+                                             REF_BOOL swap_endian,
+                                             REF_BOOL sixty_four_bit) {
   FILE *file;
   REF_LONG nnode, ntri, nqua, ntet, npyr, npri, nhex;
 
@@ -1495,8 +1502,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                               const char *filename) {
+REF_FCN static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                       const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_BOOL verbose = REF_TRUE;
@@ -1797,8 +1804,8 @@ static REF_STATUS ref_part_avm(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
-                                       const char *filename) {
+REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
+                                               const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_FILEPOS next_position = REF_EMPTY;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
@@ -1924,7 +1931,7 @@ static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
+REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   FILE *file;
   REF_INT chunk;
   REF_DBL *metric;
@@ -2055,7 +2062,8 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid,
+                                        const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
   REF_INT chunk;
@@ -2120,7 +2128,8 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_plt_string(FILE *file, char *string, int maxlen) {
+REF_FCN static REF_STATUS ref_part_plt_string(FILE *file, char *string,
+                                              int maxlen) {
   int i, letter;
   for (i = 0; i < maxlen; i++) {
     REIS(1, fread(&letter, sizeof(int), 1, file), "plt string letter");
@@ -2132,10 +2141,11 @@ static REF_STATUS ref_part_plt_string(FILE *file, char *string, int maxlen) {
   return REF_FAILURE;
 }
 
-static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
-                                      REF_LIST zone_type, REF_LIST zone_packing,
-                                      REF_LIST zone_nnode,
-                                      REF_LIST zone_nelem) {
+REF_FCN static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
+                                              REF_LIST zone_type,
+                                              REF_LIST zone_packing,
+                                              REF_LIST zone_nnode,
+                                              REF_LIST zone_nelem) {
   char header[9];
   int endian, filetype;
   char title[1024], varname[1024], zonename[1024];
@@ -2218,10 +2228,9 @@ static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_plt_data(FILE *file, REF_INT nvar,
-                                    REF_LIST zone_type, REF_LIST zone_packing,
-                                    REF_LIST zone_nnode, REF_LIST zone_nelem,
-                                    REF_INT *length, REF_DBL **soln) {
+REF_FCN static REF_STATUS ref_part_plt_data(
+    FILE *file, REF_INT nvar, REF_LIST zone_type, REF_LIST zone_packing,
+    REF_LIST zone_nnode, REF_LIST zone_nelem, REF_INT *length, REF_DBL **soln) {
   float zonemarker;
   int dataformat;
   REF_INT i, node, elem, node_per;
@@ -2349,8 +2358,9 @@ static REF_STATUS ref_part_plt_data(FILE *file, REF_INT nvar,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
-                                      REF_DBL **scalar, const char *filename) {
+REF_FCN static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
+                                              REF_DBL **scalar,
+                                              const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   FILE *file = NULL;
@@ -2484,10 +2494,8 @@ static REF_STATUS ref_part_scalar_plt(REF_GRID ref_grid, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_scalar_cell_restart_sol(REF_GRID ref_grid,
-                                                   REF_INT *ldim,
-                                                   REF_DBL **scalar,
-                                                   const char *filename) {
+REF_FCN static REF_STATUS ref_part_scalar_cell_restart_sol(
+    REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar, const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -2538,8 +2546,9 @@ static REF_STATUS ref_part_scalar_cell_restart_sol(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
-                                      REF_DBL **scalar, const char *filename) {
+REF_FCN static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
+                                              REF_DBL **scalar,
+                                              const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   FILE *file;
   REF_BOOL verbose = REF_TRUE;
@@ -2646,8 +2655,9 @@ static REF_STATUS ref_part_scalar_rst(REF_NODE ref_node, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_scalar_sol(REF_NODE ref_node, REF_INT *ldim,
-                                      REF_DBL **scalar, const char *filename) {
+REF_FCN static REF_STATUS ref_part_scalar_sol(REF_NODE ref_node, REF_INT *ldim,
+                                              REF_DBL **scalar,
+                                              const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   FILE *file;
   REF_INT chunk;
@@ -2773,8 +2783,9 @@ static REF_STATUS ref_part_scalar_sol(REF_NODE ref_node, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
-                                       REF_DBL **scalar, const char *filename) {
+REF_FCN static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
+                                               REF_DBL **scalar,
+                                               const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_FILEPOS next_position = REF_EMPTY;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
@@ -2893,8 +2904,9 @@ static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
-                                       REF_DBL **scalar, const char *filename) {
+REF_FCN static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
+                                               REF_DBL **scalar,
+                                               const char *filename) {
   REF_FILEPOS next_position;
   FILE *file;
   REF_INT chunk;
@@ -3050,8 +3062,8 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
-                           const char *filename) {
+REF_FCN REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim,
+                                   REF_DBL **scalar, const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   size_t end_of_string;
 
@@ -3090,8 +3102,9 @@ REF_STATUS ref_part_scalar(REF_GRID ref_grid, REF_INT *ldim, REF_DBL **scalar,
   return REF_FAILURE;
 }
 
-REF_STATUS ref_part_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                 const char *filename) {
+REF_FCN REF_STATUS ref_part_by_extension(REF_GRID *ref_grid_ptr,
+                                         REF_MPI ref_mpi,
+                                         const char *filename) {
   size_t end_of_string;
 
   end_of_string = strlen(filename);

@@ -34,8 +34,9 @@
 
 /* Alauzet and A. Loseille doi:10.1016/j.jcp.2009.09.020
  * section 2.2.4.1. A double L2-projection */
-REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
-                                        REF_DBL *grad) {
+REF_FCN REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid,
+                                                REF_DBL *scalar,
+                                                REF_DBL *grad) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT i, node, cell, group, cell_node;
@@ -366,9 +367,9 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
   return (div_by_zero ? REF_DIV_ZERO : REF_SUCCESS);
 }
 
-static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
-                                                  REF_DBL *scalar,
-                                                  REF_DBL *hessian) {
+REF_FCN static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
+                                                          REF_DBL *scalar,
+                                                          REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_DBL *grad, *dsdx, *gradx, *grady, *gradz;
@@ -416,10 +417,11 @@ static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
-                                            REF_CLOUD ref_cloud, REF_BOOL twod,
-                                            REF_DBL *gradient,
-                                            REF_DBL *hessian) {
+REF_FCN static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
+                                                    REF_CLOUD ref_cloud,
+                                                    REF_BOOL twod,
+                                                    REF_DBL *gradient,
+                                                    REF_DBL *hessian) {
   REF_DBL geom[9], ab[90];
   REF_DBL dx, dy, dz, dq;
   REF_DBL *a, *q, *r;
@@ -606,8 +608,9 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_kexact_center(REF_DBL *xyz, REF_CLOUD ref_cloud,
-                                          REF_DBL *center) {
+REF_FCN static REF_STATUS ref_recon_kexact_center(REF_DBL *xyz,
+                                                  REF_CLOUD ref_cloud,
+                                                  REF_DBL *center) {
   REF_DBL geom[10], ab[110];
   REF_DBL dx, dy, dz;
   REF_DBL *a, *q, *r;
@@ -712,10 +715,10 @@ static REF_STATUS ref_recon_kexact_center(REF_DBL *xyz, REF_CLOUD ref_cloud,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_local_immediate_cloud(REF_CLOUD *one_layer,
-                                                  REF_NODE ref_node,
-                                                  REF_CELL ref_cell,
-                                                  REF_DBL *scalar) {
+REF_FCN static REF_STATUS ref_recon_local_immediate_cloud(REF_CLOUD *one_layer,
+                                                          REF_NODE ref_node,
+                                                          REF_CELL ref_cell,
+                                                          REF_DBL *scalar) {
   REF_INT node, item, cell, cell_node, target;
   REF_GLOB global;
   REF_DBL xyzs[4];
@@ -738,9 +741,8 @@ static REF_STATUS ref_recon_local_immediate_cloud(REF_CLOUD *one_layer,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_local_immediate_cloud_geom(REF_CLOUD *one_layer,
-                                                       REF_GRID ref_grid,
-                                                       REF_INT id) {
+REF_FCN static REF_STATUS ref_recon_local_immediate_cloud_geom(
+    REF_CLOUD *one_layer, REF_GRID ref_grid, REF_INT id) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -771,7 +773,8 @@ static REF_STATUS ref_recon_local_immediate_cloud_geom(REF_CLOUD *one_layer,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
+REF_FCN REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer,
+                                         REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_CLOUD ref_cloud;
   REF_INT *a_nnode, *b_nnode;
@@ -914,9 +917,9 @@ REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_grow_cloud_one_layer(REF_CLOUD ref_cloud,
-                                                 REF_CLOUD *one_layer,
-                                                 REF_NODE ref_node) {
+REF_FCN static REF_STATUS ref_recon_grow_cloud_one_layer(REF_CLOUD ref_cloud,
+                                                         REF_CLOUD *one_layer,
+                                                         REF_NODE ref_node) {
   REF_CLOUD copy;
   REF_STATUS ref_status;
   REF_INT pivot_index, local_pivot;
@@ -944,10 +947,10 @@ static REF_STATUS ref_recon_grow_cloud_one_layer(REF_CLOUD ref_cloud,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
-                                                    REF_DBL *scalar,
-                                                    REF_DBL *gradient,
-                                                    REF_DBL *hessian) {
+REF_FCN static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
+                                                            REF_DBL *scalar,
+                                                            REF_DBL *gradient,
+                                                            REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT node, im;
@@ -1037,8 +1040,8 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
-                              REF_INT ldim) {
+REF_FCN REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
+                                      REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT i, node;
@@ -1051,8 +1054,8 @@ REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_mask_edg(REF_GRID ref_grid, REF_BOOL *replace,
-                                     REF_INT ldim) {
+REF_FCN static REF_STATUS ref_recon_mask_edg(REF_GRID ref_grid,
+                                             REF_BOOL *replace, REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_INT i, node;
@@ -1066,8 +1069,10 @@ static REF_STATUS ref_recon_mask_edg(REF_GRID ref_grid, REF_BOOL *replace,
 }
 
 /* replace with volume weighing of donor dual volume */
-REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
-                                        REF_BOOL *replace, REF_INT ldim) {
+REF_FCN REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid,
+                                                REF_DBL *recon,
+                                                REF_BOOL *replace,
+                                                REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, item, edge;
   REF_EDGE ref_edge;
@@ -1135,7 +1140,7 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_local_immediate_replace_cloud(
+REF_FCN static REF_STATUS ref_recon_local_immediate_replace_cloud(
     REF_CLOUD *one_layer, REF_NODE ref_node, REF_CELL ref_cell, REF_DBL *recon,
     REF_BOOL *replace, REF_INT ldim, REF_INT i) {
   REF_INT node, item, cell, cell_node, target;
@@ -1161,8 +1166,10 @@ static REF_STATUS ref_recon_local_immediate_replace_cloud(
   }
   return REF_SUCCESS;
 }
-REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid, REF_DBL *recon,
-                                        REF_BOOL *replace, REF_INT ldim) {
+REF_FCN REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid,
+                                                REF_DBL *recon,
+                                                REF_BOOL *replace,
+                                                REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT i, node;
@@ -1218,7 +1225,7 @@ REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid, REF_DBL *recon,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, node0, node1, edge;
   REF_DBL *radius, dist;
@@ -1269,8 +1276,8 @@ REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
-                                    REF_DBL max_jump) {
+REF_FCN REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
+                                            REF_DBL max_jump) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
@@ -1319,8 +1326,9 @@ REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
-                              REF_RECON_RECONSTRUCTION recon) {
+REF_FCN REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar,
+                                      REF_DBL *grad,
+                                      REF_RECON_RECONSTRUCTION recon) {
   switch (recon) {
     case REF_RECON_L2PROJECTION:
       RXS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), REF_DIV_ZERO,
@@ -1338,7 +1346,8 @@ REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid, REF_DBL *hessian) {
+REF_FCN REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid,
+                                               REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL diag_system[12];
   REF_INT node;
@@ -1359,9 +1368,9 @@ REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid, REF_DBL *hessian) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_skip_orphan_replace(REF_GRID ref_grid,
-                                                REF_BOOL *replace,
-                                                REF_INT ldim) {
+REF_FCN static REF_STATUS ref_recon_skip_orphan_replace(REF_GRID ref_grid,
+                                                        REF_BOOL *replace,
+                                                        REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT *contributions;
@@ -1391,9 +1400,9 @@ static REF_STATUS ref_recon_skip_orphan_replace(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                    REF_DBL *hessian,
-                                    REF_RECON_RECONSTRUCTION recon) {
+REF_FCN REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                            REF_DBL *hessian,
+                                            REF_RECON_RECONSTRUCTION recon) {
   REF_BOOL *replace;
 
   switch (recon) {
@@ -1422,14 +1431,16 @@ REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                             REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon) {
+REF_FCN REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                     REF_DBL *hessian,
+                                     REF_RECON_RECONSTRUCTION recon) {
   RSS(ref_recon_signed_hessian(ref_grid, scalar, hessian, recon), "abs hess");
   RSS(ref_recon_abs_value_hessian(ref_grid, hessian), "abs hess");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node, REF_DBL *normal) {
+REF_FCN REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node,
+                                    REF_DBL *normal) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1464,8 +1475,8 @@ REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node, REF_DBL *normal) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
-                         REF_DBL *s, REF_DBL *n) {
+REF_FCN REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
+                                 REF_DBL *s, REF_DBL *n) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
@@ -1511,8 +1522,9 @@ REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
-                               REF_DBL *rn, REF_DBL *sn, REF_DBL *hessian) {
+REF_FCN REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global,
+                                       REF_CLOUD ref_cloud, REF_DBL *rn,
+                                       REF_DBL *sn, REF_DBL *hessian) {
   REF_DBL geom[3], ab[12];
   REF_DBL dxyz[3], dq, dr, ds;
   REF_DBL *a, *q, *r;
@@ -1591,8 +1603,8 @@ REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_abs_value_hessian2(REF_GRID ref_grid,
-                                               REF_DBL *hessian) {
+REF_FCN static REF_STATUS ref_recon_abs_value_hessian2(REF_GRID ref_grid,
+                                                       REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL diag_system[6];
   REF_INT node;
@@ -1612,8 +1624,8 @@ static REF_STATUS ref_recon_abs_value_hessian2(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
-                              REF_DBL *hessian) {
+REF_FCN REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
+                                      REF_DBL *hessian) {
   REF_CLOUD *one_layer;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -1675,7 +1687,8 @@ REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_rsn_hess_face(REF_GRID ref_grid, REF_DBL *hessian) {
+REF_FCN REF_STATUS ref_recon_rsn_hess_face(REF_GRID ref_grid,
+                                           REF_DBL *hessian) {
   REF_CLOUD *one_layer;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);

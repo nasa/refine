@@ -81,49 +81,55 @@ struct REF_INTERP_STRUCT {
 #define ref_interp_search_donor_scale(ref_interp) \
   ((ref_interp)->search_donor_scale)
 
-REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
-                             REF_GRID to_grid);
-REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max);
-REF_STATUS ref_interp_reset(REF_INTERP ref_interp);
-REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp,
-                                      REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
+                                     REF_GRID to_grid);
+REF_FCN REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max);
+REF_FCN REF_STATUS ref_interp_reset(REF_INTERP ref_interp);
+REF_FCN REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp,
+                                              REF_GRID ref_grid);
 
-REF_STATUS ref_interp_free(REF_INTERP ref_interp);
+REF_FCN REF_STATUS ref_interp_free(REF_INTERP ref_interp);
 
-REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o);
+REF_FCN REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o);
 
-REF_STATUS ref_interp_remove(REF_INTERP ref_interp, REF_INT node);
+REF_FCN REF_STATUS ref_interp_remove(REF_INTERP ref_interp, REF_INT node);
 
-REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node);
-REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
-REF_STATUS ref_interp_locate_warm(REF_INTERP ref_interp);
-REF_STATUS ref_interp_locate_subset(REF_INTERP ref_interp);
-REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp);
-REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node);
-REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
-                                     REF_INT node1, REF_INT new_node);
+REF_FCN REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node);
+REF_FCN REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
+REF_FCN REF_STATUS ref_interp_locate_warm(REF_INTERP ref_interp);
+REF_FCN REF_STATUS ref_interp_locate_subset(REF_INTERP ref_interp);
+REF_FCN REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp);
+REF_FCN REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node);
+REF_FCN REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp,
+                                             REF_INT node0, REF_INT node1,
+                                             REF_INT new_node);
 
-REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
-                             REF_DBL *from_scalar, REF_DBL *to_scalar);
+REF_FCN REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
+                                     REF_DBL *from_scalar, REF_DBL *to_scalar);
 
-REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
-                                REF_INT leading_dim, REF_DBL *from_scalar,
-                                REF_DBL *to_scalar);
+REF_FCN REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
+                                        REF_INT leading_dim,
+                                        REF_DBL *from_scalar,
+                                        REF_DBL *to_scalar);
 
-REF_STATUS ref_interp_min_bary(REF_INTERP ref_interp, REF_DBL *min_bary);
-REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error);
-REF_STATUS ref_interp_stats(REF_INTERP ref_interp);
+REF_FCN REF_STATUS ref_interp_min_bary(REF_INTERP ref_interp,
+                                       REF_DBL *min_bary);
+REF_FCN REF_STATUS ref_interp_max_error(REF_INTERP ref_interp,
+                                        REF_DBL *max_error);
+REF_FCN REF_STATUS ref_interp_stats(REF_INTERP ref_interp);
 
-REF_STATUS ref_interp_tec(REF_INTERP ref_interp, const char *filename);
-REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
-                                REF_DBL *truth, REF_INT norm_power,
-                                REF_DBL *error);
+REF_FCN REF_STATUS ref_interp_tec(REF_INTERP ref_interp, const char *filename);
+REF_FCN REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
+                                        REF_DBL *truth, REF_INT norm_power,
+                                        REF_DBL *error);
 
-REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
-                                       REF_DBL h2, REF_DBL f1, REF_DBL h1,
-                                       REF_DBL *rate);
+REF_FCN REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3,
+                                               REF_DBL f2, REF_DBL h2,
+                                               REF_DBL f1, REF_DBL h1,
+                                               REF_DBL *rate);
 
-REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part);
+REF_FCN REF_STATUS ref_interp_from_part(REF_INTERP ref_interp,
+                                        REF_INT *to_part);
 
 END_C_DECLORATION
 

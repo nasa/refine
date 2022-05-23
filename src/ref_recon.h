@@ -35,41 +35,51 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 /* public for one-ring/plugin-refine */
-REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
-                                        REF_DBL *grad);
+REF_FCN REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid,
+                                                REF_DBL *scalar, REF_DBL *grad);
 
-REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
-                              REF_RECON_RECONSTRUCTION recon);
-REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                    REF_DBL *hessian,
-                                    REF_RECON_RECONSTRUCTION recon);
-REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                             REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon);
+REF_FCN REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar,
+                                      REF_DBL *grad,
+                                      REF_RECON_RECONSTRUCTION recon);
+REF_FCN REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                            REF_DBL *hessian,
+                                            REF_RECON_RECONSTRUCTION recon);
+REF_FCN REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                     REF_DBL *hessian,
+                                     REF_RECON_RECONSTRUCTION recon);
 
-REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
-                                        REF_BOOL *replace, REF_INT ldim);
-REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid, REF_DBL *recon,
-                                        REF_BOOL *replace, REF_INT ldim);
+REF_FCN REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid,
+                                                REF_DBL *recon,
+                                                REF_BOOL *replace,
+                                                REF_INT ldim);
+REF_FCN REF_STATUS ref_recon_extrapolate_kexact(REF_GRID ref_grid,
+                                                REF_DBL *recon,
+                                                REF_BOOL *replace,
+                                                REF_INT ldim);
 
 /* for testing */
-REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid, REF_DBL *hessian);
-REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
-                              REF_INT ldim);
-REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node);
+REF_FCN REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid,
+                                               REF_DBL *hessian);
+REF_FCN REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
+                                      REF_INT ldim);
+REF_FCN REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer,
+                                         REF_NODE ref_node);
 
 /* eliminate */
-REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);
-REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
-                                    REF_DBL max_jump);
+REF_FCN REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
+                                            REF_DBL max_jump);
 
-REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node, REF_DBL *normal);
-REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
-                         REF_DBL *s, REF_DBL *n);
-REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
-                               REF_DBL *rn, REF_DBL *sn, REF_DBL *hessian);
-REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
-                              REF_DBL *hessian);
-REF_STATUS ref_recon_rsn_hess_face(REF_GRID ref_grid, REF_DBL *hessian);
+REF_FCN REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node,
+                                    REF_DBL *normal);
+REF_FCN REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
+                                 REF_DBL *s, REF_DBL *n);
+REF_FCN REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global,
+                                       REF_CLOUD ref_cloud, REF_DBL *rn,
+                                       REF_DBL *sn, REF_DBL *hessian);
+REF_FCN REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
+                                      REF_DBL *hessian);
+REF_FCN REF_STATUS ref_recon_rsn_hess_face(REF_GRID ref_grid, REF_DBL *hessian);
 
 END_C_DECLORATION
 

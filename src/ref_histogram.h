@@ -44,8 +44,8 @@ struct REF_HISTOGRAM_STRUCT {
   FILE *df;
 };
 
-REF_STATUS ref_histogram_create(REF_HISTOGRAM *ref_histogram);
-REF_STATUS ref_histogram_free(REF_HISTOGRAM ref_histogram);
+REF_FCN REF_STATUS ref_histogram_create(REF_HISTOGRAM *ref_histogram);
+REF_FCN REF_STATUS ref_histogram_free(REF_HISTOGRAM ref_histogram);
 
 #define ref_histogram_max(ref_histogram) ((ref_histogram)->max)
 #define ref_histogram_min(ref_histogram) ((ref_histogram)->min)
@@ -64,43 +64,47 @@ REF_INT ref_histogram_to_bin(REF_HISTOGRAM ref_histogram, REF_DBL observation);
                 ((REF_DBL)((i)-ref_histogram_nbin(ref_histogram) / 2))))
 
 /* defaults are 18, 6.0 resolved 72, 12.0 */
-REF_STATUS ref_histogram_resolution(REF_HISTOGRAM ref_histogram, REF_INT nbin,
-                                    REF_DBL exp);
-REF_STATUS ref_histogram_add(REF_HISTOGRAM ref_histogram, REF_DBL observation);
-REF_STATUS ref_histogram_gather(REF_HISTOGRAM ref_histogram, REF_MPI ref_mpi);
+REF_FCN REF_STATUS ref_histogram_resolution(REF_HISTOGRAM ref_histogram,
+                                            REF_INT nbin, REF_DBL exp);
+REF_FCN REF_STATUS ref_histogram_add(REF_HISTOGRAM ref_histogram,
+                                     REF_DBL observation);
+REF_FCN REF_STATUS ref_histogram_gather(REF_HISTOGRAM ref_histogram,
+                                        REF_MPI ref_mpi);
 
-REF_STATUS ref_histogram_print(REF_HISTOGRAM ref_histogram, REF_GRID ref_grid,
-                               const char *description);
-REF_STATUS ref_histogram_gnuplot(REF_HISTOGRAM ref_histogram,
-                                 const char *description);
-REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
-                             const char *description);
-REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram, FILE *file,
-                              const char *zone_title, REF_DBL time);
+REF_FCN REF_STATUS ref_histogram_print(REF_HISTOGRAM ref_histogram,
+                                       REF_GRID ref_grid,
+                                       const char *description);
+REF_FCN REF_STATUS ref_histogram_gnuplot(REF_HISTOGRAM ref_histogram,
+                                         const char *description);
+REF_FCN REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
+                                     const char *description);
+REF_FCN REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram, FILE *file,
+                                      const char *zone_title, REF_DBL time);
 
-REF_STATUS ref_histogram_add_stat(REF_HISTOGRAM ref_histogram,
-                                  REF_DBL observation);
-REF_STATUS ref_histogram_gather_stat(REF_HISTOGRAM ref_histogram,
-                                     REF_MPI ref_mpi);
-REF_STATUS ref_histogram_print_stat(REF_HISTOGRAM ref_histogram);
+REF_FCN REF_STATUS ref_histogram_add_stat(REF_HISTOGRAM ref_histogram,
+                                          REF_DBL observation);
+REF_FCN REF_STATUS ref_histogram_gather_stat(REF_HISTOGRAM ref_histogram,
+                                             REF_MPI ref_mpi);
+REF_FCN REF_STATUS ref_histogram_print_stat(REF_HISTOGRAM ref_histogram);
 
-REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
-                                   REF_GRID ref_grid);
-REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
-                                     REF_GRID ref_grid);
-REF_STATUS ref_histogram_add_fitness(REF_HISTOGRAM ref_histogram,
-                                     REF_GRID ref_grid);
-REF_STATUS ref_histogram_ratio(REF_GRID ref_grid);
-REF_STATUS ref_histogram_quality(REF_GRID ref_grid);
-REF_STATUS ref_histogram_fitness(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
+                                           REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
+                                             REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_add_fitness(REF_HISTOGRAM ref_histogram,
+                                             REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_ratio(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_quality(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_fitness(REF_GRID ref_grid);
 
-REF_STATUS ref_histogram_ratio_tec(REF_GRID ref_grid);
-REF_STATUS ref_histogram_quality_tec(REF_GRID ref_grid);
-REF_STATUS ref_histogram_fitness_tec(REF_GRID ref_grid);
-REF_STATUS ref_histogram_node_tec(REF_GRID ref_grid, REF_DBL *observations);
+REF_FCN REF_STATUS ref_histogram_ratio_tec(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_quality_tec(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_fitness_tec(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_histogram_node_tec(REF_GRID ref_grid,
+                                          REF_DBL *observations);
 
-REF_STATUS ref_histogram_debug(REF_HISTOGRAM ref_histogram,
-                               const char *filename);
+REF_FCN REF_STATUS ref_histogram_debug(REF_HISTOGRAM ref_histogram,
+                                       const char *filename);
 
 END_C_DECLORATION
 

@@ -14,4 +14,8 @@ File.open(filename,'w') do |f|
 end
 end
 
-decore(ARGV[0])
+ARGV.each do |filename|
+  decore(filename)
+end
+
+
