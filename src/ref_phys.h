@@ -110,7 +110,7 @@ REF_FCN REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance,
 REF_FCN REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                                             REF_DBL *distance);
 
-REF_BOOL ref_phys_wall_distance_bc(REF_INT bc);
+REF_FCN REF_BOOL ref_phys_wall_distance_bc(REF_INT bc);
 REF_FCN REF_STATUS ref_phys_wall_distance_static(REF_GRID ref_grid,
                                                  REF_DICT ref_dict,
                                                  REF_DBL *distance);
