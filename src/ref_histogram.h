@@ -57,7 +57,8 @@ REF_FCN REF_STATUS ref_histogram_free(REF_HISTOGRAM ref_histogram);
 #define ref_histogram_nstat(ref_histogram) ((ref_histogram)->nstat)
 #define ref_histogram_stat(ref_histogram, i) ((ref_histogram)->stats[(i)])
 
-REF_INT ref_histogram_to_bin(REF_HISTOGRAM ref_histogram, REF_DBL observation);
+REF_FCN REF_INT ref_histogram_to_bin(REF_HISTOGRAM ref_histogram,
+                                     REF_DBL observation);
 
 #define ref_histogram_to_obs(i)                        \
   (pow(2.0, (1.0 / ref_histogram_exp(ref_histogram)) * \

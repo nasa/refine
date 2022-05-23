@@ -11,6 +11,8 @@ File.open(filename,'w') do |f|
     line.sub!(/^static REF_STATUS ref/, "REF_FCN static REF_STATUS ref")
     line.sub!(/^REF_BOOL ref/, "REF_FCN REF_BOOL ref")
     line.sub!(/^static REF_BOOL ref/, "REF_FCN static REF_BOOL ref")
+    line.sub!(/^REF_INT ref/, "REF_FCN REF_INT ref")
+    line.sub!(/^static REF_INT ref/, "REF_FCN static REF_INT ref")
     f.puts line
   end
 end

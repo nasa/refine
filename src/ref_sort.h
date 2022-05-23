@@ -45,7 +45,7 @@ REF_FCN REF_STATUS ref_sort_search_int(REF_INT n, REF_INT *ascending_list,
 REF_FCN REF_STATUS ref_sort_search_glob(REF_INT n, REF_GLOB *ascending_list,
                                         REF_GLOB target, REF_INT *position);
 
-REF_INT ref_sort_rand_in_range(REF_INT min, REF_INT max);
+REF_FCN REF_INT ref_sort_rand_in_range(REF_INT min, REF_INT max);
 REF_FCN REF_STATUS ref_sort_shuffle(REF_INT n, REF_INT *permutation);
 
 END_C_DECLORATION
