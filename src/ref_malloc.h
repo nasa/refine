@@ -21,6 +21,13 @@
 
 #include <stdlib.h>
 
+#if defined(__CUDACC__)
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <driver_types.h>
+#endif
+
 #include "ref_defs.h"
 
 BEGIN_C_DECLORATION
@@ -74,20 +81,25 @@ BEGIN_C_DECLORATION
 
 /* realloc of size zero with return NULL */
 
-#define ref_realloc(ptr, n, ptr_type)                                      \
-  {                                                                        \
-    if (REF_FALSE)                                                         \
-      printf("%d: %s: realloc n int %d uLong %lu size_of %lu = %lu\n",     \
-             __LINE__, __func__, (REF_INT)(n), (unsigned long)(n),         \
-             sizeof(ptr_type), (size_t)(n) * sizeof(ptr_type));            \
-    fflush(stdout);                                                        \
-    if (0 < (n)) {                                                         \
-      (ptr) = (ptr_type *)realloc((ptr), (size_t)(n) * sizeof(ptr_type));  \
-    }                                                                      \
-    RNB((ptr), "realloc " #ptr " NULL",                                    \
-        printf("failed to realloc n int %d uLong %lu size_of %lu = %lu\n", \
-               (REF_INT)(n), (unsigned long)(n), sizeof(ptr_type),         \
-               (size_t)(n) * sizeof(ptr_type)));                           \
+#define ref_realloc(ptr, n, ptr_type)                                          \
+  {                                                                            \
+    if (0 < (n)) {                                                             \
+      CUdeviceptr ref_realloc_old_base_ptr;                                    \
+      size_t ref_realloc_old_ptr_size;                                         \
+      REIS(                                                                    \
+          cudaSuccess,                                                         \
+          cuMemGetAddressRange(&ref_realloc_old_base_ptr,                      \
+                               &ref_realloc_old_ptr_size, (CUdeviceptr)(ptr)), \
+          "get device ptr attr");                                              \
+      REIS(cudaSuccess,                                                        \
+           cudaMallocManaged(&(ptr), (size_t)(n) * sizeof(ptr_type)),          \
+           "cudaMallocManaged");                                               \
+      REIS(cudaSuccess,                                                        \
+           cuMemcpy((CUdeviceptr)(ptr), ref_realloc_old_base_ptr,              \
+                    MIN(ref_realloc_old_ptr_size, n * sizeof(ptr_type))),      \
+           "ref_realloc memcpy");                                              \
+      cudaFree((void *)ref_realloc_old_base_ptr);                              \
+    }                                                                          \
   }
 
 #define ref_realloc_init(ptr, from, to, ptr_type, initial_value) \

@@ -14,10 +14,11 @@ option(refine_ENABLE_CUDA "build refine with CUDA support (requires nvcc compile
 
 if (refine_ENABLE_CUDA)
     cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+    find_package(CUDAToolkit REQUIRED)
     enable_language(CUDA)
-    set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
-    # set(CMAKE_CUDA_RESOLVE_DEVICE_SYMBOLS ON)
-    set(CMAKE_CUDA_ARCHITECTURES 70) # Default to NVIDIA V100 support
+    option(CMAKE_CUDA_SEPARABLE_COMPILATION "Use separable compilation" ON)
+    # option(CMAKE_CUDA_RESOLVE_DEVICE_SYMBOLS ON CACHE "" BOOL)
+    option(CMAKE_CUDA_ARCHITECTURES "Default to NVIDIA VOLTA GPU support" 70)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
