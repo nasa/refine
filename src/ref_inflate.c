@@ -27,8 +27,8 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
-REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
-                                   REF_DBL *min_dot) {
+REF_FCN REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
+                                           REF_DBL *min_dot) {
   REF_INT tri_nodes[3];
   REF_DBL top_normal[3];
   REF_DBL bot_normal[3];
@@ -73,9 +73,9 @@ REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
-                            REF_DBL *origin, REF_DBL thickness,
-                            REF_DBL xshift) {
+REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
+                                    REF_DBL *origin, REF_DBL thickness,
+                                    REF_DBL xshift) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -420,9 +420,10 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
-                                REF_DBL *origin, REF_DBL thickness,
-                                REF_DBL mach_angle_rad, REF_DBL alpha_rad) {
+REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
+                                        REF_DBL *origin, REF_DBL thickness,
+                                        REF_DBL mach_angle_rad,
+                                        REF_DBL alpha_rad) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -601,8 +602,8 @@ REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_inflate_rate(REF_INT nlayers, REF_DBL first_thickness,
-                            REF_DBL total_thickness, REF_DBL *rate) {
+REF_FCN REF_STATUS ref_inflate_rate(REF_INT nlayers, REF_DBL first_thickness,
+                                    REF_DBL total_thickness, REF_DBL *rate) {
   REF_DBL r, H, err, dHdr;
   REF_BOOL keep_going;
   REF_INT iters;
@@ -631,16 +632,19 @@ REF_STATUS ref_inflate_rate(REF_INT nlayers, REF_DBL first_thickness,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_inflate_total_thickness(REF_INT nlayers, REF_DBL first_thickness,
-                                       REF_DBL rate, REF_DBL *total_thickness) {
+REF_FCN REF_STATUS ref_inflate_total_thickness(REF_INT nlayers,
+                                               REF_DBL first_thickness,
+                                               REF_DBL rate,
+                                               REF_DBL *total_thickness) {
   *total_thickness =
       first_thickness * (1.0 - pow(rate, nlayers)) / (1.0 - rate);
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_inflate_dthickness(REF_INT nlayers, REF_DBL first_thickness,
-                                  REF_DBL rate, REF_DBL *dHdr) {
+REF_FCN REF_STATUS ref_inflate_dthickness(REF_INT nlayers,
+                                          REF_DBL first_thickness, REF_DBL rate,
+                                          REF_DBL *dHdr) {
   REF_DBL dnum, dden;
   dnum = -((REF_DBL)nlayers) * pow(rate, nlayers - 1);
   dden = -1.0;
@@ -651,8 +655,8 @@ REF_STATUS ref_inflate_dthickness(REF_INT nlayers, REF_DBL first_thickness,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
-                              REF_DBL *origin) {
+REF_FCN REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
+                                      REF_DBL *origin) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -696,10 +700,10 @@ REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_inflate_read_usm3d_mapbc(REF_DICT faceids,
-                                        const char *mapbc_file_name,
-                                        const char *family_name,
-                                        REF_INT boundary_condition) {
+REF_FCN REF_STATUS ref_inflate_read_usm3d_mapbc(REF_DICT faceids,
+                                                const char *mapbc_file_name,
+                                                const char *family_name,
+                                                REF_INT boundary_condition) {
   FILE *file;
   char line[1024];
   char family[1024];

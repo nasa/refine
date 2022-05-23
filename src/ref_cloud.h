@@ -34,10 +34,11 @@ struct REF_CLOUD_STRUCT {
   REF_DBL *aux;
 };
 
-REF_STATUS ref_cloud_create(REF_CLOUD *ref_cloud, REF_INT naux);
-REF_STATUS ref_cloud_free(REF_CLOUD ref_cloud);
+REF_FCN REF_STATUS ref_cloud_create(REF_CLOUD *ref_cloud, REF_INT naux);
+REF_FCN REF_STATUS ref_cloud_free(REF_CLOUD ref_cloud);
 
-REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud, REF_CLOUD original);
+REF_FCN REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud,
+                                       REF_CLOUD original);
 
 #define ref_cloud_n(ref_cloud) ((ref_cloud)->n)
 #define ref_cloud_max(ref_cloud) ((ref_cloud)->max)
@@ -63,10 +64,13 @@ REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud, REF_CLOUD original);
        (item) < ref_cloud_n(ref_cloud);                               \
        (item)++, (global) = ref_cloud_safe_global(ref_cloud, item))
 
-REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_GLOB global, REF_DBL *aux);
-REF_STATUS ref_cloud_push(REF_CLOUD ref_cloud, REF_GLOB global, REF_DBL *aux);
-REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_GLOB global, REF_INT *item);
-REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_GLOB global);
+REF_FCN REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_GLOB global,
+                                   REF_DBL *aux);
+REF_FCN REF_STATUS ref_cloud_push(REF_CLOUD ref_cloud, REF_GLOB global,
+                                  REF_DBL *aux);
+REF_FCN REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_GLOB global,
+                                  REF_INT *item);
+REF_FCN REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_GLOB global);
 
 END_C_DECLORATION
 

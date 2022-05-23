@@ -37,7 +37,7 @@
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
 
-REF_STATUS ref_collapse_diagnostics(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_collapse_diagnostics(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;
@@ -60,8 +60,8 @@ REF_STATUS ref_collapse_diagnostics(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_post_uv_area(REF_GRID ref_grid, REF_INT node);
-REF_STATUS ref_collapse_post_uv_area(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_collapse_post_uv_area(REF_GRID ref_grid, REF_INT node);
+REF_FCN REF_STATUS ref_collapse_post_uv_area(REF_GRID ref_grid, REF_INT node) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -82,7 +82,7 @@ REF_STATUS ref_collapse_post_uv_area(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_pass(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_collapse_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_EDGE ref_edge;
@@ -158,8 +158,9 @@ REF_STATUS ref_collapse_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
-                                        REF_INT *actual_node0, REF_INT node1) {
+REF_FCN REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
+                                                REF_INT *actual_node0,
+                                                REF_INT node1) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT nnode, node;
@@ -317,7 +318,8 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1)
+REF_FCN REF_STATUS ref_collapse_edge(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1)
 /*                               keep node0,  remove node1 */
 {
   REF_CELL ref_cell;
@@ -364,8 +366,9 @@ REF_STATUS ref_collapse_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1)
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
-                                      REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1,
+                                              REF_BOOL *allowed) {
   REF_CELL ref_tri = ref_grid_tri(ref_grid);
   REF_CELL ref_edg = ref_grid_edg(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -437,8 +440,9 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
-                                      REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1,
+                                              REF_BOOL *allowed) {
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node, new_cell;
@@ -577,8 +581,9 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_chord_height(REF_GRID ref_grid, REF_INT node0,
-                                          REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_chord_height(REF_GRID ref_grid,
+                                                  REF_INT node0, REF_INT node1,
+                                                  REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -634,8 +639,9 @@ REF_STATUS ref_collapse_edge_chord_height(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -683,8 +689,8 @@ REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_mixed(REF_GRID ref_grid, REF_INT node0,
-                                   REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_mixed(REF_GRID ref_grid, REF_INT node0,
+                                           REF_INT node1, REF_BOOL *allowed) {
   SUPRESS_UNUSED_COMPILER_WARNING(node0);
 
   *allowed = (ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node1) &&
@@ -695,8 +701,9 @@ REF_STATUS ref_collapse_edge_mixed(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_local_cell(REF_GRID ref_grid, REF_INT node0,
-                                        REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_local_cell(REF_GRID ref_grid,
+                                                REF_INT node0, REF_INT node1,
+                                                REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, node;
@@ -744,8 +751,10 @@ REF_STATUS ref_collapse_edge_local_cell(REF_GRID ref_grid, REF_INT node0,
 }
 
 /* triangle can not be fully constrained by CAD edges after a collapse */
-REF_STATUS ref_collapse_edge_cad_constrained(REF_GRID ref_grid, REF_INT node0,
-                                             REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_cad_constrained(REF_GRID ref_grid,
+                                                     REF_INT node0,
+                                                     REF_INT node1,
+                                                     REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT item, cell, node, nodes[REF_CELL_MAX_SIZE_PER];
@@ -776,8 +785,9 @@ REF_STATUS ref_collapse_edge_cad_constrained(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -816,8 +826,9 @@ REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -853,8 +864,8 @@ REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
-                                   REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
+                                           REF_INT node1, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -911,8 +922,8 @@ REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
-                                     REF_INT node1, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
+                                             REF_INT node1, REF_BOOL *allowed) {
   REF_CELL ref_cell;
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_nodes[REF_CELL_MAX_SIZE_PER];
@@ -1035,9 +1046,10 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_twod_orientation(REF_GRID ref_grid, REF_INT keep,
-                                              REF_INT remove,
-                                              REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_twod_orientation(REF_GRID ref_grid,
+                                                      REF_INT keep,
+                                                      REF_INT remove,
+                                                      REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1073,8 +1085,9 @@ REF_STATUS ref_collapse_edge_twod_orientation(REF_GRID ref_grid, REF_INT keep,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_same_tangent(REF_GRID ref_grid, REF_INT keep,
-                                          REF_INT remove, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_collapse_edge_same_tangent(REF_GRID ref_grid,
+                                                  REF_INT keep, REF_INT remove,
+                                                  REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];

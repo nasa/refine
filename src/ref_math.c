@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-REF_STATUS ref_math_normalize(REF_DBL *normal) {
+REF_FCN REF_STATUS ref_math_normalize(REF_DBL *normal) {
   REF_DBL length;
 
   length = sqrt(ref_math_dot(normal, normal));
@@ -42,8 +42,8 @@ REF_STATUS ref_math_normalize(REF_DBL *normal) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_math_orthonormal_system(REF_DBL *orth0, REF_DBL *orth1,
-                                       REF_DBL *orth2) {
+REF_FCN REF_STATUS ref_math_orthonormal_system(REF_DBL *orth0, REF_DBL *orth1,
+                                               REF_DBL *orth2) {
   REF_DBL dot;
   RSS(ref_math_normalize(orth0), "orthonormalize input orth0");
   if (ABS(orth0[0]) >= ABS(orth0[1]) && ABS(orth0[0]) >= ABS(orth0[2])) {

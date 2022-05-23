@@ -26,7 +26,8 @@
 #include "ref_math.h"
 
 /* parallel requirement, all local */
-REF_STATUS ref_swap_remove_two_face_cell(REF_GRID ref_grid, REF_INT cell) {
+REF_FCN REF_STATUS ref_swap_remove_two_face_cell(REF_GRID ref_grid,
+                                                 REF_INT cell) {
   REF_CELL ref_cell;
   REF_INT cell_face;
   REF_INT node;
@@ -91,7 +92,8 @@ REF_STATUS ref_swap_remove_two_face_cell(REF_GRID ref_grid, REF_INT cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_remove_three_face_cell(REF_GRID ref_grid, REF_INT cell) {
+REF_FCN REF_STATUS ref_swap_remove_three_face_cell(REF_GRID ref_grid,
+                                                   REF_INT cell) {
   REF_CELL ref_cell;
   REF_INT cell_face;
   REF_INT node;
@@ -175,7 +177,7 @@ REF_STATUS ref_swap_remove_three_face_cell(REF_GRID ref_grid, REF_INT cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL tet = ref_grid_tet(ref_grid);
@@ -238,8 +240,9 @@ REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
  *      n3
  */
 
-REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                           REF_INT *node2, REF_INT *node3) {
+REF_FCN REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0,
+                                   REF_INT node1, REF_INT *node2,
+                                   REF_INT *node3) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT ncell, cell_to_swap[2];
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -321,8 +324,8 @@ static void ref_swap_tattle_nodes(REF_CELL ref_cell, REF_INT node0,
   }
 }
 
-REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
+                                        REF_INT node1, REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT ncell;
   REF_INT cell_to_swap[2];
@@ -373,8 +376,8 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                             REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1, REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT ncell;
   REF_INT cell_to_swap[2];
@@ -422,8 +425,9 @@ REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid, REF_INT node0,
-                                        REF_INT node1, REF_BOOL *allowed) {
+REF_FCN static REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid,
+                                                REF_INT node0, REF_INT node1,
+                                                REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node2, node3;
@@ -450,8 +454,8 @@ static REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                              REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_BOOL *allowed) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_BOOL node0_has_jump, node1_has_jump;
 
@@ -465,8 +469,8 @@ REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                               REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0,
+                                       REF_INT node1, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, search_node, test_node;
@@ -494,8 +498,8 @@ REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                               REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0,
+                                       REF_INT node1, REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -613,8 +617,8 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                          REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0,
+                                  REF_INT node1, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node2, node3;
   REF_DBL ratio;
@@ -633,8 +637,8 @@ REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                            REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0,
+                                    REF_INT node1, REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ncell, cell_to_swap[2];
@@ -672,8 +676,8 @@ REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_swap_tri_edge(REF_GRID ref_grid, REF_INT node0,
-                                    REF_INT node1) {
+REF_FCN static REF_STATUS ref_swap_tri_edge(REF_GRID ref_grid, REF_INT node0,
+                                            REF_INT node1) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT ncell, cell_to_swap[2];
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -701,8 +705,9 @@ static REF_STATUS ref_swap_tri_edge(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_swap_edge_mixed(REF_GRID ref_grid, REF_INT node0,
-                                      REF_INT node1, REF_BOOL *allowed) {
+REF_FCN static REF_STATUS ref_swap_edge_mixed(REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1,
+                                              REF_BOOL *allowed) {
   REF_BOOL qua_side, pri_side, pyr_side, hex_side;
 
   RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
@@ -719,7 +724,7 @@ static REF_STATUS ref_swap_edge_mixed(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_tri_pass(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_swap_tri_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT edge, node0, node1;

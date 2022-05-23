@@ -28,7 +28,7 @@
 #include "ref_mpi.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_validation_simplex_node(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_simplex_node(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT node;
@@ -49,7 +49,7 @@ REF_STATUS ref_validation_simplex_node(REF_GRID ref_grid) {
   return (problem ? REF_FAILURE : REF_SUCCESS);
 }
 
-REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
   REF_INT node;
   REF_BOOL problem;
   REF_ADJ ref_adj;
@@ -91,7 +91,8 @@ REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
   return (problem ? REF_FAILURE : REF_SUCCESS);
 }
 
-REF_STATUS ref_validation_boundary_at_node(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_validation_boundary_at_node(REF_GRID ref_grid,
+                                                   REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
@@ -128,7 +129,7 @@ REF_STATUS ref_validation_boundary_at_node(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
@@ -164,7 +165,7 @@ REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_boundary_face(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_boundary_face(REF_GRID ref_grid) {
   REF_CELL ref_cell;
   REF_BOOL has_face;
   REF_INT cell;
@@ -205,13 +206,14 @@ REF_STATUS ref_validation_boundary_face(REF_GRID ref_grid) {
   return (problem ? REF_FAILURE : REF_SUCCESS);
 }
 
-REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid) {
   RSS(ref_validation_boundary_face(ref_grid), "face");
   RSS(ref_validation_boundary_manifold(ref_grid), "manifold");
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_validation_node_cell(REF_CELL ref_cell, REF_INT node) {
+REF_FCN static REF_STATUS ref_validation_node_cell(REF_CELL ref_cell,
+                                                   REF_INT node) {
   REF_INT item, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   printf("node %d\n", node);
   each_ref_cell_having_node(ref_cell, node, item, cell) {
@@ -225,7 +227,8 @@ static REF_STATUS ref_validation_node_cell(REF_CELL ref_cell, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_cell_face_node(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_validation_cell_face_node(REF_GRID ref_grid,
+                                                 REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tet = ref_grid_tet(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -267,7 +270,7 @@ REF_STATUS ref_validation_cell_face_node(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_FACE ref_face;
   REF_CELL ref_cell;
@@ -372,7 +375,7 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
   return (problem ? REF_FAILURE : REF_SUCCESS);
 }
 
-REF_STATUS ref_validation_cell_node(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_cell_node(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT group;
@@ -401,7 +404,7 @@ REF_STATUS ref_validation_cell_node(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_DBL volume;
@@ -427,7 +430,8 @@ REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_cell_volume_at_node(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_validation_cell_volume_at_node(REF_GRID ref_grid,
+                                                      REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_DBL volume;
@@ -454,7 +458,7 @@ REF_STATUS ref_validation_cell_volume_at_node(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_all(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_all(REF_GRID ref_grid) {
   RSS(ref_validation_unused_node(ref_grid), "unused node");
   RSS(ref_validation_boundary_face(ref_grid), "boundary face");
   RSS(ref_validation_cell_face(ref_grid), "cell face");
@@ -464,7 +468,7 @@ REF_STATUS ref_validation_all(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_volume_status(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_volume_status(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -491,7 +495,7 @@ REF_STATUS ref_validation_volume_status(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_twod_orientation(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_twod_orientation(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -514,8 +518,8 @@ REF_STATUS ref_validation_twod_orientation(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_finite(REF_GRID ref_grid, REF_INT ldim,
-                                 REF_DBL *field) {
+REF_FCN REF_STATUS ref_validation_finite(REF_GRID ref_grid, REF_INT ldim,
+                                         REF_DBL *field) {
   REF_INT i, node, n;
   n = 0;
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -531,7 +535,7 @@ REF_STATUS ref_validation_finite(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_repair(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_validation_repair(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_FACE ref_face;
   REF_CELL ref_cell;

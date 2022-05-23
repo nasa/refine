@@ -29,36 +29,42 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_iso_insert(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *field,
-                          REF_INT ldim, REF_DBL *in, REF_DBL **out);
+REF_FCN REF_STATUS ref_iso_insert(REF_GRID *iso_grid, REF_GRID ref_grid,
+                                  REF_DBL *field, REF_INT ldim, REF_DBL *in,
+                                  REF_DBL **out);
 
-REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
-                                   REF_DBL *distance);
+REF_FCN REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
+                                           REF_DBL *distance);
 
-REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0, REF_DBL *triangle1,
-                                    REF_DBL *triangle2, REF_DBL *segment0,
-                                    REF_DBL *segment1, REF_DBL *tuvw);
-REF_STATUS ref_iso_segment_segment(REF_DBL *candidate0, REF_DBL *candidate1,
-                                   REF_DBL *segment0, REF_DBL *segment1,
-                                   REF_DBL *tt);
+REF_FCN REF_STATUS ref_iso_triangle_segment(REF_DBL *triangle0,
+                                            REF_DBL *triangle1,
+                                            REF_DBL *triangle2,
+                                            REF_DBL *segment0,
+                                            REF_DBL *segment1, REF_DBL *tuvw);
+REF_FCN REF_STATUS ref_iso_segment_segment(REF_DBL *candidate0,
+                                           REF_DBL *candidate1,
+                                           REF_DBL *segment0, REF_DBL *segment1,
+                                           REF_DBL *tt);
 
-REF_STATUS ref_iso_cast(REF_GRID *iso_grid, REF_DBL **iso_field,
-                        REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
-                        REF_DBL *segment0, REF_DBL *segment1);
+REF_FCN REF_STATUS ref_iso_cast(REF_GRID *iso_grid, REF_DBL **iso_field,
+                                REF_GRID ref_grid, REF_DBL *field, REF_INT ldim,
+                                REF_DBL *segment0, REF_DBL *segment1);
 
-REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center, REF_DBL aoa,
-                           REF_DBL phi, REF_DBL h, REF_DBL *segment0,
-                           REF_DBL *segment1);
+REF_FCN REF_STATUS ref_iso_segment(REF_GRID ref_grid, REF_DBL *center,
+                                   REF_DBL aoa, REF_DBL phi, REF_DBL h,
+                                   REF_DBL *segment0, REF_DBL *segment1);
 
-REF_STATUS ref_iso_boom_header(FILE **file, REF_INT ldim,
-                               const char **scalar_names, const char *filename);
-REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid, REF_DBL *field,
-                             REF_INT ldim, REF_DBL *center, REF_DBL aoa,
-                             REF_DBL phi, REF_DBL h);
+REF_FCN REF_STATUS ref_iso_boom_header(FILE **file, REF_INT ldim,
+                                       const char **scalar_names,
+                                       const char *filename);
+REF_FCN REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid,
+                                     REF_DBL *field, REF_INT ldim,
+                                     REF_DBL *center, REF_DBL aoa, REF_DBL phi,
+                                     REF_DBL h);
 
-REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid, REF_DBL *normal,
-                         REF_DBL offset, REF_INT ldim, REF_DBL *in,
-                         REF_DBL **out);
+REF_FCN REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid,
+                                 REF_DBL *normal, REF_DBL offset, REF_INT ldim,
+                                 REF_DBL *in, REF_DBL **out);
 
 END_C_DECLORATION
 

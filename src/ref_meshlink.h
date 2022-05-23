@@ -29,22 +29,27 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename);
-REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename);
-REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *base_name);
-REF_STATUS ref_meshlink_mapbc(REF_GRID ref_grid, const char *mapbc_name);
-REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node);
-REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap);
-REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
-                                           REF_DBL *dot_product);
-REF_STATUS ref_meshlink_edge_curvature(REF_GRID ref_grid, REF_INT geom,
-                                       REF_DBL *k, REF_DBL *normal);
-REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
-                                       REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
-                                       REF_DBL *s);
-REF_STATUS ref_meshlink_close(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_meshlink_open(REF_GRID ref_grid,
+                                     const char *xml_filename);
+REF_FCN REF_STATUS ref_meshlink_parse(REF_GRID ref_grid,
+                                      const char *geom_filename);
+REF_FCN REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *base_name);
+REF_FCN REF_STATUS ref_meshlink_mapbc(REF_GRID ref_grid,
+                                      const char *mapbc_name);
+REF_FCN REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node);
+REF_FCN REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node,
+                                    REF_DBL *gap);
+REF_FCN REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid,
+                                                   REF_INT *nodes,
+                                                   REF_DBL *dot_product);
+REF_FCN REF_STATUS ref_meshlink_edge_curvature(REF_GRID ref_grid, REF_INT geom,
+                                               REF_DBL *k, REF_DBL *normal);
+REF_FCN REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
+                                               REF_DBL *kr, REF_DBL *r,
+                                               REF_DBL *ks, REF_DBL *s);
+REF_FCN REF_STATUS ref_meshlink_close(REF_GRID ref_grid);
 
-REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid);
 
 END_C_DECLORATION
 

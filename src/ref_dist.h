@@ -24,8 +24,9 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
-                               const char *filename, REF_INT *n_collisions);
+REF_FCN REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
+                                       const char *filename,
+                                       REF_INT *n_collisions);
 
 END_C_DECLORATION
 

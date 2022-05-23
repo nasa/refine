@@ -36,7 +36,7 @@
 #include "egads.h"
 #endif
 
-REF_STATUS ref_egads_open(REF_GEOM ref_geom) {
+REF_FCN REF_STATUS ref_egads_open(REF_GEOM ref_geom) {
 #ifdef HAVE_EGADS
   ego context;
   REIS(EGADS_SUCCESS, EG_open(&context), "EG open");
@@ -49,7 +49,7 @@ REF_STATUS ref_egads_open(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_close(REF_GEOM ref_geom) {
+REF_FCN REF_STATUS ref_egads_close(REF_GEOM ref_geom) {
 #ifdef HAVE_EGADS
   if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
   if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
@@ -68,7 +68,7 @@ REF_STATUS ref_egads_close(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
+REF_FCN REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
 #ifdef HAVE_EGADS
   ego context;
   context = (ego)(ref_geom->context);
@@ -83,7 +83,7 @@ REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
 
 #ifdef HAVE_EGADS
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
-static REF_STATUS ref_egads_free_body_objects(REF_GEOM ref_geom) {
+REF_FCN static REF_STATUS ref_egads_free_body_objects(REF_GEOM ref_geom) {
   if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
   if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
   if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
@@ -95,7 +95,7 @@ static REF_STATUS ref_egads_free_body_objects(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 #endif
-static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
+REF_FCN static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
   ego body = (ego)(ref_geom->body);
   ego *faces, *edges, *nodes;
   int nface, nedge, nnode;
@@ -254,7 +254,7 @@ static REF_STATUS ref_egads_cache_body_objects(REF_GEOM ref_geom) {
 }
 #endif
 
-REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
+REF_FCN REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 #ifdef HAVE_EGADS
   ego context;
   ego model = NULL;
@@ -353,7 +353,7 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
+REF_FCN REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   remove(filename); /* ignore failure */
   REIS(EGADS_SUCCESS, EG_saveModel((ego)(ref_geom->model), filename),
@@ -366,7 +366,7 @@ REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_BOOL ref_egads_allows_construction(void) {
+REF_FCN REF_BOOL ref_egads_allows_construction(void) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   return REF_TRUE;
 #else
@@ -374,7 +374,7 @@ REF_BOOL ref_egads_allows_construction(void) {
 #endif
 }
 
-REF_BOOL ref_egads_allows_effective(void) {
+REF_FCN REF_BOOL ref_egads_allows_effective(void) {
 #if defined(HAVE_EGADS) && defined(HAVE_EGADS_EFFECTIVE) && \
     !defined(HAVE_EGADS_LITE)
   return REF_TRUE;
@@ -383,7 +383,8 @@ REF_BOOL ref_egads_allows_effective(void) {
 #endif
 }
 
-REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
+REF_FCN REF_STATUS ref_egads_construct(REF_GEOM ref_geom,
+                                       const char *description) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   ego body = NULL;
 
@@ -714,10 +715,11 @@ REF_STATUS ref_egads_construct(REF_GEOM ref_geom, const char *description) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
-                                 REF_INT faceid, REF_INT degree,
-                                 REF_INT n_control_point, REF_INT **int_bundle,
-                                 REF_DBL **dbl_bundle) {
+REF_FCN REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
+                                         REF_INT faceid, REF_INT degree,
+                                         REF_INT n_control_point,
+                                         REF_INT **int_bundle,
+                                         REF_DBL **dbl_bundle) {
 #if defined(HAVE_EGADS)
   ego curve, *children;
   int edgeclass, edgetype, nchild, *senses;
@@ -790,7 +792,7 @@ REF_STATUS ref_egads_brep_pcurve(REF_GEOM ref_geom, REF_INT edgeid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
+REF_FCN REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
 #if defined(HAVE_EGADS)
   REF_INT face;
   int oclass, mtype, *senses;
@@ -901,8 +903,8 @@ REF_STATUS ref_egads_brep_examine(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
-                                 REF_BOOL debug) {
+REF_FCN REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
+                                         REF_BOOL debug) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   ego face, newface;
   ego surface;
@@ -1149,8 +1151,9 @@ REF_STATUS ref_egads_brep_reface(REF_GEOM ref_geom, REF_INT faceid,
 }
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
-                                              int *surface_type) {
+REF_FCN static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom,
+                                                      REF_INT faceid,
+                                                      int *surface_type) {
   ego esurf, *eloops, eref;
   int oclass, mtype, nloop, *senses, *pinfo;
   double data[18], *preal;
@@ -1171,7 +1174,8 @@ static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
 }
 #endif
 
-REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom, REF_INT **edge_face_arg) {
+REF_FCN REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom,
+                                        REF_INT **edge_face_arg) {
 #ifdef HAVE_EGADS
   REF_INT *e2f, *nface;
   REF_INT face, edge;
@@ -1219,8 +1223,8 @@ REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom, REF_INT **edge_face_arg) {
 }
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_node_faces(REF_GEOM ref_geom,
-                                       REF_ADJ *ref_adj_arg) {
+REF_FCN static REF_STATUS ref_egads_node_faces(REF_GEOM ref_geom,
+                                               REF_ADJ *ref_adj_arg) {
   REF_ADJ ref_adj;
   REF_INT *e2f, id, toponode;
   ego ref, *pchldrn, object;
@@ -1266,8 +1270,9 @@ static REF_STATUS ref_egads_node_faces(REF_GEOM ref_geom,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess,
-                                             REF_GLOB *n_global) {
+REF_FCN static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid,
+                                                     ego tess,
+                                                     REF_GLOB *n_global) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
 
@@ -1301,8 +1306,8 @@ static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess,
-                                          REF_GLOB n_global) {
+REF_FCN static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess,
+                                                  REF_GLOB n_global) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -1362,8 +1367,8 @@ static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess,
-                                          REF_GLOB n_global) {
+REF_FCN static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess,
+                                                  REF_GLOB n_global) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL param[2];
@@ -1422,8 +1427,9 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_merge_tparams(REF_CLOUD object_tp_augment,
-                                          REF_INT id, REF_DBL *new_params) {
+REF_FCN static REF_STATUS ref_egads_merge_tparams(REF_CLOUD object_tp_augment,
+                                                  REF_INT id,
+                                                  REF_DBL *new_params) {
   REF_DBL params[3];
   REF_INT i, item;
 
@@ -1446,9 +1452,11 @@ static REF_STATUS ref_egads_merge_tparams(REF_CLOUD object_tp_augment,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
-                                       REF_CLOUD edge_tp_augment, REF_INT *e2f,
-                                       REF_LIST face_locked) {
+REF_FCN static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom,
+                                               REF_INT faceid,
+                                               REF_CLOUD edge_tp_augment,
+                                               REF_INT *e2f,
+                                               REF_LIST face_locked) {
   ego faceobj;
   double diag, box[6];
 
@@ -1571,7 +1579,7 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_adjust_tparams_missing_face(
+REF_FCN static REF_STATUS ref_egads_adjust_tparams_missing_face(
     REF_GEOM ref_geom, ego tess, REF_CLOUD face_tp_augment,
     REF_CLOUD edge_tp_augment, REF_DBL seg_per_diag, REF_LIST face_locked) {
   ego faceobj;
@@ -1620,9 +1628,9 @@ static REF_STATUS ref_egads_adjust_tparams_missing_face(
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_adjust_tparams_dup_edge(REF_GEOM ref_geom, ego tess,
-                                                    REF_CLOUD edge_tp_augment,
-                                                    REF_DBL seg_per_diag) {
+REF_FCN static REF_STATUS ref_egads_adjust_tparams_dup_edge(
+    REF_GEOM ref_geom, ego tess, REF_CLOUD edge_tp_augment,
+    REF_DBL seg_per_diag) {
   ego edgeobj;
   int edge, plen;
   const double *points, *t;
@@ -1706,7 +1714,7 @@ static REF_STATUS ref_egads_adjust_tparams_dup_edge(REF_GEOM ref_geom, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_adjust_tparams_single_edge(
+REF_FCN static REF_STATUS ref_egads_adjust_tparams_single_edge(
     REF_GEOM ref_geom, ego tess, REF_CLOUD edge_tp_augment,
     REF_INT auto_tparams, REF_LIST face_locked) {
   ego edgeobj;
@@ -1783,11 +1791,9 @@ static REF_STATUS ref_egads_adjust_tparams_single_edge(
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
-                                                 REF_CLOUD face_tp_augment,
-                                                 REF_CLOUD edge_tp_augment,
-                                                 REF_INT auto_tparams,
-                                                 REF_LIST face_locked) {
+REF_FCN static REF_STATUS ref_egads_adjust_tparams_chord(
+    REF_GEOM ref_geom, ego tess, REF_CLOUD face_tp_augment,
+    REF_CLOUD edge_tp_augment, REF_INT auto_tparams, REF_LIST face_locked) {
   ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
@@ -1890,7 +1896,7 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_update_tparams_attributes(
+REF_FCN static REF_STATUS ref_egads_update_tparams_attributes(
     REF_GEOM ref_geom, REF_CLOUD face_tp_original, REF_CLOUD edge_tp_original,
     REF_CLOUD face_tp_augment, REF_CLOUD edge_tp_augment, REF_BOOL *rebuild) {
   ego faceobj;
@@ -1990,9 +1996,9 @@ static REF_STATUS ref_egads_update_tparams_attributes(
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
-                                          REF_CLOUD face_tp_original,
-                                          REF_CLOUD edge_tp_original) {
+REF_FCN static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
+                                                  REF_CLOUD face_tp_original,
+                                                  REF_CLOUD edge_tp_original) {
   ego faceobj, edgeobj;
   int face, edge;
   int i;
@@ -2035,9 +2041,9 @@ static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
-                                        REF_INT auto_tparams,
-                                        REF_DBL *global_params) {
+REF_FCN static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
+                                                REF_INT auto_tparams,
+                                                REF_DBL *global_params) {
   ego body, geom;
   int tess_status, nvert;
   double params[3], diag, box[6];
@@ -2183,8 +2189,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 }
 #endif
 
-REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
-                          REF_DBL *global_params) {
+REF_FCN REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
+                                  REF_DBL *global_params) {
 #ifdef HAVE_EGADS
   ego tess;
   REF_GLOB n_global;
@@ -2219,7 +2225,7 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node, geom, edge, face, cad_node;
@@ -2337,8 +2343,8 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
 }
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_recon_nodes(REF_GRID ref_grid,
-                                        REF_INT **cad_nodes) {
+REF_FCN static REF_STATUS ref_egads_recon_nodes(REF_GRID ref_grid,
+                                                REF_INT **cad_nodes) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_ADJ n2f;
@@ -2430,7 +2436,7 @@ static REF_STATUS ref_egads_recon_nodes(REF_GRID ref_grid,
 }
 #endif
 
-REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -2766,7 +2772,7 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
 #endif
 }
 
-REF_STATUS ref_egads_twod_flat_z(REF_GEOM ref_geom, REF_BOOL *flat) {
+REF_FCN REF_STATUS ref_egads_twod_flat_z(REF_GEOM ref_geom, REF_BOOL *flat) {
 #ifdef HAVE_EGADS
   ego object;
   double box[6];
@@ -2790,7 +2796,8 @@ REF_STATUS ref_egads_twod_flat_z(REF_GEOM ref_geom, REF_BOOL *flat) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
+REF_FCN REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom,
+                                      REF_DBL *diag) {
 #ifdef HAVE_EGADS
   ego object;
   double box[6];
@@ -2829,8 +2836,8 @@ REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                               REF_DBL *tolerance) {
+REF_FCN REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type,
+                                       REF_INT id, REF_DBL *tolerance) {
 #ifdef HAVE_EGADS
   ego object, *objects;
   double tol;
@@ -2883,8 +2890,8 @@ REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
-                                    REF_DBL *normal) {
+REF_FCN REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                            REF_DBL *k, REF_DBL *normal) {
 #ifdef HAVE_EGADS
   double curvature[4];
   ego *edges;
@@ -2962,9 +2969,9 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
 #endif
 }
 
-REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
-                                    REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
-                                    REF_DBL *s) {
+REF_FCN REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                            REF_DBL *kr, REF_DBL *r,
+                                            REF_DBL *ks, REF_DBL *s) {
 #ifdef HAVE_EGADS
   REF_DBL uv[2];
   if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
@@ -2992,9 +2999,11 @@ REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
 #endif
 }
 
-REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
-                                       REF_INT degen, REF_DBL *uv, REF_DBL *kr,
-                                       REF_DBL *r, REF_DBL *ks, REF_DBL *s) {
+REF_FCN REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom,
+                                               REF_INT faceid, REF_INT degen,
+                                               REF_DBL *uv, REF_DBL *kr,
+                                               REF_DBL *r, REF_DBL *ks,
+                                               REF_DBL *s) {
 #ifdef HAVE_EGADS
   double curvature[8];
   ego *faces;
@@ -3128,8 +3137,8 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
 #endif
 }
 
-REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
-                                 REF_DBL *trange) {
+REF_FCN REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
+                                         REF_DBL *trange) {
 #ifdef HAVE_EGADS
   ego *edges;
   ego object;
@@ -3169,8 +3178,9 @@ REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
 #endif
 }
 
-REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT edgeid,
-                                 REF_DBL *min_angle, REF_DBL *max_angle) {
+REF_FCN REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT edgeid,
+                                         REF_DBL *min_angle,
+                                         REF_DBL *max_angle) {
 #ifdef HAVE_EGADS
   REF_INT i, n = 11;
   REF_INT face, edge;
@@ -3252,9 +3262,11 @@ REF_STATUS ref_egads_edge_crease(REF_GEOM ref_geom, REF_INT edgeid,
 }
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_edge_face_dxyz_dt(ego edge, ego face, ego pcurve,
-                                              REF_DBL t, REF_DBL tprime,
-                                              REF_DBL *dxyz, REF_DBL *dxyz_dt) {
+REF_FCN static REF_STATUS ref_egads_edge_face_dxyz_dt(ego edge, ego face,
+                                                      ego pcurve, REF_DBL t,
+                                                      REF_DBL tprime,
+                                                      REF_DBL *dxyz,
+                                                      REF_DBL *dxyz_dt) {
   double edge_eval[18];
   double face_eval[18];
   double pcurve_eval[18];
@@ -3281,8 +3293,8 @@ static REF_STATUS ref_egads_edge_face_dxyz_dt(ego edge, ego face, ego pcurve,
 
 #ifdef HAVE_EGADS
 
-REF_STATUS ref_egads_edge_face_viz(ego edge, ego face, ego pcurve);
-REF_STATUS ref_egads_edge_face_viz(ego edge, ego face, ego pcurve) {
+REF_FCN REF_STATUS ref_egads_edge_face_viz(ego edge, ego face, ego pcurve);
+REF_FCN REF_STATUS ref_egads_edge_face_viz(ego edge, ego face, ego pcurve) {
   FILE *file;
   REF_DBL trange[2];
   int periodic;
@@ -3315,9 +3327,10 @@ REF_STATUS ref_egads_edge_face_viz(ego edge, ego face, ego pcurve) {
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
-                                           REF_DBL t, REF_DBL *tp,
-                                           REF_BOOL *again) {
+REF_FCN static REF_STATUS ref_egads_edge_face_step(ego edge, ego face,
+                                                   ego pcurve, REF_DBL t,
+                                                   REF_DBL *tp,
+                                                   REF_BOOL *again) {
   double dxyz[3], n_dxyz[3], dxyz_dt[3], n_dxyz_dt[3], l_dxyz_dt;
   REF_INT ixyz;
   REF_STATUS ref_status;
@@ -3387,9 +3400,11 @@ static REF_STATUS ref_egads_edge_face_step(ego edge, ego face, ego pcurve,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
-                                             REF_INT faceid, REF_INT sense,
-                                             REF_DBL t, REF_DBL *tprime) {
+REF_FCN static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom,
+                                                     REF_INT edgeid,
+                                                     REF_INT faceid,
+                                                     REF_INT sense, REF_DBL t,
+                                                     REF_DBL *tprime) {
   ego *faces, *edges;
   ego face_ego, edge_ego;
   ego pcurve = NULL;
@@ -3443,9 +3458,9 @@ static REF_STATUS ref_egads_edge_face_tprime(REF_GEOM ref_geom, REF_INT edgeid,
 }
 #endif
 
-REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
-                                  REF_INT faceid, REF_INT sense, REF_DBL t,
-                                  REF_DBL *uv) {
+REF_FCN REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
+                                          REF_INT faceid, REF_INT sense,
+                                          REF_DBL t, REF_DBL *uv) {
 #ifdef HAVE_EGADS
   ego *faces, *edges;
   ego face_ego, edge_ego;
@@ -3514,8 +3529,8 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
   [x_u,y_u,z_u] [x_v,y_v,z_v] face [15]
   [x_uu,y_uu,z_uu] [x_uv,y_uv,z_uv] [x_vv,y_vv,z_vv]
 */
-REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
-                          REF_DBL *dxyz_dtuv) {
+REF_FCN REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
+                                  REF_DBL *dxyz_dtuv) {
   REF_INT type, id, i;
   REF_DBL params[2];
   if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
@@ -3531,9 +3546,9 @@ REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                             REF_DBL *params, REF_DBL *xyz,
-                             REF_DBL *dxyz_dtuv) {
+REF_FCN REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type,
+                                     REF_INT id, REF_DBL *params, REF_DBL *xyz,
+                                     REF_DBL *dxyz_dtuv) {
 #ifdef HAVE_EGADS
   double eval[18];
   REF_INT i;
@@ -3624,8 +3639,9 @@ REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
-REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                                  REF_DBL *xyz, REF_DBL *param) {
+REF_FCN REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type,
+                                          REF_INT id, REF_DBL *xyz,
+                                          REF_DBL *param) {
 #ifdef HAVE_EGADS
   ego object = (ego)NULL;
   int i, guess_status, noguess_status;
@@ -3743,8 +3759,8 @@ REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
-REF_STATUS ref_egads_invert(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                            REF_DBL *xyz0, REF_DBL *uv) {
+REF_FCN REF_STATUS ref_egads_invert(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                    REF_DBL *xyz0, REF_DBL *uv) {
   REF_DBL xyz[3], error[3];
   REF_DBL dxyz_dtuv[15];
   REF_DBL drsduv[4], duvdrs[4];
@@ -3783,7 +3799,8 @@ REF_STATUS ref_egads_invert(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   return REF_FAILURE;
 }
 
-REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
+REF_FCN REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node,
+                                 REF_DBL *gap) {
   REF_INT item, geom, type;
   REF_DBL dist, face_xyz[3], gap_xyz[3];
   REF_BOOL has_node, has_edge;
@@ -3817,9 +3834,10 @@ REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
-                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
-                                  REF_DBL *h2, REF_DBL *dir2) {
+REF_FCN REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node,
+                                          REF_DBL *h0, REF_DBL *dir0,
+                                          REF_DBL *h1, REF_DBL *dir1,
+                                          REF_DBL *h2, REF_DBL *dir2) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT edge_item, face_item, edge_geom, face_geom, edgeid, faceid, iloop;
@@ -3979,7 +3997,8 @@ REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id) {
+REF_FCN REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type,
+                                       REF_INT id) {
 #ifdef HAVE_EGADS
   ego object;
   ego geom, *bodies, ref;
@@ -4017,7 +4036,7 @@ REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id) {
 
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
-static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
+REF_FCN static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
   int nface, i;
   ego *faces;
   REF_DICT ref_dict;
@@ -4081,8 +4100,9 @@ static REF_STATUS ref_egads_quilt_attributes(ego body, ego ebody) {
 
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
-static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
-                                        double angle, REF_INT *e2f) {
+REF_FCN static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body,
+                                                ego ebody, double angle,
+                                                REF_INT *e2f) {
   int nedge, edge, nface, i;
   ego *faces;
   REF_DICT ref_dict;
@@ -4164,8 +4184,8 @@ static REF_STATUS ref_egads_quilt_angle(REF_GEOM ref_geom, ego body, ego ebody,
 }
 #endif
 
-REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
-                           REF_DBL *global_params) {
+REF_FCN REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
+                                   REF_DBL *global_params) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE) && \
     defined(HAVE_EGADS_EFFECTIVE)
   ego effective[2];
@@ -4226,8 +4246,9 @@ REF_STATUS ref_egads_quilt(REF_GEOM ref_geom, REF_INT auto_tparams,
 #endif
 }
 
-REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                                   const char *name, const char *value) {
+REF_FCN REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type,
+                                           REF_INT id, const char *name,
+                                           const char *value) {
 #ifdef HAVE_EGADS
 #ifdef HAVE_EGADS_LITE
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -4282,8 +4303,9 @@ REF_STATUS ref_egads_add_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
-REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                                   const char *name, const char **value) {
+REF_FCN REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type,
+                                           REF_INT id, const char *name,
+                                           const char **value) {
 #ifdef HAVE_EGADS
   ego object = NULL;
   int attribute_type, len;
@@ -4335,10 +4357,10 @@ REF_STATUS ref_egads_get_attribute(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
-REF_STATUS ref_egads_get_real_attribute(REF_GEOM ref_geom, REF_INT type,
-                                        REF_INT id, const char *name,
-                                        const REF_DBL **value,
-                                        REF_INT *length) {
+REF_FCN REF_STATUS ref_egads_get_real_attribute(REF_GEOM ref_geom, REF_INT type,
+                                                REF_INT id, const char *name,
+                                                const REF_DBL **value,
+                                                REF_INT *length) {
 #ifdef HAVE_EGADS
   ego object = NULL;
   int attribute_type;
@@ -4391,8 +4413,8 @@ REF_STATUS ref_egads_get_real_attribute(REF_GEOM ref_geom, REF_INT type,
 #endif
 }
 
-REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc,
-                                   REF_BOOL axi) {
+REF_FCN REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc,
+                                           REF_BOOL axi) {
   FILE *file;
   file = fopen(mapbc, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc);

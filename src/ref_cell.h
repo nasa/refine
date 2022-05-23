@@ -133,92 +133,99 @@ struct REF_CELL_STRUCT {
   for ((cell_face) = 0; (cell_face) < ref_cell_face_per(ref_cell); \
        (cell_face)++)
 
-REF_STATUS ref_cell_create(REF_CELL *ref_cell, REF_CELL_TYPE type);
-REF_STATUS ref_cell_free(REF_CELL ref_cell);
+REF_FCN REF_STATUS ref_cell_create(REF_CELL *ref_cell, REF_CELL_TYPE type);
+REF_FCN REF_STATUS ref_cell_free(REF_CELL ref_cell);
 
-REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell, REF_CELL original);
-REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n);
+REF_FCN REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell, REF_CELL original);
+REF_FCN REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n);
 
-REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword);
+REF_FCN REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword);
 
-REF_STATUS ref_cell_inspect(REF_CELL ref_cell);
-REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell);
-REF_STATUS ref_cell_tattle_about(REF_CELL ref_cell, REF_INT node);
+REF_FCN REF_STATUS ref_cell_inspect(REF_CELL ref_cell);
+REF_FCN REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell);
+REF_FCN REF_STATUS ref_cell_tattle_about(REF_CELL ref_cell, REF_INT node);
 
-REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell);
+REF_FCN REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes,
+                                REF_INT *cell);
 
-REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
-                                    REF_INT n, REF_GLOB *c2n, REF_INT *part,
-                                    REF_INT exclude_part_id);
+REF_FCN REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell,
+                                            REF_NODE ref_node, REF_INT n,
+                                            REF_GLOB *c2n, REF_INT *part,
+                                            REF_INT exclude_part_id);
 
-REF_STATUS ref_cell_remove(REF_CELL ref_cell, REF_INT cell);
-REF_STATUS ref_cell_replace_whole(REF_CELL ref_cell, REF_INT cell,
+REF_FCN REF_STATUS ref_cell_remove(REF_CELL ref_cell, REF_INT cell);
+REF_FCN REF_STATUS ref_cell_replace_whole(REF_CELL ref_cell, REF_INT cell,
+                                          REF_INT *nodes);
+REF_FCN REF_STATUS ref_cell_replace_node(REF_CELL ref_cell, REF_INT old_node,
+                                         REF_INT new_node);
+REF_FCN REF_STATUS ref_cell_compact(REF_CELL ref_cell, REF_INT **o2n,
+                                    REF_INT **n2o);
+
+REF_FCN REF_STATUS ref_cell_nodes(REF_CELL ref_cell, REF_INT cell,
                                   REF_INT *nodes);
-REF_STATUS ref_cell_replace_node(REF_CELL ref_cell, REF_INT old_node,
-                                 REF_INT new_node);
-REF_STATUS ref_cell_compact(REF_CELL ref_cell, REF_INT **o2n, REF_INT **n2o);
+REF_FCN REF_STATUS ref_cell_part_cell_node(REF_CELL ref_cell, REF_NODE ref_node,
+                                           REF_INT cell, REF_INT *cell_node);
+REF_FCN REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node,
+                                 REF_INT cell, REF_INT *part);
+REF_FCN REF_STATUS ref_cell_all_local(REF_CELL ref_cell, REF_NODE ref_node,
+                                      REF_INT cell, REF_BOOL *all_local_nodes);
+REF_FCN REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
+                                      REF_INT node0, REF_INT node1,
+                                      REF_BOOL *local);
+REF_FCN REF_STATUS ref_cell_ncell(REF_CELL ref_cell, REF_NODE ref_node,
+                                  REF_LONG *ncell);
 
-REF_STATUS ref_cell_nodes(REF_CELL ref_cell, REF_INT cell, REF_INT *nodes);
-REF_STATUS ref_cell_part_cell_node(REF_CELL ref_cell, REF_NODE ref_node,
-                                   REF_INT cell, REF_INT *cell_node);
-REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node, REF_INT cell,
-                         REF_INT *part);
-REF_STATUS ref_cell_all_local(REF_CELL ref_cell, REF_NODE ref_node,
-                              REF_INT cell, REF_BOOL *all_local_nodes);
-REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
-                              REF_INT node0, REF_INT node1, REF_BOOL *local);
-REF_STATUS ref_cell_ncell(REF_CELL ref_cell, REF_NODE ref_node,
-                          REF_LONG *ncell);
+REF_FCN REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0,
+                                         REF_INT *nodes);
 
-REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0, REF_INT *nodes);
+REF_FCN REF_STATUS ref_cell_has_side(REF_CELL ref_cell, REF_INT node0,
+                                     REF_INT node1, REF_BOOL *has_side);
 
-REF_STATUS ref_cell_has_side(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
-                             REF_BOOL *has_side);
+REF_FCN REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0,
+                                        REF_INT node1, REF_INT id,
+                                        REF_BOOL *has_id);
+REF_FCN REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi,
+                                     REF_INT *min_id, REF_INT *max_id);
 
-REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
-                                REF_INT id, REF_BOOL *has_id);
-REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi,
-                             REF_INT *min_id, REF_INT *max_id);
+REF_FCN REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
+                                      REF_INT *cell0, REF_INT *cell1);
 
-REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
-                              REF_INT *cell0, REF_INT *cell1);
+REF_FCN REF_STATUS ref_cell_ntri_with_tet_nodes(REF_CELL ref_cell,
+                                                REF_INT *nodes, REF_INT *ntri);
 
-REF_STATUS ref_cell_ntri_with_tet_nodes(REF_CELL ref_cell, REF_INT *nodes,
-                                        REF_INT *ntri);
+REF_FCN REF_STATUS ref_cell_with(REF_CELL ref_cell, REF_INT *nodes,
+                                 REF_INT *cell);
 
-REF_STATUS ref_cell_with(REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell);
+REF_FCN REF_STATUS ref_cell_degree_with2(REF_CELL ref_cell, REF_INT node0,
+                                         REF_INT node1, REF_INT *degree);
+REF_FCN REF_STATUS ref_cell_list_with2(REF_CELL ref_cell, REF_INT node0,
+                                       REF_INT node1, REF_INT max_cell,
+                                       REF_INT *ncell, REF_INT *cell_list);
 
-REF_STATUS ref_cell_degree_with2(REF_CELL ref_cell, REF_INT node0,
-                                 REF_INT node1, REF_INT *degree);
-REF_STATUS ref_cell_list_with2(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
-                               REF_INT max_cell, REF_INT *ncell,
-                               REF_INT *cell_list);
+REF_FCN REF_STATUS ref_cell_node_list_around(REF_CELL ref_cell, REF_INT node,
+                                             REF_INT max_node, REF_INT *nnode,
+                                             REF_INT *node_list);
 
-REF_STATUS ref_cell_node_list_around(REF_CELL ref_cell, REF_INT node,
-                                     REF_INT max_node, REF_INT *nnode,
-                                     REF_INT *node_list);
+REF_FCN REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
+                                           REF_INT max_faceid, REF_INT *nfaceid,
+                                           REF_INT *faceids);
+REF_FCN REF_STATUS ref_cell_id_list_around_both(
+    REF_CELL ref_cell_a, REF_CELL ref_cell_b, REF_INT node, REF_INT max_faceid,
+    REF_INT *nfaceid, REF_INT *faceids);
 
-REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
-                                   REF_INT max_faceid, REF_INT *nfaceid,
-                                   REF_INT *faceids);
-REF_STATUS ref_cell_id_list_around_both(REF_CELL ref_cell_a,
-                                        REF_CELL ref_cell_b, REF_INT node,
-                                        REF_INT max_faceid, REF_INT *nfaceid,
-                                        REF_INT *faceids);
+REF_FCN REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
+                                          REF_INT *face0, REF_INT *face1);
 
-REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
-                                  REF_INT *face0, REF_INT *face1);
+REF_FCN REF_STATUS ref_cell_ghost_long(REF_CELL ref_cell, REF_NODE ref_node,
+                                       REF_LONG *data);
 
-REF_STATUS ref_cell_ghost_long(REF_CELL ref_cell, REF_NODE ref_node,
-                               REF_LONG *data);
+REF_FCN REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
+                                   REF_LONG **global);
 
-REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
-                           REF_LONG **global);
+REF_FCN REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename);
 
-REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename);
-
-REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
-                          REF_DBL *shape);
+REF_FCN REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
+                                  REF_DBL *shape);
 
 END_C_DECLORATION
 

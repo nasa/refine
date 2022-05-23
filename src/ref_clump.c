@@ -29,10 +29,9 @@
 #include "ref_malloc.h"
 #include "ref_matrix.h"
 
-static REF_STATUS ref_clump_zone_around(FILE *f, REF_CELL ref_cell,
-                                        REF_DICT ref_dict, const char *zonetype,
-                                        REF_DICT node_dict, REF_NODE ref_node,
-                                        REF_INT node) {
+REF_FCN static REF_STATUS ref_clump_zone_around(
+    FILE *f, REF_CELL ref_cell, REF_DICT ref_dict, const char *zonetype,
+    REF_DICT node_dict, REF_NODE ref_node, REF_INT node) {
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL xyz_comp[3], xyz_phys[3];
@@ -76,9 +75,10 @@ static REF_STATUS ref_clump_zone_around(FILE *f, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_clump_cell_zone(FILE *f, REF_CELL ref_cell,
-                                      REF_DICT ref_dict, const char *zonetype,
-                                      REF_NODE ref_node) {
+REF_FCN static REF_STATUS ref_clump_cell_zone(FILE *f, REF_CELL ref_cell,
+                                              REF_DICT ref_dict,
+                                              const char *zonetype,
+                                              REF_NODE ref_node) {
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT local;
@@ -118,8 +118,8 @@ static REF_STATUS ref_clump_cell_zone(FILE *f, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_around(REF_GRID ref_grid, REF_INT node,
-                            const char *filename) {
+REF_FCN REF_STATUS ref_clump_around(REF_GRID ref_grid, REF_INT node,
+                                    const char *filename) {
   REF_DICT node_dict, tri_dict, tet_dict;
   REF_DICT ref_dict;
   REF_CELL ref_cell;
@@ -180,8 +180,8 @@ REF_STATUS ref_clump_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                             const char *filename) {
+REF_FCN REF_STATUS ref_clump_between(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1, const char *filename) {
   REF_DICT node_dict, tri_dict, tet_dict;
   REF_DICT ref_dict;
   REF_CELL ref_cell;
@@ -254,8 +254,9 @@ REF_STATUS ref_clump_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
-                                       REF_INT node1, const char *filename) {
+REF_FCN REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
+                                               REF_INT node1,
+                                               const char *filename) {
   REF_GRID loc_grid;
   REF_NODE ref_node, loc_node;
   REF_CELL ref_cell, loc_cell;
@@ -367,8 +368,8 @@ REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_tri_around(REF_GRID ref_grid, REF_INT node,
-                                const char *filename) {
+REF_FCN REF_STATUS ref_clump_tri_around(REF_GRID ref_grid, REF_INT node,
+                                        const char *filename) {
   REF_DICT node_dict, tri_dict;
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, cell_node;
@@ -435,7 +436,7 @@ REF_STATUS ref_clump_tri_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_short_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
+REF_FCN REF_STATUS ref_clump_short_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT ntarget;
@@ -468,7 +469,7 @@ REF_STATUS ref_clump_short_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_short_edges_twod(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_clump_short_edges_twod(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_DBL *ratio;
@@ -504,7 +505,7 @@ REF_STATUS ref_clump_short_edges_twod(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_long_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
+REF_FCN REF_STATUS ref_clump_long_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT ntarget;
@@ -537,8 +538,8 @@ REF_STATUS ref_clump_long_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_tet_quality(REF_GRID ref_grid, REF_DBL min_quality,
-                                 const char *filename) {
+REF_FCN REF_STATUS ref_clump_tet_quality(REF_GRID ref_grid, REF_DBL min_quality,
+                                         const char *filename) {
   REF_DICT ref_dict;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;

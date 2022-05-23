@@ -24,52 +24,62 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_collapse_diagnostics(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_collapse_diagnostics(REF_GRID ref_grid);
 
 /* node1 is removed */
-REF_STATUS ref_collapse_pass(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_collapse_pass(REF_GRID ref_grid);
 
-REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid, REF_INT *node0,
-                                        REF_INT node1);
+REF_FCN REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
+                                                REF_INT *node0, REF_INT node1);
 
-REF_STATUS ref_collapse_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1);
+REF_FCN REF_STATUS ref_collapse_edge(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1);
 /*                               keep node0,  remove node1 */
 
-REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
-                                      REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1, REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
-                                      REF_INT node1, REF_BOOL *allowed);
-REF_STATUS ref_collapse_edge_chord_height(REF_GRID ref_grid, REF_INT node0,
-                                          REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_chord_height(REF_GRID ref_grid,
+                                                  REF_INT node0, REF_INT node1,
+                                                  REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_edge_mixed(REF_GRID ref_grid, REF_INT node0,
-                                   REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_mixed(REF_GRID ref_grid, REF_INT node0,
+                                           REF_INT node1, REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_edge_local_cell(REF_GRID ref_grid, REF_INT node0,
-                                        REF_INT node1, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_local_cell(REF_GRID ref_grid,
+                                                REF_INT node0, REF_INT node1,
+                                                REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_edge_cad_constrained(REF_GRID ref_grid, REF_INT node0,
+REF_FCN REF_STATUS ref_collapse_edge_cad_constrained(REF_GRID ref_grid,
+                                                     REF_INT node0,
+                                                     REF_INT node1,
+                                                     REF_BOOL *allowed);
+
+REF_FCN REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
+                                           REF_INT node1, REF_BOOL *allowed);
+
+REF_FCN REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
                                              REF_INT node1, REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_BOOL *allowed);
-REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_BOOL *allowed);
-REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
-                                   REF_INT node1, REF_BOOL *allowed);
-
-REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
-                                     REF_INT node1, REF_BOOL *allowed);
-
-REF_STATUS ref_collapse_edge_twod_orientation(REF_GRID ref_grid, REF_INT keep,
-                                              REF_INT remove,
-                                              REF_BOOL *allowed);
-REF_STATUS ref_collapse_edge_same_tangent(REF_GRID ref_grid, REF_INT keep,
-                                          REF_INT remove, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_twod_orientation(REF_GRID ref_grid,
+                                                      REF_INT keep,
+                                                      REF_INT remove,
+                                                      REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_collapse_edge_same_tangent(REF_GRID ref_grid,
+                                                  REF_INT keep, REF_INT remove,
+                                                  REF_BOOL *allowed);
 
 END_C_DECLORATION
 

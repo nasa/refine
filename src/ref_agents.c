@@ -27,7 +27,8 @@
 #define ref_agent_previous(ref_agents, id) ((ref_agents)->agent[(id)].previous)
 #define ref_agent_next(ref_agents, id) ((ref_agents)->agent[(id)].next)
 
-REF_STATUS ref_agents_create(REF_AGENTS *ref_agents_ptr, REF_MPI ref_mpi) {
+REF_FCN REF_STATUS ref_agents_create(REF_AGENTS *ref_agents_ptr,
+                                     REF_MPI ref_mpi) {
   REF_AGENTS ref_agents;
   REF_INT id;
 
@@ -53,14 +54,14 @@ REF_STATUS ref_agents_create(REF_AGENTS *ref_agents_ptr, REF_MPI ref_mpi) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_free(REF_AGENTS ref_agents) {
+REF_FCN REF_STATUS ref_agents_free(REF_AGENTS ref_agents) {
   if (NULL == (void *)ref_agents) return REF_NULL;
   ref_free(ref_agents->agent);
   ref_free(ref_agents);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_inspect(REF_AGENTS ref_agents) {
+REF_FCN REF_STATUS ref_agents_inspect(REF_AGENTS ref_agents) {
   REF_INT id;
   for (id = 0; id < ref_agents->max; id++) {
     if (REF_AGENT_UNUSED != ref_agent_mode(ref_agents, id))
@@ -75,8 +76,8 @@ REF_STATUS ref_agents_inspect(REF_AGENTS ref_agents) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_tattle(REF_AGENTS ref_agents, REF_INT id,
-                             const char *context) {
+REF_FCN REF_STATUS ref_agents_tattle(REF_AGENTS ref_agents, REF_INT id,
+                                     const char *context) {
   printf("%d: %d id %d mode %d home %d node %d part %d seed " REF_GLOB_FMT
          " global %f %f %f "
          "%s\n",
@@ -89,7 +90,8 @@ REF_STATUS ref_agents_tattle(REF_AGENTS ref_agents, REF_INT id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_population(REF_AGENTS ref_agents, const char *context) {
+REF_FCN REF_STATUS ref_agents_population(REF_AGENTS ref_agents,
+                                         const char *context) {
   REF_MPI ref_mpi = ref_agents->ref_mpi;
   REF_INT id, *counts;
   ref_malloc_init(counts, REF_AGENT_MODE_LAST, REF_INT, 0);
@@ -111,7 +113,7 @@ REF_STATUS ref_agents_population(REF_AGENTS ref_agents, const char *context) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_agents_new(REF_AGENTS ref_agents, REF_INT *id) {
+REF_FCN static REF_STATUS ref_agents_new(REF_AGENTS ref_agents, REF_INT *id) {
   if (REF_EMPTY == ref_agents->blank) {
     REF_INT orig, chunk, extra;
     orig = ref_agents->max;
@@ -145,8 +147,8 @@ static REF_STATUS ref_agents_new(REF_AGENTS ref_agents, REF_INT *id) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_restart(REF_AGENTS ref_agents, REF_INT part, REF_INT seed,
-                              REF_INT id) {
+REF_FCN REF_STATUS ref_agents_restart(REF_AGENTS ref_agents, REF_INT part,
+                                      REF_INT seed, REF_INT id) {
   ref_agent_mode(ref_agents, id) = REF_AGENT_WALKING;
   ref_agent_part(ref_agents, id) = part;
   ref_agent_seed(ref_agents, id) = seed;
@@ -156,8 +158,9 @@ REF_STATUS ref_agents_restart(REF_AGENTS ref_agents, REF_INT part, REF_INT seed,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node, REF_INT part,
-                           REF_INT seed, REF_DBL *xyz, REF_INT *id_ptr) {
+REF_FCN REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node,
+                                   REF_INT part, REF_INT seed, REF_DBL *xyz,
+                                   REF_INT *id_ptr) {
   REF_INT i, id;
 
   RSS(ref_agents_new(ref_agents, &id), "new");
@@ -175,7 +178,7 @@ REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node, REF_INT part,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_remove(REF_AGENTS ref_agents, REF_INT id) {
+REF_FCN REF_STATUS ref_agents_remove(REF_AGENTS ref_agents, REF_INT id) {
   if (id < 0 || ref_agents_max(ref_agents) <= id) return REF_INVALID;
   if (!ref_agent_valid(ref_agents, id)) return REF_INVALID;
 
@@ -200,8 +203,8 @@ REF_STATUS ref_agents_remove(REF_AGENTS ref_agents, REF_INT id) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_pop(REF_AGENTS ref_agents, REF_INT *node, REF_INT *part,
-                          REF_INT *seed, REF_DBL *xyz) {
+REF_FCN REF_STATUS ref_agents_pop(REF_AGENTS ref_agents, REF_INT *node,
+                                  REF_INT *part, REF_INT *seed, REF_DBL *xyz) {
   REF_INT i, id;
 
   if (REF_EMPTY == ref_agents->last) return REF_NOT_FOUND;
@@ -218,7 +221,7 @@ REF_STATUS ref_agents_pop(REF_AGENTS ref_agents, REF_INT *node, REF_INT *part,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_delete(REF_AGENTS ref_agents, REF_INT node) {
+REF_FCN REF_STATUS ref_agents_delete(REF_AGENTS ref_agents, REF_INT node) {
   REF_INT id;
 
   if (node < 0) return REF_INVALID;
@@ -231,8 +234,8 @@ REF_STATUS ref_agents_delete(REF_AGENTS ref_agents, REF_INT node) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_agents_dest(REF_AGENTS ref_agents, REF_INT id,
-                                  REF_INT *dest) {
+REF_FCN static REF_STATUS ref_agents_dest(REF_AGENTS ref_agents, REF_INT id,
+                                          REF_INT *dest) {
   *dest = REF_EMPTY;
   switch (ref_agent_mode(ref_agents, id)) {
     case REF_AGENT_WALKING:
@@ -261,7 +264,7 @@ static REF_STATUS ref_agents_dest(REF_AGENTS ref_agents, REF_INT id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
+REF_FCN REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
   REF_MPI ref_mpi = ref_agents->ref_mpi;
   REF_INT i, id, nsend, nrecv, dest, rec;
   REF_INT n_ints, n_globs, n_dbls;

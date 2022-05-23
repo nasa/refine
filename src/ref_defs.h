@@ -78,6 +78,7 @@ typedef char REF_BYTE;
 typedef off_t REF_FILEPOS;
 typedef size_t REF_SIZE;
 
+#define REF_FCN
 typedef int REF_STATUS;
 
 #define REF_SUCCESS (0)

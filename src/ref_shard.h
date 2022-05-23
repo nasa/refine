@@ -40,32 +40,34 @@ struct REF_SHARD_STRUCT {
 #define ref_shard_grid(ref_shard) ((ref_shard)->grid)
 #define ref_shard_face(ref_shard) ((ref_shard)->face)
 
-REF_STATUS ref_shard_create(REF_SHARD *ref_shard, REF_GRID ref_grid);
-REF_STATUS ref_shard_free(REF_SHARD ref_shard);
+REF_FCN REF_STATUS ref_shard_create(REF_SHARD *ref_shard, REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_shard_free(REF_SHARD ref_shard);
 
 #define ref_shard_mark(ref_shard, face) ((ref_shard)->mark[face])
 
-REF_STATUS ref_shard_mark_to_split(REF_SHARD ref_shard, REF_INT node0,
-                                   REF_INT node1);
-REF_STATUS ref_shard_marked(REF_SHARD ref_shard, REF_INT node0, REF_INT node1,
-                            REF_BOOL *marked);
+REF_FCN REF_STATUS ref_shard_mark_to_split(REF_SHARD ref_shard, REF_INT node0,
+                                           REF_INT node1);
+REF_FCN REF_STATUS ref_shard_marked(REF_SHARD ref_shard, REF_INT node0,
+                                    REF_INT node1, REF_BOOL *marked);
 
-REF_STATUS ref_shard_mark_n(REF_SHARD ref_shard, REF_INT *face_marks,
-                            REF_INT *hex_marks);
+REF_FCN REF_STATUS ref_shard_mark_n(REF_SHARD ref_shard, REF_INT *face_marks,
+                                    REF_INT *hex_marks);
 
-REF_STATUS ref_shard_mark_cell_edge_split(REF_SHARD ref_shard, REF_INT cell,
-                                          REF_INT cell_edge);
+REF_FCN REF_STATUS ref_shard_mark_cell_edge_split(REF_SHARD ref_shard,
+                                                  REF_INT cell,
+                                                  REF_INT cell_edge);
 
-REF_STATUS ref_shard_mark_relax(REF_SHARD ref_shard);
-REF_STATUS ref_shard_split(REF_SHARD ref_shard);
+REF_FCN REF_STATUS ref_shard_mark_relax(REF_SHARD ref_shard);
+REF_FCN REF_STATUS ref_shard_split(REF_SHARD ref_shard);
 
-REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
-                                    REF_INT of_faceid);
+REF_FCN REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid,
+                                            REF_INT keeping_n_layers,
+                                            REF_INT of_faceid);
 
-REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell);
-REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell);
+REF_FCN REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell);
+REF_FCN REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell);
 
-REF_STATUS ref_shard_in_place(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_shard_in_place(REF_GRID ref_grid);
 
 END_C_DECLORATION
 

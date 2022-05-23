@@ -62,9 +62,9 @@ struct REF_CAVITY_STRUCT {
   REF_BOOL debug;
 };
 
-REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity);
-REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity);
-REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity);
+REF_FCN REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 
 #define ref_cavity_state(ref_cavity) ((ref_cavity)->state)
 #define ref_cavity_grid(ref_cavity) ((ref_cavity)->ref_grid)
@@ -115,61 +115,65 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define each_ref_cavity_face_node(ref_cavity, face_node) \
   for ((face_node) = 0; (face_node) < 3; (face_node)++)
 
-REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes);
-REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
-                               REF_INT *found_seg, REF_BOOL *reversed);
-REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes);
-REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
-                                REF_INT *found_face, REF_BOOL *reversed);
+REF_FCN REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes);
+REF_FCN REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
+                                       REF_INT *found_seg, REF_BOOL *reversed);
+REF_FCN REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity,
+                                          REF_INT *nodes);
+REF_FCN REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
+                                        REF_INT *found_face,
+                                        REF_BOOL *reversed);
 
-REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri);
+REF_FCN REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri);
 
-REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet);
+REF_FCN REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet);
 
-REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity);
 
-REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                 REF_INT node);
-REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                REF_INT node);
-REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                  REF_INT node, REF_INT site, REF_INT protect);
-REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                     REF_INT node0, REF_INT node1,
-                                     REF_INT node);
-REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                      REF_INT node0, REF_INT node1,
-                                      REF_INT new_node);
-REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
-                                         REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1);
+REF_FCN REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity,
+                                         REF_GRID ref_grid, REF_INT node);
+REF_FCN REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity,
+                                        REF_GRID ref_grid, REF_INT node);
+REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
+                                          REF_GRID ref_grid, REF_INT node,
+                                          REF_INT site, REF_INT protect);
+REF_FCN REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity,
+                                             REF_GRID ref_grid, REF_INT node0,
+                                             REF_INT node1, REF_INT node);
+REF_FCN REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity,
+                                              REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1, REF_INT new_node);
+REF_FCN REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
+                                                 REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1);
 
-REF_STATUS ref_cavity_enlarge_combined(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_enlarge_combined(REF_CAVITY ref_cavity);
 
-REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
-                                 REF_BOOL *conforming);
-REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
+                                         REF_BOOL *conforming);
+REF_FCN REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity);
 
-REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
-                              REF_BOOL *visible);
-REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity);
-REF_STATUS ref_cavity_check_visible(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
+                                      REF_BOOL *visible);
+REF_FCN REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_check_visible(REF_CAVITY ref_cavity);
 
-REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg);
+REF_FCN REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg);
 
-REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face);
+REF_FCN REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face);
 
-REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename);
+REF_FCN REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename);
 
-REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local);
-REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity);
-REF_STATUS ref_cavity_ratio(REF_CAVITY ref_cavity, REF_BOOL *allowed);
-REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
-                             REF_DBL *min_add);
-REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved);
-REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local);
+REF_FCN REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity);
+REF_FCN REF_STATUS ref_cavity_ratio(REF_CAVITY ref_cavity, REF_BOOL *allowed);
+REF_FCN REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
+                                     REF_DBL *min_add);
+REF_FCN REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity,
+                                      REF_BOOL *improved);
+REF_FCN REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity);
 
-REF_STATUS ref_cavity_pass(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_cavity_pass(REF_GRID ref_grid);
 
 END_C_DECLORATION
 

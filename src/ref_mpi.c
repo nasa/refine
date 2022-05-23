@@ -64,7 +64,8 @@
 
 #endif
 
-REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
+REF_FCN REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr,
+                                            void *comm_ptr) {
   REF_MPI ref_mpi;
   clock_t ticks;
 
@@ -120,7 +121,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_create(REF_MPI *ref_mpi_ptr) {
+REF_FCN REF_STATUS ref_mpi_create(REF_MPI *ref_mpi_ptr) {
 #ifdef HAVE_MPI
   MPI_Comm comm = MPI_COMM_WORLD;
   RSS(ref_mpi_create_from_comm(ref_mpi_ptr, (void *)(&(comm))),
@@ -132,7 +133,7 @@ REF_STATUS ref_mpi_create(REF_MPI *ref_mpi_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_half_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr) {
+REF_FCN REF_STATUS ref_mpi_half_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr) {
 #ifdef HAVE_MPI
   MPI_Comm split_comm;
   int color, rank;
@@ -148,8 +149,8 @@ REF_STATUS ref_mpi_half_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_front_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr,
-                              REF_INT n) {
+REF_FCN REF_STATUS ref_mpi_front_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr,
+                                      REF_INT n) {
 #ifdef HAVE_MPI
   MPI_Comm split_comm;
   int color, rank;
@@ -170,7 +171,7 @@ REF_STATUS ref_mpi_front_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_join_comm(REF_MPI split_mpi) {
+REF_FCN REF_STATUS ref_mpi_join_comm(REF_MPI split_mpi) {
 #ifdef HAVE_MPI
   MPI_Comm_free(&ref_mpi_comm(split_mpi));
 #else
@@ -179,14 +180,14 @@ REF_STATUS ref_mpi_join_comm(REF_MPI split_mpi) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_free(REF_MPI ref_mpi) {
+REF_FCN REF_STATUS ref_mpi_free(REF_MPI ref_mpi) {
   if (NULL == (void *)ref_mpi) return REF_NULL;
   ref_free(ref_mpi->comm);
   ref_free(ref_mpi);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
+REF_FCN REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
   REF_MPI ref_mpi;
 
   ref_malloc(*ref_mpi_ptr, 1, REF_MPI_STRUCT);
@@ -215,7 +216,7 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi_ptr, REF_MPI original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_start(int argc, char *argv[]) {
+REF_FCN REF_STATUS ref_mpi_start(int argc, char *argv[]) {
 #ifdef HAVE_MPI
   MPI_Init(&argc, &argv);
 #else
@@ -229,7 +230,7 @@ REF_STATUS ref_mpi_start(int argc, char *argv[]) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_stop(void) {
+REF_FCN REF_STATUS ref_mpi_stop(void) {
 #ifdef HAVE_KOKKOS
   Kokkos::finalize();
 #endif
@@ -240,7 +241,7 @@ REF_STATUS ref_mpi_stop(void) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type) {
+REF_FCN REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type) {
   *type = REF_UNKNOWN_TYPE;
   switch (size) {
     case sizeof(REF_INT):
@@ -258,14 +259,14 @@ REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_elapsed(REF_DBL *seconds) {
+REF_FCN REF_STATUS ref_mpi_elapsed(REF_DBL *seconds) {
   clock_t ticks;
   ticks = clock();
   *seconds = ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi) {
+REF_FCN REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi) {
 #ifdef HAVE_MPI
   if (ref_mpi_para(ref_mpi)) MPI_Barrier(ref_mpi_comm(ref_mpi));
   ref_mpi->start_time = (REF_DBL)MPI_Wtime();
@@ -278,7 +279,8 @@ REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message) {
+REF_FCN REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi,
+                                          const char *message) {
 #ifdef HAVE_MPI
   REF_DBL before_barrier, after_barrier, elapsed;
   REF_DBL first, last;
@@ -310,7 +312,7 @@ REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_stopwatch_delta(REF_MPI ref_mpi, REF_DBL *delta) {
+REF_FCN REF_STATUS ref_mpi_stopwatch_delta(REF_MPI ref_mpi, REF_DBL *delta) {
 #ifdef HAVE_MPI
   REF_DBL after_barrier;
   if (ref_mpi_para(ref_mpi)) MPI_Barrier(ref_mpi_comm(ref_mpi));
@@ -328,8 +330,8 @@ REF_STATUS ref_mpi_stopwatch_delta(REF_MPI ref_mpi, REF_DBL *delta) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n,
-                         REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n,
+                                 REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
@@ -348,8 +350,9 @@ REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_bcast_from_rank(REF_MPI ref_mpi, void *data, REF_INT n,
-                                   REF_TYPE type, REF_INT rank) {
+REF_FCN REF_STATUS ref_mpi_bcast_from_rank(REF_MPI ref_mpi, void *data,
+                                           REF_INT n, REF_TYPE type,
+                                           REF_INT rank) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
@@ -369,8 +372,8 @@ REF_STATUS ref_mpi_bcast_from_rank(REF_MPI ref_mpi, void *data, REF_INT n,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_scatter_send(REF_MPI ref_mpi, void *data, REF_INT n,
-                                REF_TYPE type, REF_INT dest) {
+REF_FCN REF_STATUS ref_mpi_scatter_send(REF_MPI ref_mpi, void *data, REF_INT n,
+                                        REF_TYPE type, REF_INT dest) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   REF_INT tag;
@@ -395,8 +398,8 @@ REF_STATUS ref_mpi_scatter_send(REF_MPI ref_mpi, void *data, REF_INT n,
 #endif
 }
 
-REF_STATUS ref_mpi_scatter_recv(REF_MPI ref_mpi, void *data, REF_INT n,
-                                REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_scatter_recv(REF_MPI ref_mpi, void *data, REF_INT n,
+                                        REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   REF_INT tag;
@@ -422,8 +425,8 @@ REF_STATUS ref_mpi_scatter_recv(REF_MPI ref_mpi, void *data, REF_INT n,
 #endif
 }
 
-REF_STATUS ref_mpi_gather_send(REF_MPI ref_mpi, void *data, REF_INT n,
-                               REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_gather_send(REF_MPI ref_mpi, void *data, REF_INT n,
+                                       REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   REF_INT tag;
@@ -448,8 +451,8 @@ REF_STATUS ref_mpi_gather_send(REF_MPI ref_mpi, void *data, REF_INT n,
 #endif
 }
 
-REF_STATUS ref_mpi_gather_recv(REF_MPI ref_mpi, void *data, REF_INT n,
-                               REF_TYPE type, REF_INT source) {
+REF_FCN REF_STATUS ref_mpi_gather_recv(REF_MPI ref_mpi, void *data, REF_INT n,
+                                       REF_TYPE type, REF_INT source) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   REF_INT tag;
@@ -475,8 +478,8 @@ REF_STATUS ref_mpi_gather_recv(REF_MPI ref_mpi, void *data, REF_INT n,
 #endif
 }
 
-REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
-                            REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
+                                    REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
@@ -505,10 +508,10 @@ REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
-                                    REF_INT *send_size, void *recv,
-                                    REF_INT *recv_size, REF_INT n,
-                                    REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
+                                            REF_INT *send_size, void *recv,
+                                            REF_INT *recv_size, REF_INT n,
+                                            REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   MPI_Request *request;
@@ -596,9 +599,10 @@ REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
 #endif
 }
 
-REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
-                             void *recv, REF_INT *recv_size, REF_INT n,
-                             REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send,
+                                     REF_INT *send_size, void *recv,
+                                     REF_INT *recv_size, REF_INT n,
+                                     REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   REF_INT *send_disp;
@@ -681,8 +685,8 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
 #endif
 }
 
-REF_STATUS ref_mpi_min(REF_MPI ref_mpi, void *input, void *output,
-                       REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_min(REF_MPI ref_mpi, void *input, void *output,
+                               REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
@@ -721,7 +725,7 @@ REF_STATUS ref_mpi_min(REF_MPI ref_mpi, void *input, void *output,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_all_or(REF_MPI ref_mpi, REF_BOOL *boolean) {
+REF_FCN REF_STATUS ref_mpi_all_or(REF_MPI ref_mpi, REF_BOOL *boolean) {
 #ifdef HAVE_MPI
   REF_BOOL output;
 
@@ -739,8 +743,8 @@ REF_STATUS ref_mpi_all_or(REF_MPI ref_mpi, REF_BOOL *boolean) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_max(REF_MPI ref_mpi, void *input, void *output,
-                       REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_max(REF_MPI ref_mpi, void *input, void *output,
+                               REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
@@ -780,8 +784,8 @@ REF_STATUS ref_mpi_max(REF_MPI ref_mpi, void *input, void *output,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_sum(REF_MPI ref_mpi, void *input, void *output, REF_INT n,
-                       REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_sum(REF_MPI ref_mpi, void *input, void *output,
+                               REF_INT n, REF_TYPE type) {
   REF_INT i;
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
@@ -828,8 +832,8 @@ REF_STATUS ref_mpi_sum(REF_MPI ref_mpi, void *input, void *output, REF_INT n,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_allsum(REF_MPI ref_mpi, void *value, REF_INT n,
-                          REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_allsum(REF_MPI ref_mpi, void *value, REF_INT n,
+                                  REF_TYPE type) {
   REF_INT i;
   void *temp = NULL;
   switch (type) {
@@ -854,8 +858,8 @@ REF_STATUS ref_mpi_allsum(REF_MPI ref_mpi, void *value, REF_INT n,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_allgather(REF_MPI ref_mpi, void *scalar, void *array,
-                             REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_allgather(REF_MPI ref_mpi, void *scalar, void *array,
+                                     REF_TYPE type) {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
@@ -901,9 +905,9 @@ REF_STATUS ref_mpi_allgather(REF_MPI ref_mpi, void *scalar, void *array,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
-                              REF_INT *counts, void *concatenated_array,
-                              REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
+                                      REF_INT *counts, void *concatenated_array,
+                                      REF_TYPE type) {
 #ifdef HAVE_MPI
   REF_INT proc;
   REF_INT *displs;
@@ -968,10 +972,10 @@ REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_allconcat(REF_MPI ref_mpi, REF_INT ldim, REF_INT my_size,
-                             void *my_array, REF_INT *total_size,
-                             REF_INT **source, void **concatenated,
-                             REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_allconcat(REF_MPI ref_mpi, REF_INT ldim,
+                                     REF_INT my_size, void *my_array,
+                                     REF_INT *total_size, REF_INT **source,
+                                     void **concatenated, REF_TYPE type) {
   REF_INT proc, i, tot;
   REF_INT *counts;
 
@@ -1013,8 +1017,8 @@ REF_STATUS ref_mpi_allconcat(REF_MPI ref_mpi, REF_INT ldim, REF_INT my_size,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_allminwho(REF_MPI ref_mpi, REF_DBL *val, REF_INT *who,
-                             REF_INT n) {
+REF_FCN REF_STATUS ref_mpi_allminwho(REF_MPI ref_mpi, REF_DBL *val,
+                                     REF_INT *who, REF_INT n) {
   REF_INT i;
   if (!ref_mpi_para(ref_mpi)) {
     for (i = 0; i < n; i++) who[i] = ref_mpi_rank(ref_mpi);
@@ -1053,9 +1057,9 @@ REF_STATUS ref_mpi_allminwho(REF_MPI ref_mpi, REF_DBL *val, REF_INT *who,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
-                             REF_INT ldim, REF_INT nsend, void **recv,
-                             REF_INT *nrecv, REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
+                                     REF_INT ldim, REF_INT nsend, void **recv,
+                                     REF_INT *nrecv, REF_TYPE type) {
   REF_INT i, l, part;
   REF_INT *a_size, *b_size;
   REF_INT *a_next;
@@ -1171,9 +1175,10 @@ static REF_INT find_destination(REF_INT n, REF_INT *shares, REF_INT gid) {
   return n - 1;
 }
 
-REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
-                           void *items, REF_INT first_rank, REF_INT last_rank,
-                           REF_INT *nbalanced, void **balanced, REF_TYPE type) {
+REF_FCN REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
+                                   void *items, REF_INT first_rank,
+                                   REF_INT last_rank, REF_INT *nbalanced,
+                                   void **balanced, REF_TYPE type) {
   REF_INT *shares, total, share, remainder;
   REF_INT *haves;
   REF_INT *destination, offset, part, i;

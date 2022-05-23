@@ -48,42 +48,42 @@ struct REF_SUBDIV_STRUCT {
 
 #define ref_subdiv_new_mark_allowed(ref_subdiv) ((ref_subdiv)->new_mark_allowed)
 
-REF_STATUS ref_subdiv_create(REF_SUBDIV *ref_subdiv, REF_GRID ref_grid);
-REF_STATUS ref_subdiv_free(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_create(REF_SUBDIV *ref_subdiv, REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_subdiv_free(REF_SUBDIV ref_subdiv);
 
 #define ref_subdiv_mark(ref_subdiv, edge) ((ref_subdiv)->mark[edge])
 
 #define ref_subdiv_node(ref_subdiv, edge) ((ref_subdiv)->node[edge])
 
-REF_STATUS ref_subdiv_inspect(REF_SUBDIV ref_subdiv);
-REF_STATUS ref_subdiv_inspect_cell(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
-                                   REF_INT cell);
-REF_STATUS ref_subdiv_inspect_global(REF_SUBDIV ref_subdiv, REF_INT global0,
-                                     REF_INT global1);
+REF_FCN REF_STATUS ref_subdiv_inspect(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_inspect_cell(REF_SUBDIV ref_subdiv,
+                                           REF_CELL ref_cell, REF_INT cell);
+REF_FCN REF_STATUS ref_subdiv_inspect_global(REF_SUBDIV ref_subdiv,
+                                             REF_INT global0, REF_INT global1);
 
-REF_STATUS ref_subdiv_mark_n(REF_SUBDIV ref_subdiv, REF_INT *n);
+REF_FCN REF_STATUS ref_subdiv_mark_n(REF_SUBDIV ref_subdiv, REF_INT *n);
 
-REF_STATUS ref_subdiv_mark_to_split(REF_SUBDIV ref_subdiv, REF_INT node0,
-                                    REF_INT node1);
+REF_FCN REF_STATUS ref_subdiv_mark_to_split(REF_SUBDIV ref_subdiv,
+                                            REF_INT node0, REF_INT node1);
 
-REF_STATUS ref_subdiv_mark_all(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_mark_all(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_mark_prism_by_metric(REF_SUBDIV ref_subdiv);
-REF_STATUS ref_subdiv_mark_prism_by_ratio(REF_SUBDIV ref_subdiv,
-                                          REF_DBL *node_ratio);
-REF_STATUS ref_subdiv_mark_prism_sides(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_mark_prism_by_metric(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_mark_prism_by_ratio(REF_SUBDIV ref_subdiv,
+                                                  REF_DBL *node_ratio);
+REF_FCN REF_STATUS ref_subdiv_mark_prism_sides(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_unmark_tet(REF_SUBDIV ref_subdiv, REF_INT cell,
-                                 REF_BOOL *again);
-REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_unmark_tet(REF_SUBDIV ref_subdiv, REF_INT cell,
+                                         REF_BOOL *again);
+REF_FCN REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_mark_verify(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_mark_verify(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_test_impossible_marks(REF_SUBDIV ref_subdiv);
+REF_FCN REF_STATUS ref_subdiv_test_impossible_marks(REF_SUBDIV ref_subdiv);
 
 END_C_DECLORATION
 

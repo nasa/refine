@@ -23,7 +23,7 @@
 
 #include "ref_malloc.h"
 
-REF_STATUS ref_list_create(REF_LIST *ref_list_ptr) {
+REF_FCN REF_STATUS ref_list_create(REF_LIST *ref_list_ptr) {
   REF_LIST ref_list;
 
   ref_malloc(*ref_list_ptr, 1, REF_LIST_STRUCT);
@@ -38,14 +38,15 @@ REF_STATUS ref_list_create(REF_LIST *ref_list_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_free(REF_LIST ref_list) {
+REF_FCN REF_STATUS ref_list_free(REF_LIST ref_list) {
   if (NULL == (void *)ref_list) return REF_NULL;
   ref_free(ref_list->value);
   ref_free(ref_list);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_deep_copy(REF_LIST *ref_list_ptr, REF_LIST original) {
+REF_FCN REF_STATUS ref_list_deep_copy(REF_LIST *ref_list_ptr,
+                                      REF_LIST original) {
   REF_LIST ref_list;
   REF_INT i;
 
@@ -62,7 +63,7 @@ REF_STATUS ref_list_deep_copy(REF_LIST *ref_list_ptr, REF_LIST original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_inspect(REF_LIST ref_list) {
+REF_FCN REF_STATUS ref_list_inspect(REF_LIST ref_list) {
   REF_INT i;
 
   if (NULL == (void *)ref_list) return REF_NULL;
@@ -74,7 +75,7 @@ REF_STATUS ref_list_inspect(REF_LIST ref_list) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_push(REF_LIST ref_list, REF_INT last) {
+REF_FCN REF_STATUS ref_list_push(REF_LIST ref_list, REF_INT last) {
   if (ref_list_max(ref_list) == ref_list_n(ref_list)) {
     ref_list_max(ref_list) += 1000;
     ref_realloc(ref_list->value, ref_list_max(ref_list), REF_INT);
@@ -87,7 +88,7 @@ REF_STATUS ref_list_push(REF_LIST ref_list, REF_INT last) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_pop(REF_LIST ref_list, REF_INT *last) {
+REF_FCN REF_STATUS ref_list_pop(REF_LIST ref_list, REF_INT *last) {
   if (0 == ref_list_n(ref_list)) {
     *last = REF_EMPTY;
     return REF_FAILURE;
@@ -99,7 +100,7 @@ REF_STATUS ref_list_pop(REF_LIST ref_list, REF_INT *last) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_shift(REF_LIST ref_list, REF_INT *first) {
+REF_FCN REF_STATUS ref_list_shift(REF_LIST ref_list, REF_INT *first) {
   REF_INT i;
   if (0 == ref_list_n(ref_list)) {
     *first = REF_EMPTY;
@@ -115,7 +116,7 @@ REF_STATUS ref_list_shift(REF_LIST ref_list, REF_INT *first) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_delete(REF_LIST ref_list, REF_INT item) {
+REF_FCN REF_STATUS ref_list_delete(REF_LIST ref_list, REF_INT item) {
   REF_INT to, from;
 
   to = 0;
@@ -133,14 +134,14 @@ REF_STATUS ref_list_delete(REF_LIST ref_list, REF_INT item) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_erase(REF_LIST ref_list) {
+REF_FCN REF_STATUS ref_list_erase(REF_LIST ref_list) {
   ref_list_n(ref_list) = 0;
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_contains(REF_LIST ref_list, REF_INT item,
-                             REF_BOOL *contains) {
+REF_FCN REF_STATUS ref_list_contains(REF_LIST ref_list, REF_INT item,
+                                     REF_BOOL *contains) {
   REF_INT i;
 
   *contains = REF_FALSE;

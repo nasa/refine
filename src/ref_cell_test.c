@@ -34,29 +34,29 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 
-static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr) {
+REF_FCN static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_EDG);
 }
-static REF_STATUS ref_ed3(REF_CELL *ref_cell_ptr) {
+REF_FCN static REF_STATUS ref_ed3(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_ED3);
 }
-static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr) {
+REF_FCN static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_TRI);
 }
-static REF_STATUS ref_qua(REF_CELL *ref_cell_ptr) {
+REF_FCN static REF_STATUS ref_qua(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_QUA);
 }
 
-static REF_STATUS ref_tet(REF_CELL *ref_cell_ptr) {
+REF_FCN static REF_STATUS ref_tet(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_TET);
 }
-static REF_STATUS ref_pyr(REF_CELL *ref_cell_ptr) {
+REF_FCN static REF_STATUS ref_pyr(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_PYR);
 }
-static REF_STATUS ref_pri(REF_CELL *ref_cell_ptr) {
+REF_FCN static REF_STATUS ref_pri(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_PRI);
 }
-static REF_STATUS ref_hex(REF_CELL *ref_cell_ptr) {
+REF_FCN static REF_STATUS ref_hex(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_HEX);
 }
 

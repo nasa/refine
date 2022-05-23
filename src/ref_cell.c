@@ -25,7 +25,8 @@
 #include "ref_malloc.h"
 #include "ref_sort.h"
 
-static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
+REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
+                                              REF_CELL_TYPE type) {
   ref_cell_type(ref_cell) = type;
 
   ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
@@ -399,7 +400,7 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_create(REF_CELL *ref_cell_ptr, REF_CELL_TYPE type) {
+REF_FCN REF_STATUS ref_cell_create(REF_CELL *ref_cell_ptr, REF_CELL_TYPE type) {
   REF_INT cell;
   REF_INT max;
   REF_CELL ref_cell;
@@ -432,7 +433,7 @@ REF_STATUS ref_cell_create(REF_CELL *ref_cell_ptr, REF_CELL_TYPE type) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_free(REF_CELL ref_cell) {
+REF_FCN REF_STATUS ref_cell_free(REF_CELL ref_cell) {
   if (NULL == (void *)ref_cell) return REF_NULL;
   ref_adj_free(ref_cell->ref_adj);
   ref_free(ref_cell->c2n);
@@ -442,7 +443,8 @@ REF_STATUS ref_cell_free(REF_CELL ref_cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell_ptr, REF_CELL original) {
+REF_FCN REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell_ptr,
+                                      REF_CELL original) {
   REF_INT node, cell;
   REF_INT max;
   REF_CELL ref_cell;
@@ -470,7 +472,7 @@ REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell_ptr, REF_CELL original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n) {
+REF_FCN REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n) {
   REF_INT node, cell, compact;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -538,7 +540,7 @@ REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
+REF_FCN REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
   switch (ref_cell_type(ref_cell)) {
     case REF_CELL_EDG:
       *keyword = 5;
@@ -582,7 +584,7 @@ REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_inspect(REF_CELL ref_cell) {
+REF_FCN REF_STATUS ref_cell_inspect(REF_CELL ref_cell) {
   REF_INT cell, node;
   printf("ref_cell = %p\n", (void *)ref_cell);
   printf(" size_per = %d\n", ref_cell_size_per(ref_cell));
@@ -602,7 +604,7 @@ REF_STATUS ref_cell_inspect(REF_CELL ref_cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell) {
+REF_FCN REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell) {
   REF_INT node;
   printf("cell %d %d:", (int)ref_cell_type(ref_cell), cell);
   for (node = 0; node < ref_cell_size_per(ref_cell); node++) {
@@ -612,7 +614,7 @@ REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_tattle_about(REF_CELL ref_cell, REF_INT node) {
+REF_FCN REF_STATUS ref_cell_tattle_about(REF_CELL ref_cell, REF_INT node) {
   REF_INT item, cell;
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     RSS(ref_cell_tattle(ref_cell, cell), "tattle");
@@ -620,7 +622,8 @@ REF_STATUS ref_cell_tattle_about(REF_CELL ref_cell, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell) {
+REF_FCN REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes,
+                                REF_INT *new_cell) {
   REF_INT node, cell;
   REF_INT orig, chunk;
   REF_INT max_limit = REF_INT_MAX / 4;
@@ -666,9 +669,10 @@ REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
-                                    REF_INT n, REF_GLOB *c2n, REF_INT *part,
-                                    REF_INT exclude_part_id) {
+REF_FCN REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell,
+                                            REF_NODE ref_node, REF_INT n,
+                                            REF_GLOB *c2n, REF_INT *part,
+                                            REF_INT exclude_part_id) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_GLOB *global;
   REF_INT nnode;
@@ -729,7 +733,7 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_remove(REF_CELL ref_cell, REF_INT cell) {
+REF_FCN REF_STATUS ref_cell_remove(REF_CELL ref_cell, REF_INT cell) {
   REF_INT node;
   if (!ref_cell_valid(ref_cell, cell)) return REF_INVALID;
   ref_cell_n(ref_cell)--;
@@ -746,8 +750,8 @@ REF_STATUS ref_cell_remove(REF_CELL ref_cell, REF_INT cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_replace_whole(REF_CELL ref_cell, REF_INT cell,
-                                  REF_INT *nodes) {
+REF_FCN REF_STATUS ref_cell_replace_whole(REF_CELL ref_cell, REF_INT cell,
+                                          REF_INT *nodes) {
   REF_INT node;
   if (!ref_cell_valid(ref_cell, cell)) return REF_FAILURE;
 
@@ -768,8 +772,8 @@ REF_STATUS ref_cell_replace_whole(REF_CELL ref_cell, REF_INT cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_replace_node(REF_CELL ref_cell, REF_INT old_node,
-                                 REF_INT new_node) {
+REF_FCN REF_STATUS ref_cell_replace_node(REF_CELL ref_cell, REF_INT old_node,
+                                         REF_INT new_node) {
   REF_ADJ ref_adj = ref_cell_adj(ref_cell);
   REF_INT node;
   REF_INT item, cell;
@@ -797,8 +801,8 @@ REF_STATUS ref_cell_replace_node(REF_CELL ref_cell, REF_INT old_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_compact(REF_CELL ref_cell, REF_INT **o2n_ptr,
-                            REF_INT **n2o_ptr) {
+REF_FCN REF_STATUS ref_cell_compact(REF_CELL ref_cell, REF_INT **o2n_ptr,
+                                    REF_INT **n2o_ptr) {
   REF_INT cell;
   REF_INT ncell;
   REF_INT *o2n, *n2o;
@@ -822,7 +826,8 @@ REF_STATUS ref_cell_compact(REF_CELL ref_cell, REF_INT **o2n_ptr,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_nodes(REF_CELL ref_cell, REF_INT cell, REF_INT *nodes) {
+REF_FCN REF_STATUS ref_cell_nodes(REF_CELL ref_cell, REF_INT cell,
+                                  REF_INT *nodes) {
   REF_INT node;
 
   if (!ref_cell_valid(ref_cell, cell)) return REF_INVALID;
@@ -833,8 +838,8 @@ REF_STATUS ref_cell_nodes(REF_CELL ref_cell, REF_INT cell, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_part_cell_node(REF_CELL ref_cell, REF_NODE ref_node,
-                                   REF_INT cell, REF_INT *cell_node) {
+REF_FCN REF_STATUS ref_cell_part_cell_node(REF_CELL ref_cell, REF_NODE ref_node,
+                                           REF_INT cell, REF_INT *cell_node) {
   REF_GLOB global, smallest_global;
   REF_INT node, smallest_global_node;
   *cell_node = REF_EMPTY;
@@ -858,8 +863,8 @@ REF_STATUS ref_cell_part_cell_node(REF_CELL ref_cell, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node, REF_INT cell,
-                         REF_INT *output_part) {
+REF_FCN REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node,
+                                 REF_INT cell, REF_INT *output_part) {
   REF_INT cell_node;
   *output_part = REF_EMPTY;
   RSS(ref_cell_part_cell_node(ref_cell, ref_node, cell, &cell_node),
@@ -870,8 +875,8 @@ REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node, REF_INT cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_all_local(REF_CELL ref_cell, REF_NODE ref_node,
-                              REF_INT cell, REF_BOOL *all_local_nodes) {
+REF_FCN REF_STATUS ref_cell_all_local(REF_CELL ref_cell, REF_NODE ref_node,
+                                      REF_INT cell, REF_BOOL *all_local_nodes) {
   REF_INT cell_node;
 
   *all_local_nodes = REF_TRUE;
@@ -886,8 +891,9 @@ REF_STATUS ref_cell_all_local(REF_CELL ref_cell, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
-                              REF_INT node0, REF_INT node1, REF_BOOL *local) {
+REF_FCN REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
+                                      REF_INT node0, REF_INT node1,
+                                      REF_BOOL *local) {
   REF_INT item, cell, search_node, test_node;
 
   *local = REF_FALSE;
@@ -912,8 +918,8 @@ REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_ncell(REF_CELL ref_cell, REF_NODE ref_node,
-                          REF_LONG *ncell) {
+REF_FCN REF_STATUS ref_cell_ncell(REF_CELL ref_cell, REF_NODE ref_node,
+                                  REF_LONG *ncell) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, part;
 
@@ -930,7 +936,8 @@ REF_STATUS ref_cell_ncell(REF_CELL ref_cell, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0, REF_INT *nodes) {
+REF_FCN REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0,
+                                         REF_INT *nodes) {
   REF_INT temp;
   REIS(4, nnode, "only implemented for tets");
   if (node0 == nodes[0]) return REF_SUCCESS;
@@ -966,8 +973,8 @@ REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_has_side(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
-                             REF_BOOL *has_side) {
+REF_FCN REF_STATUS ref_cell_has_side(REF_CELL ref_cell, REF_INT node0,
+                                     REF_INT node1, REF_BOOL *has_side) {
   REF_INT item, cell;
   REF_INT cell_edge;
 
@@ -989,8 +996,9 @@ REF_STATUS ref_cell_has_side(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
-                                REF_INT id, REF_BOOL *has_id) {
+REF_FCN REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0,
+                                        REF_INT node1, REF_INT id,
+                                        REF_BOOL *has_id) {
   REF_INT item, cell;
   REF_INT cell_edge;
 
@@ -1020,8 +1028,8 @@ REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi,
-                             REF_INT *min_id, REF_INT *max_id) {
+REF_FCN REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi,
+                                     REF_INT *min_id, REF_INT *max_id) {
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -1050,8 +1058,8 @@ REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
-                              REF_INT *cell0, REF_INT *cell1) {
+REF_FCN REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
+                                      REF_INT *cell0, REF_INT *cell1) {
   REF_INT item, node, same, cell_face, cell;
   REF_INT ntarget, target[REF_CELL_MAX_SIZE_PER];
   REF_INT ncandidate, candidate[REF_CELL_MAX_SIZE_PER];
@@ -1091,8 +1099,8 @@ REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_ntri_with_tet_nodes(REF_CELL ref_cell, REF_INT *nodes,
-                                        REF_INT *ntri) {
+REF_FCN REF_STATUS ref_cell_ntri_with_tet_nodes(REF_CELL ref_cell,
+                                                REF_INT *nodes, REF_INT *ntri) {
   REF_INT face[3], cell;
 
   *ntri = 0;
@@ -1124,7 +1132,8 @@ REF_STATUS ref_cell_ntri_with_tet_nodes(REF_CELL ref_cell, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_with(REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell) {
+REF_FCN REF_STATUS ref_cell_with(REF_CELL ref_cell, REF_INT *nodes,
+                                 REF_INT *cell) {
   REF_INT item, ref, node, same;
   REF_INT ntarget, target[REF_CELL_MAX_SIZE_PER];
   REF_INT ncandidate, candidate[REF_CELL_MAX_SIZE_PER];
@@ -1154,8 +1163,8 @@ REF_STATUS ref_cell_with(REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell) {
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_cell_degree_with2(REF_CELL ref_cell, REF_INT node0,
-                                 REF_INT node1, REF_INT *degree) {
+REF_FCN REF_STATUS ref_cell_degree_with2(REF_CELL ref_cell, REF_INT node0,
+                                         REF_INT node1, REF_INT *degree) {
   REF_INT item, cell_node, cell;
 
   *degree = 0;
@@ -1166,9 +1175,9 @@ REF_STATUS ref_cell_degree_with2(REF_CELL ref_cell, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_list_with2(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
-                               REF_INT max_cell, REF_INT *ncell,
-                               REF_INT *cell_list) {
+REF_FCN REF_STATUS ref_cell_list_with2(REF_CELL ref_cell, REF_INT node0,
+                                       REF_INT node1, REF_INT max_cell,
+                                       REF_INT *ncell, REF_INT *cell_list) {
   REF_INT cell, item, cell_node;
 
   *ncell = 0;
@@ -1181,9 +1190,9 @@ REF_STATUS ref_cell_list_with2(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_node_list_around(REF_CELL ref_cell, REF_INT node,
-                                     REF_INT max_node, REF_INT *nnode,
-                                     REF_INT *node_list) {
+REF_FCN REF_STATUS ref_cell_node_list_around(REF_CELL ref_cell, REF_INT node,
+                                             REF_INT max_node, REF_INT *nnode,
+                                             REF_INT *node_list) {
   REF_INT cell, item, cell_node, haves;
   REF_BOOL already_have_it;
 
@@ -1210,9 +1219,9 @@ REF_STATUS ref_cell_node_list_around(REF_CELL ref_cell, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
-                                   REF_INT max_ids, REF_INT *n_ids,
-                                   REF_INT *ids) {
+REF_FCN REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
+                                           REF_INT max_ids, REF_INT *n_ids,
+                                           REF_INT *ids) {
   REF_INT item, cell, id, deg;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL already_have_it;
@@ -1236,10 +1245,10 @@ REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_id_list_around_both(REF_CELL ref_cell_a,
-                                        REF_CELL ref_cell_b, REF_INT node,
-                                        REF_INT max_ids, REF_INT *n_ids,
-                                        REF_INT *ids) {
+REF_FCN REF_STATUS ref_cell_id_list_around_both(REF_CELL ref_cell_a,
+                                                REF_CELL ref_cell_b,
+                                                REF_INT node, REF_INT max_ids,
+                                                REF_INT *n_ids, REF_INT *ids) {
   REF_INT item, cell, id, deg;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL already_have_it;
@@ -1282,8 +1291,8 @@ REF_STATUS ref_cell_id_list_around_both(REF_CELL ref_cell_a,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
-                                  REF_INT *face0, REF_INT *face1) {
+REF_FCN REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
+                                          REF_INT *face0, REF_INT *face1) {
   REF_INT face, node0, node1;
   REF_BOOL have_node0;
   REF_BOOL have_node1;
@@ -1319,8 +1328,8 @@ REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_ghost_long(REF_CELL ref_cell, REF_NODE ref_node,
-                               REF_LONG *data) {
+REF_FCN REF_STATUS ref_cell_ghost_long(REF_CELL ref_cell, REF_NODE ref_node,
+                                       REF_LONG *data) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
@@ -1415,8 +1424,8 @@ REF_STATUS ref_cell_ghost_long(REF_CELL ref_cell, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
-                           REF_LONG **global) {
+REF_FCN REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
+                                   REF_LONG **global) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT ncell, cell, part, *counts, proc;
   REF_LONG offset;
@@ -1450,7 +1459,7 @@ REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename) {
+REF_FCN REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename) {
   REF_INT cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -1477,8 +1486,8 @@ REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
-                          REF_DBL *shape) {
+REF_FCN REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
+                                  REF_DBL *shape) {
   REF_INT cell_node;
   switch (cell_type) {
     case REF_CELL_EDG:

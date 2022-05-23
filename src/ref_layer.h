@@ -41,23 +41,23 @@ struct REF_LAYER_STRUCT {
   REF_BOOL verbose;
 };
 
-REF_STATUS ref_layer_create(REF_LAYER *ref_layer, REF_MPI ref_mpi);
-REF_STATUS ref_layer_free(REF_LAYER ref_layer);
+REF_FCN REF_STATUS ref_layer_create(REF_LAYER *ref_layer, REF_MPI ref_mpi);
+REF_FCN REF_STATUS ref_layer_free(REF_LAYER ref_layer);
 
 #define ref_layer_list(ref_layer) ((ref_layer)->ref_list)
 #define ref_layer_n(ref_layer) (ref_list_n(ref_layer_list(ref_layer)))
 #define ref_layer_grid(ref_layer) ((ref_layer)->ref_grid)
 
-REF_STATUS ref_layer_attach(REF_LAYER ref_layer, REF_GRID ref_grid,
-                            REF_INT faceid);
-REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid);
-REF_STATUS ref_layer_insert(REF_LAYER ref_layer, REF_GRID ref_grid);
-REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_layer_attach(REF_LAYER ref_layer, REF_GRID ref_grid,
+                                    REF_INT faceid);
+REF_FCN REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_layer_insert(REF_LAYER ref_layer, REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid);
 
-REF_STATUS ref_layer_align_quad(REF_GRID ref_grid);
+REF_FCN REF_STATUS ref_layer_align_quad(REF_GRID ref_grid);
 
-REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid, REF_INT cell,
-                                         REF_DBL *normal);
+REF_FCN REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid,
+                                                 REF_INT cell, REF_DBL *normal);
 
 END_C_DECLORATION
 

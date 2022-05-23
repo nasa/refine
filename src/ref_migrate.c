@@ -54,7 +54,8 @@
 #include "ref_part.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr,
+                                      REF_GRID ref_grid) {
   REF_MIGRATE ref_migrate;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -115,7 +116,7 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate) {
+REF_FCN REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate) {
   if (NULL == (void *)ref_migrate) return REF_NULL;
 
   ref_free(ref_migrate->age);
@@ -132,7 +133,7 @@ REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_inspect(REF_MIGRATE ref_migrate) {
+REF_FCN REF_STATUS ref_migrate_inspect(REF_MIGRATE ref_migrate) {
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
   REF_INT node, item, local, part;
   REF_GLOB global;
@@ -151,8 +152,9 @@ REF_STATUS ref_migrate_inspect(REF_MIGRATE ref_migrate) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
-                                             REF_INT keep, REF_INT lose) {
+REF_FCN REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
+                                                     REF_INT keep,
+                                                     REF_INT lose) {
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
   REF_ADJ conn_adj = ref_migrate_conn(ref_migrate);
   REF_INT item, local;
@@ -205,7 +207,7 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
+REF_FCN REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
   REF_GRID ref_grid = ref_migrate_grid(ref_migrate);
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
   REF_INT cell;
@@ -247,9 +249,9 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_report_load_balance(REF_GRID ref_grid,
-                                                  REF_INT npart,
-                                                  REF_INT *node_part) {
+REF_FCN static REF_STATUS ref_migrate_report_load_balance(REF_GRID ref_grid,
+                                                          REF_INT npart,
+                                                          REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT min_part, max_part, node, proc, *partition_size;
@@ -287,8 +289,8 @@ static REF_STATUS ref_migrate_report_load_balance(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
-                                          REF_INT *node_part) {
+REF_FCN static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
+                                                  REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
 
@@ -322,8 +324,9 @@ REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
   return answer;
 }
 
-REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
-                                 REF_DBL *transform, REF_INT *dir) {
+REF_FCN REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n,
+                                         REF_DBL *xyz, REF_DBL *transform,
+                                         REF_INT *dir) {
   REF_DBL mins[3], maxes[3], temp, transformed[3];
   REF_INT i, j;
   *dir = 0;
@@ -356,8 +359,8 @@ REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
-                                   REF_DBL *ratio) {
+REF_FCN REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
+                                           REF_DBL *ratio) {
   REF_INT half = number_of_partitions / 2;
   if (ref_math_divisible((REF_DBL)half, (REF_DBL)number_of_partitions)) {
     *ratio = (REF_DBL)half / (REF_DBL)number_of_partitions;
@@ -368,7 +371,7 @@ REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_native_rcb_direction(
+REF_FCN static REF_STATUS ref_migrate_native_rcb_direction(
     REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_DBL *transform, REF_INT npart,
     REF_INT offset, REF_INT *owners, REF_INT *locals, REF_MPI global_mpi,
     REF_INT *part, REF_INT seed, REF_INT dir, REF_BOOL twod) {
@@ -526,8 +529,9 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid, REF_INT npart,
-                                              REF_INT *node_part) {
+REF_FCN static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
+                                                      REF_INT npart,
+                                                      REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT node;
@@ -714,7 +718,8 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
     degree++;
   }
 }
-REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
+REF_FCN REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid,
+                                           REF_INT *node_part) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MIGRATE ref_migrate;
@@ -895,9 +900,11 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
-                                            PARM_INT *adjncy, PARM_INT *adjwgt,
-                                            PARM_INT npart, PARM_INT *part) {
+REF_FCN static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
+                                                    PARM_INT *adjncy,
+                                                    PARM_INT *adjwgt,
+                                                    PARM_INT npart,
+                                                    PARM_INT *part) {
   PARM_INT ncon;
   PARM_INT *vwgt, *vsize, objval;
   PARM_REAL *tpwgts, *ubvec;
@@ -927,7 +934,7 @@ static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
 
   return REF_SUCCESS;
 }
-static REF_STATUS ref_migrate_metis_subset(
+REF_FCN static REF_STATUS ref_migrate_metis_subset(
     REF_MPI ref_mpi, PARM_INT npart, PARM_INT *vtxdist, PARM_INT *xadjdist,
     PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
   REF_INT *count;
@@ -996,7 +1003,7 @@ static REF_STATUS ref_migrate_metis_subset(
 
   return REF_SUCCESS;
 }
-static REF_STATUS ref_migrate_parmetis_wrapper(
+REF_FCN static REF_STATUS ref_migrate_parmetis_wrapper(
     REF_MPI ref_mpi, PARM_INT npart, PARM_INT *vtxdist, PARM_INT *xadjdist,
     PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
   PARM_INT *vwgt;
@@ -1028,7 +1035,7 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
   ref_free(vwgt);
   return REF_SUCCESS;
 }
-static REF_STATUS ref_migrate_parmetis_subset(
+REF_FCN static REF_STATUS ref_migrate_parmetis_subset(
     REF_MPI ref_mpi, PARM_INT npart, REF_INT newproc, PARM_INT *vtxdist,
     PARM_INT *xadjdist, PARM_INT *adjncydist, PARM_INT *adjwgtdist,
     PARM_INT *partdist) {
@@ -1187,8 +1194,9 @@ static REF_STATUS ref_migrate_parmetis_subset(
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT npart,
-                                            REF_INT *node_part) {
+REF_FCN static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid,
+                                                    REF_INT npart,
+                                                    REF_INT *node_part) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MIGRATE ref_migrate;
@@ -1293,8 +1301,8 @@ static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT npart,
 }
 #endif
 
-static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT npart,
-                                       REF_INT *new_part) {
+REF_FCN static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT npart,
+                                               REF_INT *new_part) {
   /* synchronize_globals and collect_ghost_age by ref_migrate_to_balance */
 
   if (!ref_mpi_para(ref_grid_mpi(ref_grid)) || (2 > npart)) {
@@ -1353,7 +1361,7 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT npart,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
+REF_FCN static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
@@ -1457,7 +1465,8 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
+REF_FCN REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node,
+                                             REF_CELL ref_cell) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT all_parts[REF_CELL_MAX_SIZE_PER];
@@ -1566,7 +1575,7 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1658,7 +1667,7 @@ static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1705,7 +1714,7 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT npart;
@@ -1755,7 +1764,7 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_replicate_ghost(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_migrate_replicate_ghost(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GLOB global;

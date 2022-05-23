@@ -67,8 +67,8 @@ static REF_STATUS flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_acceptance_primal_trig(REF_DBL x, REF_DBL y,
-                                             REF_DBL *primitive) {
+REF_FCN static REF_STATUS ref_acceptance_primal_trig(REF_DBL x, REF_DBL y,
+                                                     REF_DBL *primitive) {
   REF_DBL gamma = 1.4;
   REF_DBL x0, y0;
   REF_DBL r;
@@ -84,8 +84,8 @@ static REF_STATUS ref_acceptance_primal_trig(REF_DBL x, REF_DBL y,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_acceptance_primal_coax(REF_DBL x, REF_DBL y,
-                                             REF_DBL *primitive) {
+REF_FCN static REF_STATUS ref_acceptance_primal_coax(REF_DBL x, REF_DBL y,
+                                                     REF_DBL *primitive) {
   REF_DBL r2 = 1.384, r1 = 1.0;
   REF_DBL r, t;
   REF_DBL o2 = 0.4, o1 = 0.1;
@@ -131,8 +131,8 @@ static REF_STATUS ringleb_v(REF_DBL x, REF_DBL y, REF_DBL *v) {
   return REF_FAILURE;
 }
 
-static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
-                                                REF_DBL *primitive) {
+REF_FCN static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
+                                                        REF_DBL *primitive) {
   REF_DBL v, b, rho, p, l, psi, t;
   RSS(ringleb_v(x, y, &v), "fixed point v");
   b = sqrt(1.0 - 0.2 * v * v);
@@ -156,7 +156,8 @@ static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_acceptance_primal_fp_sa(REF_DBL y, REF_DBL *primitive) {
+REF_FCN static REF_STATUS ref_acceptance_primal_fp_sa(REF_DBL y,
+                                                      REF_DBL *primitive) {
   REF_DBL rho = 1.0;
   REF_DBL v = 0.0;
   REF_DBL w;
@@ -189,8 +190,8 @@ static REF_STATUS ref_acceptance_primal_fp_sa(REF_DBL y, REF_DBL *primitive) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_acceptance_primal_vortex(REF_DBL x, REF_DBL y,
-                                               REF_DBL *primitive) {
+REF_FCN static REF_STATUS ref_acceptance_primal_vortex(REF_DBL x, REF_DBL y,
+                                                       REF_DBL *primitive) {
   REF_DBL gamma = 1.4;
   REF_DBL rho, pressure, u, v, w, mach;
   REF_DBL ri = 1.0, mi = 2.25;
@@ -218,8 +219,8 @@ static REF_STATUS ref_acceptance_primal_vortex(REF_DBL x, REF_DBL y,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_acceptance_u_lisbon(REF_DBL x, REF_DBL y,
-                                          REF_DBL *scalar) {
+REF_FCN static REF_STATUS ref_acceptance_u_lisbon(REF_DBL x, REF_DBL y,
+                                                  REF_DBL *scalar) {
   REF_DBL sigma, nu, u, v;
   sigma = 4.0;
   RAS(ref_math_divisible(y, x), "lisbon not defined for x=0");
@@ -231,8 +232,9 @@ static REF_STATUS ref_acceptance_u_lisbon(REF_DBL x, REF_DBL y,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
-                                   REF_DBL *scalar) {
+REF_FCN static REF_STATUS ref_acceptance_u(REF_NODE ref_node,
+                                           const char *function_name,
+                                           REF_DBL *scalar) {
   REF_INT node;
   REF_DBL x, y, z;
   each_ref_node_valid_node(ref_node, node) {
@@ -386,8 +388,9 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
   }
   return REF_SUCCESS;
 }
-static REF_STATUS ref_acceptance_g(REF_NODE ref_node, const char *function_name,
-                                   REF_DBL *scalar) {
+REF_FCN static REF_STATUS ref_acceptance_g(REF_NODE ref_node,
+                                           const char *function_name,
+                                           REF_DBL *scalar) {
   REF_INT node;
   REF_DBL x, y;
   each_ref_node_valid_node(ref_node, node) {
@@ -407,8 +410,9 @@ static REF_STATUS ref_acceptance_g(REF_NODE ref_node, const char *function_name,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
-                                   REF_INT *ldim, REF_DBL **scalar) {
+REF_FCN static REF_STATUS ref_acceptance_q(REF_NODE ref_node,
+                                           const char *function_name,
+                                           REF_INT *ldim, REF_DBL **scalar) {
   REF_INT node;
 
   *ldim = 5;
@@ -472,9 +476,9 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_acceptance_pd(REF_NODE ref_node,
-                                    const char *function_name, REF_INT *ldim,
-                                    REF_DBL **scalar) {
+REF_FCN static REF_STATUS ref_acceptance_pd(REF_NODE ref_node,
+                                            const char *function_name,
+                                            REF_INT *ldim, REF_DBL **scalar) {
   REF_INT node, i;
   *ldim = 10;
   ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);

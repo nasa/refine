@@ -35,8 +35,10 @@
 #include "ref_part.h"
 #include "ref_recon.h"
 
-static REF_STATUS ref_phys_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
-                                          REF_DBL *scalar, REF_DBL *gradient) {
+REF_FCN static REF_STATUS ref_phys_tri_grad_nodes(REF_NODE ref_node,
+                                                  REF_INT *nodes,
+                                                  REF_DBL *scalar,
+                                                  REF_DBL *gradient) {
   REF_DBL area2, dot, side_length;
   REF_DBL grad1[3], grad2[3], edge02[3], edge01[3], norm02[3], norm01[3];
   REF_INT i;
@@ -130,7 +132,7 @@ static REF_STATUS norm_check_square(REF_DBL x, REF_DBL y, REF_DBL *n) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_phys_flipper(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_phys_flipper(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri_cell = ref_grid_tri(ref_grid);
   REF_CELL edg_cell = ref_grid_edg(ref_grid);

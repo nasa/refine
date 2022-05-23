@@ -30,7 +30,7 @@
 #include "ref_sort.h"
 #include "ref_swap.h"
 
-REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
+REF_FCN REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   REF_CAVITY ref_cavity;
   REF_INT seg, face;
 
@@ -82,7 +82,7 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
   if (NULL == (void *)ref_cavity) return REF_NULL;
   ref_list_free(ref_cavity->tet_list);
   ref_list_free(ref_cavity->tri_list);
@@ -92,7 +92,7 @@ REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   REF_INT face, node;
   REF_INT item, cell, i, nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -128,8 +128,8 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_remove_seg_face(REF_CAVITY ref_cavity,
-                                             REF_INT *seg_nodes) {
+REF_FCN static REF_STATUS ref_cavity_remove_seg_face(REF_CAVITY ref_cavity,
+                                                     REF_INT *seg_nodes) {
   REF_INT face, face_nodes[3];
   REF_BOOL reversed;
 
@@ -153,8 +153,8 @@ static REF_STATUS ref_cavity_remove_seg_face(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_add_seg_face(REF_CAVITY ref_cavity,
-                                          REF_INT *seg_nodes) {
+REF_FCN static REF_STATUS ref_cavity_add_seg_face(REF_CAVITY ref_cavity,
+                                                  REF_INT *seg_nodes) {
   REF_INT face_nodes[3];
 
   if (ref_list_n(ref_cavity_tet_list(ref_cavity)) == 0) return REF_SUCCESS;
@@ -172,8 +172,8 @@ static REF_STATUS ref_cavity_add_seg_face(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_remove_seg_add_tets(REF_CAVITY ref_cavity,
-                                                 REF_INT *seg_nodes) {
+REF_FCN static REF_STATUS ref_cavity_remove_seg_add_tets(REF_CAVITY ref_cavity,
+                                                         REF_INT *seg_nodes) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -219,7 +219,8 @@ static REF_STATUS ref_cavity_remove_seg_add_tets(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
+REF_FCN REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity,
+                                         REF_INT *nodes) {
   REF_INT node, seg;
   REF_INT orig, chunk;
   REF_BOOL reversed;
@@ -276,8 +277,8 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
-                               REF_INT *found_seg, REF_BOOL *reversed) {
+REF_FCN REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
+                                       REF_INT *found_seg, REF_BOOL *reversed) {
   REF_INT seg;
 
   *found_seg = REF_EMPTY;
@@ -300,7 +301,8 @@ REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
+REF_FCN REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity,
+                                          REF_INT *nodes) {
   REF_INT node, face;
   REF_INT orig, chunk;
   REF_BOOL reversed;
@@ -346,8 +348,9 @@ REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
-                                REF_INT *found_face, REF_BOOL *reversed) {
+REF_FCN REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
+                                        REF_INT *found_face,
+                                        REF_BOOL *reversed) {
   REF_INT face;
 
   *found_face = REF_EMPTY;
@@ -384,9 +387,10 @@ REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
   return REF_NOT_FOUND;
 }
 
-static REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity,
-                                                 REF_INT node0, REF_INT node1,
-                                                 REF_INT *found_face) {
+REF_FCN static REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity,
+                                                         REF_INT node0,
+                                                         REF_INT node1,
+                                                         REF_INT *found_face) {
   REF_INT face;
 
   *found_face = REF_EMPTY;
@@ -410,7 +414,8 @@ static REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
+REF_FCN static REF_STATUS ref_cavity_verify_face_manifold(
+    REF_CAVITY ref_cavity) {
   REF_INT face, found_face;
 
   if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
@@ -443,7 +448,8 @@ static REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_verify_seg_manifold(REF_CAVITY ref_cavity) {
+REF_FCN static REF_STATUS ref_cavity_verify_seg_manifold(
+    REF_CAVITY ref_cavity) {
   REF_INT seg0, seg1, found_seg;
 
   if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
@@ -467,7 +473,7 @@ static REF_STATUS ref_cavity_verify_seg_manifold(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
+REF_FCN REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
   REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT cell_edge, node;
@@ -500,7 +506,7 @@ REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
+REF_FCN REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
   REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT cell_face, node;
@@ -530,7 +536,7 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -697,15 +703,15 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                 REF_INT node) {
+REF_FCN REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity,
+                                         REF_GRID ref_grid, REF_INT node) {
   ref_cavity_grid(ref_cavity) = ref_grid;
   ref_cavity_node(ref_cavity) = node;
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                REF_INT node) {
+REF_FCN REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity,
+                                        REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell_face, face_node, cell;
@@ -791,8 +797,9 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                  REF_INT node, REF_INT site, REF_INT protect) {
+REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
+                                          REF_GRID ref_grid, REF_INT node,
+                                          REF_INT site, REF_INT protect) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell_face, face_node, cell;
@@ -892,9 +899,9 @@ REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                     REF_INT node0, REF_INT node1,
-                                     REF_INT node) {
+REF_FCN REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity,
+                                             REF_GRID ref_grid, REF_INT node0,
+                                             REF_INT node1, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
@@ -991,9 +998,9 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                      REF_INT node0, REF_INT node1,
-                                      REF_INT new_node) {
+REF_FCN REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity,
+                                              REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1, REF_INT new_node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
@@ -1105,9 +1112,9 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
-                                         REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1) {
+REF_FCN REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
+                                                 REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell;
@@ -1293,8 +1300,8 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
-                                      REF_BOOL *manifold) {
+REF_FCN static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
+                                              REF_BOOL *manifold) {
   REF_INT node;
   REF_CELL ref_cell;
   REF_INT seg, face;
@@ -1359,7 +1366,7 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_enlarge_combined(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_enlarge_combined(REF_CAVITY ref_cavity) {
   RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge boundary");
   if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
   ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
@@ -1367,8 +1374,8 @@ REF_STATUS ref_cavity_enlarge_combined(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
-                                 REF_BOOL *conforming) {
+REF_FCN REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
+                                         REF_BOOL *conforming) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1417,7 +1424,7 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT node;
   REF_INT seg;
@@ -1489,8 +1496,8 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
-                              REF_BOOL *visible) {
+REF_FCN REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
+                                      REF_BOOL *visible) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL volume;
@@ -1511,7 +1518,7 @@ REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT face;
@@ -1576,7 +1583,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_check_visible(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_check_visible(REF_CAVITY ref_cavity) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT face;
@@ -1605,7 +1612,7 @@ REF_STATUS ref_cavity_check_visible(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
+REF_FCN REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_BOOL have_cell0, have_cell1;
@@ -1635,7 +1642,8 @@ REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
+REF_FCN REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity,
+                                           REF_INT face) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT face_node, face_nodes[4], node;
@@ -1697,7 +1705,7 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
+REF_FCN REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_DICT node_dict, face_dict;
@@ -1892,7 +1900,7 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT node;
   REF_INT face, face_node;
@@ -1924,7 +1932,7 @@ REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_ratio(REF_CAVITY ref_cavity, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_cavity_ratio(REF_CAVITY ref_cavity, REF_BOOL *allowed) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node = ref_cavity_node(ref_cavity);
@@ -1958,8 +1966,8 @@ REF_STATUS ref_cavity_ratio(REF_CAVITY ref_cavity, REF_BOOL *allowed) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
-                             REF_DBL *min_add) {
+REF_FCN REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
+                                     REF_DBL *min_add) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   REF_INT node = ref_cavity_node(ref_cavity);
@@ -2041,7 +2049,8 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
+REF_FCN REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity,
+                                      REF_BOOL *improved) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -2115,7 +2124,7 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
+REF_FCN REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   REF_CELL ref_cell;
   REF_INT node;
   REF_INT item, cell, face, face_node, seg;
@@ -2164,8 +2173,8 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_mixed(REF_GRID ref_grid, REF_INT node0,
-                                   REF_INT node1, REF_BOOL *allowed) {
+REF_FCN static REF_STATUS ref_cavity_mixed(REF_GRID ref_grid, REF_INT node0,
+                                           REF_INT node1, REF_BOOL *allowed) {
   *allowed = (ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node0) &&
               ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node0) &&
               ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node0) &&
@@ -2178,9 +2187,10 @@ static REF_STATUS ref_cavity_mixed(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
-                                                REF_INT node0, REF_INT node1,
-                                                REF_BOOL *allowed) {
+REF_FCN static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
+                                                        REF_INT node0,
+                                                        REF_INT node1,
+                                                        REF_BOOL *allowed) {
   REF_BOOL has_triangle, same_face, manifold, conforming, improved, in_limits;
 
   *allowed = REF_FALSE;
@@ -2231,7 +2241,7 @@ static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2326,7 +2336,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL edg = ref_grid_edg(ref_grid);
@@ -2388,7 +2398,7 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_surf_geom_face_pass(REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_cavity_surf_geom_face_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2423,7 +2433,7 @@ static REF_STATUS ref_cavity_surf_geom_face_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   RSS(ref_cavity_swap_tet_pass(ref_grid), "cavity swap pass");
   RSS(ref_cavity_surf_geom_edge_pass(ref_grid), "cavity geom edge");
   RSS(ref_cavity_surf_geom_face_pass(ref_grid), "cavity geom edge");

@@ -34,10 +34,11 @@ struct REF_HTML_STRUCT {
   FILE *file;
 };
 
-REF_STATUS ref_html_create(REF_HTML *ref_html_ptr, const char *filename);
-REF_STATUS ref_html_diagonal_system(REF_HTML ref_html, REF_DBL *origin,
-                                    REF_DBL *diagonal_system);
-REF_STATUS ref_html_free(REF_HTML ref_html);
+REF_FCN REF_STATUS ref_html_create(REF_HTML *ref_html_ptr,
+                                   const char *filename);
+REF_FCN REF_STATUS ref_html_diagonal_system(REF_HTML ref_html, REF_DBL *origin,
+                                            REF_DBL *diagonal_system);
+REF_FCN REF_STATUS ref_html_free(REF_HTML ref_html);
 
 #define ref_html_file(ref_html) ((ref_html)->file)
 

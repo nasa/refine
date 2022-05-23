@@ -24,7 +24,8 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-static REF_STATUS ref_edge_builder_uniq(REF_EDGE ref_edge, REF_GRID ref_grid) {
+REF_FCN static REF_STATUS ref_edge_builder_uniq(REF_EDGE ref_edge,
+                                                REF_GRID ref_grid) {
   REF_INT group, cell, cell_edge;
   REF_INT node0, node1;
   REF_CELL ref_cell;
@@ -61,7 +62,7 @@ static REF_STATUS ref_edge_builder_uniq(REF_EDGE ref_edge, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
   REF_EDGE ref_edge;
 
   ref_malloc(*ref_edge_ptr, 1, REF_EDGE_STRUCT);
@@ -81,7 +82,7 @@ REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_free(REF_EDGE ref_edge) {
+REF_FCN REF_STATUS ref_edge_free(REF_EDGE ref_edge) {
   if (NULL == (void *)ref_edge) return REF_NULL;
 
   RSS(ref_adj_free(ref_edge_adj(ref_edge)), "free adj");
@@ -92,7 +93,8 @@ REF_STATUS ref_edge_free(REF_EDGE ref_edge) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0, REF_INT node1) {
+REF_FCN REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0,
+                                 REF_INT node1) {
   REF_INT edge;
 
   /* do nothing if we already have it */
@@ -130,8 +132,8 @@ REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0, REF_INT node1) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_with(REF_EDGE ref_edge, REF_INT node0, REF_INT node1,
-                         REF_INT *edge) {
+REF_FCN REF_STATUS ref_edge_with(REF_EDGE ref_edge, REF_INT node0,
+                                 REF_INT node1, REF_INT *edge) {
   REF_INT item, ref;
   REF_INT n0, n1;
 
@@ -149,7 +151,8 @@ REF_STATUS ref_edge_with(REF_EDGE ref_edge, REF_INT node0, REF_INT node1,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_edge_part(REF_EDGE ref_edge, REF_INT edge, REF_INT *part) {
+REF_FCN REF_STATUS ref_edge_part(REF_EDGE ref_edge, REF_INT edge,
+                                 REF_INT *part) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
 
   if (ref_node_global(ref_node, ref_edge_e2n(ref_edge, 0, edge)) <
@@ -162,8 +165,8 @@ REF_STATUS ref_edge_part(REF_EDGE ref_edge, REF_INT edge, REF_INT *part) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
-                              REF_INT *data) {
+REF_FCN REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
+                                      REF_INT *data) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
@@ -252,8 +255,8 @@ REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_ghost_glob(REF_EDGE ref_edge, REF_MPI ref_mpi,
-                               REF_GLOB *data) {
+REF_FCN REF_STATUS ref_edge_ghost_glob(REF_EDGE ref_edge, REF_MPI ref_mpi,
+                                       REF_GLOB *data) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
@@ -342,8 +345,8 @@ REF_STATUS ref_edge_ghost_glob(REF_EDGE ref_edge, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_ghost_min_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
-                                  REF_INT *data) {
+REF_FCN REF_STATUS ref_edge_ghost_min_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
+                                          REF_INT *data) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
@@ -444,8 +447,8 @@ REF_STATUS ref_edge_ghost_min_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi, REF_DBL *data,
-                              REF_INT dim) {
+REF_FCN REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi,
+                                      REF_DBL *data, REF_INT dim) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
@@ -536,7 +539,7 @@ REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi, REF_DBL *data,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_tec_fill(REF_EDGE ref_edge, const char *filename) {
+REF_FCN REF_STATUS ref_edge_tec_fill(REF_EDGE ref_edge, const char *filename) {
   REF_INT edge;
 
   FILE *file;
@@ -563,8 +566,8 @@ REF_STATUS ref_edge_tec_fill(REF_EDGE ref_edge, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_tec_int(REF_EDGE ref_edge, const char *filename,
-                            REF_INT *data) {
+REF_FCN REF_STATUS ref_edge_tec_int(REF_EDGE ref_edge, const char *filename,
+                                    REF_INT *data) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT edge;
   REF_INT node;
@@ -602,8 +605,8 @@ REF_STATUS ref_edge_tec_int(REF_EDGE ref_edge, const char *filename,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_tec_dbl(REF_EDGE ref_edge, const char *filename,
-                            REF_DBL *data) {
+REF_FCN REF_STATUS ref_edge_tec_dbl(REF_EDGE ref_edge, const char *filename,
+                                    REF_DBL *data) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT edge;
   REF_INT node;
@@ -641,7 +644,7 @@ REF_STATUS ref_edge_tec_dbl(REF_EDGE ref_edge, const char *filename,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_tec_ratio(REF_EDGE ref_edge, const char *filename) {
+REF_FCN REF_STATUS ref_edge_tec_ratio(REF_EDGE ref_edge, const char *filename) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT edge;
   REF_INT node;
@@ -683,9 +686,10 @@ REF_STATUS ref_edge_tec_ratio(REF_EDGE ref_edge, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge, REF_INT *o2n,
-                                           REF_INT *min_degree,
-                                           REF_INT *min_degree_node) {
+REF_FCN static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge,
+                                                   REF_INT *o2n,
+                                                   REF_INT *min_degree,
+                                                   REF_INT *min_degree_node) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_ADJ ref_adj = ref_edge_adj(ref_edge);
   REF_INT node, degree;
@@ -706,9 +710,10 @@ static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge, REF_INT *o2n,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
-                                          REF_INT *queue, REF_INT *nqueue,
-                                          REF_INT *nhere) {
+REF_FCN static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
+                                                  REF_INT *queue,
+                                                  REF_INT *nqueue,
+                                                  REF_INT *nhere) {
   REF_INT location, insert_point;
 
   /* largest degree first, will dequeue smallest from end of array */
@@ -743,9 +748,10 @@ static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
-                                     REF_INT *o2n, REF_INT *n2o, REF_INT *ndone,
-                                     REF_INT *queue, REF_INT *nqueue) {
+REF_FCN static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
+                                             REF_INT *o2n, REF_INT *n2o,
+                                             REF_INT *ndone, REF_INT *queue,
+                                             REF_INT *nqueue) {
   REF_ADJ ref_adj = ref_edge_adj(ref_edge);
   REF_INT item, ref, other, degree;
   REF_INT nhere;
@@ -776,8 +782,8 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_INT **o2n_ptr,
-                        REF_INT **n2o_ptr) {
+REF_FCN REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_INT **o2n_ptr,
+                                REF_INT **n2o_ptr) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT *o2n, *n2o, *queue;
   REF_INT min_degree, min_degree_node;

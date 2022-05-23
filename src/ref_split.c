@@ -39,9 +39,10 @@
 
 #define MAX_CELL_SPLIT (100)
 
-static REF_STATUS ref_split_edge_ratio_post_report(REF_GRID ref_grid,
-                                                   REF_INT node0, REF_INT node1,
-                                                   REF_INT new_node) {
+REF_FCN static REF_STATUS ref_split_edge_ratio_post_report(REF_GRID ref_grid,
+                                                           REF_INT node0,
+                                                           REF_INT node1,
+                                                           REF_INT new_node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT i, nnode, max_node = 500;
@@ -71,7 +72,7 @@ static REF_STATUS ref_split_edge_ratio_post_report(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_pass(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -389,8 +390,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                          REF_INT new_node) {
+REF_FCN REF_STATUS ref_split_edge(REF_GRID ref_grid, REF_INT node0,
+                                  REF_INT node1, REF_INT new_node) {
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ncell, cell_in_list;
@@ -465,8 +466,9 @@ REF_STATUS ref_split_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_face(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                          REF_INT node2, REF_INT new_node) {
+REF_FCN REF_STATUS ref_split_face(REF_GRID ref_grid, REF_INT node0,
+                                  REF_INT node1, REF_INT node2,
+                                  REF_INT new_node) {
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], face_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell0, cell1;
@@ -554,8 +556,8 @@ REF_STATUS ref_split_face(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_mixed(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_split_edge_mixed(REF_GRID ref_grid, REF_INT node0,
+                                        REF_INT node1, REF_BOOL *allowed) {
   REF_BOOL pyr_side, pri_side, hex_side, qua_side;
 
   RSS(ref_cell_has_side(ref_grid_pyr(ref_grid), node0, node1, &pyr_side),
@@ -572,9 +574,9 @@ REF_STATUS ref_split_edge_mixed(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
-                                      REF_INT node1, REF_INT new_node,
-                                      REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1, REF_INT new_node,
+                                              REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -629,8 +631,9 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_INT new_node, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_split_edge_ratio(REF_GRID ref_grid, REF_INT node0,
+                                        REF_INT node1, REF_INT new_node,
+                                        REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -692,9 +695,9 @@ REF_STATUS ref_split_edge_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_density(REF_GRID ref_grid, REF_INT node0,
-                                  REF_INT node1, REF_INT new_node,
-                                  REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_split_edge_density(REF_GRID ref_grid, REF_INT node0,
+                                          REF_INT node1, REF_INT new_node,
+                                          REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -743,9 +746,11 @@ REF_STATUS ref_split_edge_density(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_tri_conformity(REF_BOOL verbose, REF_GRID ref_grid,
-                                         REF_INT node0, REF_INT node1,
-                                         REF_INT new_node, REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_split_edge_tri_conformity(REF_BOOL verbose,
+                                                 REF_GRID ref_grid,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_INT new_node,
+                                                 REF_BOOL *allowed) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -826,9 +831,9 @@ REF_STATUS ref_split_edge_tri_conformity(REF_BOOL verbose, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
-                                      REF_INT node1, REF_INT new_node,
-                                      REF_BOOL *allowed) {
+REF_FCN REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
+                                              REF_INT node1, REF_INT new_node,
+                                              REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -880,8 +885,8 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
-                                  REF_INT skip) {
+REF_FCN REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
+                                          REF_INT skip) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT edge;
@@ -925,7 +930,7 @@ REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_geometry(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_split_edge_geometry(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT edge;

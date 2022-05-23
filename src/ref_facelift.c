@@ -46,7 +46,7 @@
 #define ref_facelift_face_search(ref_facelift, iface) \
   ((ref_facelift)->face_search[(iface)])
 
-static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
+REF_FCN static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
   REF_INT nedge, iedge, nface, iface;
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_CELL ref_cell;
@@ -111,8 +111,9 @@ static REF_STATUS ref_facelift_cache_search(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift_ptr,
-                               REF_GRID freeable_ref_grid, REF_BOOL direct) {
+REF_FCN REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift_ptr,
+                                       REF_GRID freeable_ref_grid,
+                                       REF_BOOL direct) {
   REF_FACELIFT ref_facelift;
   REF_INT n;
 
@@ -158,7 +159,7 @@ REF_STATUS ref_facelift_create(REF_FACELIFT *ref_facelift_ptr,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift) {
+REF_FCN REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift) {
   REF_INT i;
   if (NULL == (void *)ref_facelift) return REF_NULL;
 
@@ -181,7 +182,7 @@ REF_STATUS ref_facelift_free(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_FACELIFT ref_facelift = ref_geom_facelift(ref_geom);
@@ -249,7 +250,7 @@ REF_STATUS ref_facelift_tattle(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_solve_face(REF_FACELIFT ref_facelift) {
+REF_FCN static REF_STATUS ref_facelift_solve_face(REF_FACELIFT ref_facelift) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_CELL ref_cell = ref_facelift_tri(ref_facelift);
   REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -297,8 +298,8 @@ static REF_STATUS ref_facelift_solve_face(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_initialize_face(REF_FACELIFT ref_facelift,
-                                               REF_GEOM ref_geom) {
+REF_FCN static REF_STATUS ref_facelift_initialize_face(
+    REF_FACELIFT ref_facelift, REF_GEOM ref_geom) {
   REF_DBL edge_xyz[3], face_xyz[3];
   REF_INT i, edge_geom, face_geom, node, item;
 
@@ -328,7 +329,7 @@ static REF_STATUS ref_facelift_initialize_face(REF_FACELIFT ref_facelift,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_solve_edge(REF_FACELIFT ref_facelift) {
+REF_FCN static REF_STATUS ref_facelift_solve_edge(REF_FACELIFT ref_facelift) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_CELL ref_cell = ref_facelift_edg(ref_facelift);
   REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -376,7 +377,8 @@ static REF_STATUS ref_facelift_solve_edge(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_initialize_edge(REF_FACELIFT ref_facelift) {
+REF_FCN static REF_STATUS ref_facelift_initialize_edge(
+    REF_FACELIFT ref_facelift) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL node_xyz[3], edge_xyz[3];
   REF_INT i, node_geom, edge_geom, node, item;
@@ -406,7 +408,7 @@ static REF_STATUS ref_facelift_initialize_edge(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_apply(REF_FACELIFT ref_facelift) {
+REF_FCN static REF_STATUS ref_facelift_apply(REF_FACELIFT ref_facelift) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
   REF_DBL xyz[3];
@@ -428,7 +430,7 @@ static REF_STATUS ref_facelift_apply(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_attach(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_facelift_attach(REF_GRID ref_grid) {
   REF_GRID freeable_ref_grid;
   REF_FACELIFT ref_facelift;
   RSS(ref_grid_deep_copy(&freeable_ref_grid, ref_grid), "deep copy");
@@ -442,7 +444,8 @@ REF_STATUS ref_facelift_attach(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_infer_displacement(REF_FACELIFT ref_facelift) {
+REF_FCN static REF_STATUS ref_facelift_infer_displacement(
+    REF_FACELIFT ref_facelift) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_facelift_grid(ref_facelift));
   REF_DBL geom_xyz[3];
@@ -462,7 +465,8 @@ static REF_STATUS ref_facelift_infer_displacement(REF_FACELIFT ref_facelift) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_facelift_import(REF_GRID ref_grid,
+                                       const char *filename) {
   REF_GRID freeable_ref_grid;
   REF_FACELIFT ref_facelift;
   REF_GEOM ref_geom;
@@ -485,7 +489,8 @@ REF_STATUS ref_facelift_import(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid,
+                                          const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GLOB nnode = 0;
   REF_GRID surrogate;
@@ -518,9 +523,10 @@ REF_STATUS ref_facelift_surrogate(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
-                                  REF_INT id, REF_DBL *param, REF_INT *cell,
-                                  REF_DBL *bary) {
+REF_FCN REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift,
+                                          REF_INT type, REF_INT id,
+                                          REF_DBL *param, REF_INT *cell,
+                                          REF_DBL *bary) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_LIST ref_list;
   REF_SEARCH ref_search;
@@ -620,10 +626,9 @@ REF_STATUS ref_facelift_enclosing(REF_FACELIFT ref_facelift, REF_INT type,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_displacement_at(REF_FACELIFT ref_facelift,
-                                               REF_INT type, REF_INT id,
-                                               REF_DBL *params,
-                                               REF_DBL *displacement) {
+REF_FCN static REF_STATUS ref_facelift_displacement_at(
+    REF_FACELIFT ref_facelift, REF_INT type, REF_INT id, REF_DBL *params,
+    REF_DBL *displacement) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL bary[3], clip[3];
@@ -691,9 +696,9 @@ static REF_STATUS ref_facelift_displacement_at(REF_FACELIFT ref_facelift,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
-                                REF_INT id, REF_DBL *params, REF_DBL *xyz,
-                                REF_DBL *dxyz_dtuv) {
+REF_FCN REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
+                                        REF_INT id, REF_DBL *params,
+                                        REF_DBL *xyz, REF_DBL *dxyz_dtuv) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL displacement[3];
   RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv),
@@ -742,8 +747,9 @@ REF_STATUS ref_facelift_eval_at(REF_FACELIFT ref_facelift, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift, REF_INT type,
-                                     REF_INT id, REF_DBL *xyz, REF_DBL *param) {
+REF_FCN REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift,
+                                             REF_INT type, REF_INT id,
+                                             REF_DBL *xyz, REF_DBL *param) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL geom_xyz[3];
   REF_DBL displacement[3];
@@ -770,14 +776,16 @@ REF_STATUS ref_facelift_inverse_eval(REF_FACELIFT ref_facelift, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
-                                             REF_INT edgeid, REF_INT faceid,
-                                             REF_INT sense, REF_DBL t,
-                                             REF_DBL *uv);
-REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
-                                             REF_INT edgeid, REF_INT faceid,
-                                             REF_INT sense, REF_DBL t,
-                                             REF_DBL *uv) {
+REF_FCN REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
+                                                     REF_INT edgeid,
+                                                     REF_INT faceid,
+                                                     REF_INT sense, REF_DBL t,
+                                                     REF_DBL *uv);
+REF_FCN REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
+                                                     REF_INT edgeid,
+                                                     REF_INT faceid,
+                                                     REF_INT sense, REF_DBL t,
+                                                     REF_DBL *uv) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_DBL edgexyz[3], facexyz[3], dist;
   REF_DBL len, tol;
@@ -849,9 +857,10 @@ REF_STATUS ref_facelift_edge_face_watertight(REF_FACELIFT ref_facelift,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
-                                     REF_INT faceid, REF_INT sense, REF_DBL t,
-                                     REF_DBL *uv) {
+REF_FCN REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift,
+                                             REF_INT edgeid, REF_INT faceid,
+                                             REF_INT sense, REF_DBL t,
+                                             REF_DBL *uv) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   REF_INT i, cell_node, cell, edg_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ncell, cells[2], edg_tri, tri_nodes[REF_CELL_MAX_SIZE_PER];
@@ -940,8 +949,8 @@ REF_STATUS ref_facelift_edge_face_uv(REF_FACELIFT ref_facelift, REF_INT edgeid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_edge_tec_zone(REF_FACELIFT ref_facelift,
-                                             REF_INT id, FILE *file) {
+REF_FCN static REF_STATUS ref_facelift_edge_tec_zone(REF_FACELIFT ref_facelift,
+                                                     REF_INT id, FILE *file) {
   REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_facelift_edg(ref_facelift);
@@ -1075,8 +1084,8 @@ static REF_STATUS ref_facelift_edge_tec_zone(REF_FACELIFT ref_facelift,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_face_tec_zone(REF_FACELIFT ref_facelift,
-                                             REF_INT id, FILE *file) {
+REF_FCN static REF_STATUS ref_facelift_face_tec_zone(REF_FACELIFT ref_facelift,
+                                                     REF_INT id, FILE *file) {
   REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_facelift_tri(ref_facelift);
@@ -1250,7 +1259,8 @@ static REF_STATUS ref_facelift_face_tec_zone(REF_FACELIFT ref_facelift,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_tec(REF_FACELIFT ref_facelift, const char *filename) {
+REF_FCN REF_STATUS ref_facelift_tec(REF_FACELIFT ref_facelift,
+                                    const char *filename) {
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
   FILE *file;
   REF_INT geom, id, min_id, max_id;
@@ -1290,8 +1300,8 @@ REF_STATUS ref_facelift_tec(REF_FACELIFT ref_facelift, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_max_distance(REF_FACELIFT ref_facelift,
-                                     REF_DBL *distance) {
+REF_FCN REF_STATUS ref_facelift_max_distance(REF_FACELIFT ref_facelift,
+                                             REF_DBL *distance) {
   REF_GRID ref_grid = ref_facelift_grid(ref_facelift);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_facelift_geom(ref_facelift);
@@ -1310,8 +1320,9 @@ REF_STATUS ref_facelift_max_distance(REF_FACELIFT ref_facelift,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_complexity(REF_DBL *metric, REF_GRID ref_grid,
-                                          REF_DBL *complexity) {
+REF_FCN static REF_STATUS ref_facelift_complexity(REF_DBL *metric,
+                                                  REF_GRID ref_grid,
+                                                  REF_DBL *complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1339,10 +1350,8 @@ static REF_STATUS ref_facelift_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_facelift_gradation_at_complexity(REF_DBL *metric,
-                                                       REF_GRID ref_grid,
-                                                       REF_DBL gradation,
-                                                       REF_DBL complexity) {
+REF_FCN static REF_STATUS ref_facelift_gradation_at_complexity(
+    REF_DBL *metric, REF_GRID ref_grid, REF_DBL gradation, REF_DBL complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT relaxations;
   REF_DBL current_complexity;
@@ -1384,8 +1393,8 @@ static REF_STATUS ref_facelift_gradation_at_complexity(REF_DBL *metric,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid,
-                                   REF_DBL target_complexity) {
+REF_FCN REF_STATUS ref_facelift_multiscale(REF_GRID ref_grid,
+                                           REF_DBL target_complexity) {
   REF_FACELIFT ref_facelift;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;

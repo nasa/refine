@@ -45,44 +45,47 @@ struct REF_GATHER_STRUCT {
 #define ref_gather_low_quality_zone(ref_gather) ((ref_gather)->low_quality_zone)
 #define ref_gather_min_quality(ref_gather) ((ref_gather)->min_quality)
 
-REF_STATUS ref_gather_create(REF_GATHER *ref_gather);
-REF_STATUS ref_gather_free(REF_GATHER ref_gather);
+REF_FCN REF_STATUS ref_gather_create(REF_GATHER *ref_gather);
+REF_FCN REF_STATUS ref_gather_free(REF_GATHER ref_gather);
 
 #define ref_gather_blocking_frame(ref_grid, zone_title) \
   RSS(ref_gather_tec_movie_frame(ref_grid, zone_title), "movie frame")
 
-REF_STATUS ref_gather_tec_movie_record_button(REF_GATHER ref_gather,
-                                              REF_BOOL on_or_off);
-REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
-                                      const char *zone_title);
+REF_FCN REF_STATUS ref_gather_tec_movie_record_button(REF_GATHER ref_gather,
+                                                      REF_BOOL on_or_off);
+REF_FCN REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
+                                              const char *zone_title);
 
-REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename);
+REF_FCN REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename);
 
-REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename);
+REF_FCN REF_STATUS ref_gather_by_extension(REF_GRID ref_grid,
+                                           const char *filename);
 
-REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename);
+REF_FCN REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename);
 
-REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
-                                       REF_DBL *scalar, const char *filename);
+REF_FCN REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
+                                               REF_DBL *scalar,
+                                               const char *filename);
 
-REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
-                            REF_INT *ngeom);
+REF_FCN REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom,
+                                    REF_INT type, REF_INT *ngeom);
 
-REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
-                                      REF_DBL *scalar,
-                                      const char **scalar_names,
-                                      const char *filename);
+REF_FCN REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
+                                              REF_DBL *scalar,
+                                              const char **scalar_names,
+                                              const char *filename);
 
-REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
-                                          REF_DBL *scalar,
-                                          const char **scalar_names,
-                                          const char *filename);
-REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_gather_volume_status_tec(REF_GRID ref_grid,
-                                        const char *filename);
+REF_FCN REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid,
+                                                  REF_INT ldim, REF_DBL *scalar,
+                                                  const char **scalar_names,
+                                                  const char *filename);
+REF_FCN REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid,
+                                              const char *filename);
+REF_FCN REF_STATUS ref_gather_volume_status_tec(REF_GRID ref_grid,
+                                                const char *filename);
 
-REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
-                                   REF_INT *n, REF_INT *int_string);
+REF_FCN REF_STATUS ref_gather_plt_char_int(const char *char_string, REF_INT max,
+                                           REF_INT *n, REF_INT *int_string);
 
 END_C_DECLORATION
 

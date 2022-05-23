@@ -31,8 +31,8 @@
 #include "ref_recon.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_phys_flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
-                                 REF_DBL *field) {
+REF_FCN REF_STATUS ref_phys_flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
+                                         REF_DBL *field) {
   REF_INT node;
   REF_DBL temp;
   REF_INT nequ;
@@ -57,7 +57,8 @@ REF_STATUS ref_phys_flip_twod_yz(REF_NODE ref_node, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive) {
+REF_FCN REF_STATUS ref_phys_make_primitive(REF_DBL *conserved,
+                                           REF_DBL *primitive) {
   REF_DBL rho, u, v, w, p, e;
   REF_DBL gamma = 1.4;
   rho = conserved[0];
@@ -75,7 +76,8 @@ REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive) {
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved) {
+REF_FCN REF_STATUS ref_phys_make_conserved(REF_DBL *primitive,
+                                           REF_DBL *conserved) {
   REF_DBL rho, u, v, w, p, e;
   REF_DBL gamma = 1.4;
   rho = primitive[0];
@@ -93,7 +95,7 @@ REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_entropy_adjoint(REF_DBL *primitive, REF_DBL *dual) {
+REF_FCN REF_STATUS ref_phys_entropy_adjoint(REF_DBL *primitive, REF_DBL *dual) {
   REF_DBL rho, u, v, w, p, s, vel2;
   REF_DBL gamma = 1.4;
   rho = primitive[0];
@@ -113,7 +115,7 @@ REF_STATUS ref_phys_entropy_adjoint(REF_DBL *primitive, REF_DBL *dual) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux) {
+REF_FCN REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, s, U;
   REF_DBL gamma = 1.4;
 
@@ -133,7 +135,8 @@ REF_STATUS ref_phys_entropy_flux(REF_DBL *primitive, REF_DBL *flux) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
+REF_FCN REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction,
+                                  REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
   REF_DBL gamma = 1.4;
 
@@ -156,8 +159,8 @@ REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   return REF_SUCCESS;
 }
 /* I do like CFD, vol 2, page 77, (3.6.8) */
-REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
-                              REF_DBL *dflux_dcons) {
+REF_FCN REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
+                                      REF_DBL *dflux_dcons) {
   REF_DBL rho, u, v, w, p, q2, e, qn;
   REF_DBL gamma = 1.4;
   REF_DBL K, H;
@@ -223,9 +226,10 @@ REF_STATUS viscosity_law(REF_DBL t, REF_DBL reference_temp_k, REF_DBL *mu) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
-                            REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
-                            REF_DBL *dir, REF_DBL *flux) {
+REF_FCN REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
+                                    REF_DBL mach, REF_DBL re,
+                                    REF_DBL reference_temp, REF_DBL *dir,
+                                    REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, mu, mu_t, t;
   REF_DBL gamma = 1.4;
   REF_DBL pr = 0.72;
@@ -276,8 +280,8 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu,
-                           REF_DBL *mut_sa) {
+REF_FCN REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu,
+                                   REF_DBL *mut_sa) {
   if (turb > 0.0 && rho > 0.0 && nu > 0.0) {
     REF_DBL chi, chi3, fv1;
     REF_DBL cv1 = 7.1;
@@ -292,8 +296,9 @@ REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad, REF_DBL diffusivity,
-                             REF_DBL *dir, REF_DBL *flux) {
+REF_FCN REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad,
+                                     REF_DBL diffusivity, REF_DBL *dir,
+                                     REF_DBL *flux) {
   REF_DBL velocity[3];
 
   velocity[0] = 1.0;
@@ -307,9 +312,9 @@ REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad, REF_DBL diffusivity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_euler_dual_flux(REF_GRID ref_grid, REF_INT ldim,
-                                    REF_DBL *primitive_dual,
-                                    REF_DBL *dual_flux) {
+REF_FCN REF_STATUS ref_phys_euler_dual_flux(REF_GRID ref_grid, REF_INT ldim,
+                                            REF_DBL *primitive_dual,
+                                            REF_DBL *dual_flux) {
   REF_INT i, node, dir, nvar;
   REF_DBL direction[3], state[5], flux[5];
 
@@ -346,8 +351,9 @@ REF_STATUS ref_phys_euler_dual_flux(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
-                                    REF_BOOL *replace, REF_INT ldim) {
+REF_FCN REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid,
+                                            REF_DICT ref_dict,
+                                            REF_BOOL *replace, REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
@@ -385,7 +391,8 @@ REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
+REF_FCN REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict,
+                                       const char *mapbc_filename) {
   FILE *file;
   REF_INT i, n, id, type;
   char buffer[1024];
@@ -405,9 +412,9 @@ REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_read_mapbc_token(REF_DICT ref_dict,
-                                     const char *mapbc_filename,
-                                     const char *token) {
+REF_FCN REF_STATUS ref_phys_read_mapbc_token(REF_DICT ref_dict,
+                                             const char *mapbc_filename,
+                                             const char *token) {
   FILE *file;
   REF_INT i, n, id, type;
   char name[1024];
@@ -429,7 +436,7 @@ REF_STATUS ref_phys_read_mapbc_token(REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags) {
+REF_FCN REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags) {
   REF_INT id, type;
   char *token, *copy;
   RNS(tags, "tags string is NULL");
@@ -447,7 +454,8 @@ REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_av_tag_attributes(REF_DICT ref_dict, REF_GEOM ref_geom) {
+REF_FCN REF_STATUS ref_phys_av_tag_attributes(REF_DICT ref_dict,
+                                              REF_GEOM ref_geom) {
   const char *patch_type;
   REF_INT id, type;
   REF_STATUS ref_status;
@@ -488,8 +496,8 @@ REF_STATUS ref_phys_av_tag_attributes(REF_DICT ref_dict, REF_GEOM ref_geom) {
   }
 */
 
-REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
-                              REF_DBL *res) {
+REF_FCN REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ,
+                                      REF_DBL *flux, REF_DBL *res) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT equ, dir, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
@@ -521,8 +529,8 @@ REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
-                                REF_DBL *res) {
+REF_FCN REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ,
+                                        REF_DBL *flux, REF_DBL *res) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT i, equ, dir, cell, cell_node, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
@@ -621,13 +629,13 @@ REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_spalding_yplus(REF_DBL uplus, REF_DBL *yplus) {
+REF_FCN REF_STATUS ref_phys_spalding_yplus(REF_DBL uplus, REF_DBL *yplus) {
   *yplus = uplus + 0.1108 * (exp(0.4 * uplus) - 1.0 - 0.4 * uplus);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_spalding_dyplus_duplus(REF_DBL uplus,
-                                           REF_DBL *dyplus_duplus) {
+REF_FCN REF_STATUS ref_phys_spalding_dyplus_duplus(REF_DBL uplus,
+                                                   REF_DBL *dyplus_duplus) {
   *dyplus_duplus = 1.0 + 0.1108 * (exp(0.4 * uplus) * 0.4 - 0.4);
   return REF_SUCCESS;
 }
@@ -638,7 +646,7 @@ REF_STATUS ref_phys_spalding_dyplus_duplus(REF_DBL uplus,
    log(y / 0.1108) = 0.4 * u
    log(y / 0.1108) / 0.4 = u
 */
-REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
+REF_FCN REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
   REF_DBL u, y, error, dyplus_duplus;
   REF_BOOL keep_going;
   REF_INT iters;
@@ -671,9 +679,10 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
-                               REF_DBL rho, REF_DBL t, REF_DBL y, REF_DBL u,
-                               REF_DBL *yplus_dist) {
+REF_FCN REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re,
+                                       REF_DBL reference_t_k, REF_DBL rho,
+                                       REF_DBL t, REF_DBL y, REF_DBL u,
+                                       REF_DBL *yplus_dist) {
   REF_DBL mu, nu_mach_re, u_tau;
   *yplus_dist = -1.0;
   RSS(viscosity_law(t, reference_t_k, &mu), "sutherlands");
@@ -682,8 +691,8 @@ REF_STATUS ref_phys_yplus_dist(REF_DBL mach, REF_DBL re, REF_DBL reference_t_k,
   *yplus_dist = nu_mach_re / u_tau;
   return REF_SUCCESS;
 }
-REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
-                          REF_DBL *u_tau) {
+REF_FCN REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
+                                  REF_DBL *u_tau) {
   REF_DBL uplus, yplus;
   REF_DBL uplus_error;
   REF_DBL dyplus_duplus;
@@ -742,10 +751,10 @@ REF_STATUS ref_phys_u_tau(REF_DBL y, REF_DBL u, REF_DBL nu_mach_re,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
-                                      REF_DBL re, REF_DBL reference_t_k,
-                                      REF_INT ldim, REF_DBL *field,
-                                      REF_DBL *lengthscale) {
+REF_FCN REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
+                                              REF_DBL re, REF_DBL reference_t_k,
+                                              REF_INT ldim, REF_DBL *field,
+                                              REF_DBL *lengthscale) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT *hits;
   REF_INT node;
@@ -818,7 +827,8 @@ REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid, REF_DBL *normalspacing) {
+REF_FCN REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid,
+                                           REF_DBL *normalspacing) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT *hits;
   REF_INT node;
@@ -871,10 +881,11 @@ REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid, REF_DBL *normalspacing) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
-                                 REF_DBL mach, REF_DBL re, REF_DBL temperature,
-                                 REF_DBL target, REF_INT ldim, REF_DBL *field,
-                                 REF_DICT ref_dict_bcs) {
+REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
+                                         REF_DBL mach, REF_DBL re,
+                                         REF_DBL temperature, REF_DBL target,
+                                         REF_INT ldim, REF_DBL *field,
+                                         REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *lengthscale, *new_log_metric;
   REF_INT *hits;
@@ -992,9 +1003,9 @@ REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
-                                     REF_DBL strong_value,
-                                     REF_DICT ref_dict_bcs) {
+REF_FCN REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
+                                             REF_DBL strong_value,
+                                             REF_DICT ref_dict_bcs) {
   if (ref_grid_twod(ref_grid)) {
     REF_CELL ref_cell;
     REF_INT bc;
@@ -1040,7 +1051,7 @@ REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_minspac(REF_DBL reynolds_number, REF_DBL *yplus1) {
+REF_FCN REF_STATUS ref_phys_minspac(REF_DBL reynolds_number, REF_DBL *yplus1) {
   REF_DBL cf;
   *yplus1 = -1.0;
   /* laminar: 1.0 / ( sqrt(reynolds_number) *20.0 ); */
@@ -1056,7 +1067,8 @@ REF_STATUS ref_phys_minspac(REF_DBL reynolds_number, REF_DBL *yplus1) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance, REF_DBL *nu_tilde) {
+REF_FCN REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance,
+                                         REF_DBL *nu_tilde) {
   REF_DBL max_nu_tilde = 1000;
   REF_DBL freestream_nu_tilde = 3;
   REF_DBL boundary_layer_height = 0.1;
@@ -1073,8 +1085,8 @@ REF_STATUS ref_phys_sa_surrogate(REF_DBL wall_distance, REF_DBL *nu_tilde) {
 }
 
 /* use? Fast sweeping methods for eikonal equations on triangular meshes */
-REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
-                                    REF_DBL *distance) {
+REF_FCN REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
+                                            REF_DBL *distance) {
   REF_DBL node_min, node_max;
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1155,7 +1167,7 @@ REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
   return REF_SUCCESS;
 }
 
-REF_BOOL ref_phys_wall_distance_bc(REF_INT bc) {
+REF_FCN REF_BOOL ref_phys_wall_distance_bc(REF_INT bc) {
   return (bc == 4000 ||  /* viscous_solid */
           bc == -4000 || /* viscous_solid_trs */
           bc == 4075 ||  /* viscous_wall_rough */
@@ -1167,10 +1179,11 @@ REF_BOOL ref_phys_wall_distance_bc(REF_INT bc) {
           bc == 6210);   /* filter */
 }
 
-static REF_STATUS ref_phys_local_wall(REF_GRID ref_grid, REF_DICT ref_dict,
-                                      REF_INT *node_per_ptr,
-                                      REF_INT *local_ncell_ptr,
-                                      REF_DBL **local_xyz_ptr) {
+REF_FCN static REF_STATUS ref_phys_local_wall(REF_GRID ref_grid,
+                                              REF_DICT ref_dict,
+                                              REF_INT *node_per_ptr,
+                                              REF_INT *local_ncell_ptr,
+                                              REF_DBL **local_xyz_ptr) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT local_ncell;
   REF_DBL *local_xyz;
@@ -1259,10 +1272,10 @@ static REF_STATUS ref_phys_local_wall(REF_GRID ref_grid, REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_phys_bcast_parts(REF_MPI ref_mpi, REF_INT *part_complete,
-                                       REF_INT *part_ncell, REF_INT max_ncell,
-                                       REF_INT node_per, REF_DBL *local_xyz,
-                                       REF_INT *ncell, REF_DBL **xyz) {
+REF_FCN static REF_STATUS ref_phys_bcast_parts(
+    REF_MPI ref_mpi, REF_INT *part_complete, REF_INT *part_ncell,
+    REF_INT max_ncell, REF_INT node_per, REF_DBL *local_xyz, REF_INT *ncell,
+    REF_DBL **xyz) {
   REF_INT total;
   REF_INT first_part, last_part;
   REF_INT offset, part, i;
@@ -1306,8 +1319,9 @@ static REF_STATUS ref_phys_bcast_parts(REF_MPI ref_mpi, REF_INT *part_complete,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_wall_distance_static(REF_GRID ref_grid, REF_DICT ref_dict,
-                                         REF_DBL *distance) {
+REF_FCN REF_STATUS ref_phys_wall_distance_static(REF_GRID ref_grid,
+                                                 REF_DICT ref_dict,
+                                                 REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ncell, local_ncell, *part_ncell, part_complete, max_ncell;
@@ -1394,8 +1408,8 @@ REF_STATUS ref_phys_wall_distance_static(REF_GRID ref_grid, REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
-                                  REF_DBL *distance) {
+REF_FCN REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
+                                          REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nowned, nbalance, nstationary, *stationary;
@@ -1588,9 +1602,10 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
 }
 
 /* 0-RANS 1-LES */
-REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
-                               REF_DBL sqrt_vel_grad_dot_grad, REF_DBL distance,
-                               REF_DBL nu, REF_DBL *fd) {
+REF_FCN REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
+                                       REF_DBL sqrt_vel_grad_dot_grad,
+                                       REF_DBL distance, REF_DBL nu,
+                                       REF_DBL *fd) {
   REF_DBL rd;
   REF_DBL kappa = 0.41;
   REF_DBL num, denom;

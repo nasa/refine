@@ -32,12 +32,12 @@ struct REF_LIST_STRUCT {
   REF_INT *value;
 };
 
-REF_STATUS ref_list_create(REF_LIST *ref_list);
-REF_STATUS ref_list_free(REF_LIST ref_list);
+REF_FCN REF_STATUS ref_list_create(REF_LIST *ref_list);
+REF_FCN REF_STATUS ref_list_free(REF_LIST ref_list);
 
-REF_STATUS ref_list_deep_copy(REF_LIST *ref_list, REF_LIST original);
+REF_FCN REF_STATUS ref_list_deep_copy(REF_LIST *ref_list, REF_LIST original);
 
-REF_STATUS ref_list_inspect(REF_LIST ref_list);
+REF_FCN REF_STATUS ref_list_inspect(REF_LIST ref_list);
 
 #define ref_list_n(ref_list) ((ref_list)->n)
 #define ref_list_max(ref_list) ((ref_list)->max)
@@ -46,15 +46,15 @@ REF_STATUS ref_list_inspect(REF_LIST ref_list);
 #define each_ref_list_item(ref_list, item) \
   for ((item) = 0; (item) < ref_list_n(ref_list); (item)++)
 
-REF_STATUS ref_list_push(REF_LIST ref_list, REF_INT last);
-REF_STATUS ref_list_pop(REF_LIST ref_list, REF_INT *last);
-REF_STATUS ref_list_shift(REF_LIST ref_list, REF_INT *first);
-REF_STATUS ref_list_delete(REF_LIST ref_list, REF_INT value);
+REF_FCN REF_STATUS ref_list_push(REF_LIST ref_list, REF_INT last);
+REF_FCN REF_STATUS ref_list_pop(REF_LIST ref_list, REF_INT *last);
+REF_FCN REF_STATUS ref_list_shift(REF_LIST ref_list, REF_INT *first);
+REF_FCN REF_STATUS ref_list_delete(REF_LIST ref_list, REF_INT value);
 
-REF_STATUS ref_list_erase(REF_LIST ref_list);
+REF_FCN REF_STATUS ref_list_erase(REF_LIST ref_list);
 
-REF_STATUS ref_list_contains(REF_LIST ref_list, REF_INT item,
-                             REF_BOOL *contains);
+REF_FCN REF_STATUS ref_list_contains(REF_LIST ref_list, REF_INT item,
+                                     REF_BOOL *contains);
 
 END_C_DECLORATION
 

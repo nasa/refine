@@ -35,10 +35,10 @@ struct REF_DICT_STRUCT {
   REF_INT *value;
 };
 
-REF_STATUS ref_dict_create(REF_DICT *ref_dict);
-REF_STATUS ref_dict_free(REF_DICT ref_dict);
+REF_FCN REF_STATUS ref_dict_create(REF_DICT *ref_dict);
+REF_FCN REF_STATUS ref_dict_free(REF_DICT ref_dict);
 
-REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict, REF_DICT original);
+REF_FCN REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict, REF_DICT original);
 
 #define ref_dict_n(ref_dict) ((ref_dict)->n)
 #define ref_dict_max(ref_dict) ((ref_dict)->max)
@@ -70,18 +70,21 @@ REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict, REF_DICT original);
 #define each_ref_dict_key_index(ref_dict, key_index) \
   for ((key_index) = 0; (key_index) < ref_dict_n(ref_dict); (key_index)++)
 
-REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key, REF_INT value);
-REF_STATUS ref_dict_location(REF_DICT ref_dict, REF_INT key, REF_INT *location);
-REF_STATUS ref_dict_remove(REF_DICT ref_dict, REF_INT key);
-REF_STATUS ref_dict_value(REF_DICT ref_dict, REF_INT key, REF_INT *value);
+REF_FCN REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key,
+                                  REF_INT value);
+REF_FCN REF_STATUS ref_dict_location(REF_DICT ref_dict, REF_INT key,
+                                     REF_INT *location);
+REF_FCN REF_STATUS ref_dict_remove(REF_DICT ref_dict, REF_INT key);
+REF_FCN REF_STATUS ref_dict_value(REF_DICT ref_dict, REF_INT key,
+                                  REF_INT *value);
 
-REF_BOOL ref_dict_has_key(REF_DICT ref_dict, REF_INT key);
-REF_BOOL ref_dict_has_value(REF_DICT ref_dict, REF_INT value);
+REF_FCN REF_BOOL ref_dict_has_key(REF_DICT ref_dict, REF_INT key);
+REF_FCN REF_BOOL ref_dict_has_value(REF_DICT ref_dict, REF_INT value);
 
-REF_STATUS ref_dict_inspect(REF_DICT ref_dict);
-REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict);
+REF_FCN REF_STATUS ref_dict_inspect(REF_DICT ref_dict);
+REF_FCN REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict);
 
-REF_STATUS ref_dict_bcast(REF_DICT ref_dict, REF_MPI ref_mpi);
+REF_FCN REF_STATUS ref_dict_bcast(REF_DICT ref_dict, REF_MPI ref_mpi);
 
 END_C_DECLORATION
 

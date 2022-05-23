@@ -25,8 +25,8 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
-REF_STATUS ref_matrix_sqrt_vt_m_v_deriv(REF_DBL *m, REF_DBL *v, REF_DBL *f,
-                                        REF_DBL *df_dv) {
+REF_FCN REF_STATUS ref_matrix_sqrt_vt_m_v_deriv(REF_DBL *m, REF_DBL *v,
+                                                REF_DBL *f, REF_DBL *df_dv) {
   *f = sqrt((v)[0] * ((m)[0] * (v)[0] + (m)[1] * (v)[1] + (m)[2] * (v)[2]) +
             (v)[1] * ((m)[1] * (v)[0] + (m)[3] * (v)[1] + (m)[4] * (v)[2]) +
             (v)[2] * ((m)[2] * (v)[0] + (m)[4] * (v)[1] + (m)[5] * (v)[2]));
@@ -45,8 +45,8 @@ REF_STATUS ref_matrix_sqrt_vt_m_v_deriv(REF_DBL *m, REF_DBL *v, REF_DBL *f,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_vt_m_v_deriv(REF_DBL *m, REF_DBL *v, REF_DBL *f,
-                                   REF_DBL *df_dv) {
+REF_FCN REF_STATUS ref_matrix_vt_m_v_deriv(REF_DBL *m, REF_DBL *v, REF_DBL *f,
+                                           REF_DBL *df_dv) {
   *f = ((v)[0] * ((m)[0] * (v)[0] + (m)[1] * (v)[1] + (m)[2] * (v)[2]) +
         (v)[1] * ((m)[1] * (v)[0] + (m)[3] * (v)[1] + (m)[4] * (v)[2]) +
         (v)[2] * ((m)[2] * (v)[0] + (m)[4] * (v)[1] + (m)[5] * (v)[2]));
@@ -63,7 +63,7 @@ REF_STATUS ref_matrix_vt_m_v_deriv(REF_DBL *m, REF_DBL *v, REF_DBL *f,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_det_m(REF_DBL *m, REF_DBL *det) {
+REF_FCN REF_STATUS ref_matrix_det_m(REF_DBL *m, REF_DBL *det) {
   REF_DBL a[9];
   RSS(ref_matrix_m_full(m, a), "full");
 
@@ -72,13 +72,13 @@ REF_STATUS ref_matrix_det_m(REF_DBL *m, REF_DBL *det) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_det_m2(REF_DBL *m, REF_DBL *det) {
+REF_FCN REF_STATUS ref_matrix_det_m2(REF_DBL *m, REF_DBL *det) {
   *det = m[0] * m[2] - m[1] * m[1];
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
+REF_FCN REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
   printf("eig");
   printf("%24.15e", ref_matrix_eig(d, 0));
   printf("%24.15e", ref_matrix_eig(d, 1));
@@ -102,7 +102,7 @@ REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
+REF_FCN REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
   REF_DBL L, u, v, s;
   REF_DBL e[3];
 
@@ -254,7 +254,7 @@ REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_diag_m2(REF_DBL *m, REF_DBL *d) {
+REF_FCN REF_STATUS ref_matrix_diag_m2(REF_DBL *m, REF_DBL *d) {
   REF_DBL c2, s2, norm, l, c, s, cc, ss, mid;
   /* if inf or nan */
   if (!isfinite(m[0]) || !isfinite(m[1]) || !isfinite(m[2])) {
@@ -314,7 +314,7 @@ REF_STATUS ref_matrix_diag_m2(REF_DBL *m, REF_DBL *d) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_descending_eig(REF_DBL *d) {
+REF_FCN REF_STATUS ref_matrix_descending_eig(REF_DBL *d) {
   REF_DBL temp;
   REF_INT i;
 
@@ -354,7 +354,7 @@ REF_STATUS ref_matrix_descending_eig(REF_DBL *d) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_descending_eig_twod(REF_DBL *d) {
+REF_FCN REF_STATUS ref_matrix_descending_eig_twod(REF_DBL *d) {
   REF_DBL temp;
   REF_INT i, zdir;
   REF_DBL dot, best_dot;
@@ -396,7 +396,7 @@ REF_STATUS ref_matrix_descending_eig_twod(REF_DBL *d) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_form_m(REF_DBL *d, REF_DBL *m) {
+REF_FCN REF_STATUS ref_matrix_form_m(REF_DBL *d, REF_DBL *m) {
   /* m = d * e * d' */
 
   /*  d * e
@@ -421,7 +421,7 @@ REF_STATUS ref_matrix_form_m(REF_DBL *d, REF_DBL *m) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_form_m2(REF_DBL *d, REF_DBL *m) {
+REF_FCN REF_STATUS ref_matrix_form_m2(REF_DBL *d, REF_DBL *m) {
   /* m = d * e * d' */
 
   /*  d * e
@@ -441,7 +441,7 @@ REF_STATUS ref_matrix_form_m2(REF_DBL *d, REF_DBL *m) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_jacob_m(REF_DBL *m_upper_tri, REF_DBL *j) {
+REF_FCN REF_STATUS ref_matrix_jacob_m(REF_DBL *m_upper_tri, REF_DBL *j) {
   REF_DBL d[12];
 
   RSS(ref_matrix_diag_m(m_upper_tri, d), "diag");
@@ -465,7 +465,7 @@ REF_STATUS ref_matrix_jacob_m(REF_DBL *m_upper_tri, REF_DBL *j) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_show_jacob(REF_DBL *j) {
+REF_FCN REF_STATUS ref_matrix_show_jacob(REF_DBL *j) {
   printf("%24.15e", j[0]);
   printf("%24.15e", j[3]);
   printf("%24.15e", j[6]);
@@ -482,7 +482,7 @@ REF_STATUS ref_matrix_show_jacob(REF_DBL *j) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_inv_m(REF_DBL *m, REF_DBL *inv_m) {
+REF_FCN REF_STATUS ref_matrix_inv_m(REF_DBL *m, REF_DBL *inv_m) {
   /* the general inv has better stability by avoiding det */
   REF_DBL a[9], inv[9];
 
@@ -493,7 +493,8 @@ REF_STATUS ref_matrix_inv_m(REF_DBL *m, REF_DBL *inv_m) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_log_m(REF_DBL *m_upper_tri, REF_DBL *log_m_upper_tri) {
+REF_FCN REF_STATUS ref_matrix_log_m(REF_DBL *m_upper_tri,
+                                    REF_DBL *log_m_upper_tri) {
   REF_DBL d[12];
 
   RSS(ref_matrix_diag_m(m_upper_tri, d), "diag");
@@ -507,7 +508,8 @@ REF_STATUS ref_matrix_log_m(REF_DBL *m_upper_tri, REF_DBL *log_m_upper_tri) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_exp_m(REF_DBL *m_upper_tri, REF_DBL *exp_m_upper_tri) {
+REF_FCN REF_STATUS ref_matrix_exp_m(REF_DBL *m_upper_tri,
+                                    REF_DBL *exp_m_upper_tri) {
   REF_DBL d[12];
 
   RSS(ref_matrix_diag_m(m_upper_tri, d), "diag");
@@ -521,8 +523,9 @@ REF_STATUS ref_matrix_exp_m(REF_DBL *m_upper_tri, REF_DBL *exp_m_upper_tri) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_sqrt_m(REF_DBL *m_upper_tri, REF_DBL *sqrt_m_upper_tri,
-                             REF_DBL *inv_sqrt_m_upper_tri) {
+REF_FCN REF_STATUS ref_matrix_sqrt_m(REF_DBL *m_upper_tri,
+                                     REF_DBL *sqrt_m_upper_tri,
+                                     REF_DBL *inv_sqrt_m_upper_tri) {
   REF_DBL d[12];
 
   RSB(ref_matrix_diag_m(m_upper_tri, d), "diag",
@@ -560,9 +563,9 @@ REF_STATUS ref_matrix_sqrt_m(REF_DBL *m_upper_tri, REF_DBL *sqrt_m_upper_tri,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_matrix_sqrt_abs_m(REF_DBL *m_upper_tri,
-                                        REF_DBL *sqrt_m_upper_tri,
-                                        REF_DBL *inv_sqrt_m_upper_tri) {
+REF_FCN static REF_STATUS ref_matrix_sqrt_abs_m(REF_DBL *m_upper_tri,
+                                                REF_DBL *sqrt_m_upper_tri,
+                                                REF_DBL *inv_sqrt_m_upper_tri) {
   REF_DBL d[12];
 
   RSB(ref_matrix_diag_m(m_upper_tri, d), "diag",
@@ -602,8 +605,9 @@ static REF_STATUS ref_matrix_sqrt_abs_m(REF_DBL *m_upper_tri,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_matrix_weight_m(REF_DBL *m0_upper_tri, REF_DBL *m1_upper_tri,
-                               REF_DBL m1_weight, REF_DBL *avg_m_upper_tri) {
+REF_FCN REF_STATUS ref_matrix_weight_m(REF_DBL *m0_upper_tri,
+                                       REF_DBL *m1_upper_tri, REF_DBL m1_weight,
+                                       REF_DBL *avg_m_upper_tri) {
   REF_INT i;
 
   for (i = 0; i < 6; i++) {
@@ -614,7 +618,8 @@ REF_STATUS ref_matrix_weight_m(REF_DBL *m0_upper_tri, REF_DBL *m1_upper_tri,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_mult_m(REF_DBL *m1, REF_DBL *m2, REF_DBL *product) {
+REF_FCN REF_STATUS ref_matrix_mult_m(REF_DBL *m1, REF_DBL *m2,
+                                     REF_DBL *product) {
   /* first col */
   product[0] = m1[0] * m2[0] + m1[1] * m2[1] + m1[2] * m2[2];
   product[1] = m1[1] * m2[0] + m1[3] * m2[1] + m1[4] * m2[2];
@@ -633,7 +638,8 @@ REF_STATUS ref_matrix_mult_m(REF_DBL *m1, REF_DBL *m2, REF_DBL *product) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_mult_m0m1m0(REF_DBL *m1, REF_DBL *m2, REF_DBL *m) {
+REF_FCN REF_STATUS ref_matrix_mult_m0m1m0(REF_DBL *m1, REF_DBL *m2,
+                                          REF_DBL *m) {
   REF_DBL product[9];
   /* first col */
   product[0] = m1[0] * m2[0] + m1[1] * m2[1] + m1[2] * m2[2];
@@ -660,7 +666,7 @@ REF_STATUS ref_matrix_mult_m0m1m0(REF_DBL *m1, REF_DBL *m2, REF_DBL *m) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_vect_mult(REF_DBL *a, REF_DBL *x, REF_DBL *b) {
+REF_FCN REF_STATUS ref_matrix_vect_mult(REF_DBL *a, REF_DBL *x, REF_DBL *b) {
   b[0] = a[0] * x[0] + a[1] * x[1] + a[2] * x[2];
   b[1] = a[3] * x[0] + a[4] * x[1] + a[5] * x[2];
   b[2] = a[6] * x[0] + a[7] * x[1] + a[8] * x[2];
@@ -668,7 +674,8 @@ REF_STATUS ref_matrix_vect_mult(REF_DBL *a, REF_DBL *x, REF_DBL *b) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
+REF_FCN REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2,
+                                        REF_DBL *m12) {
   REF_DBL m1half[6];
   REF_DBL m1neghalf[6];
   REF_DBL m2bar[6];
@@ -711,7 +718,7 @@ REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_bound(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
+REF_FCN REF_STATUS ref_matrix_bound(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
   REF_DBL m1half[6];
   REF_DBL m1neghalf[6];
   REF_DBL m2bar[6];
@@ -754,7 +761,7 @@ REF_STATUS ref_matrix_bound(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_healthy_m(REF_DBL *m) {
+REF_FCN REF_STATUS ref_matrix_healthy_m(REF_DBL *m) {
   REF_DBL system[12];
   REF_DBL floor = -1.0e-15;
   RSS(ref_matrix_diag_m(m, system), "diag");
@@ -769,7 +776,7 @@ REF_STATUS ref_matrix_healthy_m(REF_DBL *m) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_show_m(REF_DBL *m) {
+REF_FCN REF_STATUS ref_matrix_show_m(REF_DBL *m) {
   printf("%24.15e", m[0]);
   printf("%24.15e", m[1]);
   printf("%24.15e", m[2]);
@@ -786,14 +793,14 @@ REF_STATUS ref_matrix_show_m(REF_DBL *m) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_twod_m(REF_DBL *m) {
+REF_FCN REF_STATUS ref_matrix_twod_m(REF_DBL *m) {
   m[2] = 0;
   m[4] = 0;
   m[5] = 1;
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_show_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
+REF_FCN REF_STATUS ref_matrix_show_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
   REF_INT row, col;
 
   for (row = 0; row < rows; row++) {
@@ -807,7 +814,8 @@ REF_STATUS ref_matrix_show_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
+REF_FCN REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols,
+                                       REF_DBL *ab) {
   REF_INT row, col;
   REF_INT i, j, k;
   REF_INT pivot_row;
@@ -870,7 +878,8 @@ REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
   return (ill_condition ? REF_ILL_CONDITIONED : REF_SUCCESS);
 }
 
-REF_STATUS ref_matrix_ax(REF_INT rows, REF_DBL *a, REF_DBL *x, REF_DBL *ax) {
+REF_FCN REF_STATUS ref_matrix_ax(REF_INT rows, REF_DBL *a, REF_DBL *x,
+                                 REF_DBL *ax) {
   REF_INT row, col;
 
   for (row = 0; row < rows; row++) {
@@ -890,8 +899,8 @@ REF_STATUS ref_matrix_ax(REF_INT rows, REF_DBL *a, REF_DBL *x, REF_DBL *ax) {
   ab[(row) + 4 * 6] = 2.0 * ((n1)[1] - (n0)[1]) * ((n1)[2] - (n0)[2]); \
   ab[(row) + 5 * 6] = ((n1)[2] - (n0)[2]) * ((n1)[2] - (n0)[2]);
 
-REF_STATUS ref_matrix_imply_m(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
-                              REF_DBL *xyz2, REF_DBL *xyz3) {
+REF_FCN REF_STATUS ref_matrix_imply_m(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
+                                      REF_DBL *xyz2, REF_DBL *xyz3) {
   REF_DBL ab[42];
   REF_INT i;
 
@@ -918,8 +927,8 @@ REF_STATUS ref_matrix_imply_m(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
   ab[(row) + 1 * 3] = 2.0 * ((n1)[0] - (n0)[0]) * ((n1)[1] - (n0)[1]); \
   ab[(row) + 2 * 3] = ((n1)[1] - (n0)[1]) * ((n1)[1] - (n0)[1]);
 
-REF_STATUS ref_matrix_imply_m3(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
-                               REF_DBL *xyz2) {
+REF_FCN REF_STATUS ref_matrix_imply_m3(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
+                                       REF_DBL *xyz2) {
   REF_DBL ab[12];
   REF_INT i;
 
@@ -943,8 +952,8 @@ REF_STATUS ref_matrix_imply_m3(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
-                               REF_DBL *r) {
+REF_FCN REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a,
+                                       REF_DBL *q, REF_DBL *r) {
   REF_INT row, col;
 
   if (NULL != a) {
@@ -974,8 +983,8 @@ REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
-                         REF_DBL *r) {
+REF_FCN REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
+                                 REF_DBL *r) {
   REF_INT i, j, k;
 
   for (j = 0; j < n; j++)
@@ -1002,8 +1011,8 @@ REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_show_eig(REF_INT n, REF_DBL *a, REF_DBL *values,
-                               REF_DBL *vectors) {
+REF_FCN REF_STATUS ref_matrix_show_eig(REF_INT n, REF_DBL *a, REF_DBL *values,
+                                       REF_DBL *vectors) {
   REF_INT row, col;
 
   if (NULL != a) {
@@ -1028,8 +1037,8 @@ REF_STATUS ref_matrix_show_eig(REF_INT n, REF_DBL *a, REF_DBL *values,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_diag_gen(REF_INT n, REF_DBL *a, REF_DBL *values,
-                               REF_DBL *vectors) {
+REF_FCN REF_STATUS ref_matrix_diag_gen(REF_INT n, REF_DBL *a, REF_DBL *values,
+                                       REF_DBL *vectors) {
   REF_DBL *q, *r, *rq, *qq, *ab;
   REF_INT i, j, k, iter;
   REF_DBL max_lower, trace, conv, convm;
@@ -1133,7 +1142,8 @@ REF_STATUS ref_matrix_diag_gen(REF_INT n, REF_DBL *a, REF_DBL *values,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_mult_gen(REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r) {
+REF_FCN REF_STATUS ref_matrix_mult_gen(REF_INT n, REF_DBL *a, REF_DBL *b,
+                                       REF_DBL *r) {
   REF_INT i, j, k;
 
   for (j = 0; j < n; j++)
@@ -1144,7 +1154,7 @@ REF_STATUS ref_matrix_mult_gen(REF_INT n, REF_DBL *a, REF_DBL *b, REF_DBL *r) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_inv_gen(REF_INT n, REF_DBL *orig, REF_DBL *inv) {
+REF_FCN REF_STATUS ref_matrix_inv_gen(REF_INT n, REF_DBL *orig, REF_DBL *inv) {
   REF_INT i, j, k, best;
   REF_DBL *a;
   REF_DBL pivot, scale, temp;
@@ -1218,7 +1228,8 @@ REF_STATUS ref_matrix_inv_gen(REF_INT n, REF_DBL *orig, REF_DBL *inv) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_transpose_gen(REF_INT n, REF_DBL *a, REF_DBL *at) {
+REF_FCN REF_STATUS ref_matrix_transpose_gen(REF_INT n, REF_DBL *a,
+                                            REF_DBL *at) {
   REF_INT i, j;
 
   for (j = 0; j < n; j++)
@@ -1227,7 +1238,7 @@ REF_STATUS ref_matrix_transpose_gen(REF_INT n, REF_DBL *a, REF_DBL *at) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_det_gen(REF_INT n, REF_DBL *orig, REF_DBL *det) {
+REF_FCN REF_STATUS ref_matrix_det_gen(REF_INT n, REF_DBL *orig, REF_DBL *det) {
   REF_DBL *a;
   REF_DBL scale;
   REF_INT i, j, k;
@@ -1259,7 +1270,7 @@ REF_STATUS ref_matrix_det_gen(REF_INT n, REF_DBL *orig, REF_DBL *det) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_orthog(REF_INT n, REF_DBL *a) {
+REF_FCN REF_STATUS ref_matrix_orthog(REF_INT n, REF_DBL *a) {
   REF_INT i, j, k;
   REF_DBL norm;
 
@@ -1279,7 +1290,7 @@ REF_STATUS ref_matrix_orthog(REF_INT n, REF_DBL *a) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_m_full(REF_DBL *m, REF_DBL *full) {
+REF_FCN REF_STATUS ref_matrix_m_full(REF_DBL *m, REF_DBL *full) {
   full[0 + 0 * 3] = m[0];
   full[0 + 1 * 3] = m[1];
   full[0 + 2 * 3] = m[2];
@@ -1292,7 +1303,7 @@ REF_STATUS ref_matrix_m_full(REF_DBL *m, REF_DBL *full) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_full_m(REF_DBL *full, REF_DBL *m) {
+REF_FCN REF_STATUS ref_matrix_full_m(REF_DBL *full, REF_DBL *m) {
   m[0] = full[0 + 0 * 3];
   m[1] = full[0 + 1 * 3];
   m[2] = full[0 + 2 * 3];
@@ -1302,8 +1313,8 @@ REF_STATUS ref_matrix_full_m(REF_DBL *full, REF_DBL *m) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m,
-                                 REF_DBL *jac_m_jact) {
+REF_FCN REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m,
+                                         REF_DBL *jac_m_jact) {
   REF_DBL full[9];
   REF_DBL jac_m[9];
   REF_DBL full_jac_m_jact[9];
@@ -1334,7 +1345,8 @@ REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_extract2(REF_DBL *m, REF_DBL *r, REF_DBL *s, REF_DBL *e) {
+REF_FCN REF_STATUS ref_matrix_extract2(REF_DBL *m, REF_DBL *r, REF_DBL *s,
+                                       REF_DBL *e) {
   REF_DBL q[9];
   REF_DBL m3[6];
   REF_INT i;
@@ -1348,8 +1360,8 @@ REF_STATUS ref_matrix_extract2(REF_DBL *m, REF_DBL *r, REF_DBL *s, REF_DBL *e) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_euler_rotation(REF_DBL phi, REF_DBL theta, REF_DBL psi,
-                                     REF_DBL *rotation) {
+REF_FCN REF_STATUS ref_matrix_euler_rotation(REF_DBL phi, REF_DBL theta,
+                                             REF_DBL psi, REF_DBL *rotation) {
   /* listed column first */
   rotation[0] = cos(psi) * cos(phi) - cos(theta) * sin(phi) * sin(psi);
   rotation[3] = cos(psi) * sin(phi) + cos(theta) * cos(phi) * sin(psi);

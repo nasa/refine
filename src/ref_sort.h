@@ -23,30 +23,30 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_sort_insertion_int(REF_INT n, REF_INT *original,
-                                  REF_INT *sorted);
+REF_FCN REF_STATUS ref_sort_insertion_int(REF_INT n, REF_INT *original,
+                                          REF_INT *sorted);
 
-REF_STATUS ref_sort_heap_int(REF_INT n, REF_INT *original,
-                             REF_INT *sorted_index);
-REF_STATUS ref_sort_heap_glob(REF_INT n, REF_GLOB *original,
-                              REF_INT *sorted_index);
-REF_STATUS ref_sort_heap_dbl(REF_INT n, REF_DBL *original,
-                             REF_INT *sorted_index);
+REF_FCN REF_STATUS ref_sort_heap_int(REF_INT n, REF_INT *original,
+                                     REF_INT *sorted_index);
+REF_FCN REF_STATUS ref_sort_heap_glob(REF_INT n, REF_GLOB *original,
+                                      REF_INT *sorted_index);
+REF_FCN REF_STATUS ref_sort_heap_dbl(REF_INT n, REF_DBL *original,
+                                     REF_INT *sorted_index);
 
-REF_STATUS ref_sort_in_place_glob(REF_INT n, REF_GLOB *sorts);
+REF_FCN REF_STATUS ref_sort_in_place_glob(REF_INT n, REF_GLOB *sorts);
 
-REF_STATUS ref_sort_unique_int(REF_INT n, REF_INT *original, REF_INT *nunique,
-                               REF_INT *unique);
-REF_STATUS ref_sort_same(REF_INT n, REF_INT *list0, REF_INT *list1,
-                         REF_BOOL *same);
+REF_FCN REF_STATUS ref_sort_unique_int(REF_INT n, REF_INT *original,
+                                       REF_INT *nunique, REF_INT *unique);
+REF_FCN REF_STATUS ref_sort_same(REF_INT n, REF_INT *list0, REF_INT *list1,
+                                 REF_BOOL *same);
 
-REF_STATUS ref_sort_search_int(REF_INT n, REF_INT *ascending_list,
-                               REF_INT target, REF_INT *position);
-REF_STATUS ref_sort_search_glob(REF_INT n, REF_GLOB *ascending_list,
-                                REF_GLOB target, REF_INT *position);
+REF_FCN REF_STATUS ref_sort_search_int(REF_INT n, REF_INT *ascending_list,
+                                       REF_INT target, REF_INT *position);
+REF_FCN REF_STATUS ref_sort_search_glob(REF_INT n, REF_GLOB *ascending_list,
+                                        REF_GLOB target, REF_INT *position);
 
-REF_INT ref_sort_rand_in_range(REF_INT min, REF_INT max);
-REF_STATUS ref_sort_shuffle(REF_INT n, REF_INT *permutation);
+REF_FCN REF_INT ref_sort_rand_in_range(REF_INT min, REF_INT max);
+REF_FCN REF_STATUS ref_sort_shuffle(REF_INT n, REF_INT *permutation);
 
 END_C_DECLORATION
 

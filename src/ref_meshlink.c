@@ -41,7 +41,8 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
-REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
+REF_FCN REF_STATUS ref_meshlink_open(REF_GRID ref_grid,
+                                     const char *xml_filename) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
   if (NULL == xml_filename) return REF_SUCCESS;
 #ifdef HAVE_MESHLINK
@@ -106,7 +107,8 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
+REF_FCN REF_STATUS ref_meshlink_parse(REF_GRID ref_grid,
+                                      const char *geom_filename) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   FILE *f = NULL;
   char line[1024];
@@ -183,7 +185,8 @@ REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
+REF_FCN REF_STATUS ref_meshlink_link(REF_GRID ref_grid,
+                                     const char *block_name) {
   if (NULL == block_name) return REF_SUCCESS;
   printf("extracting mesh_model %s\n", block_name);
 #ifdef HAVE_MESHLINK
@@ -392,7 +395,8 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_mapbc(REF_GRID ref_grid, const char *mapbc_name) {
+REF_FCN REF_STATUS ref_meshlink_mapbc(REF_GRID ref_grid,
+                                      const char *mapbc_name) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -438,7 +442,7 @@ REF_STATUS ref_meshlink_mapbc(REF_GRID ref_grid, const char *mapbc_name) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
+REF_FCN REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -528,7 +532,8 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
+REF_FCN REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node,
+                                    REF_DBL *gap) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -639,8 +644,9 @@ REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
-                                           REF_DBL *dot_product) {
+REF_FCN REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid,
+                                                   REF_INT *nodes,
+                                                   REF_DBL *dot_product) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -742,8 +748,8 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_edge_curvature(REF_GRID ref_grid, REF_INT geom,
-                                       REF_DBL *k, REF_DBL *normal) {
+REF_FCN REF_STATUS ref_meshlink_edge_curvature(REF_GRID ref_grid, REF_INT geom,
+                                               REF_DBL *k, REF_DBL *normal) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -828,9 +834,9 @@ REF_STATUS ref_meshlink_edge_curvature(REF_GRID ref_grid, REF_INT geom,
 #endif
 }
 
-REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
-                                       REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
-                                       REF_DBL *s) {
+REF_FCN REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
+                                               REF_DBL *kr, REF_DBL *r,
+                                               REF_DBL *ks, REF_DBL *s) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -934,7 +940,7 @@ REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
 #endif
 }
 
-REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   ProjectionDataObj projection_data = NULL;
@@ -948,7 +954,7 @@ REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid) {
+REF_FCN REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
