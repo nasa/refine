@@ -93,9 +93,9 @@
     (vtk_nodes)[5] = ugrid_nodes[5]; \
   }
 
-static REF_STATUS ref_export_faceid_range(REF_GRID ref_grid,
-                                          REF_INT *min_faceid,
-                                          REF_INT *max_faceid) {
+REF_FCN static REF_STATUS ref_export_faceid_range(REF_GRID ref_grid,
+                                                  REF_INT *min_faceid,
+                                                  REF_INT *max_faceid) {
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -117,9 +117,9 @@ static REF_STATUS ref_export_faceid_range(REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
-static REF_STATUS ref_export_cell_id_range(REF_CELL ref_cell,
-                                           REF_INT *min_faceid,
-                                           REF_INT *max_faceid) {
+REF_FCN static REF_STATUS ref_export_cell_id_range(REF_CELL ref_cell,
+                                                   REF_INT *min_faceid,
+                                                   REF_INT *max_faceid) {
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -135,7 +135,8 @@ static REF_STATUS ref_export_cell_id_range(REF_CELL ref_cell,
 }
 
 /* https://www.vtk.org/VTK/img/file-formats.pdf */
-static REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_vtk(REF_GRID ref_grid,
+                                         const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -218,7 +219,8 @@ static REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_edg_zone(REF_GRID ref_grid, FILE *file) {
+REF_FCN static REF_STATUS ref_export_tec_edg_zone(REF_GRID ref_grid,
+                                                  FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -274,7 +276,8 @@ static REF_STATUS ref_export_tec_edg_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_ed2_zone(REF_GRID ref_grid, FILE *file) {
+REF_FCN static REF_STATUS ref_export_tec_ed2_zone(REF_GRID ref_grid,
+                                                  FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -328,7 +331,8 @@ static REF_STATUS ref_export_tec_ed2_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_ed3_zone(REF_GRID ref_grid, FILE *file) {
+REF_FCN static REF_STATUS ref_export_tec_ed3_zone(REF_GRID ref_grid,
+                                                  FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -383,7 +387,8 @@ static REF_STATUS ref_export_tec_ed3_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
+REF_FCN static REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid,
+                                                   FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -454,7 +459,8 @@ static REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_tr2_zone(REF_GRID ref_grid, FILE *file) {
+REF_FCN static REF_STATUS ref_export_tec_tr2_zone(REF_GRID ref_grid,
+                                                  FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -513,7 +519,8 @@ static REF_STATUS ref_export_tec_tr2_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_tr3_zone(REF_GRID ref_grid, FILE *file) {
+REF_FCN static REF_STATUS ref_export_tec_tr3_zone(REF_GRID ref_grid,
+                                                  FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -585,7 +592,8 @@ static REF_STATUS ref_export_tec_tr3_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_twod_zone(REF_GRID ref_grid, FILE *file) {
+REF_FCN static REF_STATUS ref_export_tec_twod_zone(REF_GRID ref_grid,
+                                                   FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -654,7 +662,8 @@ static REF_STATUS ref_export_tec_twod_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file) {
+REF_FCN static REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid,
+                                                  FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -743,7 +752,8 @@ static REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_tec(REF_GRID ref_grid,
+                                         const char *filename) {
   FILE *file;
 
   file = fopen(filename, "w");
@@ -765,7 +775,8 @@ static REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_export_tec_surf(REF_GRID ref_grid,
+                                       const char *filename) {
   FILE *file;
 
   file = fopen(filename, "w");
@@ -781,7 +792,7 @@ REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec_metric_ellipse_twod(
+REF_FCN static REF_STATUS ref_export_tec_metric_ellipse_twod(
     REF_GRID ref_grid, const char *root_filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -879,8 +890,8 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
-                                         const char *root_filename) {
+REF_FCN REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
+                                                 const char *root_filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT nnode, node;
@@ -977,7 +988,8 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_poly(REF_GRID ref_grid,
+                                          const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1094,7 +1106,8 @@ static REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_smesh(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_smesh(REF_GRID ref_grid,
+                                           const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1148,7 +1161,8 @@ static REF_STATUS ref_export_smesh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_fgrid(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_fgrid(REF_GRID ref_grid,
+                                           const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1208,7 +1222,8 @@ static REF_STATUS ref_export_fgrid(REF_GRID ref_grid, const char *filename) {
 }
 
 /* https://su2code.github.io/docs/Mesh-File/ */
-static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_su2(REF_GRID ref_grid,
+                                         const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1417,7 +1432,8 @@ static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_ugrid(REF_GRID ref_grid,
+                                           const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1518,8 +1534,9 @@ static REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_bin_ugrid_int(FILE *file, REF_BOOL swap,
-                                           REF_BOOL fat, REF_INT output) {
+REF_FCN static REF_STATUS ref_export_bin_ugrid_int(FILE *file, REF_BOOL swap,
+                                                   REF_BOOL fat,
+                                                   REF_INT output) {
   if (fat) {
     REF_LONG actual;
     actual = (REF_LONG)output;
@@ -1534,8 +1551,9 @@ static REF_STATUS ref_export_bin_ugrid_int(FILE *file, REF_BOOL swap,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
-                                       REF_BOOL swap, REF_BOOL fat) {
+REF_FCN static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid,
+                                               const char *filename,
+                                               REF_BOOL swap, REF_BOOL fat) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1653,7 +1671,8 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_c(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_c(REF_GRID ref_grid,
+                                       const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1694,7 +1713,8 @@ static REF_STATUS ref_export_c(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_eps(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_eps(REF_GRID ref_grid,
+                                         const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1746,7 +1766,8 @@ static REF_STATUS ref_export_eps(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_pdf(REF_GRID ref_grid, const char *pdf_filename) {
+REF_FCN static REF_STATUS ref_export_pdf(REF_GRID ref_grid,
+                                         const char *pdf_filename) {
   char temp_filename[] = "ref_export_temp_for_pdf.eps";
   char command[1024];
   RSS(ref_export_eps(ref_grid, temp_filename), "temp eps");
@@ -1757,7 +1778,8 @@ static REF_STATUS ref_export_pdf(REF_GRID ref_grid, const char *pdf_filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_html(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_html(REF_GRID ref_grid,
+                                          const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1843,8 +1865,8 @@ static REF_STATUS ref_export_html(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
-                                          REF_FILEPOS next_position) {
+REF_FCN REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
+                                                  REF_FILEPOS next_position) {
   int32_t one_word;
   int64_t two_word;
 
@@ -1864,8 +1886,8 @@ REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_meshb_int(FILE *file, REF_INT version,
-                                       REF_INT value) {
+REF_FCN static REF_STATUS ref_export_meshb_int(FILE *file, REF_INT version,
+                                               REF_INT value) {
   int int_value;
   long long_value;
   if (version < 4) {
@@ -1878,7 +1900,8 @@ static REF_STATUS ref_export_meshb_int(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_meshb(REF_GRID ref_grid,
+                                           const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -2055,7 +2078,8 @@ static REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_bamg_msh(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_bamg_msh(REF_GRID ref_grid,
+                                              const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
@@ -2118,7 +2142,8 @@ static REF_STATUS ref_export_bamg_msh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_msh(REF_GRID ref_grid,
+                                         const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, nnode;
@@ -2265,7 +2290,8 @@ static REF_STATUS ref_export_msh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tri(REF_GRID ref_grid, const char *filename) {
+REF_FCN static REF_STATUS ref_export_tri(REF_GRID ref_grid,
+                                         const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, nnode;
@@ -2312,8 +2338,8 @@ static REF_STATUS ref_export_tri(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
-                                             const char *filename) {
+REF_FCN static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
+                                                     const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
@@ -2411,7 +2437,8 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
+REF_FCN REF_STATUS ref_export_by_extension(REF_GRID ref_grid,
+                                           const char *filename) {
   size_t end_of_string;
 
   end_of_string = strlen(filename);
@@ -2475,7 +2502,8 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order) {
+REF_FCN REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n,
+                                             REF_INT *order) {
   REF_INT i, j, first_cell;
   REF_BOOL found, loop;
 
