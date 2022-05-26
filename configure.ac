@@ -512,7 +512,7 @@ then
   then
       meshlink_include="${meshlink_include} -I${geode_include_path}"
   fi
-  
+
   meshlink_ldadd=""
   if test "$meshlink_a_path" != 'no'
   then
@@ -536,14 +536,21 @@ then
   then
       meshlink_ldadd="${meshlink_ldadd} -L${geode_lib_path} -lnmb -lgeom -lvmath -lstdc++"
   fi
-  
+
   AC_SUBST([meshlink_include])
   AC_SUBST([meshlink_ldadd])
   AM_CONDITIONAL(BUILD_MESHLINK,true)
 else
   AM_CONDITIONAL(BUILD_MESHLINK,false)
 fi
-  
+
+if test "X${enable_shared}" != 'Xno'
+then
+  AM_CONDITIONAL(ENABLED_SHARED,true)
+else
+  AM_CONDITIONAL(ENABLED_SHARED,false)
+fi
+
 AC_CONFIG_FILES( \
 	   Makefile \
 	   src/Makefile \

@@ -74,12 +74,18 @@ librefine_core_a_SOURCES = \
 
 default_ldadd = librefine_core.a
 
+extra_cflags =
+if ENABLED_SHARED
+extra_cflags += -fPIC
+librefine_core_a_CFLAGS = $(extra_cflags)
+endif
+
 if BUILD_MPI
 lib_LIBRARIES += librefine_with_mpi.a
 librefine_with_mpi_a_SOURCES = \
 	ref_migrate.c \
 	ref_mpi.c
-librefine_with_mpi_a_CFLAGS = -DHAVE_MPI @mpi_include@ @zoltan_include@ @parmetis_include@
+librefine_with_mpi_a_CFLAGS = $(extra_cflags) -DHAVE_MPI @mpi_include@ @zoltan_include@ @parmetis_include@
 endif
 default_ldadd += librefine_without_mpi.a
 
@@ -88,18 +94,18 @@ librefine_without_mpi_a_SOURCES = \
 	ref_migrate.c \
 	ref_mpi.c
 # partitioner flags nested, safe for seq code or mpi with user CFLAG HAVE_MPI
-librefine_without_mpi_a_CFLAGS = @zoltan_include@ @parmetis_include@
+librefine_without_mpi_a_CFLAGS = $(extra_cflags) @zoltan_include@ @parmetis_include@
 
 if BUILD_EGADS
 lib_LIBRARIES += librefine_with_egads.a
 librefine_with_egads_a_SOURCES = \
 	ref_egads.c
-librefine_with_egads_a_CFLAGS = -DHAVE_EGADS @egads_include@
+librefine_with_egads_a_CFLAGS = $(extra_cflags) -DHAVE_EGADS @egads_include@
 
 lib_LIBRARIES += librefine_with_egadslite.a
 librefine_with_egadslite_a_SOURCES = \
 	ref_egads.c
-librefine_with_egadslite_a_CFLAGS =  -DHAVE_EGADS -DHAVE_EGADS_LITE @egads_include@
+librefine_with_egadslite_a_CFLAGS = $(extra_cflags) -DHAVE_EGADS -DHAVE_EGADS_LITE @egads_include@
 
 if BUILD_EGADS_LITE
 default_ldadd += librefine_with_egadslite.a
@@ -119,6 +125,10 @@ endif
 lib_LIBRARIES += librefine_without_egads.a
 librefine_without_egads_a_SOURCES = \
 	ref_egads.c
+
+if ENABLED_SHARED
+librefine_without_egads_a_CFLAGS = $(extra_cflags)
+endif
 
 if BUILD_MESHLINK
 lib_LIBRARIES += librefine_with_meshlink.a
