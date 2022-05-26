@@ -21,20 +21,25 @@
 
 #include <stdlib.h>
 
-#include "ref_defs.h"
-#ifdef HAVE_KOKKOS
-#include <Kokkos_Core.hpp>
+#if defined(__CUDACC__)
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_runtime_api.h>
+#include <driver_types.h>
 #endif
+
+#include "ref_defs.h"
 
 BEGIN_C_DECLORATION
 
-#ifdef HAVE_KOKKOS
+#if defined(__CUDACC__)
 
-#define ref_malloc_size_t(ptr, n, ptr_type)                          \
-  {                                                                  \
-    (ptr) = (ptr_type *)Kokkos::kokkos_malloc<Kokkos::CudaUVMSpace>( \
-        (size_t)(n) * sizeof(ptr_type));                             \
-    if (n > 0) RNS((ptr), "malloc " #ptr " of " #ptr_type " NULL");  \
+#define ref_malloc_size_t(ptr, n, ptr_type)                         \
+  {                                                                 \
+    REIS(cudaSuccess,                                               \
+         cudaMallocManaged(&(ptr), (size_t)(n) * sizeof(ptr_type)), \
+         "cudaMallocManaged");                                      \
+    if (n > 0) RNS((ptr), "malloc " #ptr " of " #ptr_type " NULL"); \
   }
 
 #define ref_malloc(ptr, n, ptr_type)                            \
@@ -53,10 +58,11 @@ BEGIN_C_DECLORATION
 
 /* block versions */
 
-#define ref_malloc_size_t_block(ptr, n, ptr_type, block)             \
-  {                                                                  \
-    (ptr) = (ptr_type *)Kokkos::kokkos_malloc<Kokkos::CudaUVMSpace>( \
-        (size_t)(n) * sizeof(ptr_type));                             \
+#define ref_malloc_size_t_block(ptr, n, ptr_type, block)            \
+  {                                                                 \
+    REIS(cudaSuccess,                                               \
+         cudaMallocManaged(&(ptr), (size_t)(n) * sizeof(ptr_type)), \
+         "cudaMallocManaged");                                      \
     RNB((ptr), "malloc " #ptr " of " #ptr_type " NULL", block);
 
 #define ref_malloc_block(ptr, n, ptr_type, block)               \
@@ -75,20 +81,25 @@ BEGIN_C_DECLORATION
 
 /* realloc of size zero with return NULL */
 
-#define ref_realloc(ptr, n, ptr_type)                                      \
-  {                                                                        \
-    if (REF_FALSE)                                                         \
-      printf("%d: %s: realloc n int %d uLong %lu size_of %lu = %lu\n",     \
-             __LINE__, __func__, (REF_INT)(n), (unsigned long)(n),         \
-             sizeof(ptr_type), (size_t)(n) * sizeof(ptr_type));            \
-    fflush(stdout);                                                        \
-    if (0 < (n))                                                           \
-      (ptr) = (ptr_type *)Kokkos::kokkos_realloc<Kokkos::CudaUVMSpace>(    \
-          (ptr), (size_t)(n) * sizeof(ptr_type));                          \
-    RNB((ptr), "realloc " #ptr " NULL",                                    \
-        printf("failed to realloc n int %d uLong %lu size_of %lu = %lu\n", \
-               (REF_INT)(n), (unsigned long)(n), sizeof(ptr_type),         \
-               (size_t)(n) * sizeof(ptr_type)));                           \
+#define ref_realloc(ptr, n, ptr_type)                                          \
+  {                                                                            \
+    if (0 < (n)) {                                                             \
+      CUdeviceptr ref_realloc_old_base_ptr;                                    \
+      size_t ref_realloc_old_ptr_size;                                         \
+      REIS(                                                                    \
+          cudaSuccess,                                                         \
+          cuMemGetAddressRange(&ref_realloc_old_base_ptr,                      \
+                               &ref_realloc_old_ptr_size, (CUdeviceptr)(ptr)), \
+          "get device ptr attr");                                              \
+      REIS(cudaSuccess,                                                        \
+           cudaMallocManaged(&(ptr), (size_t)(n) * sizeof(ptr_type)),          \
+           "cudaMallocManaged");                                               \
+      REIS(cudaSuccess,                                                        \
+           cuMemcpy((CUdeviceptr)(ptr), ref_realloc_old_base_ptr,              \
+                    MIN(ref_realloc_old_ptr_size, n * sizeof(ptr_type))),      \
+           "ref_realloc memcpy");                                              \
+      cudaFree((void *)ref_realloc_old_base_ptr);                              \
+    }                                                                          \
   }
 
 #define ref_realloc_init(ptr, from, to, ptr_type, initial_value) \
@@ -101,7 +112,8 @@ BEGIN_C_DECLORATION
   }
 
 #define ref_free(ptr) \
-  if (NULL != (ptr)) Kokkos::kokkos_free<Kokkos::CudaUVMSpace>((ptr));
+  if (NULL != (ptr)) cudaFree((ptr));
+
 #else
 
 #define ref_malloc_size_t(ptr, n, ptr_type)                     \
@@ -174,6 +186,7 @@ BEGIN_C_DECLORATION
 
 #define ref_free(ptr) \
   if (NULL != (ptr)) free((ptr));
+
 #endif
 
 END_C_DECLORATION
