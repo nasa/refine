@@ -890,9 +890,22 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
           }
         }
+
+        RSS(ref_adj_degree(tri_tet, cell, &deg), "deg");
+        printf("deg %d\n", deg);
+        {
+          REF_CAVITY ref_cavity;
+          char filename[1024];
+          RSS(ref_cavity_create(&ref_cavity), "cav create");
+          RSS(ref_cavity_form_empty(ref_cavity, ref_grid, REF_EMPTY), "empty");
+          each_ref_adj_node_item_with_ref(tri_tet, cell, item, tet) {
+            RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
+          }
+          sprintf(filename, "prism-%d-cav.tec", cell);
+          RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
+          RSS(ref_cavity_free(ref_cavity), "cav free");
+        }
       }
-      RSS(ref_adj_degree(tri_tet, cell, &deg), "deg");
-      printf("deg %d\n", deg);
     }
     RSS(ref_adj_free(tri_tet), "free");
   }
