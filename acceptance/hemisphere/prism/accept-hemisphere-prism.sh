@@ -12,14 +12,20 @@ fi
 
 geomfile=hemisphere.egads
 
-serveCSM -batch -skipTess ../hemisphere.csm
-${src}/ref bootstrap ${geomfile}
+if [ ! -f hemisphere-vol.meshb ]
+then
+    serveCSM -batch -skipTess ../hemisphere.csm
+    ${src}/ref bootstrap ${geomfile}
+fi
 
 ${src}/ref_acceptance hemisphere-vol.meshb hemisphere-vol-metric.solb 0.1
 ${src}/ref adapt hemisphere-vol.meshb \
       --egads ${geomfile} \
       --metric hemisphere-vol-metric.solb \
+      --fun3d-mapbc hemisphere-vol.mapbc \
       --prism \
-      -x hemihair1.meshb
+      -x hemihair1.meshb \
+      -x hemihair1.plt \
+      -s 5
 
 

@@ -619,7 +619,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   }
 
   RXS(ref_args_find(argc, argv, "--prism", &pos), REF_NOT_FOUND, "arg search");
-  if (ref_grid_twod(ref_grid) && REF_EMPTY != pos) {
+  if (REF_EMPTY != pos) {
     form_prism = REF_TRUE;
     if (ref_mpi_once(ref_mpi)) printf("--prism form prisms on boundary\n");
   }
