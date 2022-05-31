@@ -730,6 +730,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
   REF_NODE hair_node;
   REF_CELL hair_cell;
   REF_BOOL *active;
+  REF_INT *off_node;
   RSS(ref_node_synchronize_globals(ref_node), "sync glob");
 
   RSS(ref_export_by_extension(ref_grid, "ref_layer_prism_before.tec"),
@@ -740,6 +741,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
   RSS(ref_node_initialize_n_global(hair_node, 0), "zero glob");
 
   ref_malloc_init(active, ref_node_max(ref_node), REF_BOOL, REF_FALSE);
+  ref_malloc_init(off_node, ref_node_max(ref_node), REF_BOOL, REF_EMPTY);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     REF_INT bc = REF_EMPTY;
     RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)], &bc),
@@ -752,9 +754,9 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
     }
   }
   each_ref_node_valid_node(ref_node, node) {
-    REF_BOOL constrained;
-    REF_DBL tri_normal[3], normal[3];
     if (ref_node_owned(ref_node, node) && active[node]) {
+      REF_BOOL constrained;
+      REF_DBL tri_normal[3], normal[3];
       normal[0] = 0.0;
       normal[1] = 0.0;
       normal[2] = 0.0;
@@ -809,6 +811,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           REF_CAVITY ref_cavity;
           RSS(ref_node_next_global(ref_node, &global), "next global");
           RSS(ref_node_add(ref_node, global, &new_node), "add");
+          off_node[node] = new_node;
           ref_node_xyz(ref_node, 0, new_node) =
               ref_node_xyz(ref_node, 0, node) + h * normal[0];
           ref_node_xyz(ref_node, 1, new_node) =
@@ -835,6 +838,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
   RSS(ref_export_by_extension(hair_grid, "ref_layer_prism_hair.tec"), "hair");
   RSS(ref_export_by_extension(ref_grid, "ref_layer_prism_after.tec"),
       "dump surf after");
+  ref_free(off_node);
   ref_free(active);
   ref_grid_free(hair_grid);
   return REF_SUCCESS;
