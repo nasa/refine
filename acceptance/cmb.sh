@@ -365,7 +365,7 @@ trap - EXIT
 # 4 procs
 LOG=${root_dir}/log.accept-hemisphere-uniform-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/hemisphere/uniform
+cd ${source_dir}/acceptance/hemisphere/uniform-para
 ( ./accept-hemisphere-uniform-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 

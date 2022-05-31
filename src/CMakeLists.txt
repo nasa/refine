@@ -237,6 +237,7 @@ if (MPI_FOUND)
 endif ()
 
 set(REF_TESTS
+        ref_acceptance.c
         ref_adapt_test.c
         ref_adj_test.c
         ref_agents_test.c

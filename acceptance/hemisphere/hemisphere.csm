@@ -1,0 +1,11 @@
+sphere 0 0 0 1
+attribute bc_name $5000_farfield
+box -2 0 -2 4 2 4
+attribute bc_name $6662_y-symm
+intersect
+sphere 0 0 0 0.5
+attribute bc_name $4000_no-slip
+subtract
+dump hemisphere.egads
+end
+

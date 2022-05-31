@@ -30,8 +30,9 @@ trap - EXIT
 log=`pwd`/../log-bootstrap_c.txt
 trap "cat $log" EXIT
 export PATH=${PATH}:`pwd`/build_c/bin
+export build_c_root="`pwd`/build_c"
 ( cd acceptance/hemisphere/uniform && \
-      ./generate.sh >> $log 2>&1 ) || exit 1
+      ./accept-hemisphere-uniform.sh ${build_c_root} >> $log 2>&1 ) || exit 1
 trap - EXIT
 
 cat `pwd`/../log-build_c.txt
