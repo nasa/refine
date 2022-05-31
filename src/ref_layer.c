@@ -847,14 +847,13 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
         REF_BOOL has_either;
         each_ref_cell_having_node2(ref_tet, nodes[0], off_node[nodes[0]], item,
                                    cell_node, tet) {
-          RSS(ref_cell_has_either(ref_tet, tet, nodes[1], off_node[nodes[1]],
-                                  &has_either),
+          RSS(ref_cell_has_both(ref_tet, tet, nodes[1], nodes[2], &has_either),
               "either");
           if (has_either) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
           }
-          RSS(ref_cell_has_either(ref_tet, tet, nodes[2], off_node[nodes[2]],
-                                  &has_either),
+          RSS(ref_cell_has_both(ref_tet, tet, off_node[nodes[1]],
+                                off_node[nodes[2]], &has_either),
               "either");
           if (has_either) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
@@ -862,14 +861,13 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
         }
         each_ref_cell_having_node2(ref_tet, nodes[1], off_node[nodes[1]], item,
                                    cell_node, tet) {
-          RSS(ref_cell_has_either(ref_tet, tet, nodes[2], off_node[nodes[2]],
-                                  &has_either),
+          RSS(ref_cell_has_both(ref_tet, tet, nodes[2], nodes[0], &has_either),
               "either");
           if (has_either) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
           }
-          RSS(ref_cell_has_either(ref_tet, tet, nodes[0], off_node[nodes[0]],
-                                  &has_either),
+          RSS(ref_cell_has_both(ref_tet, tet, off_node[nodes[2]],
+                                off_node[nodes[0]], &has_either),
               "either");
           if (has_either) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
@@ -877,14 +875,13 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
         }
         each_ref_cell_having_node2(ref_tet, nodes[2], off_node[nodes[2]], item,
                                    cell_node, tet) {
-          RSS(ref_cell_has_either(ref_tet, tet, nodes[0], off_node[nodes[0]],
-                                  &has_either),
+          RSS(ref_cell_has_both(ref_tet, tet, nodes[0], nodes[1], &has_either),
               "either");
           if (has_either) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
           }
-          RSS(ref_cell_has_either(ref_tet, tet, nodes[1], off_node[nodes[1]],
-                                  &has_either),
+          RSS(ref_cell_has_both(ref_tet, tet, off_node[nodes[0]],
+                                off_node[nodes[1]], &has_either),
               "either");
           if (has_either) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
