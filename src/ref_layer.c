@@ -719,3 +719,12 @@ REF_FCN REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
   RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
   return REF_SUCCESS;
 }
+
+REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
+                                         REF_DICT ref_dict_bcs) {
+  RSS(ref_gather_scalar_surf_tec(ref_grid, 0, NULL, NULL,
+                                 "ref_layer_prism_surf.tec"),
+      "dump surf");
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_dict_bcs);
+  return REF_SUCCESS;
+}
