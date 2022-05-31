@@ -732,8 +732,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
   REF_BOOL *active;
   RSS(ref_node_synchronize_globals(ref_node), "sync glob");
 
-  RSS(ref_gather_scalar_surf_tec(ref_grid, 0, NULL, NULL,
-                                 "ref_layer_prism_surf.tec"),
+  RSS(ref_export_by_extension(ref_grid, "ref_layer_prism_surf.tec"),
       "dump surf");
   RSS(ref_grid_create(&hair_grid, ref_grid_mpi(ref_grid)), "create");
   hair_node = ref_grid_node(hair_grid);
@@ -809,7 +808,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
     }
   }
-  RSS(ref_export_by_extension(ref_grid, "ref_layer_prism_hair.tec"), "hair");
+  RSS(ref_export_by_extension(hair_grid, "ref_layer_prism_hair.tec"), "hair");
   ref_free(active);
   ref_grid_free(hair_grid);
   return REF_SUCCESS;
