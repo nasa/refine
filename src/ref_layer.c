@@ -809,6 +809,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
     }
   }
+  RSS(ref_export_by_extension(ref_grid, "ref_layer_prism_hair.tec"), "hair");
   ref_free(active);
   ref_grid_free(hair_grid);
   return REF_SUCCESS;
