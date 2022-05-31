@@ -31,6 +31,7 @@
 #include "ref_matrix.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
+#include "ref_phys.h"
 #include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_validation.h"
@@ -722,9 +723,31 @@ REF_FCN REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
 
 REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                          REF_DICT ref_dict_bcs) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_GRID ref_hair;
+  REF_BOOL *active;
+  RSS(ref_node_synchronize_globals(ref_node), "sync glob");
+
   RSS(ref_gather_scalar_surf_tec(ref_grid, 0, NULL, NULL,
                                  "ref_layer_prism_surf.tec"),
       "dump surf");
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_dict_bcs);
+  RSS(ref_grid_create(&ref_hair, ref_grid_mpi(ref_grid)), "create");
+  RSS(ref_node_initialize_n_global(ref_grid_node(ref_hair), 0), "zero glob");
+
+  ref_malloc_init(active, ref_node_max(ref_node), REF_BOOL, REF_FALSE);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    REF_INT bc = REF_EMPTY;
+    RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)], &bc),
+        REF_NOT_FOUND, "bc");
+    if (ref_phys_wall_distance_bc(bc)) {
+      REF_INT cell_node;
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        active[nodes[cell_node]] = REF_TRUE;
+      }
+    }
+  }
+  ref_free(active);
   return REF_SUCCESS;
 }
