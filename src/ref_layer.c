@@ -754,13 +754,6 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
     REF_BOOL constrained;
     REF_DBL tri_normal[3], normal[3];
     if (ref_node_owned(ref_node, node) && active[node]) {
-      REF_GLOB global;
-      REF_INT new_node;
-      RSS(ref_node_next_global(hair_node, &global), "next global");
-      RSS(ref_node_add(hair_node, global, &new_node), "add");
-      ref_node_xyz(hair_node, 0, new_node) = ref_node_xyz(ref_node, 0, node);
-      ref_node_xyz(hair_node, 1, new_node) = ref_node_xyz(ref_node, 1, node);
-      ref_node_xyz(hair_node, 2, new_node) = ref_node_xyz(ref_node, 2, node);
       normal[0] = 0.0;
       normal[1] = 0.0;
       normal[2] = 0.0;
@@ -779,7 +772,32 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           constrained = REF_TRUE;
         }
         if (!constrained) {
+          REF_DBL m[6], ratio, h;
+          REF_GLOB global;
+          REF_INT new_node0, new_node1;
+          RSS(ref_node_next_global(hair_node, &global), "next global");
+          RSS(ref_node_add(hair_node, global, &new_node0), "add");
+          ref_node_xyz(hair_node, 0, new_node0) =
+              ref_node_xyz(ref_node, 0, node);
+          ref_node_xyz(hair_node, 1, new_node0) =
+              ref_node_xyz(ref_node, 1, node);
+          ref_node_xyz(hair_node, 2, new_node0) =
+              ref_node_xyz(ref_node, 2, node);
+          RSS(ref_node_next_global(hair_node, &global), "next global");
+          RSS(ref_node_add(hair_node, global, &new_node1), "add");
           RSS(ref_math_normalize(normal), "norm");
+          RSS(ref_node_metric_get(ref_node, node, m), "get");
+          ratio = ref_matrix_vt_m_v(m, normal);
+          RAS(ratio > 0.0, "ratio not positive");
+          ratio = sqrt(ratio);
+          RAS(ref_math_divisible(1.0, ratio), "1/ratio is inf 1/0");
+          h = 1.0 / ratio;
+          ref_node_xyz(hair_node, 0, new_node1) =
+              ref_node_xyz(ref_node, 0, node) + h * normal[0];
+          ref_node_xyz(hair_node, 1, new_node1) =
+              ref_node_xyz(ref_node, 1, node) + h * normal[1];
+          ref_node_xyz(hair_node, 2, new_node1) =
+              ref_node_xyz(ref_node, 2, node) + h * normal[2];
         }
       }
     }
