@@ -725,7 +725,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                          REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, node, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_GRID hair_grid;
   REF_NODE hair_node;
   REF_BOOL *active;
@@ -751,6 +751,8 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
     }
   }
   each_ref_node_valid_node(ref_node, node) {
+    REF_BOOL constrained;
+    REF_DBL tri_normal[3], normal[3];
     if (ref_node_owned(ref_node, node) && active[node]) {
       REF_GLOB global;
       REF_INT new_node;
@@ -759,6 +761,27 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       ref_node_xyz(hair_node, 0, new_node) = ref_node_xyz(ref_node, 0, node);
       ref_node_xyz(hair_node, 1, new_node) = ref_node_xyz(ref_node, 1, node);
       ref_node_xyz(hair_node, 2, new_node) = ref_node_xyz(ref_node, 2, node);
+      normal[0] = 0.0;
+      normal[1] = 0.0;
+      normal[2] = 0.0;
+      constrained = REF_FALSE;
+      each_ref_cell_having_node(ref_cell, node, item, cell) {
+        REF_INT bc = REF_EMPTY;
+        RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)],
+                           &bc),
+            REF_NOT_FOUND, "bc");
+        if (ref_phys_wall_distance_bc(bc)) {
+          RSS(ref_node_tri_normal(ref_node, nodes, tri_normal), "tri norm");
+          normal[0] += tri_normal[0];
+          normal[1] += tri_normal[1];
+          normal[2] += tri_normal[2];
+        } else {
+          constrained = REF_TRUE;
+        }
+        if (!constrained) {
+          RSS(ref_math_normalize(normal), "norm");
+        }
+      }
     }
   }
   ref_free(active);
