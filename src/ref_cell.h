@@ -178,6 +178,10 @@ REF_FCN REF_STATUS ref_cell_ncell(REF_CELL ref_cell, REF_NODE ref_node,
 REF_FCN REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0,
                                          REF_INT *nodes);
 
+REF_FCN REF_STATUS ref_cell_has_either(REF_CELL ref_cell, REF_INT cell,
+                                       REF_INT node0, REF_INT node1,
+                                       REF_BOOL *has_either);
+
 REF_FCN REF_STATUS ref_cell_has_side(REF_CELL ref_cell, REF_INT node0,
                                      REF_INT node1, REF_BOOL *has_side);
 

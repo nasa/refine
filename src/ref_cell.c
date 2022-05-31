@@ -973,6 +973,21 @@ REF_FCN REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_cell_has_either(REF_CELL ref_cell, REF_INT cell,
+                                       REF_INT node0, REF_INT node1,
+                                       REF_BOOL *has_either) {
+  REF_INT cell_node;
+  *has_either = REF_FALSE;
+  each_ref_cell_cell_node(ref_cell, cell_node) {
+    if (node0 == ref_cell_c2n(ref_cell, cell_node, cell) ||
+        node1 == ref_cell_c2n(ref_cell, cell_node, cell)) {
+      *has_either = REF_TRUE;
+      return REF_SUCCESS;
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_cell_has_side(REF_CELL ref_cell, REF_INT node0,
                                      REF_INT node1, REF_BOOL *has_side) {
   REF_INT item, cell;
