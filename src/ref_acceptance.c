@@ -542,6 +542,12 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
+  if (1 == argc) {
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "-ugawg", &ugawg_pos), REF_NOT_FOUND, "arg");
 
   if (REF_EMPTY != ugawg_pos) {

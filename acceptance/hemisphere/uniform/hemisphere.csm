@@ -1,5 +1,0 @@
-sphere 0 0 0 1
-box -2 0 -2 4 2 4
-intersect
-dump hemisphere.egads
-end
