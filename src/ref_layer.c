@@ -761,50 +761,47 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       constrained = REF_FALSE;
       each_ref_cell_having_node(ref_cell, node, item, cell) {
         REF_INT bc = REF_EMPTY;
-        RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)],
+        RXS(ref_dict_value(ref_dict_bcs, ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell),
                            &bc),
             REF_NOT_FOUND, "bc");
         if (ref_phys_wall_distance_bc(bc)) {
-          RSS(ref_node_tri_normal(ref_node, nodes, tri_normal), "tri norm");
+          RSS(ref_node_tri_normal(ref_node, &(ref_cell_c2n(ref_cell, 0, cell)), tri_normal), "tri norm");
           normal[0] += tri_normal[0];
           normal[1] += tri_normal[1];
           normal[2] += tri_normal[2];
         } else {
           constrained = REF_TRUE;
         }
-        if (!constrained) {
-          REF_DBL m[6], ratio, h;
-          REF_GLOB global;
-          REF_INT new_node0, new_node1;
-          REF_INT new_cell, new_nodes[REF_CELL_MAX_SIZE_PER];
-          RSS(ref_node_next_global(hair_node, &global), "next global");
-          RSS(ref_node_add(hair_node, global, &new_node0), "add");
-          ref_node_xyz(hair_node, 0, new_node0) =
-              ref_node_xyz(ref_node, 0, node);
-          ref_node_xyz(hair_node, 1, new_node0) =
-              ref_node_xyz(ref_node, 1, node);
-          ref_node_xyz(hair_node, 2, new_node0) =
-              ref_node_xyz(ref_node, 2, node);
-          RSS(ref_node_next_global(hair_node, &global), "next global");
-          RSS(ref_node_add(hair_node, global, &new_node1), "add");
-          RSS(ref_math_normalize(normal), "norm");
-          RSS(ref_node_metric_get(ref_node, node, m), "get");
-          ratio = ref_matrix_vt_m_v(m, normal);
-          RAS(ratio > 0.0, "ratio not positive");
-          ratio = sqrt(ratio);
-          RAS(ref_math_divisible(1.0, ratio), "1/ratio is inf 1/0");
-          h = 1.0 / ratio;
-          ref_node_xyz(hair_node, 0, new_node1) =
-              ref_node_xyz(ref_node, 0, node) + h * normal[0];
-          ref_node_xyz(hair_node, 1, new_node1) =
-              ref_node_xyz(ref_node, 1, node) + h * normal[1];
-          ref_node_xyz(hair_node, 2, new_node1) =
-              ref_node_xyz(ref_node, 2, node) + h * normal[2];
-          new_nodes[0] = new_node0;
-          new_nodes[1] = new_node1;
-          new_nodes[2] = 1;
-          RSS(ref_cell_add(hair_cell, new_nodes, &new_cell), "add hair");
-        }
+      }
+      if (!constrained) {
+        REF_DBL m[6], ratio, h;
+        REF_GLOB global;
+        REF_INT new_node0, new_node1;
+        REF_INT new_cell, new_nodes[REF_CELL_MAX_SIZE_PER];
+        RSS(ref_node_next_global(hair_node, &global), "next global");
+        RSS(ref_node_add(hair_node, global, &new_node0), "add");
+        ref_node_xyz(hair_node, 0, new_node0) = ref_node_xyz(ref_node, 0, node);
+        ref_node_xyz(hair_node, 1, new_node0) = ref_node_xyz(ref_node, 1, node);
+        ref_node_xyz(hair_node, 2, new_node0) = ref_node_xyz(ref_node, 2, node);
+        RSS(ref_node_next_global(hair_node, &global), "next global");
+        RSS(ref_node_add(hair_node, global, &new_node1), "add");
+        RSS(ref_math_normalize(normal), "norm");
+        RSS(ref_node_metric_get(ref_node, node, m), "get");
+        ratio = ref_matrix_vt_m_v(m, normal);
+        RAS(ratio > 0.0, "ratio not positive");
+        ratio = sqrt(ratio);
+        RAS(ref_math_divisible(1.0, ratio), "1/ratio is inf 1/0");
+        h = 1.0 / ratio;
+        ref_node_xyz(hair_node, 0, new_node1) =
+            ref_node_xyz(ref_node, 0, node) + h * normal[0];
+        ref_node_xyz(hair_node, 1, new_node1) =
+            ref_node_xyz(ref_node, 1, node) + h * normal[1];
+        ref_node_xyz(hair_node, 2, new_node1) =
+            ref_node_xyz(ref_node, 2, node) + h * normal[2];
+        new_nodes[0] = new_node0;
+        new_nodes[1] = new_node1;
+        new_nodes[2] = 1;
+        RSS(ref_cell_add(hair_cell, new_nodes, &new_cell), "add hair");
       }
     }
   }
