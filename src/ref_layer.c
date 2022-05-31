@@ -835,6 +835,67 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
     }
   }
+  {
+    REF_ADJ tri_tet;
+    REF_INT deg;
+    RSS(ref_adj_create(&tri_tet), "tet list");
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
+          REF_EMPTY != off_node[nodes[2]]) {
+        REF_CELL ref_tet = ref_grid_tet(ref_grid);
+        REF_INT tet, cell_node;
+        REF_BOOL has_either;
+        each_ref_cell_having_node2(ref_tet, nodes[0], off_node[nodes[0]], item,
+                                   cell_node, tet) {
+          RSS(ref_cell_has_either(ref_tet, tet, nodes[1], off_node[nodes[1]],
+                                  &has_either),
+              "either");
+          if (has_either) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+          RSS(ref_cell_has_either(ref_tet, tet, nodes[2], off_node[nodes[2]],
+                                  &has_either),
+              "either");
+          if (has_either) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+        }
+        each_ref_cell_having_node2(ref_tet, nodes[1], off_node[nodes[1]], item,
+                                   cell_node, tet) {
+          RSS(ref_cell_has_either(ref_tet, tet, nodes[2], off_node[nodes[2]],
+                                  &has_either),
+              "either");
+          if (has_either) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+          RSS(ref_cell_has_either(ref_tet, tet, nodes[0], off_node[nodes[0]],
+                                  &has_either),
+              "either");
+          if (has_either) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+        }
+        each_ref_cell_having_node2(ref_tet, nodes[2], off_node[nodes[2]], item,
+                                   cell_node, tet) {
+          RSS(ref_cell_has_either(ref_tet, tet, nodes[0], off_node[nodes[0]],
+                                  &has_either),
+              "either");
+          if (has_either) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+          RSS(ref_cell_has_either(ref_tet, tet, nodes[1], off_node[nodes[1]],
+                                  &has_either),
+              "either");
+          if (has_either) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+        }
+      }
+      RSS(ref_adj_degree(tri_tet, cell, &deg), "deg");
+      printf("deg %d\n", deg);
+    }
+    RSS(ref_adj_free(tri_tet), "free");
+  }
   RSS(ref_export_by_extension(hair_grid, "ref_layer_prism_hair.tec"), "hair");
   RSS(ref_export_by_extension(ref_grid, "ref_layer_prism_after.tec"),
       "dump surf after");
