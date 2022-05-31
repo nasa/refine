@@ -776,7 +776,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
              ref_mpi_n(ref_mpi));
     if (form_quads && pass == passes - 5)
       RSS(ref_layer_align_quad(ref_grid), "quad");
-    if (form_quads && pass == passes / 2)
+    if (form_prism && pass == passes / 2)
       RSS(ref_layer_align_prism(ref_grid, ref_dict_bcs), "prism");
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
