@@ -857,6 +857,29 @@ static REF_FCN REF_STATUS ref_layer_seed_tet(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
+                                                 REF_INT *face_nodes) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT face_node0, face_node1, item, cell_node, cell, cell_edge;
+  REF_INT node0, node1;
+  REF_DBL t, uvw[3];
+  face_node0 = face_nodes[0];
+  face_node1 = face_nodes[1];
+  each_ref_cell_having_node2(ref_cell, face_node0, face_node1, item, cell_node,
+                             cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      RSS(ref_node_tri_seg_intersection(ref_node, node0, node1, face_nodes, &t,
+                                        uvw),
+          "int");
+      printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                          REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1049,6 +1072,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                  &tet1),
               "tets");
           if (tet0 == REF_EMPTY && tet1 == REF_EMPTY) {
+            RSS(ref_layer_recover_face(ref_grid, face_nodes), "recover upper");
             printf("lower tets %d %d\n", tet0, tet1);
           }
           face_nodes[0] = quad[0];
@@ -1059,6 +1083,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                  &tet1),
               "tets");
           if (tet0 == REF_EMPTY && tet1 == REF_EMPTY) {
+            RSS(ref_layer_recover_face(ref_grid, face_nodes), "recover upper");
             printf("upper tets %d %d\n", tet0, tet1);
           }
         }
