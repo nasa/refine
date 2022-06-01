@@ -807,6 +807,56 @@ static REF_FCN REF_STATUS ref_layer_tet_to_pyr(REF_GRID ref_grid, REF_INT pri,
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_layer_seed_tet(REF_GRID ref_grid, REF_INT node0,
+                                             REF_INT node1, REF_INT *tet) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT item, cell;
+  REF_INT best_cell;
+  REF_DBL best_vol;
+  *tet = REF_EMPTY;
+  best_cell = REF_EMPTY;
+  best_vol = -REF_DBL_MAX;
+  REF_INT cell_face, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL vol, subtetvol;
+  *tet = REF_EMPTY;
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      if (node0 == ref_cell_f2n(ref_cell, 0, cell_face, cell) ||
+          node0 == ref_cell_f2n(ref_cell, 1, cell_face, cell) ||
+          node0 == ref_cell_f2n(ref_cell, 2, cell_face, cell))
+        continue;
+      vol = REF_DBL_MAX;
+      nodes[0] = node0;
+      nodes[1] = node1;
+      nodes[2] = ref_cell_f2n(ref_cell, 1, cell_face, cell);
+      nodes[3] = ref_cell_f2n(ref_cell, 0, cell_face, cell);
+      RSS(ref_node_tet_vol(ref_node, nodes, &subtetvol), "vol");
+      vol = MIN(vol, subtetvol);
+      nodes[0] = node0;
+      nodes[1] = node1;
+      nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, cell);
+      nodes[3] = ref_cell_f2n(ref_cell, 1, cell_face, cell);
+      RSS(ref_node_tet_vol(ref_node, nodes, &subtetvol), "vol");
+      vol = MIN(vol, subtetvol);
+      nodes[0] = node0;
+      nodes[1] = node1;
+      nodes[2] = ref_cell_f2n(ref_cell, 0, cell_face, cell);
+      nodes[3] = ref_cell_f2n(ref_cell, 2, cell_face, cell);
+      RSS(ref_node_tet_vol(ref_node, nodes, &subtetvol), "vol");
+      vol = MIN(vol, subtetvol);
+      if (vol > best_vol) {
+        best_vol = vol;
+        best_cell = cell;
+      }
+    }
+  }
+  RUS(REF_EMPTY, best_cell, "best tet empty");
+  RAS(best_vol > 0, "best vol not positive");
+  *tet = best_cell;
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                          REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -926,7 +976,36 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
     }
   }
   /* recover tet slides of prism tops */
-
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
+        REF_EMPTY != off_node[nodes[2]]) {
+      REF_INT cell_edge;
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+        REF_INT node0 = off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)];
+        REF_INT node1 = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
+        REF_BOOL has_side;
+        RSS(ref_cell_has_side(ref_grid_tet(ref_grid), node0, node1, &has_side),
+            "find tet side");
+        if (!has_side) {
+          REF_CAVITY ref_cavity;
+          REF_INT tet;
+          RSS(ref_layer_seed_tet(ref_grid, node0, node1, &tet), "seed");
+          RSS(ref_cavity_create(&ref_cavity), "cav create");
+          RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node1), "empty");
+          RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
+          RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+            ref_cavity_tec(ref_cavity, "cav-fail.tec");
+            ref_export_by_extension(ref_grid, "mesh-fail.tec");
+          });
+          RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+            ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
+            ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
+          });
+          RSS(ref_cavity_free(ref_cavity), "cav free");
+        }
+      }
+    }
+  }
   /* replace tets with prism */
   {
     REF_ADJ tri_tet;
