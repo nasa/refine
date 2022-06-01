@@ -896,7 +896,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
         }
 
         RSS(ref_adj_degree(tri_tet, cell, &deg), "deg");
-        printf("deg %d\n", deg);
+        if (3 != deg) printf("deg %d\n", deg);
         {
           REF_CAVITY ref_cavity;
           char filename[1024];
