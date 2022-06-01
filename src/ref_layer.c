@@ -1048,8 +1048,9 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0,
                                  &tet1),
               "tets");
-          if (tet0 == REF_EMPTY || tet1 == REF_EMPTY)
+          if (tet0 == REF_EMPTY && tet1 == REF_EMPTY) {
             printf("lower tets %d %d\n", tet0, tet1);
+          }
           face_nodes[0] = quad[0];
           face_nodes[1] = quad[2];
           face_nodes[2] = quad[3];
@@ -1057,8 +1058,9 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0,
                                  &tet1),
               "tets");
-          if (tet0 == REF_EMPTY || tet1 == REF_EMPTY)
+          if (tet0 == REF_EMPTY && tet1 == REF_EMPTY) {
             printf("upper tets %d %d\n", tet0, tet1);
+          }
         }
       }
     }
