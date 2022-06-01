@@ -830,6 +830,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
 
   ref_malloc_init(active, ref_node_max(ref_node), REF_BOOL, REF_FALSE);
   ref_malloc_init(off_node, ref_node_max(ref_node), REF_BOOL, REF_EMPTY);
+  /* mark active nodes */
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     REF_INT bc = REF_EMPTY;
     RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)], &bc),
@@ -841,6 +842,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
     }
   }
+  /* insert hair */
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node) && active[node]) {
       REF_BOOL constrained;
@@ -923,6 +925,9 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
     }
   }
+  /* recover tet slides of prism tops */
+
+  /* replace tets with prism */
   {
     REF_ADJ tri_tet;
     REF_INT deg;
@@ -991,6 +996,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
     }
     RSS(ref_adj_free(tri_tet), "free");
   }
+  /* replace two tets with pyramid */
   each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
     REF_CAVITY ref_cavity;
     char filename[1024];
