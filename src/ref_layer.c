@@ -877,7 +877,9 @@ static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
       RSS(ref_node_tri_seg_intersection(ref_node, node0, node1, face_nodes, &t,
                                         uvw),
           "int");
-      printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+      if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
+        printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+      }
     }
   }
   return REF_SUCCESS;
