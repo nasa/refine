@@ -1006,6 +1006,46 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
     }
   }
+  /* recover prism sides */
+  {
+    REF_INT cell_edge;
+    REF_INT quad[4];
+    REF_BOOL has_side;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
+          REF_EMPTY != off_node[nodes[2]]) {
+        each_ref_cell_cell_edge(ref_cell, cell_edge) {
+          quad[0] = REF_EMPTY;
+          RSS(ref_cell_has_side(
+                  ref_grid_tet(ref_grid),
+                  ref_cell_e2n(ref_cell, 0, cell_edge, cell),
+                  off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)],
+                  &has_side),
+              "diag");
+          if (has_side) {
+            quad[0] = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+            quad[1] = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+            quad[2] = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
+            quad[3] = off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)];
+          }
+          RSS(ref_cell_has_side(
+                  ref_grid_tet(ref_grid),
+                  ref_cell_e2n(ref_cell, 1, cell_edge, cell),
+                  off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)],
+                  &has_side),
+              "diag");
+          if (has_side) {
+            quad[0] = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+            quad[1] = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+            quad[2] = off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)];
+            quad[3] = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
+          }
+          RUS(REF_EMPTY, quad[0], "diag not found");
+        }
+      }
+    }
+  }
+
   /* replace tets with prism */
   {
     REF_ADJ tri_tet;
