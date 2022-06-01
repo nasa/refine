@@ -234,7 +234,10 @@ REF_FCN REF_STATUS ref_node_tet_vol(REF_NODE ref_node, REF_INT *nodes,
                                     REF_DBL *volume);
 REF_FCN REF_STATUS ref_node_tet_dvol_dnode0(REF_NODE ref_node, REF_INT *nodes,
                                             REF_DBL *vol, REF_DBL *dvol_dnode0);
-
+REF_FCN REF_STATUS ref_node_tri_seg_intersection(REF_NODE ref_node,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_INT *face_nodes,
+                                                 REF_DBL *t, REF_DBL *uvw);
 REF_FCN REF_STATUS ref_node_tet_quality(REF_NODE ref_node, REF_INT *nodes,
                                         REF_DBL *quality);
 REF_FCN REF_STATUS ref_node_tet_dquality_dnode0(REF_NODE ref_node,
