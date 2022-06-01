@@ -882,6 +882,42 @@ static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
       }
     }
   }
+  face_node0 = face_nodes[1];
+  face_node1 = face_nodes[2];
+  each_ref_cell_having_node2(ref_cell, face_node0, face_node1, item, cell_node,
+                             cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      if (node0 == face_node0 || node1 == face_node0 || node0 == face_node1 ||
+          node1 == face_node1)
+        continue;
+      RSS(ref_node_tri_seg_intersection(ref_node, node0, node1, face_nodes, &t,
+                                        uvw),
+          "int");
+      if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
+        printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+      }
+    }
+  }
+  face_node0 = face_nodes[2];
+  face_node1 = face_nodes[0];
+  each_ref_cell_having_node2(ref_cell, face_node0, face_node1, item, cell_node,
+                             cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      if (node0 == face_node0 || node1 == face_node0 || node0 == face_node1 ||
+          node1 == face_node1)
+        continue;
+      RSS(ref_node_tri_seg_intersection(ref_node, node0, node1, face_nodes, &t,
+                                        uvw),
+          "int");
+      if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
+        printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+      }
+    }
+  }
   return REF_SUCCESS;
 }
 
