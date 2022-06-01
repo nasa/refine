@@ -739,6 +739,74 @@ static REF_FCN REF_STATUS ref_layer_tet_prism(REF_INT *pri_nodes,
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_layer_tet_to_pyr(REF_GRID ref_grid, REF_INT pri,
+                                               REF_INT tet0, REF_INT tet1) {
+  REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet0_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet1_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT pyr_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell_face, i, hits, quad_node, quad_face, new_pyr;
+
+  RSS(ref_cell_nodes(ref_grid_pri(ref_grid), pri, pri_nodes), "pri nodes");
+  RSS(ref_cell_nodes(ref_grid_tet(ref_grid), tet0, tet0_nodes), "tet0 nodes");
+  RSS(ref_cell_nodes(ref_grid_tet(ref_grid), tet1, tet1_nodes), "tet1 nodes");
+
+  quad_face = REF_EMPTY;
+  each_ref_cell_cell_face(ref_grid_pri(ref_grid), cell_face) {
+    if (ref_cell_f2n_gen(ref_grid_pri(ref_grid), 0, cell_face) !=
+        ref_cell_f2n_gen(ref_grid_pri(ref_grid), 3, cell_face)) {
+      hits = 0;
+      for (i = 0; i < 4; i++) {
+        quad_node =
+            pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), i, cell_face)];
+        if (quad_node == tet0_nodes[0] || quad_node == tet0_nodes[1] ||
+            quad_node == tet0_nodes[2] || quad_node == tet0_nodes[3] ||
+            quad_node == tet1_nodes[0] || quad_node == tet1_nodes[1] ||
+            quad_node == tet1_nodes[2] || quad_node == tet1_nodes[3])
+          hits++;
+      }
+      RAB(hits == 2 || hits == 4, "hits not 2 or 4",
+          { printf("hits %d\n", hits); });
+      if (4 == hits) {
+        REIS(REF_EMPTY, quad_face, "two quad faces");
+        quad_face = cell_face;
+      }
+    }
+  }
+  RUS(REF_EMPTY, quad_face, "quad face not set");
+  pyr_nodes[0] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 3, quad_face)];
+  pyr_nodes[1] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 2, quad_face)];
+  pyr_nodes[2] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 1, quad_face)];
+  pyr_nodes[3] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 0, quad_face)];
+  pyr_nodes[4] = REF_EMPTY;
+  for (i = 0; i < 4; i++) {
+    if (pyr_nodes[0] != tet0_nodes[i] && pyr_nodes[1] != tet0_nodes[i] &&
+        pyr_nodes[2] != tet0_nodes[i] && pyr_nodes[3] != tet0_nodes[i]) {
+      RAS(pyr_nodes[4] == REF_EMPTY || pyr_nodes[4] == tet0_nodes[i],
+          "multiple off nodes");
+      pyr_nodes[4] = tet0_nodes[i];
+    }
+    if (pyr_nodes[0] != tet1_nodes[i] && pyr_nodes[1] != tet1_nodes[i] &&
+        pyr_nodes[2] != tet1_nodes[i] && pyr_nodes[3] != tet1_nodes[i]) {
+      RAS(pyr_nodes[4] == REF_EMPTY || pyr_nodes[4] == tet1_nodes[i],
+          "multiple off nodes");
+      pyr_nodes[4] = tet1_nodes[i];
+    }
+  }
+  RUS(REF_EMPTY, pyr_nodes[4], "pyramid peak not set");
+
+  RSS(ref_cell_remove(ref_grid_tet(ref_grid), tet0), "rm tet0");
+  RSS(ref_cell_remove(ref_grid_tet(ref_grid), tet1), "rm tet1");
+
+  RSS(ref_cell_add(ref_grid_pyr(ref_grid), pyr_nodes, &new_pyr), "add pyr");
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                          REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -949,6 +1017,11 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
       if (2 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
         /* replace two tets with pyramid */
+        RSS(ref_layer_tet_to_pyr(
+                ref_grid, cell,
+                ref_list_value(ref_cavity_tet_list(ref_cavity), 0),
+                ref_list_value(ref_cavity_tet_list(ref_cavity), 1)),
+            "tet2pyr");
       } else {
         sprintf(filename, "glue-%d-%d-cav.tec", cell, cell_face);
         if (0 < ref_cavity_nface(ref_cavity))
