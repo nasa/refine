@@ -930,7 +930,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
     each_ref_cell_cell_face(ref_grid_pri(ref_grid), cell_face) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_empty(ref_cavity, ref_grid, REF_EMPTY), "empty");
-      if (ref_cell_f2n(ref_grid_pri(ref_grid), 2, cell_face, cell) !=
+      if (ref_cell_f2n(ref_grid_pri(ref_grid), 0, cell_face, cell) !=
           ref_cell_f2n(ref_grid_pri(ref_grid), 3, cell_face, cell)) {
         each_ref_cell_having_node2(
             ref_grid_tet(ref_grid),
@@ -947,9 +947,13 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
         }
       }
-      sprintf(filename, "glue-%d-%d-cav.tec", cell, cell_face);
-      if (0 < ref_cavity_nface(ref_cavity))
-        RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
+      if (2 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
+        /* replace two tets with pyramid */
+      } else {
+        sprintf(filename, "glue-%d-%d-cav.tec", cell, cell_face);
+        if (0 < ref_cavity_nface(ref_cavity))
+          RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
+      }
       RSS(ref_cavity_free(ref_cavity), "cav free");
     }
   }
