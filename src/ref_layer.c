@@ -1050,8 +1050,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
         }
 
         RSS(ref_adj_degree(tri_tet, cell, &deg), "deg");
-        if (3 != deg) printf("deg %d\n", deg);
-        {
+        if (3 != deg) {
           REF_CAVITY ref_cavity;
           char filename[1024];
           RSS(ref_cavity_create(&ref_cavity), "cav create");
@@ -1060,6 +1059,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
             RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
           }
           sprintf(filename, "prism-%d-cav.tec", cell);
+          printf("prism tets %d %s\n", deg, filename);
           RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
           RSS(ref_cavity_free(ref_cavity), "cav free");
         }
@@ -1100,17 +1100,21 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
         }
       }
-      if (2 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
+      if (2 != ref_list_n(ref_cavity_tet_list(ref_cavity)) &&
+          0 != ref_list_n(ref_cavity_tet_list(ref_cavity))) {
+        sprintf(filename, "glue-%d-%d-cav.tec", cell, cell_face);
+        printf("pyramid tets missing %d %s\n",
+               ref_list_n(ref_cavity_tet_list(ref_cavity)), filename);
+        if (0 < ref_cavity_nface(ref_cavity))
+          RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
+      }
+      if (break_things && 2 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
         /* replace two tets with pyramid */
         RSS(ref_layer_tet_to_pyr(
                 ref_grid, cell,
                 ref_list_value(ref_cavity_tet_list(ref_cavity), 0),
                 ref_list_value(ref_cavity_tet_list(ref_cavity), 1)),
             "tet2pyr");
-      } else {
-        sprintf(filename, "glue-%d-%d-cav.tec", cell, cell_face);
-        if (0 < ref_cavity_nface(ref_cavity))
-          RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
       }
       RSS(ref_cavity_free(ref_cavity), "cav free");
     }
