@@ -1009,7 +1009,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
   /* recover prism sides */
   {
     REF_INT cell_edge;
-    REF_INT quad[4];
+    REF_INT quad[4], face_nodes[4], tet0, tet1;
     REF_BOOL has_side;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
@@ -1041,6 +1041,24 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
             quad[3] = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
           }
           RUS(REF_EMPTY, quad[0], "diag not found");
+          face_nodes[0] = quad[0];
+          face_nodes[1] = quad[1];
+          face_nodes[2] = quad[2];
+          face_nodes[3] = face_nodes[0];
+          RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0,
+                                 &tet1),
+              "tets");
+          if (tet0 == REF_EMPTY || tet1 == REF_EMPTY)
+            printf("lower tets %d %d\n", tet0, tet1);
+          face_nodes[0] = quad[0];
+          face_nodes[1] = quad[2];
+          face_nodes[2] = quad[3];
+          face_nodes[3] = face_nodes[0];
+          RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0,
+                                 &tet1),
+              "tets");
+          if (tet0 == REF_EMPTY || tet1 == REF_EMPTY)
+            printf("upper tets %d %d\n", tet0, tet1);
         }
       }
     }
