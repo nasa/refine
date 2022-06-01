@@ -721,6 +721,24 @@ REF_FCN REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_layer_tet_prism(REF_INT *pri_nodes,
+                                              REF_INT *tet_nodes,
+                                              REF_BOOL *contains) {
+  REF_INT hits, tet_node, pri_node;
+  *contains = REF_FALSE;
+  hits = 0;
+  for (pri_node = 0; pri_node < 6; pri_node++) {
+    for (tet_node = 0; tet_node < 4; tet_node++) {
+      if (pri_nodes[pri_node] == tet_nodes[tet_node]) {
+        hits++;
+      }
+    }
+  }
+  RAB(hits <= 4, "repeated tet nodes in prism", { printf("hits %d\n", hits); });
+  if (4 == hits) *contains = REF_TRUE;
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                          REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -843,47 +861,36 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
           REF_EMPTY != off_node[nodes[2]]) {
         REF_CELL ref_tet = ref_grid_tet(ref_grid);
-        REF_INT tet, cell_node;
-        REF_BOOL has_either;
+        REF_INT cell_node, tet, tet_nodes[REF_CELL_MAX_SIZE_PER],
+            pri_nodes[REF_CELL_MAX_SIZE_PER];
+        REF_BOOL contains;
+        pri_nodes[0] = nodes[0];
+        pri_nodes[1] = nodes[1];
+        pri_nodes[2] = nodes[2];
+        pri_nodes[3] = off_node[nodes[0]];
+        pri_nodes[4] = off_node[nodes[1]];
+        pri_nodes[5] = off_node[nodes[2]];
         each_ref_cell_having_node2(ref_tet, nodes[0], off_node[nodes[0]], item,
                                    cell_node, tet) {
-          RSS(ref_cell_has_both(ref_tet, tet, nodes[1], nodes[2], &has_either),
-              "either");
-          if (has_either) {
-            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
-          }
-          RSS(ref_cell_has_both(ref_tet, tet, off_node[nodes[1]],
-                                off_node[nodes[2]], &has_either),
-              "either");
-          if (has_either) {
+          RSS(ref_cell_nodes(ref_tet, tet, tet_nodes), "tet");
+          RSS(ref_layer_tet_prism(pri_nodes, tet_nodes, &contains), "contains");
+          if (contains) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
           }
         }
         each_ref_cell_having_node2(ref_tet, nodes[1], off_node[nodes[1]], item,
                                    cell_node, tet) {
-          RSS(ref_cell_has_both(ref_tet, tet, nodes[2], nodes[0], &has_either),
-              "either");
-          if (has_either) {
-            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
-          }
-          RSS(ref_cell_has_both(ref_tet, tet, off_node[nodes[2]],
-                                off_node[nodes[0]], &has_either),
-              "either");
-          if (has_either) {
+          RSS(ref_cell_nodes(ref_tet, tet, tet_nodes), "tet");
+          RSS(ref_layer_tet_prism(pri_nodes, tet_nodes, &contains), "contains");
+          if (contains) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
           }
         }
         each_ref_cell_having_node2(ref_tet, nodes[2], off_node[nodes[2]], item,
                                    cell_node, tet) {
-          RSS(ref_cell_has_both(ref_tet, tet, nodes[0], nodes[1], &has_either),
-              "either");
-          if (has_either) {
-            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
-          }
-          RSS(ref_cell_has_both(ref_tet, tet, off_node[nodes[0]],
-                                off_node[nodes[1]], &has_either),
-              "either");
-          if (has_either) {
+          RSS(ref_cell_nodes(ref_tet, tet, tet_nodes), "tet");
+          RSS(ref_layer_tet_prism(pri_nodes, tet_nodes, &contains), "contains");
+          if (contains) {
             RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
           }
         }
