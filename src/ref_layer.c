@@ -871,6 +871,9 @@ static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
     each_ref_cell_cell_edge(ref_cell, cell_edge) {
       node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
       node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      if (node0 == face_node0 || node1 == face_node0 || node0 == face_node1 ||
+          node1 == face_node1)
+        continue;
       RSS(ref_node_tri_seg_intersection(ref_node, node0, node1, face_nodes, &t,
                                         uvw),
           "int");
