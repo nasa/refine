@@ -1075,12 +1075,6 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
             ref_export_by_extension(ref_grid, "mesh-fail.tec");
           });
           printf(" state %d\n", ref_cavity_state(ref_cavity));
-          if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
-            RSS(ref_cavity_free(ref_cavity), "cav free");
-            RSS(ref_geom_remove_all(ref_geom, new_node), "rm geom");
-            RSS(ref_node_remove(ref_node, new_node), "rm node");
-            continue;
-          }
           RSB(ref_cavity_replace(ref_cavity), "cav replace", {
             ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
             ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
