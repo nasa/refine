@@ -994,19 +994,22 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
   REF_INT node;
   REF_INT item, cell;
   REF_CAVITY ref_cavity;
+  REF_DBL m[6], ratio, h;
+  REF_GLOB global;
+  REF_INT new_node;
+  REF_INT bc;
+  REF_BOOL constrained;
+  REF_DBL tri_normal[3], normal[3];
+  REF_INT faceid, constraining_faceid;
 
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node) && active[node]) {
-      REF_BOOL constrained;
-      REF_DBL tri_normal[3], normal[3];
-      REF_INT faceid, constraining_faceid;
       normal[0] = 0.0;
       normal[1] = 0.0;
       normal[2] = 0.0;
       constrained = REF_FALSE;
       constraining_faceid = REF_EMPTY;
       each_ref_cell_having_node(ref_cell, node, item, cell) {
-        REF_INT bc = REF_EMPTY;
         faceid = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
         RXS(ref_dict_value(ref_dict_bcs, faceid, &bc), REF_NOT_FOUND, "bc");
         if (ref_phys_wall_distance_bc(bc)) {
@@ -1024,9 +1027,6 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
         }
       }
       if (!constrained) {
-        REF_DBL m[6], ratio, h;
-        REF_GLOB global;
-        REF_INT new_node;
         RSS(ref_math_normalize(normal), "norm");
         RSS(ref_node_metric_get(ref_node, node, m), "get");
         ratio = ref_matrix_vt_m_v(m, normal);
