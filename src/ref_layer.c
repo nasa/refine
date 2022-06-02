@@ -1026,23 +1026,66 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
           constraining_faceid = faceid;
         }
       }
-      if (!constrained) {
-        RSS(ref_math_normalize(normal), "norm");
-        RSS(ref_node_metric_get(ref_node, node, m), "get");
-        ratio = ref_matrix_vt_m_v(m, normal);
-        RAS(ratio > 0.0, "ratio not positive");
-        ratio = sqrt(ratio);
-        RAS(ref_math_divisible(1.0, ratio), "1/ratio is inf 1/0");
-        h = 1.0 / ratio;
-        RSS(ref_node_next_global(ref_node, &global), "next global");
-        RSS(ref_node_add(ref_node, global, &new_node), "add");
-        off_node[node] = new_node;
-        ref_node_xyz(ref_node, 0, new_node) =
-            ref_node_xyz(ref_node, 0, node) + h * normal[0];
-        ref_node_xyz(ref_node, 1, new_node) =
-            ref_node_xyz(ref_node, 1, node) + h * normal[1];
-        ref_node_xyz(ref_node, 2, new_node) =
-            ref_node_xyz(ref_node, 2, node) + h * normal[2];
+      RSS(ref_math_normalize(normal), "norm");
+      RSS(ref_node_metric_get(ref_node, node, m), "get");
+      ratio = ref_matrix_vt_m_v(m, normal);
+      RAS(ratio > 0.0, "ratio not positive");
+      ratio = sqrt(ratio);
+      RAS(ref_math_divisible(1.0, ratio), "1/ratio is inf 1/0");
+      h = 1.0 / ratio;
+      RSS(ref_node_next_global(ref_node, &global), "next global");
+      RSS(ref_node_add(ref_node, global, &new_node), "add");
+      off_node[node] = new_node;
+      ref_node_xyz(ref_node, 0, new_node) =
+          ref_node_xyz(ref_node, 0, node) + h * normal[0];
+      ref_node_xyz(ref_node, 1, new_node) =
+          ref_node_xyz(ref_node, 1, node) + h * normal[1];
+      ref_node_xyz(ref_node, 2, new_node) =
+          ref_node_xyz(ref_node, 2, node) + h * normal[2];
+      if (constrained) {
+        REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+        REF_DBL param[2];
+        RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, constraining_faceid,
+                         param),
+            "base param");
+        RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, constraining_faceid,
+                                   ref_node_xyz_ptr(ref_node, new_node), param),
+            "inv eval");
+        RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, constraining_faceid,
+                              param, ref_node_xyz_ptr(ref_node, new_node),
+                              NULL),
+            "inv eval");
+        RSS(ref_geom_add(ref_geom, new_node, REF_GEOM_FACE, constraining_faceid,
+                         param),
+            "add param");
+        {
+          off_node[node] = REF_EMPTY;
+          RSS(ref_geom_remove_all(ref_geom, new_node), "rm geom");
+          RSS(ref_node_remove(ref_node, new_node), "rm node");
+          continue;
+        }
+        RSS(ref_cavity_create(&ref_cavity), "cav create");
+        ref_cavity_debug(ref_cavity) = REF_TRUE;
+        RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
+                                   REF_EMPTY),
+            "ball");
+        RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+          ref_cavity_tec(ref_cavity, "cav-fail.tec");
+          ref_export_by_extension(ref_grid, "mesh-fail.tec");
+        });
+        printf(" state %d\n", ref_cavity_state(ref_cavity));
+        if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
+          RSS(ref_cavity_free(ref_cavity), "cav free");
+          RSS(ref_geom_remove_all(ref_geom, new_node), "rm geom");
+          RSS(ref_node_remove(ref_node, new_node), "rm node");
+          continue;
+        }
+        RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+          ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
+          ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
+        });
+        RSS(ref_cavity_free(ref_cavity), "cav free");
+      } else {
         RSS(ref_cavity_create(&ref_cavity), "cav create");
         RSS(ref_cavity_form_insert_tet(ref_cavity, ref_grid, new_node, node,
                                        REF_EMPTY),
