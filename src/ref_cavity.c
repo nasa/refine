@@ -919,7 +919,7 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
   REF_INT item, cell_face, face_node, cell;
   REF_BOOL has_node, on_boundary;
   REF_BOOL already_have_it, all_local;
-  REF_INT face_nodes[3], seg_nodes[3], tri_cell;
+  REF_INT face_nodes[3], seg_nodes[3], tri_cell, seg;
 
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
   if (!ref_node_owned(ref_node, node) || !ref_node_owned(ref_node, site)) {
@@ -1034,6 +1034,16 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
       }
     }
   }
+
+  ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    face_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
+    face_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
+    face_nodes[2] = node;
+    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
+  }
+
+  if (ref_cavity_debug(ref_cavity)) ref_cavity_tec(ref_cavity, "form-tet.tec");
 
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "ball face manifold");
   if (ref_cavity_debug(ref_cavity))
