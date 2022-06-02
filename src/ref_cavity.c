@@ -979,13 +979,20 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
     }
   }
 
-  ref_cavity_tec(ref_cavity, "form-tri.tec");
+  if (ref_cavity_debug(ref_cavity)) ref_cavity_tec(ref_cavity, "form-tri.tec");
+
+  if (ref_cavity_debug(ref_cavity))
+    printf("insert form tri state %d\n", ref_cavity_state(ref_cavity));
+  RSS(ref_cavity_verify_seg_manifold(ref_cavity), "ball seg manifold");
+  if (ref_cavity_debug(ref_cavity))
+    printf("insert tri manifold state %d\n", ref_cavity_state(ref_cavity));
 
   RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge boundary");
   if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_FAILURE;
   ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
 
-  ref_cavity_tec(ref_cavity, "form-conform.tec");
+  if (ref_cavity_debug(ref_cavity))
+    ref_cavity_tec(ref_cavity, "form-conform.tec");
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node(ref_cell, site, item, cell) {
@@ -1028,14 +1035,9 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
     }
   }
 
-  if (ref_cavity_debug(ref_cavity))
-    printf("insert form state %d\n", ref_cavity_state(ref_cavity));
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "ball face manifold");
   if (ref_cavity_debug(ref_cavity))
     printf("insert face manifold state %d\n", ref_cavity_state(ref_cavity));
-  RSS(ref_cavity_verify_seg_manifold(ref_cavity), "ball seg manifold");
-  if (ref_cavity_debug(ref_cavity))
-    printf("insert seg manifold state %d\n", ref_cavity_state(ref_cavity));
 
   return REF_SUCCESS;
 }
