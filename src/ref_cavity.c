@@ -1552,8 +1552,6 @@ REF_FCN REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
            ref_list_n(ref_cavity_tri_list(ref_cavity)),
            ref_cavity_nseg(ref_cavity));
 
-  if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
-
   RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
   if (!manifold) {
     if (ref_cavity_debug(ref_cavity)) printf(" conforming not manifold\n");
@@ -1638,8 +1636,6 @@ REF_FCN REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
     printf(" enlarge final %d tets %d faces\n",
            ref_list_n(ref_cavity_tet_list(ref_cavity)),
            ref_cavity_nface(ref_cavity));
-
-  if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
 
   RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
   if (!manifold) {
