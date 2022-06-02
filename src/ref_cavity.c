@@ -799,7 +799,8 @@ REF_FCN REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity,
 
 REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
                                           REF_GRID ref_grid, REF_INT node,
-                                          REF_INT site, REF_INT protect) {
+                                          REF_INT site, REF_INT protect,
+                                          REF_INT faceid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell_face, face_node, cell;
@@ -861,6 +862,10 @@ REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
                        (protect == ref_cell_c2n(ref_cell, cell_node, cell));
     }
     if (protected_cell) continue;
+    /* only insert tri with faceid if not empty */
+    if (REF_EMPTY != faceid &&
+        faceid != ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell))
+      continue;
     RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell,
                           &already_have_it),
         "have tet?");

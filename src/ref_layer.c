@@ -580,7 +580,7 @@ REF_FCN static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
             "metric interp");
         RSS(ref_cavity_create(&ref_cavity), "cav create");
         RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
-                                   REF_EMPTY),
+                                   REF_EMPTY, REF_EMPTY),
             "ball");
         RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
           ref_cavity_tec(ref_cavity, "cav-fail.tec");
@@ -652,7 +652,7 @@ REF_FCN static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
           "metric interp");
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
-                                 ref_list_value(last_list, item)),
+                                 ref_list_value(last_list, item), REF_EMPTY),
           "ball");
       RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
         ref_cavity_tec(ref_cavity, "cav-fail.tec");
@@ -1068,7 +1068,7 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
           RSS(ref_cavity_create(&ref_cavity), "cav create");
           ref_cavity_debug(ref_cavity) = REF_TRUE;
           RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
-                                     REF_EMPTY),
+                                     REF_EMPTY, constraining_faceid),
               "ball");
           RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
             ref_cavity_tec(ref_cavity, "cav-fail.tec");
