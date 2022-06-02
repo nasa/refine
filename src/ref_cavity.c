@@ -893,8 +893,14 @@ REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
     }
   }
 
+  if (ref_cavity_debug(ref_cavity))
+    printf("insert form state %d\n", ref_cavity_state(ref_cavity));
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "ball face manifold");
+  if (ref_cavity_debug(ref_cavity))
+    printf("insert face manifold state %d\n", ref_cavity_state(ref_cavity));
   RSS(ref_cavity_verify_seg_manifold(ref_cavity), "ball seg manifold");
+  if (ref_cavity_debug(ref_cavity))
+    printf("insert seg manifold state %d\n", ref_cavity_state(ref_cavity));
 
   return REF_SUCCESS;
 }
