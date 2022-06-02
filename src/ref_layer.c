@@ -1070,6 +1070,10 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
           RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
                                      REF_EMPTY, constraining_faceid),
               "ball");
+          if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) {
+            printf(" form state %d error\n", ref_cavity_state(ref_cavity));
+            ref_cavity_tec(ref_cavity, "cav-form.tec");
+          }
           RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
             ref_cavity_tec(ref_cavity, "cav-fail.tec");
             ref_export_by_extension(ref_grid, "mesh-fail.tec");
