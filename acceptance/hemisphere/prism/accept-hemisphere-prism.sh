@@ -26,6 +26,6 @@ ${src}/ref adapt hemisphere-vol.meshb \
       --prism \
       -x hemihair1.meshb \
       -x hemihair1.plt \
+      -x hemihair1.lb8.ugrid \
       -s 5
-
 
