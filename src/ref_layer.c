@@ -969,6 +969,20 @@ static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_layer_remove_sliver(REF_GRID ref_grid,
+                                                  REF_INT *quad) {
+  REF_BOOL complete;
+  RSS(ref_layer_swap(ref_grid, quad[0], quad[2], quad[1], &complete), "quad1");
+  if (complete) return REF_SUCCESS;
+  RSS(ref_layer_swap(ref_grid, quad[0], quad[2], quad[3], &complete), "quad1");
+  if (complete) return REF_SUCCESS;
+  RSS(ref_layer_swap(ref_grid, quad[1], quad[3], quad[0], &complete), "quad0");
+  if (complete) return REF_SUCCESS;
+  RSS(ref_layer_swap(ref_grid, quad[1], quad[3], quad[2], &complete), "quad3");
+  if (complete) return REF_SUCCESS;
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
                                          REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1200,7 +1214,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
               "diag13");
           if (has_diag02 && has_diag13) {
             printf("sliver\n");
-            // RSS(ref_layer_remove_sliver(ref_grid, quad), "remove sliver");
+            RSS(ref_layer_remove_sliver(ref_grid, quad), "remove sliver");
           }
         }
       }
