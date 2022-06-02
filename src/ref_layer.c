@@ -1001,6 +1001,7 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
   REF_BOOL constrained;
   REF_DBL tri_normal[3], normal[3];
   REF_INT faceid, constraining_faceid;
+  REF_BOOL prevent_constrain = REF_TRUE;
 
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node) && active[node]) {
@@ -1058,33 +1059,34 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
         RSS(ref_geom_add(ref_geom, new_node, REF_GEOM_FACE, constraining_faceid,
                          param),
             "add param");
-        {
+        if (prevent_constrain) {
           off_node[node] = REF_EMPTY;
           RSS(ref_geom_remove_all(ref_geom, new_node), "rm geom");
           RSS(ref_node_remove(ref_node, new_node), "rm node");
           continue;
-        }
-        RSS(ref_cavity_create(&ref_cavity), "cav create");
-        ref_cavity_debug(ref_cavity) = REF_TRUE;
-        RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
-                                   REF_EMPTY),
-            "ball");
-        RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
-          ref_cavity_tec(ref_cavity, "cav-fail.tec");
-          ref_export_by_extension(ref_grid, "mesh-fail.tec");
-        });
-        printf(" state %d\n", ref_cavity_state(ref_cavity));
-        if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
+        } else {
+          RSS(ref_cavity_create(&ref_cavity), "cav create");
+          ref_cavity_debug(ref_cavity) = REF_TRUE;
+          RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
+                                     REF_EMPTY),
+              "ball");
+          RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+            ref_cavity_tec(ref_cavity, "cav-fail.tec");
+            ref_export_by_extension(ref_grid, "mesh-fail.tec");
+          });
+          printf(" state %d\n", ref_cavity_state(ref_cavity));
+          if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
+            RSS(ref_cavity_free(ref_cavity), "cav free");
+            RSS(ref_geom_remove_all(ref_geom, new_node), "rm geom");
+            RSS(ref_node_remove(ref_node, new_node), "rm node");
+            continue;
+          }
+          RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+            ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
+            ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
+          });
           RSS(ref_cavity_free(ref_cavity), "cav free");
-          RSS(ref_geom_remove_all(ref_geom, new_node), "rm geom");
-          RSS(ref_node_remove(ref_node, new_node), "rm node");
-          continue;
         }
-        RSB(ref_cavity_replace(ref_cavity), "cav replace", {
-          ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
-          ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
-        });
-        RSS(ref_cavity_free(ref_cavity), "cav free");
       } else {
         RSS(ref_cavity_create(&ref_cavity), "cav create");
         RSS(ref_cavity_form_insert_tet(ref_cavity, ref_grid, new_node, node,
