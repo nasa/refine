@@ -529,6 +529,12 @@ cd ${source_dir}/acceptance/hemisphere/uniform
 ( ./accept-hemisphere-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-hemisphere-prism
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/hemisphere/prism
+( ./accept-hemisphere-prism.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 LOG=${root_dir}/log.accept-sphere-cube-tetgen
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/sphere-cube/tetgen
