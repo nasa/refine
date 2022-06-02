@@ -857,6 +857,23 @@ static REF_FCN REF_STATUS ref_layer_seed_tet(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_layer_swap(REF_GRID ref_grid, REF_INT node0,
+                                         REF_INT node1, REF_INT site,
+                                         REF_BOOL *complete) {
+  REF_CAVITY ref_cavity;
+  *complete = REF_FALSE;
+  RSS(ref_cavity_create(&ref_cavity), "create");
+  RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, node0, node1, site),
+      "form");
+  RSS(ref_cavity_enlarge_combined(ref_cavity), "enlarge");
+  if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+    RSS(ref_cavity_replace(ref_cavity), "replace");
+    *complete = REF_TRUE;
+  }
+  RSS(ref_cavity_free(ref_cavity), "free");
+  return REF_SUCCESS;
+}
+
 static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
                                                  REF_INT *face_nodes) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -864,6 +881,7 @@ static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
   REF_INT face_node0, face_node1, item, cell_node, cell, cell_edge;
   REF_INT node0, node1;
   REF_DBL t, uvw[3];
+  REF_BOOL complete;
   face_node0 = face_nodes[0];
   face_node1 = face_nodes[1];
   each_ref_cell_having_node2(ref_cell, face_node0, face_node1, item, cell_node,
@@ -879,6 +897,16 @@ static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
           "int");
       if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
         printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[0], &complete),
+            "n0");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[1], &complete),
+            "n1");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[2], &complete),
+            "n2");
+        if (complete) break;
+        printf("nothing \n");
       }
     }
   }
@@ -897,6 +925,16 @@ static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
           "int");
       if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
         printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[0], &complete),
+            "n0");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[1], &complete),
+            "n1");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[2], &complete),
+            "n2");
+        if (complete) break;
+        printf("nothing \n");
       }
     }
   }
@@ -915,6 +953,16 @@ static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
           "int");
       if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
         printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[0], &complete),
+            "n0");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[1], &complete),
+            "n1");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[2], &complete),
+            "n2");
+        if (complete) break;
+        printf("nothing \n");
       }
     }
   }
