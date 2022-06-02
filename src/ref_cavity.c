@@ -821,38 +821,6 @@ REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
     return REF_SUCCESS;
   }
 
-  ref_cell = ref_grid_tet(ref_grid);
-  each_ref_cell_having_node(ref_cell, site, item, cell) {
-    REF_INT cell_node;
-    REF_BOOL protected_cell = REF_FALSE;
-    each_ref_cell_cell_node(ref_cell, cell_node) {
-      protected_cell = protected_cell ||
-                       (protect == ref_cell_c2n(ref_cell, cell_node, cell));
-    }
-    if (protected_cell) continue;
-    RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
-                          &already_have_it),
-        "have tet?");
-    RAS(!already_have_it, "added tet twice?");
-    RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
-    RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
-    if (!all_local) {
-      ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
-      return REF_SUCCESS;
-    }
-    each_ref_cell_cell_face(ref_cell, cell_face) {
-      each_ref_cavity_face_node(ref_cavity, face_node) {
-        face_nodes[face_node] =
-            ref_cell_f2n(ref_cell, face_node, cell_face, cell);
-      }
-      has_node = (node == face_nodes[0] || node == face_nodes[1] ||
-                  node == face_nodes[2]);
-      if (!has_node) {
-        RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
-      }
-    }
-  }
-
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_having_node(ref_cell, site, item, cell) {
     REF_INT cell_node;
@@ -895,6 +863,38 @@ REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
     has_node = (node == seg_nodes[0] || node == seg_nodes[1]);
     if (!has_node) {
       RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+    }
+  }
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_having_node(ref_cell, site, item, cell) {
+    REF_INT cell_node;
+    REF_BOOL protected_cell = REF_FALSE;
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      protected_cell = protected_cell ||
+                       (protect == ref_cell_c2n(ref_cell, cell_node, cell));
+    }
+    if (protected_cell) continue;
+    RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
+                          &already_have_it),
+        "have tet?");
+    RAS(!already_have_it, "added tet twice?");
+    RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
+    RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
+    if (!all_local) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      each_ref_cavity_face_node(ref_cavity, face_node) {
+        face_nodes[face_node] =
+            ref_cell_f2n(ref_cell, face_node, cell_face, cell);
+      }
+      has_node = (node == face_nodes[0] || node == face_nodes[1] ||
+                  node == face_nodes[2]);
+      if (!has_node) {
+        RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
+      }
     }
   }
 
