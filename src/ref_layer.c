@@ -993,6 +993,7 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
 
   REF_INT node;
   REF_INT item, cell;
+  REF_CAVITY ref_cavity;
 
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node) && active[node]) {
@@ -1033,31 +1034,28 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
         ratio = sqrt(ratio);
         RAS(ref_math_divisible(1.0, ratio), "1/ratio is inf 1/0");
         h = 1.0 / ratio;
-        {
-          REF_CAVITY ref_cavity;
-          RSS(ref_node_next_global(ref_node, &global), "next global");
-          RSS(ref_node_add(ref_node, global, &new_node), "add");
-          off_node[node] = new_node;
-          ref_node_xyz(ref_node, 0, new_node) =
-              ref_node_xyz(ref_node, 0, node) + h * normal[0];
-          ref_node_xyz(ref_node, 1, new_node) =
-              ref_node_xyz(ref_node, 1, node) + h * normal[1];
-          ref_node_xyz(ref_node, 2, new_node) =
-              ref_node_xyz(ref_node, 2, node) + h * normal[2];
-          RSS(ref_cavity_create(&ref_cavity), "cav create");
-          RSS(ref_cavity_form_insert_tet(ref_cavity, ref_grid, new_node, node,
-                                         REF_EMPTY),
-              "ball");
-          RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
-            ref_cavity_tec(ref_cavity, "cav-fail.tec");
-            ref_export_by_extension(ref_grid, "mesh-fail.tec");
-          });
-          RSB(ref_cavity_replace(ref_cavity), "cav replace", {
-            ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
-            ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
-          });
-          RSS(ref_cavity_free(ref_cavity), "cav free");
-        }
+        RSS(ref_node_next_global(ref_node, &global), "next global");
+        RSS(ref_node_add(ref_node, global, &new_node), "add");
+        off_node[node] = new_node;
+        ref_node_xyz(ref_node, 0, new_node) =
+            ref_node_xyz(ref_node, 0, node) + h * normal[0];
+        ref_node_xyz(ref_node, 1, new_node) =
+            ref_node_xyz(ref_node, 1, node) + h * normal[1];
+        ref_node_xyz(ref_node, 2, new_node) =
+            ref_node_xyz(ref_node, 2, node) + h * normal[2];
+        RSS(ref_cavity_create(&ref_cavity), "cav create");
+        RSS(ref_cavity_form_insert_tet(ref_cavity, ref_grid, new_node, node,
+                                       REF_EMPTY),
+            "ball");
+        RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+          ref_cavity_tec(ref_cavity, "cav-fail.tec");
+          ref_export_by_extension(ref_grid, "mesh-fail.tec");
+        });
+        RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+          ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
+          ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
+        });
+        RSS(ref_cavity_free(ref_cavity), "cav free");
       }
     }
   }
