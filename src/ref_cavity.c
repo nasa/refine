@@ -77,6 +77,8 @@ REF_FCN REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   ref_cavity->collapse_node0 = REF_EMPTY;
   ref_cavity->collapse_node1 = REF_EMPTY;
 
+  ref_cavity->seg_rm_adds_tet = REF_FALSE;
+
   ref_cavity->debug = REF_FALSE;
 
   return REF_SUCCESS;
@@ -182,7 +184,9 @@ REF_FCN static REF_STATUS ref_cavity_remove_seg_add_tets(REF_CAVITY ref_cavity,
   REF_BOOL already_have_it, all_local;
   REF_INT cell_face, face_node, face_nodes[3], tri_cell;
 
-  if (ref_list_n(ref_cavity_tet_list(ref_cavity)) == 0) return REF_SUCCESS;
+  if (!(ref_cavity->seg_rm_adds_tet) &&
+      ref_list_n(ref_cavity_tet_list(ref_cavity)) == 0)
+    return REF_SUCCESS;
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
 
   RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), seg_nodes[0], seg_nodes[1], 2,
@@ -927,6 +931,8 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
     return REF_SUCCESS;
   }
 
+  /* ref_cavity->seg_rm_adds_tet = REF_TRUE; */
+
   /* mixed element protections are not mature */
   if (ref_cell_n(ref_grid_pyr(ref_grid)) > 0 ||
       ref_cell_n(ref_grid_pri(ref_grid)) > 0) {
@@ -1006,6 +1012,7 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
     RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
                           &already_have_it),
         "have tet?");
+    if ((ref_cavity->seg_rm_adds_tet) && already_have_it) continue;
     RAS(!already_have_it, "added tet twice?");
     RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
     RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");

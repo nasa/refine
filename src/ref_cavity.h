@@ -59,6 +59,7 @@ struct REF_CAVITY_STRUCT {
   REF_DBL min_normdev;
   REF_INT split_node0, split_node1;
   REF_INT collapse_node0, collapse_node1;
+  REF_BOOL seg_rm_adds_tet;
   REF_BOOL debug;
 };
 
