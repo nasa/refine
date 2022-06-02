@@ -993,7 +993,6 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
   REF_CELL hair_cell;
   REF_BOOL *active;
   REF_INT *off_node;
-  REF_BOOL break_things = REF_TRUE;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync glob");
 
@@ -1277,7 +1276,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
           RSS(ref_cavity_free(ref_cavity), "cav free");
         }
-        if (break_things && 3 == deg) {
+        if (3 == deg) {
           REF_INT new_pri;
           each_ref_adj_node_item_with_ref(tri_tet, cell, item, tet) {
             RSS(ref_cell_remove(ref_grid_tet(ref_grid), tet), "rm tet");
@@ -1322,7 +1321,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
         if (0 < ref_cavity_nface(ref_cavity))
           RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
       }
-      if (break_things && 2 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
+      if (2 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
         /* replace two tets with pyramid */
         RSS(ref_layer_tet_to_pyr(
                 ref_grid, cell,
@@ -1340,5 +1339,5 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
   ref_free(off_node);
   ref_free(active);
   ref_grid_free(hair_grid);
-  return (break_things ? REF_IMPLEMENT : REF_SUCCESS);
+  return REF_SUCCESS;
 }
