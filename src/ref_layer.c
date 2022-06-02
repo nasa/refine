@@ -774,30 +774,31 @@ static REF_FCN REF_STATUS ref_layer_tet_to_pyr(REF_GRID ref_grid, REF_INT pri,
     }
   }
   RUS(REF_EMPTY, quad_face, "quad face not set");
+  /* aflr winding, quad points into prism */
   pyr_nodes[0] =
-      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 3, quad_face)];
-  pyr_nodes[1] =
-      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 2, quad_face)];
-  pyr_nodes[2] =
-      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 1, quad_face)];
-  pyr_nodes[3] =
       pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 0, quad_face)];
-  pyr_nodes[4] = REF_EMPTY;
+  pyr_nodes[1] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 1, quad_face)];
+  pyr_nodes[4] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 2, quad_face)];
+  pyr_nodes[3] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 3, quad_face)];
+  pyr_nodes[2] = REF_EMPTY;
   for (i = 0; i < 4; i++) {
     if (pyr_nodes[0] != tet0_nodes[i] && pyr_nodes[1] != tet0_nodes[i] &&
-        pyr_nodes[2] != tet0_nodes[i] && pyr_nodes[3] != tet0_nodes[i]) {
-      RAS(pyr_nodes[4] == REF_EMPTY || pyr_nodes[4] == tet0_nodes[i],
+        pyr_nodes[4] != tet0_nodes[i] && pyr_nodes[3] != tet0_nodes[i]) {
+      RAS(pyr_nodes[2] == REF_EMPTY || pyr_nodes[2] == tet0_nodes[i],
           "multiple off nodes");
-      pyr_nodes[4] = tet0_nodes[i];
+      pyr_nodes[2] = tet0_nodes[i];
     }
     if (pyr_nodes[0] != tet1_nodes[i] && pyr_nodes[1] != tet1_nodes[i] &&
-        pyr_nodes[2] != tet1_nodes[i] && pyr_nodes[3] != tet1_nodes[i]) {
-      RAS(pyr_nodes[4] == REF_EMPTY || pyr_nodes[4] == tet1_nodes[i],
+        pyr_nodes[4] != tet1_nodes[i] && pyr_nodes[3] != tet1_nodes[i]) {
+      RAS(pyr_nodes[2] == REF_EMPTY || pyr_nodes[2] == tet1_nodes[i],
           "multiple off nodes");
-      pyr_nodes[4] = tet1_nodes[i];
+      pyr_nodes[2] = tet1_nodes[i];
     }
   }
-  RUS(REF_EMPTY, pyr_nodes[4], "pyramid peak not set");
+  RUS(REF_EMPTY, pyr_nodes[2], "pyramid peak not set");
 
   RSS(ref_cell_remove(ref_grid_tet(ref_grid), tet0), "rm tet0");
   RSS(ref_cell_remove(ref_grid_tet(ref_grid), tet1), "rm tet1");
