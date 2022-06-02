@@ -1074,7 +1074,7 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
             ref_cavity_tec(ref_cavity, "cav-fail.tec");
             ref_export_by_extension(ref_grid, "mesh-fail.tec");
           });
-          printf(" state %d\n", ref_cavity_state(ref_cavity));
+          printf(" enlarge state %d\n", ref_cavity_state(ref_cavity));
           RSB(ref_cavity_replace(ref_cavity), "cav replace", {
             ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
             ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
