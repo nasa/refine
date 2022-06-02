@@ -1179,7 +1179,33 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
     }
   }
-
+  /* remove quad slivers */
+  {
+    REF_INT cell_edge;
+    REF_INT quad[4];
+    REF_BOOL has_diag02, has_diag13;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
+          REF_EMPTY != off_node[nodes[2]]) {
+        each_ref_cell_cell_edge(ref_cell, cell_edge) {
+          quad[0] = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+          quad[1] = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+          quad[2] = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
+          quad[3] = off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)];
+          RSS(ref_cell_has_side(ref_grid_tet(ref_grid), quad[0], quad[2],
+                                &has_diag02),
+              "diag02");
+          RSS(ref_cell_has_side(ref_grid_tet(ref_grid), quad[1], quad[3],
+                                &has_diag13),
+              "diag13");
+          if (has_diag02 && has_diag13) {
+            printf("sliver\n");
+            // RSS(ref_layer_remove_sliver(ref_grid, quad), "remove sliver");
+          }
+        }
+      }
+    }
+  }
   /* replace tets with prism */
   {
     REF_ADJ tri_tet;
