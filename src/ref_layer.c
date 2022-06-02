@@ -993,21 +993,21 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
 
   REF_INT node;
   REF_INT item, cell;
-  /* insert hair */
+
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node) && active[node]) {
       REF_BOOL constrained;
       REF_DBL tri_normal[3], normal[3];
+      REF_INT faceid, constraining_faceid;
       normal[0] = 0.0;
       normal[1] = 0.0;
       normal[2] = 0.0;
       constrained = REF_FALSE;
+      constraining_faceid = REF_EMPTY;
       each_ref_cell_having_node(ref_cell, node, item, cell) {
         REF_INT bc = REF_EMPTY;
-        RXS(ref_dict_value(
-                ref_dict_bcs,
-                ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell), &bc),
-            REF_NOT_FOUND, "bc");
+        faceid = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
+        RXS(ref_dict_value(ref_dict_bcs, faceid, &bc), REF_NOT_FOUND, "bc");
         if (ref_phys_wall_distance_bc(bc)) {
           RSS(ref_node_tri_normal(ref_node, &(ref_cell_c2n(ref_cell, 0, cell)),
                                   tri_normal),
@@ -1017,6 +1017,9 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
           normal[2] += tri_normal[2];
         } else {
           constrained = REF_TRUE;
+          RAS(constraining_faceid == REF_EMPTY || constraining_faceid == faceid,
+              "multiple face constraints");
+          constraining_faceid = faceid;
         }
       }
       if (!constrained) {
