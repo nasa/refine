@@ -477,6 +477,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   REF_BOOL all_done0 = REF_FALSE;
   REF_BOOL all_done1 = REF_FALSE;
   REF_BOOL form_quads = REF_FALSE;
+  REF_BOOL form_prism = REF_FALSE;
   REF_BOOL mesh_exported = REF_FALSE;
   REF_INT pass, passes = 30;
   REF_INT opt, pos;
@@ -615,6 +616,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   if (ref_grid_twod(ref_grid) && REF_EMPTY != pos) {
     form_quads = REF_TRUE;
     if (ref_mpi_once(ref_mpi)) printf("--quad form quads on boundary\n");
+  }
+
+  RXS(ref_args_find(argc, argv, "--prism", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    form_prism = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--prism form prisms on boundary\n");
   }
 
   RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");
@@ -769,6 +776,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
              ref_mpi_n(ref_mpi));
     if (form_quads && pass == passes - 5)
       RSS(ref_layer_align_quad(ref_grid), "quad");
+    if (form_prism && pass == passes / 2)
+      RSS(ref_layer_align_prism(ref_grid, ref_dict_bcs), "prism");
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes)) && !form_quads;

@@ -59,6 +59,7 @@ struct REF_CAVITY_STRUCT {
   REF_DBL min_normdev;
   REF_INT split_node0, split_node1;
   REF_INT collapse_node0, collapse_node1;
+  REF_BOOL seg_rm_adds_tet;
   REF_BOOL debug;
 };
 
@@ -136,7 +137,15 @@ REF_FCN REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity,
                                         REF_GRID ref_grid, REF_INT node);
 REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
                                           REF_GRID ref_grid, REF_INT node,
-                                          REF_INT site, REF_INT protect);
+                                          REF_INT site, REF_INT protect,
+                                          REF_INT faceid);
+REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
+                                           REF_GRID ref_grid, REF_INT node,
+                                           REF_INT site, REF_INT protect,
+                                           REF_INT faceid);
+REF_FCN REF_STATUS ref_cavity_form_insert_tet(REF_CAVITY ref_cavity,
+                                              REF_GRID ref_grid, REF_INT node,
+                                              REF_INT site, REF_INT protect);
 REF_FCN REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity,
                                              REF_GRID ref_grid, REF_INT node0,
                                              REF_INT node1, REF_INT node);

@@ -29,6 +29,7 @@ typedef REF_LAYER_STRUCT *REF_LAYER;
 END_C_DECLORATION
 
 #include "ref_cell.h"
+#include "ref_dict.h"
 #include "ref_list.h"
 #include "ref_node.h"
 
@@ -58,6 +59,9 @@ REF_FCN REF_STATUS ref_layer_align_quad(REF_GRID ref_grid);
 
 REF_FCN REF_STATUS ref_layer_interior_seg_normal(REF_GRID ref_grid,
                                                  REF_INT cell, REF_DBL *normal);
+
+REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
+                                         REF_DICT ref_dict_bcs);
 
 END_C_DECLORATION
 

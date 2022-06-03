@@ -2572,6 +2572,43 @@ REF_FCN REF_STATUS ref_node_tet_dvol_dnode0(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_node_tri_seg_intersection(REF_NODE ref_node,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_INT *face_nodes,
+                                                 REF_DBL *t, REF_DBL *uvw) {
+  REF_DBL node0_volume, node1_volume, node2_volume, total_volume;
+  REF_INT nodes[4];
+  nodes[0] = face_nodes[0];
+  nodes[1] = face_nodes[1];
+  nodes[2] = face_nodes[2];
+  nodes[3] = node0;
+  RSS(ref_node_tet_vol(ref_node, nodes, &node0_volume), "node 0 vol");
+  nodes[3] = node1;
+  RSS(ref_node_tet_vol(ref_node, nodes, &node1_volume), "node 1 vol");
+  total_volume = node0_volume - node1_volume;
+  if (!ref_math_divisible(node0_volume, total_volume)) return REF_DIV_ZERO;
+  *t = node0_volume / total_volume;
+
+  nodes[2] = node0;
+  nodes[3] = node1;
+  RSS(ref_node_tet_vol(ref_node, nodes, &node2_volume), "face 2 vol");
+  nodes[0] = face_nodes[1];
+  nodes[1] = face_nodes[2];
+  RSS(ref_node_tet_vol(ref_node, nodes, &node0_volume), "face 20 vol");
+  nodes[0] = face_nodes[2];
+  nodes[1] = face_nodes[0];
+  RSS(ref_node_tet_vol(ref_node, nodes, &node1_volume), "face 1 vol");
+  total_volume = node0_volume + node1_volume + node2_volume;
+
+  if (!ref_math_divisible(node0_volume, total_volume)) return REF_DIV_ZERO;
+  uvw[0] = node0_volume / total_volume;
+  if (!ref_math_divisible(node1_volume, total_volume)) return REF_DIV_ZERO;
+  uvw[1] = node1_volume / total_volume;
+  if (!ref_math_divisible(node2_volume, total_volume)) return REF_DIV_ZERO;
+  uvw[2] = node2_volume / total_volume;
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
                                              REF_INT node1,
                                              REF_DBL node1_weight,

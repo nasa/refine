@@ -31,6 +31,7 @@
 #include "ref_matrix.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
+#include "ref_phys.h"
 #include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_validation.h"
@@ -579,7 +580,7 @@ REF_FCN static REF_STATUS ref_layer_align_first_layer(REF_GRID ref_grid,
             "metric interp");
         RSS(ref_cavity_create(&ref_cavity), "cav create");
         RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
-                                   REF_EMPTY),
+                                   REF_EMPTY, REF_EMPTY),
             "ball");
         RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
           ref_cavity_tec(ref_cavity, "cav-fail.tec");
@@ -651,7 +652,7 @@ REF_FCN static REF_STATUS ref_layer_align_quad_advance(REF_GRID ref_grid,
           "metric interp");
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_insert(ref_cavity, ref_grid, new_node, node,
-                                 ref_list_value(last_list, item)),
+                                 ref_list_value(last_list, item), REF_EMPTY),
           "ball");
       RSB(ref_cavity_enlarge_conforming(ref_cavity), "enlarge", {
         ref_cavity_tec(ref_cavity, "cav-fail.tec");
@@ -717,5 +718,670 @@ REF_FCN REF_STATUS ref_layer_align_quad(REF_GRID ref_grid) {
   RSS(ref_layer_align_quad_seq(ref_grid), "quad");
   ref_grid_partitioner(ref_grid) = previous;
   RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
+  return REF_SUCCESS;
+}
+
+static REF_FCN REF_STATUS ref_layer_tet_prism(REF_INT *pri_nodes,
+                                              REF_INT *tet_nodes,
+                                              REF_BOOL *contains) {
+  REF_INT hits, tet_node, pri_node;
+  *contains = REF_FALSE;
+  hits = 0;
+  for (pri_node = 0; pri_node < 6; pri_node++) {
+    for (tet_node = 0; tet_node < 4; tet_node++) {
+      if (pri_nodes[pri_node] == tet_nodes[tet_node]) {
+        hits++;
+      }
+    }
+  }
+  RAB(hits <= 4, "repeated tet nodes in prism", { printf("hits %d\n", hits); });
+  if (4 == hits) *contains = REF_TRUE;
+  return REF_SUCCESS;
+}
+
+static REF_FCN REF_STATUS ref_layer_tet_to_pyr(REF_GRID ref_grid, REF_INT pri,
+                                               REF_INT tet0, REF_INT tet1) {
+  REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet0_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet1_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT pyr_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell_face, i, hits, quad_node, quad_face, new_pyr;
+
+  RSS(ref_cell_nodes(ref_grid_pri(ref_grid), pri, pri_nodes), "pri nodes");
+  RSS(ref_cell_nodes(ref_grid_tet(ref_grid), tet0, tet0_nodes), "tet0 nodes");
+  RSS(ref_cell_nodes(ref_grid_tet(ref_grid), tet1, tet1_nodes), "tet1 nodes");
+
+  quad_face = REF_EMPTY;
+  each_ref_cell_cell_face(ref_grid_pri(ref_grid), cell_face) {
+    if (ref_cell_f2n_gen(ref_grid_pri(ref_grid), 0, cell_face) !=
+        ref_cell_f2n_gen(ref_grid_pri(ref_grid), 3, cell_face)) {
+      hits = 0;
+      for (i = 0; i < 4; i++) {
+        quad_node =
+            pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), i, cell_face)];
+        if (quad_node == tet0_nodes[0] || quad_node == tet0_nodes[1] ||
+            quad_node == tet0_nodes[2] || quad_node == tet0_nodes[3] ||
+            quad_node == tet1_nodes[0] || quad_node == tet1_nodes[1] ||
+            quad_node == tet1_nodes[2] || quad_node == tet1_nodes[3])
+          hits++;
+      }
+      RAB(hits == 2 || hits == 4, "hits not 2 or 4",
+          { printf("hits %d\n", hits); });
+      if (4 == hits) {
+        REIS(REF_EMPTY, quad_face, "two quad faces");
+        quad_face = cell_face;
+      }
+    }
+  }
+  RUS(REF_EMPTY, quad_face, "quad face not set");
+  /* aflr winding, quad points into prism */
+  pyr_nodes[0] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 0, quad_face)];
+  pyr_nodes[1] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 1, quad_face)];
+  pyr_nodes[4] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 2, quad_face)];
+  pyr_nodes[3] =
+      pri_nodes[ref_cell_f2n_gen(ref_grid_pri(ref_grid), 3, quad_face)];
+  pyr_nodes[2] = REF_EMPTY;
+  for (i = 0; i < 4; i++) {
+    if (pyr_nodes[0] != tet0_nodes[i] && pyr_nodes[1] != tet0_nodes[i] &&
+        pyr_nodes[4] != tet0_nodes[i] && pyr_nodes[3] != tet0_nodes[i]) {
+      RAS(pyr_nodes[2] == REF_EMPTY || pyr_nodes[2] == tet0_nodes[i],
+          "multiple off nodes");
+      pyr_nodes[2] = tet0_nodes[i];
+    }
+    if (pyr_nodes[0] != tet1_nodes[i] && pyr_nodes[1] != tet1_nodes[i] &&
+        pyr_nodes[4] != tet1_nodes[i] && pyr_nodes[3] != tet1_nodes[i]) {
+      RAS(pyr_nodes[2] == REF_EMPTY || pyr_nodes[2] == tet1_nodes[i],
+          "multiple off nodes");
+      pyr_nodes[2] = tet1_nodes[i];
+    }
+  }
+  RUS(REF_EMPTY, pyr_nodes[2], "pyramid peak not set");
+
+  RSS(ref_cell_remove(ref_grid_tet(ref_grid), tet0), "rm tet0");
+  RSS(ref_cell_remove(ref_grid_tet(ref_grid), tet1), "rm tet1");
+
+  RSS(ref_cell_add(ref_grid_pyr(ref_grid), pyr_nodes, &new_pyr), "add pyr");
+
+  return REF_SUCCESS;
+}
+
+static REF_FCN REF_STATUS ref_layer_seed_tet(REF_GRID ref_grid, REF_INT node0,
+                                             REF_INT node1, REF_INT *tet) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT item, cell;
+  REF_INT best_cell;
+  REF_DBL best_vol;
+  *tet = REF_EMPTY;
+  best_cell = REF_EMPTY;
+  best_vol = -REF_DBL_MAX;
+  REF_INT cell_face, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL vol, subtetvol;
+  *tet = REF_EMPTY;
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      if (node0 == ref_cell_f2n(ref_cell, 0, cell_face, cell) ||
+          node0 == ref_cell_f2n(ref_cell, 1, cell_face, cell) ||
+          node0 == ref_cell_f2n(ref_cell, 2, cell_face, cell))
+        continue;
+      vol = REF_DBL_MAX;
+      nodes[0] = node0;
+      nodes[1] = node1;
+      nodes[2] = ref_cell_f2n(ref_cell, 1, cell_face, cell);
+      nodes[3] = ref_cell_f2n(ref_cell, 0, cell_face, cell);
+      RSS(ref_node_tet_vol(ref_node, nodes, &subtetvol), "vol");
+      vol = MIN(vol, subtetvol);
+      nodes[0] = node0;
+      nodes[1] = node1;
+      nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, cell);
+      nodes[3] = ref_cell_f2n(ref_cell, 1, cell_face, cell);
+      RSS(ref_node_tet_vol(ref_node, nodes, &subtetvol), "vol");
+      vol = MIN(vol, subtetvol);
+      nodes[0] = node0;
+      nodes[1] = node1;
+      nodes[2] = ref_cell_f2n(ref_cell, 0, cell_face, cell);
+      nodes[3] = ref_cell_f2n(ref_cell, 2, cell_face, cell);
+      RSS(ref_node_tet_vol(ref_node, nodes, &subtetvol), "vol");
+      vol = MIN(vol, subtetvol);
+      if (vol > best_vol) {
+        best_vol = vol;
+        best_cell = cell;
+      }
+    }
+  }
+  RUS(REF_EMPTY, best_cell, "best tet empty");
+  RAS(best_vol > 0, "best vol not positive");
+  *tet = best_cell;
+  return REF_SUCCESS;
+}
+
+static REF_FCN REF_STATUS ref_layer_swap(REF_GRID ref_grid, REF_INT node0,
+                                         REF_INT node1, REF_INT site,
+                                         REF_BOOL *complete) {
+  REF_CAVITY ref_cavity;
+  *complete = REF_FALSE;
+  RSS(ref_cavity_create(&ref_cavity), "create");
+  RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, node0, node1, site),
+      "form");
+  RSS(ref_cavity_enlarge_combined(ref_cavity), "enlarge");
+  if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+    RSS(ref_cavity_replace(ref_cavity), "replace");
+    *complete = REF_TRUE;
+  }
+  RSS(ref_cavity_free(ref_cavity), "free");
+  return REF_SUCCESS;
+}
+
+static REF_FCN REF_STATUS ref_layer_recover_face(REF_GRID ref_grid,
+                                                 REF_INT *face_nodes) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT face_node0, face_node1, item, cell_node, cell, cell_edge;
+  REF_INT node0, node1;
+  REF_DBL t, uvw[3];
+  REF_BOOL complete;
+  face_node0 = face_nodes[0];
+  face_node1 = face_nodes[1];
+  each_ref_cell_having_node2(ref_cell, face_node0, face_node1, item, cell_node,
+                             cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      if (node0 == face_node0 || node1 == face_node0 || node0 == face_node1 ||
+          node1 == face_node1)
+        continue;
+      RSS(ref_node_tri_seg_intersection(ref_node, node0, node1, face_nodes, &t,
+                                        uvw),
+          "int");
+      if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
+        printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[0], &complete),
+            "n0");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[1], &complete),
+            "n1");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[2], &complete),
+            "n2");
+        if (complete) break;
+        printf("nothing \n");
+      }
+    }
+  }
+  face_node0 = face_nodes[1];
+  face_node1 = face_nodes[2];
+  each_ref_cell_having_node2(ref_cell, face_node0, face_node1, item, cell_node,
+                             cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      if (node0 == face_node0 || node1 == face_node0 || node0 == face_node1 ||
+          node1 == face_node1)
+        continue;
+      RSS(ref_node_tri_seg_intersection(ref_node, node0, node1, face_nodes, &t,
+                                        uvw),
+          "int");
+      if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
+        printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[0], &complete),
+            "n0");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[1], &complete),
+            "n1");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[2], &complete),
+            "n2");
+        if (complete) break;
+        printf("nothing \n");
+      }
+    }
+  }
+  face_node0 = face_nodes[2];
+  face_node1 = face_nodes[0];
+  each_ref_cell_having_node2(ref_cell, face_node0, face_node1, item, cell_node,
+                             cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      if (node0 == face_node0 || node1 == face_node0 || node0 == face_node1 ||
+          node1 == face_node1)
+        continue;
+      RSS(ref_node_tri_seg_intersection(ref_node, node0, node1, face_nodes, &t,
+                                        uvw),
+          "int");
+      if (t > 0.0 && t < 1.0 && uvw[0] > 0.0 && uvw[1] > 0.0 && uvw[2] > 0.0) {
+        printf("t %f u %f v %f w %f \n", t, uvw[0], uvw[1], uvw[2]);
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[0], &complete),
+            "n0");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[1], &complete),
+            "n1");
+        if (complete) break;
+        RSS(ref_layer_swap(ref_grid, node0, node1, face_nodes[2], &complete),
+            "n2");
+        if (complete) break;
+        printf("nothing \n");
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+
+static REF_FCN REF_STATUS ref_layer_remove_sliver(REF_GRID ref_grid,
+                                                  REF_INT *quad) {
+  REF_BOOL complete;
+  RSS(ref_layer_swap(ref_grid, quad[0], quad[2], quad[1], &complete), "quad1");
+  if (complete) return REF_SUCCESS;
+  RSS(ref_layer_swap(ref_grid, quad[0], quad[2], quad[3], &complete), "quad1");
+  if (complete) return REF_SUCCESS;
+  RSS(ref_layer_swap(ref_grid, quad[1], quad[3], quad[0], &complete), "quad0");
+  if (complete) return REF_SUCCESS;
+  RSS(ref_layer_swap(ref_grid, quad[1], quad[3], quad[2], &complete), "quad3");
+  if (complete) return REF_SUCCESS;
+  return REF_SUCCESS;
+}
+
+static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
+                                                      REF_DICT ref_dict_bcs,
+                                                      REF_BOOL *active,
+                                                      REF_INT *off_node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+
+  REF_INT node;
+  REF_INT item, cell;
+  REF_CAVITY ref_cavity;
+  REF_DBL m[6], ratio, h;
+  REF_GLOB global;
+  REF_INT new_node;
+  REF_INT bc;
+  REF_BOOL constrained;
+  REF_DBL tri_normal[3], normal[3];
+  REF_INT faceid, constraining_faceid;
+  REF_BOOL prevent_constrain = REF_TRUE;
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node) && active[node]) {
+      normal[0] = 0.0;
+      normal[1] = 0.0;
+      normal[2] = 0.0;
+      constrained = REF_FALSE;
+      constraining_faceid = REF_EMPTY;
+      each_ref_cell_having_node(ref_cell, node, item, cell) {
+        faceid = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
+        RXS(ref_dict_value(ref_dict_bcs, faceid, &bc), REF_NOT_FOUND, "bc");
+        if (ref_phys_wall_distance_bc(bc)) {
+          RSS(ref_node_tri_normal(ref_node, &(ref_cell_c2n(ref_cell, 0, cell)),
+                                  tri_normal),
+              "tri norm");
+          normal[0] += tri_normal[0];
+          normal[1] += tri_normal[1];
+          normal[2] += tri_normal[2];
+        } else {
+          constrained = REF_TRUE;
+          RAS(constraining_faceid == REF_EMPTY || constraining_faceid == faceid,
+              "multiple face constraints");
+          constraining_faceid = faceid;
+        }
+      }
+      RSS(ref_math_normalize(normal), "norm");
+      RSS(ref_node_metric_get(ref_node, node, m), "get");
+      ratio = ref_matrix_vt_m_v(m, normal);
+      RAS(ratio > 0.0, "ratio not positive");
+      ratio = sqrt(ratio);
+      RAS(ref_math_divisible(1.0, ratio), "1/ratio is inf 1/0");
+      h = 1.0 / ratio;
+      RSS(ref_node_next_global(ref_node, &global), "next global");
+      RSS(ref_node_add(ref_node, global, &new_node), "add");
+      off_node[node] = new_node;
+      ref_node_xyz(ref_node, 0, new_node) =
+          ref_node_xyz(ref_node, 0, node) + h * normal[0];
+      ref_node_xyz(ref_node, 1, new_node) =
+          ref_node_xyz(ref_node, 1, node) + h * normal[1];
+      ref_node_xyz(ref_node, 2, new_node) =
+          ref_node_xyz(ref_node, 2, node) + h * normal[2];
+      if (constrained) {
+        REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+        REF_DBL param[2];
+        RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, constraining_faceid,
+                         param),
+            "base param");
+        RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, constraining_faceid,
+                                   ref_node_xyz_ptr(ref_node, new_node), param),
+            "inv eval");
+        RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, constraining_faceid,
+                              param, ref_node_xyz_ptr(ref_node, new_node),
+                              NULL),
+            "inv eval");
+        RSS(ref_geom_add(ref_geom, new_node, REF_GEOM_FACE, constraining_faceid,
+                         param),
+            "add param");
+        if (prevent_constrain) {
+          off_node[node] = REF_EMPTY;
+          RSS(ref_geom_remove_all(ref_geom, new_node), "rm geom");
+          RSS(ref_node_remove(ref_node, new_node), "rm node");
+          continue;
+        } else {
+          RSS(ref_cavity_create(&ref_cavity), "cav create");
+          ref_cavity_debug(ref_cavity) = REF_TRUE;
+          RSS(ref_cavity_form_insert2(ref_cavity, ref_grid, new_node, node,
+                                      REF_EMPTY, constraining_faceid),
+              "ball");
+          if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) {
+            printf(" form state %d error\n", ref_cavity_state(ref_cavity));
+            ref_cavity_tec(ref_cavity, "cav-form.tec");
+          }
+          RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+            ref_cavity_tec(ref_cavity, "cav-fail.tec");
+            ref_export_by_extension(ref_grid, "mesh-fail.tec");
+          });
+          printf(" enlarge state %d\n", ref_cavity_state(ref_cavity));
+          if (node == REF_EMPTY && /* turns off continue */
+              REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
+            RSS(ref_cavity_free(ref_cavity), "cav free");
+            off_node[node] = REF_EMPTY;
+            RSS(ref_geom_remove_all(ref_geom, new_node), "rm geom");
+            RSS(ref_node_remove(ref_node, new_node), "rm node");
+            continue;
+          }
+          RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+            ref_export_by_extension(ref_grid, "ref_layer_prism_replace.tec");
+            ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
+            ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
+          });
+          RSS(ref_cavity_free(ref_cavity), "cav free");
+        }
+      } else {
+        RSS(ref_cavity_create(&ref_cavity), "cav create");
+        RSS(ref_cavity_form_insert_tet(ref_cavity, ref_grid, new_node, node,
+                                       REF_EMPTY),
+            "ball");
+        RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+          ref_cavity_tec(ref_cavity, "cav-fail.tec");
+          ref_export_by_extension(ref_grid, "mesh-fail.tec");
+        });
+        RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+          ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
+          ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
+        });
+        RSS(ref_cavity_free(ref_cavity), "cav free");
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
+                                         REF_DICT ref_dict_bcs) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL *active;
+  REF_INT *off_node;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync glob");
+
+  RSS(ref_export_by_extension(ref_grid, "ref_layer_prism_before.tec"),
+      "dump surf");
+
+  ref_malloc_init(active, ref_node_max(ref_node), REF_BOOL, REF_FALSE);
+  ref_malloc_init(off_node, ref_node_max(ref_node), REF_BOOL, REF_EMPTY);
+  /* mark active nodes */
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    REF_INT bc = REF_EMPTY;
+    RXS(ref_dict_value(ref_dict_bcs, nodes[ref_cell_id_index(ref_cell)], &bc),
+        REF_NOT_FOUND, "bc");
+    if (ref_phys_wall_distance_bc(bc)) {
+      REF_INT cell_node;
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        active[nodes[cell_node]] = REF_TRUE;
+      }
+    }
+  }
+
+  RSS(ref_layer_prism_insert_hair(ref_grid, ref_dict_bcs, active, off_node),
+      "insert hair");
+
+  /* recover tet slides of prism tops */
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
+        REF_EMPTY != off_node[nodes[2]]) {
+      REF_INT cell_edge;
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+        REF_INT node0 = off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)];
+        REF_INT node1 = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
+        REF_BOOL has_side;
+        RSS(ref_cell_has_side(ref_grid_tet(ref_grid), node0, node1, &has_side),
+            "find tet side");
+        if (!has_side) {
+          REF_CAVITY ref_cavity;
+          REF_INT tet;
+          RSS(ref_layer_seed_tet(ref_grid, node0, node1, &tet), "seed");
+          RSS(ref_cavity_create(&ref_cavity), "cav create");
+          RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node1), "empty");
+          RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
+          RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+            ref_cavity_tec(ref_cavity, "cav-fail.tec");
+            ref_export_by_extension(ref_grid, "mesh-fail.tec");
+          });
+          RSB(ref_cavity_replace(ref_cavity), "cav replace", {
+            ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
+            ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
+          });
+          RSS(ref_cavity_free(ref_cavity), "cav free");
+        }
+      }
+    }
+  }
+  /* recover prism sides */
+  {
+    REF_INT cell_edge;
+    REF_INT quad[4], face_nodes[4], tet0, tet1;
+    REF_BOOL has_side;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
+          REF_EMPTY != off_node[nodes[2]]) {
+        each_ref_cell_cell_edge(ref_cell, cell_edge) {
+          quad[0] = REF_EMPTY;
+          RSS(ref_cell_has_side(
+                  ref_grid_tet(ref_grid),
+                  ref_cell_e2n(ref_cell, 0, cell_edge, cell),
+                  off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)],
+                  &has_side),
+              "diag");
+          if (has_side) {
+            quad[0] = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+            quad[1] = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+            quad[2] = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
+            quad[3] = off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)];
+          }
+          RSS(ref_cell_has_side(
+                  ref_grid_tet(ref_grid),
+                  ref_cell_e2n(ref_cell, 1, cell_edge, cell),
+                  off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)],
+                  &has_side),
+              "diag");
+          if (has_side) {
+            quad[0] = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+            quad[1] = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+            quad[2] = off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)];
+            quad[3] = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
+          }
+          RUS(REF_EMPTY, quad[0], "diag not found");
+          face_nodes[0] = quad[0];
+          face_nodes[1] = quad[1];
+          face_nodes[2] = quad[2];
+          face_nodes[3] = face_nodes[0];
+          RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0,
+                                 &tet1),
+              "tets");
+          if (tet0 == REF_EMPTY && tet1 == REF_EMPTY) {
+            RSS(ref_layer_recover_face(ref_grid, face_nodes), "recover upper");
+            printf("lower tets %d %d\n", tet0, tet1);
+          }
+          face_nodes[0] = quad[0];
+          face_nodes[1] = quad[2];
+          face_nodes[2] = quad[3];
+          face_nodes[3] = face_nodes[0];
+          RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0,
+                                 &tet1),
+              "tets");
+          if (tet0 == REF_EMPTY && tet1 == REF_EMPTY) {
+            RSS(ref_layer_recover_face(ref_grid, face_nodes), "recover upper");
+            printf("upper tets %d %d\n", tet0, tet1);
+          }
+        }
+      }
+    }
+  }
+  /* remove quad slivers */
+  {
+    REF_INT cell_edge;
+    REF_INT quad[4];
+    REF_BOOL has_diag02, has_diag13;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
+          REF_EMPTY != off_node[nodes[2]]) {
+        each_ref_cell_cell_edge(ref_cell, cell_edge) {
+          quad[0] = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+          quad[1] = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+          quad[2] = off_node[ref_cell_e2n(ref_cell, 1, cell_edge, cell)];
+          quad[3] = off_node[ref_cell_e2n(ref_cell, 0, cell_edge, cell)];
+          RSS(ref_cell_has_side(ref_grid_tet(ref_grid), quad[0], quad[2],
+                                &has_diag02),
+              "diag02");
+          RSS(ref_cell_has_side(ref_grid_tet(ref_grid), quad[1], quad[3],
+                                &has_diag13),
+              "diag13");
+          if (has_diag02 && has_diag13) {
+            printf("sliver\n");
+            RSS(ref_layer_remove_sliver(ref_grid, quad), "remove sliver");
+          }
+        }
+      }
+    }
+  }
+  /* replace tets with prism */
+  {
+    REF_ADJ tri_tet;
+    REF_INT deg;
+    RSS(ref_adj_create(&tri_tet), "tet list");
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
+          REF_EMPTY != off_node[nodes[2]]) {
+        REF_CELL ref_tet = ref_grid_tet(ref_grid);
+        REF_INT cell_node, tet, tet_nodes[REF_CELL_MAX_SIZE_PER],
+            pri_nodes[REF_CELL_MAX_SIZE_PER];
+        REF_BOOL contains;
+        pri_nodes[0] = nodes[0];
+        pri_nodes[1] = nodes[1];
+        pri_nodes[2] = nodes[2];
+        pri_nodes[3] = off_node[nodes[0]];
+        pri_nodes[4] = off_node[nodes[1]];
+        pri_nodes[5] = off_node[nodes[2]];
+        each_ref_cell_having_node2(ref_tet, nodes[0], off_node[nodes[0]], item,
+                                   cell_node, tet) {
+          RSS(ref_cell_nodes(ref_tet, tet, tet_nodes), "tet");
+          RSS(ref_layer_tet_prism(pri_nodes, tet_nodes, &contains), "contains");
+          if (contains) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+        }
+        each_ref_cell_having_node2(ref_tet, nodes[1], off_node[nodes[1]], item,
+                                   cell_node, tet) {
+          RSS(ref_cell_nodes(ref_tet, tet, tet_nodes), "tet");
+          RSS(ref_layer_tet_prism(pri_nodes, tet_nodes, &contains), "contains");
+          if (contains) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+        }
+        each_ref_cell_having_node2(ref_tet, nodes[2], off_node[nodes[2]], item,
+                                   cell_node, tet) {
+          RSS(ref_cell_nodes(ref_tet, tet, tet_nodes), "tet");
+          RSS(ref_layer_tet_prism(pri_nodes, tet_nodes, &contains), "contains");
+          if (contains) {
+            RSS(ref_adj_add_uniquely(tri_tet, cell, tet), "add");
+          }
+        }
+
+        RSS(ref_adj_degree(tri_tet, cell, &deg), "deg");
+        if (3 != deg) {
+          REF_CAVITY ref_cavity;
+          char filename[1024];
+          RSS(ref_cavity_create(&ref_cavity), "cav create");
+          RSS(ref_cavity_form_empty(ref_cavity, ref_grid, REF_EMPTY), "empty");
+          each_ref_adj_node_item_with_ref(tri_tet, cell, item, tet) {
+            RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
+          }
+          sprintf(filename, "prism-%d-cav.tec", cell);
+          printf("prism tets %d %s\n", deg, filename);
+          RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
+          RSS(ref_cavity_free(ref_cavity), "cav free");
+        }
+        if (3 == deg) {
+          REF_INT new_pri;
+          each_ref_adj_node_item_with_ref(tri_tet, cell, item, tet) {
+            RSS(ref_cell_remove(ref_grid_tet(ref_grid), tet), "rm tet");
+          }
+          RSS(ref_cell_add(ref_grid_pri(ref_grid), pri_nodes, &new_pri),
+              "add pri");
+        }
+      }
+    }
+    RSS(ref_adj_free(tri_tet), "free");
+  }
+  /* replace two tets with pyramid */
+  each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
+    REF_CAVITY ref_cavity;
+    char filename[1024];
+    REF_INT cell_face, tet, cell_node;
+    each_ref_cell_cell_face(ref_grid_pri(ref_grid), cell_face) {
+      RSS(ref_cavity_create(&ref_cavity), "cav create");
+      RSS(ref_cavity_form_empty(ref_cavity, ref_grid, REF_EMPTY), "empty");
+      if (ref_cell_f2n(ref_grid_pri(ref_grid), 0, cell_face, cell) !=
+          ref_cell_f2n(ref_grid_pri(ref_grid), 3, cell_face, cell)) {
+        each_ref_cell_having_node2(
+            ref_grid_tet(ref_grid),
+            ref_cell_f2n(ref_grid_pri(ref_grid), 0, cell_face, cell),
+            ref_cell_f2n(ref_grid_pri(ref_grid), 2, cell_face, cell), item,
+            cell_node, tet) {
+          RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
+        }
+        each_ref_cell_having_node2(
+            ref_grid_tet(ref_grid),
+            ref_cell_f2n(ref_grid_pri(ref_grid), 1, cell_face, cell),
+            ref_cell_f2n(ref_grid_pri(ref_grid), 3, cell_face, cell), item,
+            cell_node, tet) {
+          RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
+        }
+      }
+      if (2 != ref_list_n(ref_cavity_tet_list(ref_cavity)) &&
+          0 != ref_list_n(ref_cavity_tet_list(ref_cavity))) {
+        sprintf(filename, "glue-%d-%d-cav.tec", cell, cell_face);
+        printf("pyramid tets missing %d %s\n",
+               ref_list_n(ref_cavity_tet_list(ref_cavity)), filename);
+        if (0 < ref_cavity_nface(ref_cavity))
+          RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
+      }
+      if (2 == ref_list_n(ref_cavity_tet_list(ref_cavity))) {
+        /* replace two tets with pyramid */
+        RSS(ref_layer_tet_to_pyr(
+                ref_grid, cell,
+                ref_list_value(ref_cavity_tet_list(ref_cavity), 0),
+                ref_list_value(ref_cavity_tet_list(ref_cavity), 1)),
+            "tet2pyr");
+      }
+      RSS(ref_cavity_free(ref_cavity), "cav free");
+    }
+  }
+
+  RSS(ref_export_by_extension(ref_grid, "ref_layer_prism_after.tec"),
+      "dump surf after");
+  ref_free(off_node);
+  ref_free(active);
+
   return REF_SUCCESS;
 }
