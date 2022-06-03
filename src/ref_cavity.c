@@ -1050,7 +1050,14 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
     RSS(ref_cell_with_face(ref_cell, face_nodes, &tet0, &tet1), "tet");
     RUS(REF_EMPTY, tet0, "tet0 not found");
     REIS(REF_EMPTY, tet1, "tet1 found");
-    printf("tri %d tet %d\n", tri, tet0);
+    RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet0,
+                          &already_have_it),
+        "have tet?");
+    if (ref_cavity->seg_rm_adds_tet) {
+      if (already_have_it) continue;
+    } else {
+      RAS(!already_have_it, "attempt to add tet twice");
+    }
     RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet0), "save tet");
     each_ref_cell_cell_face(ref_cell, cell_face) {
       each_ref_cavity_face_node(ref_cavity, face_node) {
