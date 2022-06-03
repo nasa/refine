@@ -407,6 +407,22 @@ REF_FCN static REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity,
         (node0 == ref_cavity_f2n(ref_cavity, 2, face) &&
          node1 == ref_cavity_f2n(ref_cavity, 0, face))) {
       if (REF_EMPTY != *found_face) { /* found face twice */
+        if (ref_cavity_debug(ref_cavity)) {
+          printf("at node0 %f %f %f\n",
+                 ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 0,
+                              node0),
+                 ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 1,
+                              node0),
+                 ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 2,
+                              node0));
+          printf("at node1 %f %f %f\n",
+                 ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 0,
+                              node1),
+                 ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 1,
+                              node1),
+                 ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 2,
+                              node1));
+        }
         ref_cavity_state(ref_cavity) = REF_CAVITY_INCONSISTENT;
         *found_face = REF_EMPTY;
         return REF_SUCCESS;
@@ -1036,6 +1052,8 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
 
   if (ref_cavity_debug(ref_cavity)) ref_cavity_tec(ref_cavity, "form-tet.tec");
 
+  if (ref_cavity_debug(ref_cavity))
+    printf("insert face form state %d\n", ref_cavity_state(ref_cavity));
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "ball face manifold");
   if (ref_cavity_debug(ref_cavity))
     printf("insert face manifold state %d\n", ref_cavity_state(ref_cavity));
