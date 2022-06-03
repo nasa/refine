@@ -322,6 +322,30 @@ REF_FCN REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity,
       ref_cavity_nface(ref_cavity)--;
       return REF_SUCCESS;
     } else { /* can't happen, added same face twice */
+      if (ref_cavity_debug(ref_cavity)) {
+        printf("twice nodes[0] %f %f %f\n",
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 0,
+                            nodes[0]),
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 1,
+                            nodes[0]),
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 2,
+                            nodes[0]));
+        printf("twice nodes[1] %f %f %f\n",
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 0,
+                            nodes[1]),
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 1,
+                            nodes[1]),
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 2,
+                            nodes[1]));
+        printf("twice nodes[2] %f %f %f\n",
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 0,
+                            nodes[2]),
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 1,
+                            nodes[2]),
+               ref_node_xyz(ref_grid_node(ref_cavity_grid(ref_cavity)), 2,
+                            nodes[2]));
+        ref_cavity_tec(ref_cavity, "cav-twice.tec");
+      }
       return REF_INVALID;
     }
   }
@@ -968,7 +992,7 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
       continue;
     RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell,
                           &already_have_it),
-        "have tet?");
+        "have tri?");
     RAS(!already_have_it, "added tri twice?");
     RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
     RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
