@@ -352,6 +352,9 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
 
   ncell_actual = 0;
 
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "tet cell start");
+
   if (ref_mpi_once(ref_mpi)) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
@@ -376,6 +379,9 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
       }
     }
   }
+
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "tet cell master");
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
@@ -425,6 +431,9 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
 
     ref_free(c2n);
   }
+
+  if (1 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "tet cell off");
 
   if (ref_mpi_once(ref_mpi)) {
     REIS(ncell_expected, ncell_actual, "cell count mismatch");
