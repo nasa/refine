@@ -349,6 +349,9 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
   REF_GLOB *c2n;
   REF_INT proc, part, ncell;
   REF_LONG ncell_actual;
+  clock_t tic = 0;
+  clock_t write_toc = 0;
+  clock_t mpi_toc = 0;
 
   ncell_actual = 0;
 
@@ -356,6 +359,7 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
     ref_mpi_stopwatch_stop(ref_mpi, "tet cell start");
 
   if (ref_mpi_once(ref_mpi)) {
+    if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) == part) {
@@ -385,12 +389,17 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
+      tic = clock();
       RSS(ref_mpi_gather_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc),
           "recv ncell");
       ref_malloc(c2n, ncell * node_per, REF_GLOB);
       RSS(ref_mpi_gather_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE,
                               proc),
           "recv c2n");
+      mpi_toc += (clock() - tic);
+
+      if (1 < ref_mpi_timing(ref_mpi)) tic = clock();
+      tic = clock();
       for (cell = 0; cell < ncell; cell++) {
         if (binary) {
           for (node = 0; node < node_per; node++) {
@@ -408,6 +417,7 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
         ncell_actual++;
       }
       ref_free(c2n);
+      write_toc += (clock() - tic);
     }
   } else {
     ncell = 0;
@@ -430,6 +440,13 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
         "send c2n");
 
     ref_free(c2n);
+  }
+
+  if (1 < ref_mpi_timing(ref_mpi) && ref_mpi_once(ref_mpi)) {
+    printf(" mpi %f disk %f rank %d\n",
+           ((REF_DBL)mpi_toc) / ((REF_DBL)CLOCKS_PER_SEC),
+           ((REF_DBL)write_toc) / ((REF_DBL)CLOCKS_PER_SEC),
+           ref_mpi_rank(ref_mpi));
   }
 
   if (1 < ref_mpi_timing(ref_mpi))
