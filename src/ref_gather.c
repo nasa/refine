@@ -347,6 +347,7 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
   REF_GLOB globals[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_GLOB *c2n;
+  REF_INT *int_c2n;
   REF_INT proc, part, ncell;
   REF_LONG ncell_actual;
 
@@ -388,26 +389,31 @@ REF_FCN static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node,
       RSS(ref_mpi_gather_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc),
           "recv ncell");
       ref_malloc(c2n, ncell * node_per, REF_GLOB);
+      ref_malloc(int_c2n, ncell * node_per, REF_INT);
       RSS(ref_mpi_gather_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE,
                               proc),
           "recv c2n");
 
-      for (cell = 0; cell < ncell; cell++) {
-        if (binary) {
+      if (binary) { /* binary 0-based int, ASCII 1-based */
+        for (cell = 0; cell < ncell * node_per; cell++) {
+          int_c2n[cell] = (REF_INT)c2n[cell];
+        }
+        REIS(ncell * node_per,
+             fwrite(int_c2n, sizeof(int), (size_t)(ncell * node_per), file),
+             "int c2n");
+      } else {
+        for (cell = 0; cell < ncell * node_per; cell++) {
+          c2n[cell]++;
+        }
+        for (cell = 0; cell < ncell; cell++) {
           for (node = 0; node < node_per; node++) {
-            int int_node;
-            int_node = (int)c2n[node + node_per * cell]; /* bin zero-based */
-            REIS(1, fwrite(&int_node, sizeof(int), 1, file), "int c2n");
-          }
-        } else {
-          for (node = 0; node < node_per; node++) {
-            c2n[node + node_per * cell]++; /* ascii one-based */
             fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
           }
-          fprintf(file, "\n");
         }
-        ncell_actual++;
       }
+      ncell_actual += ncell;
+
+      ref_free(int_c2n);
       ref_free(c2n);
     }
   } else {
