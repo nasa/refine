@@ -4261,6 +4261,8 @@ REF_FCN static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   if (ref_mpi_once(ref_mpi)) {
     REIS(1, fwrite(&eohmarker, sizeof(float), 1, file), "eohmarker");
   }
+  if (0 < ref_mpi_timing(ref_mpi))
+    ref_mpi_stopwatch_stop(ref_mpi, "plt end of header");
 
   for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
     RSS(ref_gather_plt_tri_zone(ref_grid, cell_id, ldim, scalar, file),
@@ -4268,12 +4270,14 @@ REF_FCN static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
     RSS(ref_gather_plt_qua_zone(ref_grid, cell_id, ldim, scalar, file),
         "plt qua zone");
   }
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "surf zone");
+
   if (as_brick) {
     RSS(ref_gather_plt_brick_zone(ref_grid, ref_grid_tet(ref_grid), ldim,
                                   scalar, file),
         "plt tet brick zone");
   } else {
-    RSS(ref_gather_plt_tet_zone(ref_grid, ldim, scalar, file), "plt tet zone");
+    RSS(ref_gather_plt_tet_zone(ref_grid, ldim, scalar, file), "surf zone");
   }
   RSS(ref_gather_plt_brick_zone(ref_grid, ref_grid_pyr(ref_grid), ldim, scalar,
                                 file),
@@ -4284,6 +4288,7 @@ REF_FCN static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
   RSS(ref_gather_plt_brick_zone(ref_grid, ref_grid_hex(ref_grid), ldim, scalar,
                                 file),
       "plt hex brick zone");
+  if (0 < ref_mpi_timing(ref_mpi)) ref_mpi_stopwatch_stop(ref_mpi, "vol zone");
 
   if (ref_mpi_once(ref_mpi)) {
     fclose(file);
