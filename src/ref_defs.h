@@ -158,18 +158,18 @@ typedef int REF_STATUS;
     }                            \
   }
 
-#define REIB(a, b, msg, block)                                           \
-  {                                                                      \
-    REF_INT ref_private_status_reib_ai, ref_private_status_reib_bi;      \
-    ref_private_status_reib_ai = (a);                                    \
-    ref_private_status_reib_bi = (b);                                    \
-    if (ref_private_status_reib_ai != ref_private_status_reib_bi) {      \
-      printf("%s: %d: %s: %s\nexpected %d was %d\n", __FILE__, __LINE__, \
-             __func__, (msg), ref_private_status_reib_ai,                \
-             ref_private_status_reib_bi);                                \
-      block;                                                             \
-      return REF_FAILURE;                                                \
-    }                                                                    \
+#define REIB(a, b, msg, block)                                             \
+  {                                                                        \
+    REF_LONG ref_private_status_reib_ai, ref_private_status_reib_bi;       \
+    ref_private_status_reib_ai = (REF_LONG)(a);                            \
+    ref_private_status_reib_bi = (REF_LONG)(b);                            \
+    if (ref_private_status_reib_ai != ref_private_status_reib_bi) {        \
+      printf("%s: %d: %s: %s\nexpected %ld was %ld\n", __FILE__, __LINE__, \
+             __func__, (msg), ref_private_status_reib_ai,                  \
+             ref_private_status_reib_bi);                                  \
+      block;                                                               \
+      return REF_FAILURE;                                                  \
+    }                                                                      \
   }
 
 #define REIS(a, b, msg)                                                    \
