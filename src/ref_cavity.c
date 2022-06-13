@@ -1948,7 +1948,7 @@ REF_FCN REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
 
   RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
   if (!manifold) {
-    if (ref_cavity_debug(ref_cavity)) printf(" conforming not manifold\n");
+    if (ref_cavity_debug(ref_cavity)) printf(" visible not manifold\n");
     ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
     return REF_SUCCESS;
   }
