@@ -998,8 +998,9 @@ REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
 }
 
 REF_FCN REF_STATUS ref_cavity_form_insert2_tet(REF_CAVITY ref_cavity,
-                                               REF_GRID ref_grid, REF_INT node,
                                                REF_INT faceid) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_INT node = ref_cavity_node(ref_cavity);
   REF_CELL ref_cell;
   REF_INT item;
   REF_INT face_nodes[4], seg_nodes[3], seg;
@@ -1160,8 +1161,7 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
     printf("insert tri conforming state %d\n",
            (int)ref_cavity_state(ref_cavity));
 
-  RSS(ref_cavity_form_insert2_tet(ref_cavity, ref_grid, node, faceid),
-      "form tet ball");
+  RSS(ref_cavity_form_insert2_tet(ref_cavity, faceid), "form tet ball");
 
   return REF_SUCCESS;
 }
