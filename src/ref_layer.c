@@ -1067,7 +1067,6 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
           continue;
         } else {
           RSS(ref_cavity_create(&ref_cavity), "cav create");
-          ref_cavity_debug(ref_cavity) = REF_TRUE;
           if (ref_cavity_debug(ref_cavity)) printf("cavity debug start\n");
           RSS(ref_cavity_form_insert2(ref_cavity, ref_grid, new_node, node,
                                       REF_EMPTY, constraining_faceid),
@@ -1080,7 +1079,6 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
             ref_cavity_tec(ref_cavity, "cav-fail.tec");
             ref_export_by_extension(ref_grid, "mesh-fail.tec");
           });
-          printf(" enlarge state %d\n", ref_cavity_state(ref_cavity));
           if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
             RSB(ref_cavity_form_insert2_unconstrain(ref_cavity,
                                                     constraining_faceid),
@@ -1093,7 +1091,6 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
               ref_cavity_tec(ref_cavity, "cav-fail.tec");
               ref_export_by_extension(ref_grid, "mesh-fail.tec");
             });
-            printf(" redo enlarge state %d\n", ref_cavity_state(ref_cavity));
           }
           if (node == REF_EMPTY && /* turns off continue */
               REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
