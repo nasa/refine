@@ -1188,6 +1188,7 @@ REF_FCN REF_STATUS ref_cavity_form_insert2_unconstrain(REF_CAVITY ref_cavity,
 
   /* undo faces */
   RSS(ref_list_erase(ref_cavity->tet_list), "erase tet list");
+  ref_cavity_nface(ref_cavity) = 0;
   for (face = 0; face < ref_cavity_maxface(ref_cavity); face++) {
     ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
     ref_cavity_f2n(ref_cavity, 1, face) = face + 1;
@@ -1195,10 +1196,20 @@ REF_FCN REF_STATUS ref_cavity_form_insert2_unconstrain(REF_CAVITY ref_cavity,
   ref_cavity_f2n(ref_cavity, 1, ref_cavity_maxface(ref_cavity) - 1) = REF_EMPTY;
   ref_cavity_blankface(ref_cavity) = 0;
 
+  if (ref_cavity_debug(ref_cavity))
+    printf(" unconst form tri state %d of %d old %d new\n",
+           ref_cavity_state(ref_cavity),
+           ref_list_n(ref_cavity_tri_list(ref_cavity)),
+           ref_cavity_nseg(ref_cavity));
+
   /* conform seg */
   RSS(ref_cavity_verify_seg_manifold(ref_cavity), "ball seg manifold");
-  if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_FAILURE;
+  if (ref_cavity_debug(ref_cavity))
+    printf(" unconst manifold tri state %d\n", ref_cavity_state(ref_cavity));
+  if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_FAILURE;
   RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge boundary");
+  if (ref_cavity_debug(ref_cavity))
+    printf(" unconst enlarge tri state %d\n", ref_cavity_state(ref_cavity));
   if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_FAILURE;
   ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
 
