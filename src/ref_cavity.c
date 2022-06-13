@@ -1037,6 +1037,9 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
   ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
 
   if (ref_cavity_debug(ref_cavity))
+    printf("insert tri conforming state %d\n",
+           (int)ref_cavity_state(ref_cavity));
+  if (ref_cavity_debug(ref_cavity))
     ref_cavity_tec(ref_cavity, "form-conform.tec");
 
   /* add tets off wall from seg */
