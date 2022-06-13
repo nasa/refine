@@ -585,7 +585,7 @@ static REF_FCN REF_STATUS ref_cavity_add_tet_without_faceid(
     REF_CAVITY ref_cavity, REF_INT tet, REF_INT faceid) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_CELL tet_cell = ref_grid_tet(ref_grid);
-  REF_CELL tri_cell = ref_grid_tet(ref_grid);
+  REF_CELL tri_cell = ref_grid_tri(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT cell_face, node, tri_index;
   REF_INT face_nodes[3];
