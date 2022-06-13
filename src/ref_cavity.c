@@ -581,6 +581,47 @@ REF_FCN REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_cavity_add_tet_without_faceid(
+    REF_CAVITY ref_cavity, REF_INT tet, REF_INT faceid) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_CELL tet_cell = ref_grid_tet(ref_grid);
+  REF_CELL tri_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT cell_face, node, tri_index;
+  REF_INT face_nodes[3];
+  REF_INT already_have_it;
+
+  RAS(ref_cell_valid(tet_cell, tet), "invalid tet");
+
+  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet, &already_have_it),
+      "have tet?");
+  if (already_have_it) return REF_SUCCESS;
+
+  RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet), "save tet");
+
+  each_ref_cell_cell_face(tet_cell, cell_face) {
+    each_ref_cavity_face_node(ref_cavity, node) {
+      face_nodes[node] = ref_cell_f2n(tet_cell, node, cell_face, tet);
+      if (!ref_node_owned(ref_node, face_nodes[node])) {
+        ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+        return REF_SUCCESS;
+      }
+    }
+
+    RXS(ref_cell_with(tri_cell, face_nodes, &tri_index), REF_NOT_FOUND,
+        "search for boundary tri");
+    if (REF_EMPTY != tri_index &&
+        ref_cell_c2n(tri_cell, 3, tri_index) == faceid) {
+      continue;
+    }
+
+    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
+    if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1045,8 +1086,9 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
   /* add tets off wall from seg */
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
-    REF_INT tet0, tet1;
-    REF_INT tri, cell_face, face_node, tri_cell;
+    REF_INT tet0, tet1, tet, cell_item, cell_node;
+    REF_INT tri;
+    REF_BOOL reversed;
     tri = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
     face_nodes[0] = ref_cell_c2n(ref_grid_tri(ref_grid), 0, tri);
     face_nodes[1] = ref_cell_c2n(ref_grid_tri(ref_grid), 1, tri);
@@ -1055,30 +1097,46 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
     RSS(ref_cell_with_face(ref_cell, face_nodes, &tet0, &tet1), "tet");
     RUS(REF_EMPTY, tet0, "tet0 not found");
     REIS(REF_EMPTY, tet1, "tet1 found");
-    RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet0,
-                          &already_have_it),
-        "have tet?");
-    if (ref_cavity->seg_rm_adds_tet) {
-      if (already_have_it) continue;
-    } else {
-      RAS(!already_have_it, "attempt to add tet twice");
+    RSS(ref_cavity_add_tet_without_faceid(ref_cavity, tet0, faceid),
+        "add interior tet face");
+
+    seg_nodes[0] = face_nodes[0];
+    seg_nodes[1] = face_nodes[1];
+    RXS(ref_cavity_find_seg(ref_cavity, seg_nodes, &seg, &reversed),
+        REF_NOT_FOUND, "find existing");
+    if (REF_EMPTY == seg) {
+      each_ref_cell_having_node2(ref_cell, seg_nodes[0], seg_nodes[1],
+                                 cell_item, cell_node, tet) {
+        RSS(ref_cavity_add_tet_without_faceid(ref_cavity, tet, faceid),
+            "add interior tet face");
+      }
     }
-    RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet0), "save tet");
-    each_ref_cell_cell_face(ref_cell, cell_face) {
-      each_ref_cavity_face_node(ref_cavity, face_node) {
-        face_nodes[face_node] =
-            ref_cell_f2n(ref_cell, face_node, cell_face, tet0);
+
+    seg_nodes[0] = face_nodes[1];
+    seg_nodes[1] = face_nodes[2];
+    RXS(ref_cavity_find_seg(ref_cavity, seg_nodes, &seg, &reversed),
+        REF_NOT_FOUND, "find existing");
+    if (REF_EMPTY == seg) {
+      each_ref_cell_having_node2(ref_cell, seg_nodes[0], seg_nodes[1],
+                                 cell_item, cell_node, tet) {
+        RSS(ref_cavity_add_tet_without_faceid(ref_cavity, tet, faceid),
+            "add interior tet face");
       }
-      RXS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri_cell),
-          REF_NOT_FOUND, "search for boundary tri");
-      if (REF_EMPTY != tri_cell && tri_cell == tri) {
-        continue;
+    }
+
+    seg_nodes[0] = face_nodes[2];
+    seg_nodes[1] = face_nodes[0];
+    RXS(ref_cavity_find_seg(ref_cavity, seg_nodes, &seg, &reversed),
+        REF_NOT_FOUND, "find existing");
+    if (REF_EMPTY == seg) {
+      each_ref_cell_having_node2(ref_cell, seg_nodes[0], seg_nodes[1],
+                                 cell_item, cell_node, tet) {
+        RSS(ref_cavity_add_tet_without_faceid(ref_cavity, tet, faceid),
+            "add interior tet face");
       }
-      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face rm seg");
     }
   }
 
-  ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     face_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
     face_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
