@@ -146,6 +146,8 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
                                            REF_INT faceid);
 REF_FCN REF_STATUS ref_cavity_form_insert2_tet(REF_CAVITY ref_cavity,
                                                REF_INT faceid);
+REF_FCN REF_STATUS ref_cavity_form_insert2_unconstrain(REF_CAVITY ref_cavity,
+                                                       REF_INT faceid);
 REF_FCN REF_STATUS ref_cavity_form_insert_tet(REF_CAVITY ref_cavity,
                                               REF_GRID ref_grid, REF_INT node,
                                               REF_INT site, REF_INT protect);

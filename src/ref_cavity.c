@@ -1166,6 +1166,48 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_cavity_form_insert2_unconstrain(REF_CAVITY ref_cavity,
+                                                       REF_INT faceid) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT face, nodes[4], cell;
+
+  REIS(REF_CAVITY_BOUNDARY_CONSTRAINED, ref_cavity_state(ref_cavity),
+       "attempt to unconstrain cavity that is not boundary constrained");
+  ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
+
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+    nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+    nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+    RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND, "find tri");
+    if (REF_EMPTY != cell && ref_cell_c2n(ref_cell, 3, cell) == faceid) {
+      RSS(ref_cavity_add_tri(ref_cavity, cell), "tri");
+    }
+  }
+
+  /* undo faces */
+  RSS(ref_list_erase(ref_cavity->tet_list), "erase tet list");
+  for (face = 0; face < ref_cavity_maxface(ref_cavity); face++) {
+    ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
+    ref_cavity_f2n(ref_cavity, 1, face) = face + 1;
+  }
+  ref_cavity_f2n(ref_cavity, 1, ref_cavity_maxface(ref_cavity) - 1) = REF_EMPTY;
+  ref_cavity_blankface(ref_cavity) = 0;
+
+  /* conform seg */
+  RSS(ref_cavity_verify_seg_manifold(ref_cavity), "ball seg manifold");
+  if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_FAILURE;
+  RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge boundary");
+  if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_FAILURE;
+  ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
+
+  /* redo faces */
+  RSS(ref_cavity_form_insert2_tet(ref_cavity, faceid), "form tet ball");
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_cavity_form_insert_tet(REF_CAVITY ref_cavity,
                                               REF_GRID ref_grid, REF_INT node,
                                               REF_INT site, REF_INT protect) {
