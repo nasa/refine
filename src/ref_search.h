@@ -78,6 +78,8 @@ REF_FCN REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1,
                                         REF_DBL *distance);
 REF_FCN REF_STATUS ref_search_dist3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
                                     REF_DBL *xyz, REF_DBL *distance);
+
+REF_FCN REF_STATUS ref_search_tec(REF_SEARCH ref_search, const char *filename);
 END_C_DECLORATION
 
 #endif /* REF_SEARCH_H */

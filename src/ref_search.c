@@ -683,3 +683,42 @@ REF_FCN REF_STATUS ref_search_dist3(REF_DBL *a, REF_DBL *b, REF_DBL *c,
 
   return REF_SUCCESS;
 }
+
+REF_FCN REF_STATUS ref_search_tec(REF_SEARCH ref_search, const char *filename) {
+  FILE *f;
+  const char *zonetype = "felineseg";
+  REF_INT i;
+  f = fopen(filename, "w");
+  if (NULL == (void *)f) printf("unable to open %s\n", filename);
+  RNS(f, "unable to open file");
+
+  RAS(3 == ref_search->d, "limited to 3D");
+
+  fprintf(f, "title=\"tecplot refine search\"\n");
+  fprintf(f, "variables = \"x\" \"y\" \"z\" \"r\" \"i\"\n");
+
+  fprintf(f,
+          "zone t=\"tree\", nodes=%d, elements=%d, datapacking=%s, "
+          "zonetype=%s\n",
+          ref_search->n, 2 * (ref_search->n), "point", zonetype);
+
+  for (i = 0; i < ref_search->n; i++) {
+    fprintf(f, " %f %f %f %f %d\n", ref_search->pos[0 + ref_search->d * i],
+            ref_search->pos[1 + ref_search->d * i],
+            ref_search->pos[2 + ref_search->d * i], ref_search->radius[i],
+            ref_search->item[i]);
+  }
+
+  for (i = 0; i < ref_search->n; i++) {
+    REF_INT j;
+    j = ref_search->right[i];
+    if (REF_EMPTY == j) j = i;
+    fprintf(f, " %d %d\n", i + 1, j + 1);
+    j = ref_search->left[i];
+    if (REF_EMPTY == j) j = i;
+    fprintf(f, " %d %d\n", i + 1, j + 1);
+  }
+
+  fclose(f);
+  return REF_SUCCESS;
+}
