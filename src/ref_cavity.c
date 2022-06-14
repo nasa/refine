@@ -581,6 +581,47 @@ REF_FCN REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_cavity_add_tet_without_faceid(
+    REF_CAVITY ref_cavity, REF_INT tet, REF_INT faceid) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_CELL tet_cell = ref_grid_tet(ref_grid);
+  REF_CELL tri_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT cell_face, node, tri_index;
+  REF_INT face_nodes[3];
+  REF_INT already_have_it;
+
+  RAS(ref_cell_valid(tet_cell, tet), "invalid tet");
+
+  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet, &already_have_it),
+      "have tet?");
+  if (already_have_it) return REF_SUCCESS;
+
+  RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet), "save tet");
+
+  each_ref_cell_cell_face(tet_cell, cell_face) {
+    each_ref_cavity_face_node(ref_cavity, node) {
+      face_nodes[node] = ref_cell_f2n(tet_cell, node, cell_face, tet);
+      if (!ref_node_owned(ref_node, face_nodes[node])) {
+        ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+        return REF_SUCCESS;
+      }
+    }
+
+    RXS(ref_cell_with(tri_cell, face_nodes, &tri_index), REF_NOT_FOUND,
+        "search for boundary tri");
+    if (REF_EMPTY != tri_index &&
+        ref_cell_c2n(tri_cell, 3, tri_index) == faceid) {
+      continue;
+    }
+
+    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
+    if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -956,6 +997,86 @@ REF_FCN REF_STATUS ref_cavity_form_insert(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_cavity_form_insert2_tet(REF_CAVITY ref_cavity,
+                                               REF_INT faceid) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_INT node = ref_cavity_node(ref_cavity);
+  REF_CELL ref_cell;
+  REF_INT item;
+  REF_INT face_nodes[4], seg_nodes[3], seg;
+  /* add tets off wall from seg */
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
+    REF_INT tet0, tet1, tet, cell_item, cell_node;
+    REF_INT tri;
+    REF_BOOL reversed;
+    tri = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
+    face_nodes[0] = ref_cell_c2n(ref_grid_tri(ref_grid), 0, tri);
+    face_nodes[1] = ref_cell_c2n(ref_grid_tri(ref_grid), 1, tri);
+    face_nodes[2] = ref_cell_c2n(ref_grid_tri(ref_grid), 2, tri);
+    face_nodes[3] = face_nodes[0];
+    RSS(ref_cell_with_face(ref_cell, face_nodes, &tet0, &tet1), "tet");
+    RUS(REF_EMPTY, tet0, "tet0 not found");
+    REIS(REF_EMPTY, tet1, "tet1 found");
+    RSS(ref_cavity_add_tet_without_faceid(ref_cavity, tet0, faceid),
+        "add interior tet face");
+
+    seg_nodes[0] = face_nodes[0];
+    seg_nodes[1] = face_nodes[1];
+    RXS(ref_cavity_find_seg(ref_cavity, seg_nodes, &seg, &reversed),
+        REF_NOT_FOUND, "find existing");
+    if (REF_EMPTY == seg) {
+      each_ref_cell_having_node2(ref_cell, seg_nodes[0], seg_nodes[1],
+                                 cell_item, cell_node, tet) {
+        RSS(ref_cavity_add_tet_without_faceid(ref_cavity, tet, faceid),
+            "add interior tet face");
+      }
+    }
+
+    seg_nodes[0] = face_nodes[1];
+    seg_nodes[1] = face_nodes[2];
+    RXS(ref_cavity_find_seg(ref_cavity, seg_nodes, &seg, &reversed),
+        REF_NOT_FOUND, "find existing");
+    if (REF_EMPTY == seg) {
+      each_ref_cell_having_node2(ref_cell, seg_nodes[0], seg_nodes[1],
+                                 cell_item, cell_node, tet) {
+        RSS(ref_cavity_add_tet_without_faceid(ref_cavity, tet, faceid),
+            "add interior tet face");
+      }
+    }
+
+    seg_nodes[0] = face_nodes[2];
+    seg_nodes[1] = face_nodes[0];
+    RXS(ref_cavity_find_seg(ref_cavity, seg_nodes, &seg, &reversed),
+        REF_NOT_FOUND, "find existing");
+    if (REF_EMPTY == seg) {
+      each_ref_cell_having_node2(ref_cell, seg_nodes[0], seg_nodes[1],
+                                 cell_item, cell_node, tet) {
+        RSS(ref_cavity_add_tet_without_faceid(ref_cavity, tet, faceid),
+            "add interior tet face");
+      }
+    }
+  }
+
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    face_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
+    face_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
+    face_nodes[2] = node;
+    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
+  }
+
+  if (ref_cavity_debug(ref_cavity)) ref_cavity_tec(ref_cavity, "form-tet.tec");
+
+  if (ref_cavity_debug(ref_cavity))
+    printf("insert face form state %d\n", (int)ref_cavity_state(ref_cavity));
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "ball face manifold");
+  if (ref_cavity_debug(ref_cavity))
+    printf("insert face manifold state %d\n",
+           (int)ref_cavity_state(ref_cavity));
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
                                            REF_GRID ref_grid, REF_INT node,
                                            REF_INT site, REF_INT protect,
@@ -964,7 +1085,7 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
   REF_CELL ref_cell;
   REF_INT item, cell;
   REF_BOOL already_have_it, all_local, has_node;
-  REF_INT face_nodes[4], seg_nodes[3], seg;
+  REF_INT seg_nodes[3];
 
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
   if (!ref_node_owned(ref_node, node) || !ref_node_owned(ref_node, site)) {
@@ -1037,60 +1158,63 @@ REF_FCN REF_STATUS ref_cavity_form_insert2(REF_CAVITY ref_cavity,
   ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
 
   if (ref_cavity_debug(ref_cavity))
-    ref_cavity_tec(ref_cavity, "form-conform.tec");
-
-  /* add tets off wall from seg */
-  ref_cell = ref_grid_tet(ref_grid);
-  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
-    REF_INT tet0, tet1;
-    REF_INT tri, cell_face, face_node, tri_cell;
-    tri = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
-    face_nodes[0] = ref_cell_c2n(ref_grid_tri(ref_grid), 0, tri);
-    face_nodes[1] = ref_cell_c2n(ref_grid_tri(ref_grid), 1, tri);
-    face_nodes[2] = ref_cell_c2n(ref_grid_tri(ref_grid), 2, tri);
-    face_nodes[3] = face_nodes[0];
-    RSS(ref_cell_with_face(ref_cell, face_nodes, &tet0, &tet1), "tet");
-    RUS(REF_EMPTY, tet0, "tet0 not found");
-    REIS(REF_EMPTY, tet1, "tet1 found");
-    RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet0,
-                          &already_have_it),
-        "have tet?");
-    if (ref_cavity->seg_rm_adds_tet) {
-      if (already_have_it) continue;
-    } else {
-      RAS(!already_have_it, "attempt to add tet twice");
-    }
-    RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet0), "save tet");
-    each_ref_cell_cell_face(ref_cell, cell_face) {
-      each_ref_cavity_face_node(ref_cavity, face_node) {
-        face_nodes[face_node] =
-            ref_cell_f2n(ref_cell, face_node, cell_face, tet0);
-      }
-      RXS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri_cell),
-          REF_NOT_FOUND, "search for boundary tri");
-      if (REF_EMPTY != tri_cell && tri_cell == tri) {
-        continue;
-      }
-      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face rm seg");
-    }
-  }
-
-  ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
-  each_ref_cavity_valid_seg(ref_cavity, seg) {
-    face_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
-    face_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
-    face_nodes[2] = node;
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
-  }
-
-  if (ref_cavity_debug(ref_cavity)) ref_cavity_tec(ref_cavity, "form-tet.tec");
-
-  if (ref_cavity_debug(ref_cavity))
-    printf("insert face form state %d\n", (int)ref_cavity_state(ref_cavity));
-  RSS(ref_cavity_verify_face_manifold(ref_cavity), "ball face manifold");
-  if (ref_cavity_debug(ref_cavity))
-    printf("insert face manifold state %d\n",
+    printf("insert tri conforming state %d\n",
            (int)ref_cavity_state(ref_cavity));
+
+  RSS(ref_cavity_form_insert2_tet(ref_cavity, faceid), "form tet ball");
+
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_cavity_form_insert2_unconstrain(REF_CAVITY ref_cavity,
+                                                       REF_INT faceid) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT face, nodes[4], cell;
+
+  REIS(REF_CAVITY_BOUNDARY_CONSTRAINED, ref_cavity_state(ref_cavity),
+       "attempt to unconstrain cavity that is not boundary constrained");
+  ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
+
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+    nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+    nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+    RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND, "find tri");
+    if (REF_EMPTY != cell && ref_cell_c2n(ref_cell, 3, cell) == faceid) {
+      RSS(ref_cavity_add_tri(ref_cavity, cell), "tri");
+    }
+  }
+
+  /* undo faces */
+  RSS(ref_list_erase(ref_cavity->tet_list), "erase tet list");
+  ref_cavity_nface(ref_cavity) = 0;
+  for (face = 0; face < ref_cavity_maxface(ref_cavity); face++) {
+    ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
+    ref_cavity_f2n(ref_cavity, 1, face) = face + 1;
+  }
+  ref_cavity_f2n(ref_cavity, 1, ref_cavity_maxface(ref_cavity) - 1) = REF_EMPTY;
+  ref_cavity_blankface(ref_cavity) = 0;
+
+  if (ref_cavity_debug(ref_cavity))
+    printf(" unconst form tri state %d of %d old %d new\n",
+           ref_cavity_state(ref_cavity),
+           ref_list_n(ref_cavity_tri_list(ref_cavity)),
+           ref_cavity_nseg(ref_cavity));
+
+  /* conform seg */
+  RSS(ref_cavity_verify_seg_manifold(ref_cavity), "ball seg manifold");
+  if (ref_cavity_debug(ref_cavity))
+    printf(" unconst manifold tri state %d\n", ref_cavity_state(ref_cavity));
+  if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_FAILURE;
+  RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge boundary");
+  if (ref_cavity_debug(ref_cavity))
+    printf(" unconst enlarge tri state %d\n", ref_cavity_state(ref_cavity));
+  if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_FAILURE;
+  ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
+
+  /* redo faces */
+  RSS(ref_cavity_form_insert2_tet(ref_cavity, faceid), "form tet ball");
 
   return REF_SUCCESS;
 }
@@ -1824,7 +1948,7 @@ REF_FCN REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
 
   RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
   if (!manifold) {
-    if (ref_cavity_debug(ref_cavity)) printf(" conforming not manifold\n");
+    if (ref_cavity_debug(ref_cavity)) printf(" visible not manifold\n");
     ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
     return REF_SUCCESS;
   }

@@ -1067,7 +1067,7 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
           continue;
         } else {
           RSS(ref_cavity_create(&ref_cavity), "cav create");
-          ref_cavity_debug(ref_cavity) = REF_TRUE;
+          if (ref_cavity_debug(ref_cavity)) printf("cavity debug start\n");
           RSS(ref_cavity_form_insert2(ref_cavity, ref_grid, new_node, node,
                                       REF_EMPTY, constraining_faceid),
               "ball");
@@ -1079,7 +1079,19 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
             ref_cavity_tec(ref_cavity, "cav-fail.tec");
             ref_export_by_extension(ref_grid, "mesh-fail.tec");
           });
-          printf(" enlarge state %d\n", ref_cavity_state(ref_cavity));
+          if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
+            RSB(ref_cavity_form_insert2_unconstrain(ref_cavity,
+                                                    constraining_faceid),
+                "unconst", {
+                  printf(" unconstrain state %d\n",
+                         ref_cavity_state(ref_cavity));
+                  ref_cavity_tec(ref_cavity, "cav-unconst.tec");
+                });
+            RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+              ref_cavity_tec(ref_cavity, "cav-fail.tec");
+              ref_export_by_extension(ref_grid, "mesh-fail.tec");
+            });
+          }
           if (node == REF_EMPTY && /* turns off continue */
               REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) {
             RSS(ref_cavity_free(ref_cavity), "cav free");
@@ -1093,6 +1105,7 @@ static REF_FCN REF_STATUS ref_layer_prism_insert_hair(REF_GRID ref_grid,
             ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
             ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
           });
+          if (ref_cavity_debug(ref_cavity)) printf("replace complete\n");
           RSS(ref_cavity_free(ref_cavity), "cav free");
         }
       } else {
@@ -1146,7 +1159,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
   RSS(ref_layer_prism_insert_hair(ref_grid, ref_dict_bcs, active, off_node),
       "insert hair");
 
-  /* recover tet slides of prism tops */
+  /* recover tet slides of prism tops, extend for boundary */
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (REF_EMPTY != off_node[nodes[0]] && REF_EMPTY != off_node[nodes[1]] &&
         REF_EMPTY != off_node[nodes[2]]) {
@@ -1164,10 +1177,17 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           RSS(ref_cavity_create(&ref_cavity), "cav create");
           RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node1), "empty");
           RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
-          RSB(ref_cavity_enlarge_combined(ref_cavity), "enlarge", {
+          REIS(REF_CAVITY_UNKNOWN, ref_cavity_state(ref_cavity),
+               "add tet not unknown");
+          RSB(ref_cavity_enlarge_visible(ref_cavity), "enlarge", {
             ref_cavity_tec(ref_cavity, "cav-fail.tec");
             ref_export_by_extension(ref_grid, "mesh-fail.tec");
           });
+          REIB(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
+               "prism top not visible", {
+                 ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
+                 ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
+               });
           RSB(ref_cavity_replace(ref_cavity), "cav replace", {
             ref_cavity_tec(ref_cavity, "ref_layer_prism_cavity.tec");
             ref_export_by_extension(ref_grid, "ref_layer_prism_mesh.tec");
