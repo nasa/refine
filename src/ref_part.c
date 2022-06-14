@@ -1994,6 +1994,12 @@ static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
 
   RSS(ref_mpi_bcast(ref_mpi, xyz, 3 * nline, REF_DBL_TYPE), "bcast xyz");
   RSS(ref_mpi_bcast(ref_mpi, metric, 6 * nline, REF_DBL_TYPE), "bcast metric");
+  {
+    REF_SEARCH ref_search;
+    RSS(ref_search_create(&ref_search, nline), "create search");
+    RSS(ref_search_free(ref_search), "free search");
+  }
+
   ref_free(xyz);
   ref_free(metric);
   return REF_SUCCESS;
