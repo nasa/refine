@@ -1961,6 +1961,8 @@ static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
     printf("nline %d \n", nline);
     ref_malloc_init(xyz, 3 * nline, REF_DBL, 0.0);
     ref_malloc_init(metric, 6 * nline, REF_DBL, 0.0);
+    RAS(0 == fseek(file, 0, SEEK_SET), "rewind");
+    RAS(line == fgets(line, 1024, file), "read header");
     nline = 0;
     while (line == fgets(line, 1024, file)) {
       ncol = 0;
