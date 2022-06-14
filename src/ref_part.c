@@ -1993,7 +1993,6 @@ static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
     ref_malloc_init(xyz, 3 * nline, REF_DBL, 0.0);
     ref_malloc_init(metric, 6 * nline, REF_DBL, 0.0);
   }
-
   RSS(ref_mpi_bcast(ref_mpi, xyz, 3 * nline, REF_DBL_TYPE), "bcast xyz");
   RSS(ref_mpi_bcast(ref_mpi, metric, 6 * nline, REF_DBL_TYPE), "bcast metric");
   {
@@ -2010,7 +2009,7 @@ static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
       RSS(ref_search_insert(ref_search, node, &(xyz[3 * node]), radius), "ins");
     }
     each_ref_node_valid_node(ref_node, node) {
-      radius = 2.0;
+      radius = 1.0;
       RSS(ref_search_touching(ref_search, touching,
                               ref_node_xyz_ptr(ref_node, node), radius),
           "search tree");
