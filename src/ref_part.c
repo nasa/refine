@@ -1934,13 +1934,15 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
 
 static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
                                               const char *filename) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
   FILE *file = NULL;
   char line[1024];
   const char comma[] = ",";
   char *token;
   REF_INT nline, ncol;
+  REF_DBL *xyz = NULL, *metric = NULL, col[12];
 
-  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+  if (ref_mpi_once(ref_mpi)) {
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1957,8 +1959,43 @@ static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
       if (ncol == 12) nline++;
     }
     printf("nline %d \n", nline);
+    ref_malloc_init(xyz, 3 * nline, REF_DBL, 0.0);
+    ref_malloc_init(metric, 6 * nline, REF_DBL, 0.0);
+    nline = 0;
+    while (line == fgets(line, 1024, file)) {
+      ncol = 0;
+      token = strtok(line, comma);
+      while (token != NULL) {
+        RAS(ncol < 12, "too many col");
+        col[ncol] = atof(token);
+        ncol++;
+        token = strtok(NULL, comma);
+      }
+      if (ncol == 12) {
+        metric[0 + 6 * nline] = col[0];
+        metric[1 + 6 * nline] = 0.5 * (col[1] + col[3]);
+        metric[2 + 6 * nline] = 0.5 * (col[2] + col[6]);
+        metric[3 + 6 * nline] = col[4];
+        metric[4 + 6 * nline] = 0.5 * (col[5] + col[7]);
+        metric[5 + 6 * nline] = col[8];
+        xyz[0 + 3 * nline] = col[9];
+        xyz[1 + 3 * nline] = col[10];
+        xyz[2 + 3 * nline] = col[11];
+        nline++;
+      }
+    }
     fclose(file);
   }
+  RSS(ref_mpi_bcast(ref_mpi, &nline, 1, REF_INT_TYPE), "bcast line");
+  if (!ref_mpi_once(ref_mpi)) {
+    ref_malloc_init(xyz, 3 * nline, REF_DBL, 0.0);
+    ref_malloc_init(metric, 6 * nline, REF_DBL, 0.0);
+  }
+
+  RSS(ref_mpi_bcast(ref_mpi, xyz, 3 * nline, REF_DBL_TYPE), "bcast xyz");
+  RSS(ref_mpi_bcast(ref_mpi, metric, 6 * nline, REF_DBL_TYPE), "bcast metric");
+  ref_free(xyz);
+  ref_free(metric);
   return REF_SUCCESS;
 }
 
