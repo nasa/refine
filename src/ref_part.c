@@ -1932,6 +1932,119 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
+                                              const char *filename) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  FILE *file = NULL;
+  char line[1024];
+  const char comma[] = ",";
+  char *token;
+  REF_INT nline, ncol;
+  REF_DBL *xyz = NULL, *metric = NULL, col[12];
+
+  if (ref_mpi_once(ref_mpi)) {
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    RAS(line == fgets(line, 1024, file), "read header");
+    printf("%s\n", line);
+    nline = 0;
+    while (line == fgets(line, 1024, file)) {
+      ncol = 0;
+      token = strtok(line, comma);
+      while (token != NULL) {
+        ncol++;
+        token = strtok(NULL, comma);
+      }
+      if (ncol == 12) nline++;
+    }
+    printf("nline %d \n", nline);
+    ref_malloc_init(xyz, 3 * nline, REF_DBL, 0.0);
+    ref_malloc_init(metric, 6 * nline, REF_DBL, 0.0);
+    RAS(0 == fseek(file, 0, SEEK_SET), "rewind");
+    RAS(line == fgets(line, 1024, file), "read header");
+    nline = 0;
+    while (line == fgets(line, 1024, file)) {
+      ncol = 0;
+      token = strtok(line, comma);
+      while (token != NULL) {
+        RAS(ncol < 12, "too many col");
+        col[ncol] = atof(token);
+        ncol++;
+        token = strtok(NULL, comma);
+      }
+      if (ncol == 12) {
+        metric[0 + 6 * nline] = col[0];
+        metric[1 + 6 * nline] = 0.5 * (col[1] + col[3]);
+        metric[2 + 6 * nline] = 0.5 * (col[2] + col[6]);
+        metric[3 + 6 * nline] = col[4];
+        metric[4 + 6 * nline] = 0.5 * (col[5] + col[7]);
+        metric[5 + 6 * nline] = col[8];
+        xyz[0 + 3 * nline] = col[9];
+        xyz[1 + 3 * nline] = col[10];
+        xyz[2 + 3 * nline] = col[11];
+        nline++;
+      }
+    }
+    fclose(file);
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &nline, 1, REF_INT_TYPE), "bcast line");
+  if (!ref_mpi_once(ref_mpi)) {
+    ref_malloc_init(xyz, 3 * nline, REF_DBL, 0.0);
+    ref_malloc_init(metric, 6 * nline, REF_DBL, 0.0);
+  }
+  RSS(ref_mpi_bcast(ref_mpi, xyz, 3 * nline, REF_DBL_TYPE), "bcast xyz");
+  RSS(ref_mpi_bcast(ref_mpi, metric, 6 * nline, REF_DBL_TYPE), "bcast metric");
+  {
+    REF_SEARCH ref_search;
+    REF_LIST touching;
+    REF_DBL radius;
+    REF_INT node, donor;
+    REF_DBL dist, best_dist, m[6];
+    REF_INT best, item;
+    RSS(ref_search_create(&ref_search, nline), "create search");
+    RSS(ref_list_create(&touching), "touching list");
+    for (node = 0; node < nline; node++) {
+      radius = 0.0;
+      RSS(ref_search_insert(ref_search, node, &(xyz[3 * node]), radius), "ins");
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      radius = 1.0;
+      RSS(ref_search_touching(ref_search, touching,
+                              ref_node_xyz_ptr(ref_node, node), radius),
+          "search tree");
+      best_dist = 1.0e+200;
+      best = REF_EMPTY;
+      each_ref_list_item(touching, item) {
+        donor = ref_list_value(touching, item);
+        dist =
+            sqrt(pow(ref_node_xyz(ref_node, 0, node) - xyz[0 + 3 * donor], 2) +
+                 pow(ref_node_xyz(ref_node, 1, node) - xyz[1 + 3 * donor], 2) +
+                 pow(ref_node_xyz(ref_node, 2, node) - xyz[2 + 3 * donor], 2));
+        if (dist < best_dist) {
+          best_dist = dist;
+          best = donor;
+        }
+      }
+      RUS(REF_EMPTY, best, "best not found");
+      m[0] = metric[0 + 6 * best];
+      m[1] = metric[1 + 6 * best];
+      m[2] = metric[2 + 6 * best];
+      m[3] = metric[3 + 6 * best];
+      m[4] = metric[4 + 6 * best];
+      m[5] = metric[5 + 6 * best];
+      RSS(ref_node_metric_set(ref_node, node, m), "set local node met");
+      RSS(ref_list_erase(touching), "erase");
+    }
+    RSS(ref_list_free(touching), "free list");
+    RSS(ref_search_free(ref_search), "free search");
+  }
+
+  ref_free(xyz);
+  ref_free(metric);
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   FILE *file;
   REF_INT chunk;
@@ -1945,6 +2058,7 @@ REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   REF_INT status;
   char line[1024];
   REF_BOOL solb_format = REF_FALSE;
+  REF_BOOL csv_format = REF_FALSE;
   REF_INT dim = REF_EMPTY;
 
   if (ref_mpi_once(ref_node_mpi(ref_node))) {
@@ -1955,7 +2069,19 @@ REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   RSS(ref_mpi_all_or(ref_node_mpi(ref_node), &solb_format), "bcast");
 
   if (solb_format) {
-    RSS(ref_part_metric_solb(ref_node, filename), "-metric.solb");
+    RSS(ref_part_metric_solb(ref_node, filename), "part metric .solb");
+    return REF_SUCCESS;
+  }
+
+  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+    end_of_string = strlen(filename);
+    if (strcmp(&filename[end_of_string - 4], ".csv") == 0)
+      csv_format = REF_TRUE;
+  }
+  RSS(ref_mpi_all_or(ref_node_mpi(ref_node), &csv_format), "bcast");
+
+  if (csv_format) {
+    RSS(ref_part_metric_csv(ref_node, filename), "part metric .csv");
     return REF_SUCCESS;
   }
 
