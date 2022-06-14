@@ -1996,7 +1996,46 @@ static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
   RSS(ref_mpi_bcast(ref_mpi, metric, 6 * nline, REF_DBL_TYPE), "bcast metric");
   {
     REF_SEARCH ref_search;
+    REF_LIST touching;
+    REF_DBL radius;
+    REF_INT node, donor;
+    REF_DBL dist, best_dist, m[6];
+    REF_INT best, item;
     RSS(ref_search_create(&ref_search, nline), "create search");
+    RSS(ref_list_create(&touching), "touching list");
+    for (node = 0; node < nline; node++) {
+      radius = 0.0;
+      RSS(ref_search_insert(ref_search, node, &(xyz[3 * node]), radius), "ins");
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      radius = 2.0;
+      RSS(ref_search_touching(ref_search, touching,
+                              ref_node_xyz_ptr(ref_node, node), radius),
+          "search tree");
+      best_dist = 1.0e+200;
+      best = REF_EMPTY;
+      each_ref_list_item(touching, item) {
+        donor = ref_list_value(touching, item);
+        dist =
+            sqrt(pow(ref_node_xyz(ref_node, 0, node) - xyz[0 + 3 * donor], 2) +
+                 pow(ref_node_xyz(ref_node, 1, node) - xyz[1 + 3 * donor], 2) +
+                 pow(ref_node_xyz(ref_node, 2, node) - xyz[2 + 3 * donor], 2));
+        if (dist < best_dist) {
+          best_dist = dist;
+          best = donor;
+        }
+      }
+      RUS(REF_EMPTY, best, "best not found");
+      m[0] = metric[0 + 6 * best];
+      m[1] = metric[1 + 6 * best];
+      m[2] = metric[2 + 6 * best];
+      m[3] = metric[3 + 6 * best];
+      m[4] = metric[4 + 6 * best];
+      m[5] = metric[5 + 6 * best];
+      RSS(ref_node_metric_set(ref_node, node, m), "set local node met");
+      RSS(ref_list_erase(touching), "erase");
+    }
+    RSS(ref_list_free(touching), "free list");
     RSS(ref_search_free(ref_search), "free search");
   }
 
