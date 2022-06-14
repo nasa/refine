@@ -1932,6 +1932,36 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_part_metric_csv(REF_NODE ref_node,
+                                              const char *filename) {
+  FILE *file = NULL;
+  char line[1024];
+  const char comma[] = ",";
+  char *token;
+  REF_INT nline, ncol;
+
+  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    RAS(line == fgets(line, 1024, file), "read header");
+    printf("%s\n", line);
+    nline = 0;
+    while (line == fgets(line, 1024, file)) {
+      ncol = 0;
+      token = strtok(line, comma);
+      while (token != NULL) {
+        ncol++;
+        token = strtok(NULL, comma);
+      }
+      if (ncol == 12) nline++;
+    }
+    printf("nline %d \n", nline);
+    fclose(file);
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   FILE *file;
   REF_INT chunk;
@@ -1945,6 +1975,7 @@ REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   REF_INT status;
   char line[1024];
   REF_BOOL solb_format = REF_FALSE;
+  REF_BOOL csv_format = REF_FALSE;
   REF_INT dim = REF_EMPTY;
 
   if (ref_mpi_once(ref_node_mpi(ref_node))) {
@@ -1955,7 +1986,19 @@ REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   RSS(ref_mpi_all_or(ref_node_mpi(ref_node), &solb_format), "bcast");
 
   if (solb_format) {
-    RSS(ref_part_metric_solb(ref_node, filename), "-metric.solb");
+    RSS(ref_part_metric_solb(ref_node, filename), "part metric .solb");
+    return REF_SUCCESS;
+  }
+
+  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+    end_of_string = strlen(filename);
+    if (strcmp(&filename[end_of_string - 4], ".csv") == 0)
+      csv_format = REF_TRUE;
+  }
+  RSS(ref_mpi_all_or(ref_node_mpi(ref_node), &csv_format), "bcast");
+
+  if (csv_format) {
+    RSS(ref_part_metric_csv(ref_node, filename), "part metric .csv");
     return REF_SUCCESS;
   }
 
