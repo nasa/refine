@@ -2724,6 +2724,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   REF_DICT ref_dict_bcs = NULL;
   REF_BOOL strong_sensor_bc = REF_FALSE;
   REF_DBL strong_value = 0.0;
+  REF_BOOL form_quads = REF_FALSE;
   REF_INT pos;
   REF_INT fixed_point_pos, deforming_pos;
   const char *mach_interpolant = "mach";
@@ -2909,6 +2910,12 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf("--partitioner %d partitioner\n",
              (int)ref_grid_partitioner(ref_grid));
+  }
+
+  RXS(ref_args_find(argc, argv, "--quad", &pos), REF_NOT_FOUND, "arg search");
+  if (ref_grid_twod(ref_grid) && REF_EMPTY != pos) {
+    form_quads = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--quad form quads on boundary\n");
   }
 
   RXS(ref_args_find(argc, argv, "--ratio-method", &pos), REF_NOT_FOUND,
@@ -3297,6 +3304,10 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
              ref_mpi_n(ref_mpi));
+    if (form_quads && pass == passes / 2) {
+      if (ref_mpi_once(ref_mpi)) printf("form quads\n");
+      RSS(ref_layer_align_quad(ref_grid), "quad");
+    }
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
