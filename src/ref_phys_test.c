@@ -136,11 +136,13 @@ static REF_STATUS norm_check_square(REF_DBL x, REF_DBL y, REF_DBL *n) {
 REF_FCN static REF_STATUS ref_phys_flipper(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri_cell = ref_grid_tri(ref_grid);
+  REF_CELL qua_cell = ref_grid_qua(ref_grid);
   REF_CELL edg_cell = ref_grid_edg(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT right, wrong;
-  REF_INT node0, node1, ncell, cell_list[1];
-  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node0, node1;
+  REF_INT ntri, tri_list[1], tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nqua, qua_list[1], qua_nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL normal[3];
 
   right = 0;
@@ -162,18 +164,35 @@ REF_FCN static REF_STATUS ref_phys_flipper(REF_GRID ref_grid) {
   each_ref_cell_valid_cell_with_nodes(edg_cell, cell, nodes) {
     node0 = nodes[0];
     node1 = nodes[1];
-    RSS(ref_cell_list_with2(tri_cell, node0, node1, 1, &ncell, cell_list),
+    RSS(ref_cell_list_with2(tri_cell, node0, node1, 1, &ntri, tri_list),
         "found more than one tri with two nodes");
-    REIS(ncell, 1, "boundry one tri with two nodes");
-    RSS(ref_cell_nodes(tri_cell, cell_list[0], tri_nodes), "tri nodes");
-    if ((node1 == tri_nodes[0] && node0 == tri_nodes[1]) ||
-        (node1 == tri_nodes[1] && node0 == tri_nodes[2]) ||
-        (node1 == tri_nodes[2] && node0 == tri_nodes[0])) {
-      right++;
-    } else {
-      ref_cell_c2n(edg_cell, 0, cell) = node1;
-      ref_cell_c2n(edg_cell, 1, cell) = node0;
-      wrong++;
+    RSS(ref_cell_list_with2(qua_cell, node0, node1, 1, &nqua, qua_list),
+        "found more than one qua with two nodes");
+    REIS(ntri + nqua, 1, "boundry one tri+qua with two nodes");
+    if (1 == ntri) {
+      RSS(ref_cell_nodes(tri_cell, tri_list[0], tri_nodes), "tri nodes");
+      if ((node1 == tri_nodes[0] && node0 == tri_nodes[1]) ||
+          (node1 == tri_nodes[1] && node0 == tri_nodes[2]) ||
+          (node1 == tri_nodes[2] && node0 == tri_nodes[0])) {
+        right++;
+      } else {
+        ref_cell_c2n(edg_cell, 0, cell) = node1;
+        ref_cell_c2n(edg_cell, 1, cell) = node0;
+        wrong++;
+      }
+    }
+    if (1 == nqua) {
+      RSS(ref_cell_nodes(qua_cell, qua_list[0], qua_nodes), "tri nodes");
+      if ((node1 == qua_nodes[0] && node0 == qua_nodes[1]) ||
+          (node1 == qua_nodes[1] && node0 == qua_nodes[2]) ||
+          (node1 == qua_nodes[2] && node0 == qua_nodes[3]) ||
+          (node1 == qua_nodes[3] && node0 == qua_nodes[0])) {
+        right++;
+      } else {
+        ref_cell_c2n(edg_cell, 0, cell) = node1;
+        ref_cell_c2n(edg_cell, 1, cell) = node0;
+        wrong++;
+      }
     }
   }
   printf("edg %d right %d wrong (per EGADS)\n", right, wrong);
