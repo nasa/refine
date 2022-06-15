@@ -467,7 +467,7 @@ REF_FCN static REF_STATUS ref_layer_quad_right_triangles(REF_GRID ref_grid) {
         if (tn > 2) tn -= 3;
         nodes[2] = ref_cell_c2n(tri, tn, t);
         nodes[3] = n3;
-        nodes[4] = ref_cell_c2n(tri, tn, 3);
+        nodes[4] = ref_cell_c2n(tri, 3, t);
         RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell), "add");
         RSS(ref_cell_remove(tri, tri_list[0]), "remove tri 0");
         RSS(ref_cell_remove(tri, tri_list[1]), "remove tri 1");

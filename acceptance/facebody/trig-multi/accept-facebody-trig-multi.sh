@@ -24,8 +24,11 @@ function adapt_cycle {
     ${src}/ref_gather_test ${inproj}.meshb \
 	  ${inproj}_volume.solb ${inproj}_volume.tec
 
+    cp ${inproj}.meshb ${inproj}-quad.meshb
+    ${src}/ref translate ${inproj}-quad.meshb ${inproj}.meshb --shard
     ${src}/ref loop ${inproj} ${outproj} ${complexity} \
 	  --export-metric \
+	  --quad \
 	  ${egads} -s 5 > ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
