@@ -45,6 +45,7 @@
 #include "ref_part.h"
 #include "ref_phys.h"
 #include "ref_shard.h"
+#include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_validation.h"
 
@@ -384,7 +385,7 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_BOOL have_spacing_table = REF_FALSE;
   REF_DBL *grad_dist;
   REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
-  REF_INT n = 0;
+  REF_INT n_tab = 0;
   REF_DBL *tab_dist = NULL, *tab_h = NULL, *tab_ar = NULL;
 
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
@@ -431,7 +432,7 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       file = fopen(filename, "r");
       if (NULL == (void *)file) printf("unable to open %s\n", filename);
       RNS(file, "unable to open file");
-      n = 0;
+      n_tab = 0;
       while (line == fgets(line, 1024, file)) {
         ncol = 0;
         token = strtok(line, space);
@@ -439,30 +440,44 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
           ncol++;
           token = strtok(NULL, space);
         }
-        if (ncol >= 2) n++;
+        if (ncol >= 2) n_tab++;
       }
-      printf(" %d breakpoints in %s\n", n, filename);
-      ref_malloc_init(tab_dist, n, REF_DBL, 0.0);
-      ref_malloc_init(tab_h, n, REF_DBL, 0.0);
-      ref_malloc_init(tab_ar, n, REF_DBL, 1.0);
+      printf(" %d breakpoints in %s\n", n_tab, filename);
+      ref_malloc_init(tab_dist, n_tab, REF_DBL, 0.0);
+      ref_malloc_init(tab_h, n_tab, REF_DBL, 0.0);
+      ref_malloc_init(tab_ar, n_tab, REF_DBL, 1.0);
       RAS(0 == fseek(file, 0, SEEK_SET), "rewind");
-      n = 0;
+      n_tab = 0;
       while (line == fgets(line, 1024, file)) {
         ncol = 0;
         token = strtok(line, space);
         while (token != NULL) {
-          if (0 == ncol) tab_dist[n] = atof(token);
-          if (1 == ncol) tab_h[n] = atof(token);
-          if (2 == ncol) tab_ar[n] = atof(token);
+          if (0 == ncol) tab_dist[n_tab] = atof(token);
+          if (1 == ncol) tab_h[n_tab] = atof(token);
+          if (2 == ncol) tab_ar[n_tab] = atof(token);
           ncol++;
           token = strtok(NULL, space);
         }
         if (ncol >= 2) {
-          printf(" %f %f %f\n", tab_dist[n], tab_h[n], tab_ar[n]);
-          n++;
+          printf(" %f %f %f\n", tab_dist[n_tab], tab_h[n_tab], tab_ar[n_tab]);
+          n_tab++;
         }
       }
       fclose(file);
+      RSS(ref_mpi_bcast(ref_mpi, (void *)&n_tab, 1, REF_INT_TYPE), "n_tab");
+      RAS(n_tab > 2, "table requires 2 entries");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_dist, n_tab, REF_DBL_TYPE),
+          "n_tab");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_h, n_tab, REF_DBL_TYPE), "n_tab");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_ar, n_tab, REF_DBL_TYPE), "n_tab");
+    } else {
+      ref_malloc_init(tab_dist, n_tab, REF_DBL, 0.0);
+      ref_malloc_init(tab_h, n_tab, REF_DBL, 0.0);
+      ref_malloc_init(tab_ar, n_tab, REF_DBL, 1.0);
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_dist, n_tab, REF_DBL_TYPE),
+          "n_tab");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_h, n_tab, REF_DBL_TYPE), "n_tab");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_ar, n_tab, REF_DBL_TYPE), "n_tab");
     }
     have_spacing_table = REF_TRUE;
   }
@@ -525,6 +540,38 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   }
 
   if (have_spacing_table) {
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL m[6];
+      REF_DBL d[12];
+      REF_DBL h;
+      REF_DBL s = distance[node];
+      REF_INT i0, i1;
+      RSS(ref_sort_search_dbl(n_tab, tab_dist, s, &i0), "first index on range");
+      i1 = i0 + 1;
+      h = tab_h[i0];
+      aspect_ratio = tab_ar[i0];
+      ref_matrix_eig(d, 0) = 1.0 / (h * h);
+      ref_matrix_eig(d, 1) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
+      ref_matrix_eig(d, 2) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
+      ref_matrix_vec(d, 0, 0) = grad_dist[0 + 3 * node];
+      ref_matrix_vec(d, 1, 0) = grad_dist[1 + 3 * node];
+      ref_matrix_vec(d, 2, 0) = grad_dist[2 + 3 * node];
+      if (REF_SUCCESS == ref_math_normalize(&(d[3]))) {
+        RSS(ref_math_orthonormal_system(&(d[3]), &(d[6]), &(d[9])),
+            "ortho sys");
+        RSS(ref_matrix_form_m(d, m), "form m from d");
+      } else {
+        m[0] = 1.0 / (h * h);
+        m[1] = 0.0;
+        m[2] = 0.0;
+        m[3] = 1.0 / (h * h);
+        m[4] = 0.0;
+        m[5] = 1.0 / (h * h);
+      }
+      if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
+      RSS(ref_node_metric_set(ref_node, node, m), "set");
+    }
+
     ref_free(tab_ar);
     ref_free(tab_h);
     ref_free(tab_dist);
