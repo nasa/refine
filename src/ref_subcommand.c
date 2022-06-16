@@ -385,7 +385,7 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_DBL *grad_dist;
   REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
   REF_INT n = 0;
-  REF_DBL *tab_dist=NULL, *tab_h=NULL, *tab_ar=NULL;
+  REF_DBL *tab_dist = NULL, *tab_h = NULL, *tab_ar = NULL;
 
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
@@ -451,19 +451,13 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
         ncol = 0;
         token = strtok(line, space);
         while (token != NULL) {
+          if (0 == ncol) tab_dist[n] = atof(token);
+          if (1 == ncol) tab_h[n] = atof(token);
+          if (2 == ncol) tab_ar[n] = atof(token);
           ncol++;
           token = strtok(NULL, space);
         }
         if (ncol >= 2) {
-          ncol = 0;
-          token = strtok(line, space);
-          while (token != NULL) {
-            if (0 == ncol) tab_dist[n] = atof(token);
-            if (1 == ncol) tab_h[n] = atof(token);
-            if (2 == ncol) tab_ar[n] = atof(token);
-            ncol++;
-            token = strtok(NULL, space);
-          }
           printf(" %f %f %f\n", tab_dist[n], tab_h[n], tab_ar[n]);
           n++;
         }
@@ -530,11 +524,11 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
     }
   }
 
-if(have_spacing_table){
-  ref_free(tab_ar);
-  ref_free(tab_h);
-  ref_free(tab_dist);
-}
+  if (have_spacing_table) {
+    ref_free(tab_ar);
+    ref_free(tab_h);
+    ref_free(tab_dist);
+  }
 
   ref_free(grad_dist);
   ref_free(distance);
