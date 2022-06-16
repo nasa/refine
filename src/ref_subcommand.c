@@ -544,9 +544,10 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       REF_DBL m[6];
       REF_DBL d[12];
       REF_DBL h;
-      REF_DBL s = distance[node];
+      REF_DBL dist = distance[node];
       REF_INT i0, i1;
-      RSS(ref_sort_search_dbl(n_tab, tab_dist, s, &i0), "first index on range");
+      RSS(ref_sort_search_dbl(n_tab, tab_dist, dist, &i0),
+          "first index on range");
       i1 = i0 + 1;
       h = tab_h[i0];
       aspect_ratio = tab_ar[i0];
