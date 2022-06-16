@@ -540,17 +540,31 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   }
 
   if (have_spacing_table) {
+    {
+      REF_INT i;
+      for (i = 0; i < n_tab; i++)
+        printf(" %f %f %f %d\n", tab_dist[n_tab], tab_h[n_tab], tab_ar[n_tab],
+               n_tab);
+    }
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL m[6];
       REF_DBL d[12];
       REF_DBL h;
       REF_DBL dist = distance[node];
       REF_INT i0, i1;
+      REF_DBL t0, t1;
       RSS(ref_sort_search_dbl(n_tab, tab_dist, dist, &i0),
           "first index on range");
       i1 = i0 + 1;
-      h = tab_h[i0];
-      aspect_ratio = tab_ar[i0];
+      t1 = 0.0;
+      if (ref_math_divisible((dist - tab_dist[i0]),
+                             (tab_dist[i1] - tab_dist[i0]))) {
+        t1 = (dist - tab_dist[i0]) / (tab_dist[i1] - tab_dist[i0]);
+      }
+      t1 = MIN(MAX(0.0, t1), 1.0);
+      t0 = 1.0 - t1;
+      h = t0 * tab_h[i0] + t1 * tab_h[i1];
+      aspect_ratio = t0 * tab_ar[i0] + t1 * tab_ar[i1];
       ref_matrix_eig(d, 0) = 1.0 / (h * h);
       ref_matrix_eig(d, 1) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
       ref_matrix_eig(d, 2) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
@@ -570,7 +584,12 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
         m[5] = 1.0 / (h * h);
       }
       if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
-      RSS(ref_node_metric_set(ref_node, node, m), "set");
+      RSB(ref_node_metric_set(ref_node, node, m), "set", {
+        printf("dist %f h %f ar %f t0 %f t1 %f i0 %d i1 %d\n", dist, h,
+               aspect_ratio, t0, t1, i0, i1);
+        printf("tab_h[i0] %f tab_h[i1] %f tab_h[i0] %f tab_h[i1] %f\n",
+               tab_dist[i0], tab_dist[i1], tab_h[i0], tab_h[i1]);
+      });
     }
 
     ref_free(tab_ar);
