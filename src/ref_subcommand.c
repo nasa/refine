@@ -371,8 +371,8 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   return REF_SUCCESS;
 }
 
-static REF_STATUS stepexp_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
-                                      int argc, char *argv[]) {
+static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
+                                       int argc, char *argv[]) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *distance;
@@ -472,7 +472,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_egads = NULL;
   REF_GRID ref_grid = NULL;
   REF_MPI ref_mpi = ref_mpi_orig;
-  REF_BOOL stepexp_metric = REF_FALSE;
+  REF_BOOL distance_metric = REF_FALSE;
   REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
@@ -709,7 +709,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       goto shutdown;
     }
     if (ref_mpi_once(ref_mpi)) printf(" --stepexp metric\n");
-    stepexp_metric = REF_TRUE;
+    distance_metric = REF_TRUE;
     curvature_metric = REF_TRUE;
   }
 
@@ -733,8 +733,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   }
 
   if (curvature_metric) {
-    if (stepexp_metric) {
-      RSS(stepexp_metric_fill(ref_grid, ref_dict_bcs, argc, argv), "stepexp");
+    if (distance_metric) {
+      RSS(distance_metric_fill(ref_grid, ref_dict_bcs, argc, argv),
+          "distance metric fill");
     } else {
       if (spalding_yplus > 0.0) {
         RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
@@ -783,8 +784,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes)) && !form_quads;
     if (curvature_metric) {
-      if (stepexp_metric) {
-        RSS(stepexp_metric_fill(ref_grid, ref_dict_bcs, argc, argv), "stepexp");
+      if (distance_metric) {
+        RSS(distance_metric_fill(ref_grid, ref_dict_bcs, argc, argv),
+            "distance metric fill");
       } else {
         if (spalding_yplus > 0.0) {
           RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus,
