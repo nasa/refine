@@ -381,6 +381,7 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_DBL h0 = 0.0, h1 = 0.0, h2 = 0.0, s1 = 0.0, s2 = 0.0, width = 0.0;
   REF_DBL aspect_ratio = 1.0;
   REF_BOOL have_stepexp = REF_FALSE;
+  REF_BOOL have_spacing_table = REF_FALSE;
   REF_DBL *grad_dist;
   REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
 
@@ -414,7 +415,14 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
     RAS(width > 0.0, "positive width");
   }
 
-  RAS(have_stepexp, "--stepexp");
+  RXS(ref_args_find(argc, argv, "--spacing-table", &pos), REF_NOT_FOUND,
+      "metric arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    have_spacing_table = REF_TRUE;
+  }
+
+  RAS(have_stepexp != have_spacing_table,
+      "set one and only one of --stepexp and --spacing-table");
 
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
@@ -724,7 +732,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--spacing-table", &pos), REF_NOT_FOUND,
       "metric arg search");
-  if (REF_EMPTY != pos) {
+  if (REF_EMPTY != pos && pos < argc - 1) {
     if (0 == ref_dict_n(ref_dict_bcs)) {
       if (ref_mpi_once(ref_mpi))
         printf(
@@ -732,7 +740,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
             "to use --spacing-table\n\n");
       goto shutdown;
     }
-    if (ref_mpi_once(ref_mpi)) printf("--spacing-table metric\n");
+    if (ref_mpi_once(ref_mpi))
+      printf("--spacing-table metric read from %s\n", argv[pos + 1]);
     distance_metric = REF_TRUE;
     curvature_metric = REF_TRUE;
   }
