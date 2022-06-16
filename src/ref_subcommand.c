@@ -378,8 +378,11 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_DBL *distance;
   REF_INT node;
   REF_INT pos;
-  REF_DBL h0, h1, h2, s1, s2, width;
+  REF_DBL h0 = 0.0, h1 = 0.0, h2 = 0.0, s1 = 0.0, s2 = 0.0, width = 0.0;
   REF_DBL aspect_ratio = 1.0;
+  REF_BOOL have_stepexp = REF_FALSE;
+  REF_DBL *grad_dist;
+  REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
 
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
@@ -387,81 +390,87 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
     aspect_ratio = atof(argv[pos + 1]);
     aspect_ratio = MAX(1.0, aspect_ratio);
     if (ref_mpi_once(ref_mpi))
-      printf("limit --aspect-ratio to %f\n", aspect_ratio);
+      printf("limit --aspect-ratio to %f for --stepexp\n", aspect_ratio);
   }
 
   RSS(ref_args_find(argc, argv, "--stepexp", &pos), "arg search");
-  RAS(pos + 6 < argc, "not enough --stepexp args");
-  h0 = atof(argv[pos + 1]);
-  h1 = atof(argv[pos + 2]);
-  h2 = atof(argv[pos + 3]);
-  s1 = atof(argv[pos + 4]);
-  s2 = atof(argv[pos + 5]);
-  width = atof(argv[pos + 6]);
-  if (ref_mpi_once(ref_mpi))
-    printf("h0 %f h1 %f h2 %f s1 %f s2 %f width %f\n", h0, h1, h2, s1, s2,
-           width);
-  RAS(h0 > 0.0, "positive h0");
-  RAS(h1 > 0.0, "positive h1");
-  RAS(h2 > 0.0, "positive h2");
-  RAS(s1 > 0.0, "positive s1");
-  RAS(s2 > 0.0, "positive s2");
-  RAS(width > 0.0, "positive width");
+  if (REF_EMPTY != pos) {
+    have_stepexp = REF_TRUE;
+    RAS(pos + 6 < argc, "not enough --stepexp args");
+    h0 = atof(argv[pos + 1]);
+    h1 = atof(argv[pos + 2]);
+    h2 = atof(argv[pos + 3]);
+    s1 = atof(argv[pos + 4]);
+    s2 = atof(argv[pos + 5]);
+    width = atof(argv[pos + 6]);
+    if (ref_mpi_once(ref_mpi))
+      printf("h0 %f h1 %f h2 %f s1 %f s2 %f width %f\n", h0, h1, h2, s1, s2,
+             width);
+    RAS(h0 > 0.0, "positive h0");
+    RAS(h1 > 0.0, "positive h1");
+    RAS(h2 > 0.0, "positive h2");
+    RAS(s1 > 0.0, "positive s1");
+    RAS(s2 > 0.0, "positive s2");
+    RAS(width > 0.0, "positive width");
+  }
+
+  RAS(have_stepexp, "--stepexp");
 
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
 
-  if (aspect_ratio > 0.0) {
-    REF_DBL *grad_dist;
-    REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
-    ref_malloc(grad_dist, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_recon_gradient(ref_grid, distance, grad_dist, recon), "grad dist");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL m[6];
-      REF_DBL d[12];
-      REF_DBL h;
-      REF_DBL s = distance[node];
-      RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
-      ref_matrix_eig(d, 0) = 1.0 / (h * h);
-      ref_matrix_eig(d, 1) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
-      ref_matrix_eig(d, 2) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
-      ref_matrix_vec(d, 0, 0) = grad_dist[0 + 3 * node];
-      ref_matrix_vec(d, 1, 0) = grad_dist[1 + 3 * node];
-      ref_matrix_vec(d, 2, 0) = grad_dist[2 + 3 * node];
-      if (REF_SUCCESS == ref_math_normalize(&(d[3]))) {
-        RSS(ref_math_orthonormal_system(&(d[3]), &(d[6]), &(d[9])),
-            "ortho sys");
-        RSS(ref_matrix_form_m(d, m), "form m from d");
-      } else {
+  ref_malloc(grad_dist, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_recon_gradient(ref_grid, distance, grad_dist, recon), "grad dist");
+
+  if (have_stepexp) {
+    if (aspect_ratio > 0.0) {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        REF_DBL m[6];
+        REF_DBL d[12];
+        REF_DBL h;
+        REF_DBL s = distance[node];
+        RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+        ref_matrix_eig(d, 0) = 1.0 / (h * h);
+        ref_matrix_eig(d, 1) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
+        ref_matrix_eig(d, 2) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
+        ref_matrix_vec(d, 0, 0) = grad_dist[0 + 3 * node];
+        ref_matrix_vec(d, 1, 0) = grad_dist[1 + 3 * node];
+        ref_matrix_vec(d, 2, 0) = grad_dist[2 + 3 * node];
+        if (REF_SUCCESS == ref_math_normalize(&(d[3]))) {
+          RSS(ref_math_orthonormal_system(&(d[3]), &(d[6]), &(d[9])),
+              "ortho sys");
+          RSS(ref_matrix_form_m(d, m), "form m from d");
+        } else {
+          m[0] = 1.0 / (h * h);
+          m[1] = 0.0;
+          m[2] = 0.0;
+          m[3] = 1.0 / (h * h);
+          m[4] = 0.0;
+          m[5] = 1.0 / (h * h);
+        }
+        if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
+        RSS(ref_node_metric_set(ref_node, node, m), "set");
+      }
+    } else {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        REF_DBL m[6];
+        REF_DBL h;
+        REF_DBL s = distance[node];
+        RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
         m[0] = 1.0 / (h * h);
         m[1] = 0.0;
         m[2] = 0.0;
         m[3] = 1.0 / (h * h);
         m[4] = 0.0;
         m[5] = 1.0 / (h * h);
+        if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
+        RSS(ref_node_metric_set(ref_node, node, m), "set");
       }
-      if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
-      RSS(ref_node_metric_set(ref_node, node, m), "set");
-    }
-    ref_free(grad_dist);
-  } else {
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL m[6];
-      REF_DBL h;
-      REF_DBL s = distance[node];
-      RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
-      m[0] = 1.0 / (h * h);
-      m[1] = 0.0;
-      m[2] = 0.0;
-      m[3] = 1.0 / (h * h);
-      m[4] = 0.0;
-      m[5] = 1.0 / (h * h);
-      if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
-      RSS(ref_node_metric_set(ref_node, node, m), "set");
     }
   }
 
+  ref_free(grad_dist);
   ref_free(distance);
   return REF_SUCCESS;
 }
@@ -709,6 +718,21 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       goto shutdown;
     }
     if (ref_mpi_once(ref_mpi)) printf(" --stepexp metric\n");
+    distance_metric = REF_TRUE;
+    curvature_metric = REF_TRUE;
+  }
+
+  RXS(ref_args_find(argc, argv, "--spacing-table", &pos), REF_NOT_FOUND,
+      "metric arg search");
+  if (REF_EMPTY != pos) {
+    if (0 == ref_dict_n(ref_dict_bcs)) {
+      if (ref_mpi_once(ref_mpi))
+        printf(
+            "\nset viscous boundaries via --fun3d-mapbc or --viscous-tags "
+            "to use --spacing-table\n\n");
+      goto shutdown;
+    }
+    if (ref_mpi_once(ref_mpi)) printf("--spacing-table metric\n");
     distance_metric = REF_TRUE;
     curvature_metric = REF_TRUE;
   }
