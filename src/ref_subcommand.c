@@ -385,7 +385,7 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_DBL *grad_dist;
   REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
   REF_INT n = 0;
-  REF_DBL *tab_dist, *tab_h, *tab_ar;
+  REF_DBL *tab_dist=NULL, *tab_h=NULL, *tab_ar=NULL;
 
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
@@ -529,6 +529,12 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       }
     }
   }
+
+if(have_spacing_table){
+  ref_free(tab_ar);
+  ref_free(tab_h);
+  ref_free(tab_dist);
+}
 
   ref_free(grad_dist);
   ref_free(distance);
