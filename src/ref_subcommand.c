@@ -384,6 +384,8 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_BOOL have_spacing_table = REF_FALSE;
   REF_DBL *grad_dist;
   REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
+  REF_INT n = 0;
+  REF_DBL *tab_dist, *tab_h, *tab_ar;
 
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
@@ -394,7 +396,8 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       printf("limit --aspect-ratio to %f for --stepexp\n", aspect_ratio);
   }
 
-  RSS(ref_args_find(argc, argv, "--stepexp", &pos), "arg search");
+  RXS(ref_args_find(argc, argv, "--stepexp", &pos), REF_NOT_FOUND,
+      "arg search");
   if (REF_EMPTY != pos) {
     have_stepexp = REF_TRUE;
     RAS(pos + 6 < argc, "not enough --stepexp args");
@@ -418,6 +421,55 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RXS(ref_args_find(argc, argv, "--spacing-table", &pos), REF_NOT_FOUND,
       "metric arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
+    FILE *file = NULL;
+    char line[1024];
+    const char *filename = argv[pos + 1];
+    const char *token;
+    const char space[] = " ";
+    REF_INT ncol;
+    if (ref_mpi_once(ref_mpi)) {
+      file = fopen(filename, "r");
+      if (NULL == (void *)file) printf("unable to open %s\n", filename);
+      RNS(file, "unable to open file");
+      n = 0;
+      while (line == fgets(line, 1024, file)) {
+        ncol = 0;
+        token = strtok(line, space);
+        while (token != NULL) {
+          ncol++;
+          token = strtok(NULL, space);
+        }
+        if (ncol >= 2) n++;
+      }
+      printf(" %d breakpoints in %s\n", n, filename);
+      ref_malloc_init(tab_dist, n, REF_DBL, 0.0);
+      ref_malloc_init(tab_h, n, REF_DBL, 0.0);
+      ref_malloc_init(tab_ar, n, REF_DBL, 1.0);
+      RAS(0 == fseek(file, 0, SEEK_SET), "rewind");
+      n = 0;
+      while (line == fgets(line, 1024, file)) {
+        ncol = 0;
+        token = strtok(line, space);
+        while (token != NULL) {
+          ncol++;
+          token = strtok(NULL, space);
+        }
+        if (ncol >= 2) {
+          ncol = 0;
+          token = strtok(line, space);
+          while (token != NULL) {
+            if (0 == ncol) tab_dist[n] = atof(token);
+            if (1 == ncol) tab_h[n] = atof(token);
+            if (2 == ncol) tab_ar[n] = atof(token);
+            ncol++;
+            token = strtok(NULL, space);
+          }
+          printf(" %f %f %f\n", tab_dist[n], tab_h[n], tab_ar[n]);
+          n++;
+        }
+      }
+      fclose(file);
+    }
     have_spacing_table = REF_TRUE;
   }
 
