@@ -21,5 +21,6 @@ ${src}/ref adapt hemisphere-vol.meshb \
       --fun3d-mapbc hemisphere-vol.mapbc \
       --spacing-table spacing-table.txt \
       -x hemitab1.meshb \
-      -x hemitab1.plt
+      -x hemitab1.plt \
+      -s 10
 
