@@ -535,6 +535,12 @@ cd ${source_dir}/acceptance/hemisphere/prism
 ( ./accept-hemisphere-prism.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-hemisphere-spacing-table
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/hemisphere/spacing-table
+( ./accept-hemisphere-spacing-table.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 LOG=${root_dir}/log.accept-sphere-cube-tetgen
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/sphere-cube/tetgen
