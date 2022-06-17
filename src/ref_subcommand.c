@@ -385,7 +385,7 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_BOOL have_spacing_table = REF_FALSE;
   REF_DBL *grad_dist;
   REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
-  REF_INT n_tab = 0;
+  REF_INT n_tab = 0, max_tab;
   REF_DBL *tab_dist = NULL, *tab_h = NULL, *tab_ar = NULL;
 
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
@@ -447,8 +447,9 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       ref_malloc_init(tab_h, n_tab, REF_DBL, 0.0);
       ref_malloc_init(tab_ar, n_tab, REF_DBL, 1.0);
       RAS(0 == fseek(file, 0, SEEK_SET), "rewind");
+      max_tab = n_tab;
       n_tab = 0;
-      while (line == fgets(line, 1024, file)) {
+      while (line == fgets(line, 1024, file) && n_tab < max_tab) {
         ncol = 0;
         token = strtok(line, space);
         while (token != NULL) {
@@ -459,7 +460,8 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
           token = strtok(NULL, space);
         }
         if (ncol >= 2) {
-          printf(" %f %f %f\n", tab_dist[n_tab], tab_h[n_tab], tab_ar[n_tab]);
+          printf(" %f %f %f %d\n", tab_dist[n_tab], tab_h[n_tab], tab_ar[n_tab],
+                 n_tab);
           n_tab++;
         }
       }
@@ -540,12 +542,6 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   }
 
   if (have_spacing_table) {
-    {
-      REF_INT i;
-      for (i = 0; i < n_tab; i++)
-        printf(" %f %f %f %d\n", tab_dist[n_tab], tab_h[n_tab], tab_ar[n_tab],
-               n_tab);
-    }
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL m[6];
       REF_DBL d[12];
