@@ -45,6 +45,7 @@
 #include "ref_part.h"
 #include "ref_phys.h"
 #include "ref_shard.h"
+#include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_validation.h"
 
@@ -371,15 +372,21 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   return REF_SUCCESS;
 }
 
-static REF_STATUS stepexp_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
-                                      int argc, char *argv[]) {
+static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
+                                       int argc, char *argv[]) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *distance;
   REF_INT node;
   REF_INT pos;
-  REF_DBL h0, h1, h2, s1, s2, width;
+  REF_DBL h0 = 0.0, h1 = 0.0, h2 = 0.0, s1 = 0.0, s2 = 0.0, width = 0.0;
   REF_DBL aspect_ratio = 1.0;
+  REF_BOOL have_stepexp = REF_FALSE;
+  REF_BOOL have_spacing_table = REF_FALSE;
+  REF_DBL *grad_dist;
+  REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
+  REF_INT n_tab = 0, max_tab;
+  REF_DBL *tab_dist = NULL, *tab_h = NULL, *tab_ar = NULL;
 
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
@@ -387,42 +394,173 @@ static REF_STATUS stepexp_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
     aspect_ratio = atof(argv[pos + 1]);
     aspect_ratio = MAX(1.0, aspect_ratio);
     if (ref_mpi_once(ref_mpi))
-      printf("limit --aspect-ratio to %f\n", aspect_ratio);
+      printf("limit --aspect-ratio to %f for --stepexp\n", aspect_ratio);
   }
 
-  RSS(ref_args_find(argc, argv, "--stepexp", &pos), "arg search");
-  RAS(pos + 6 < argc, "not enough --stepexp args");
-  h0 = atof(argv[pos + 1]);
-  h1 = atof(argv[pos + 2]);
-  h2 = atof(argv[pos + 3]);
-  s1 = atof(argv[pos + 4]);
-  s2 = atof(argv[pos + 5]);
-  width = atof(argv[pos + 6]);
-  if (ref_mpi_once(ref_mpi))
-    printf("h0 %f h1 %f h2 %f s1 %f s2 %f width %f\n", h0, h1, h2, s1, s2,
-           width);
-  RAS(h0 > 0.0, "positive h0");
-  RAS(h1 > 0.0, "positive h1");
-  RAS(h2 > 0.0, "positive h2");
-  RAS(s1 > 0.0, "positive s1");
-  RAS(s2 > 0.0, "positive s2");
-  RAS(width > 0.0, "positive width");
+  RXS(ref_args_find(argc, argv, "--stepexp", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    have_stepexp = REF_TRUE;
+    RAS(pos + 6 < argc, "not enough --stepexp args");
+    h0 = atof(argv[pos + 1]);
+    h1 = atof(argv[pos + 2]);
+    h2 = atof(argv[pos + 3]);
+    s1 = atof(argv[pos + 4]);
+    s2 = atof(argv[pos + 5]);
+    width = atof(argv[pos + 6]);
+    if (ref_mpi_once(ref_mpi))
+      printf("h0 %f h1 %f h2 %f s1 %f s2 %f width %f\n", h0, h1, h2, s1, s2,
+             width);
+    RAS(h0 > 0.0, "positive h0");
+    RAS(h1 > 0.0, "positive h1");
+    RAS(h2 > 0.0, "positive h2");
+    RAS(s1 > 0.0, "positive s1");
+    RAS(s2 > 0.0, "positive s2");
+    RAS(width > 0.0, "positive width");
+  }
+
+  RXS(ref_args_find(argc, argv, "--spacing-table", &pos), REF_NOT_FOUND,
+      "metric arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    FILE *file = NULL;
+    char line[1024];
+    const char *filename = argv[pos + 1];
+    const char *token;
+    const char space[] = " ";
+    REF_INT ncol;
+    if (ref_mpi_once(ref_mpi)) {
+      file = fopen(filename, "r");
+      if (NULL == (void *)file) printf("unable to open %s\n", filename);
+      RNS(file, "unable to open file");
+      n_tab = 0;
+      while (line == fgets(line, 1024, file)) {
+        ncol = 0;
+        token = strtok(line, space);
+        while (token != NULL) {
+          ncol++;
+          token = strtok(NULL, space);
+        }
+        if (ncol >= 2) n_tab++;
+      }
+      printf(" %d breakpoints in %s\n", n_tab, filename);
+      ref_malloc_init(tab_dist, n_tab, REF_DBL, 0.0);
+      ref_malloc_init(tab_h, n_tab, REF_DBL, 0.0);
+      ref_malloc_init(tab_ar, n_tab, REF_DBL, 1.0);
+      RAS(0 == fseek(file, 0, SEEK_SET), "rewind");
+      max_tab = n_tab;
+      n_tab = 0;
+      while (line == fgets(line, 1024, file) && n_tab < max_tab) {
+        ncol = 0;
+        token = strtok(line, space);
+        while (token != NULL) {
+          if (0 == ncol) tab_dist[n_tab] = atof(token);
+          if (1 == ncol) tab_h[n_tab] = atof(token);
+          if (2 == ncol) tab_ar[n_tab] = atof(token);
+          ncol++;
+          token = strtok(NULL, space);
+        }
+        if (ncol >= 2) {
+          printf(" %f %f %f %d\n", tab_dist[n_tab], tab_h[n_tab], tab_ar[n_tab],
+                 n_tab);
+          n_tab++;
+        }
+      }
+      fclose(file);
+      RSS(ref_mpi_bcast(ref_mpi, (void *)&n_tab, 1, REF_INT_TYPE), "n_tab");
+      RAS(n_tab > 2, "table requires 2 entries");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_dist, n_tab, REF_DBL_TYPE),
+          "n_tab");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_h, n_tab, REF_DBL_TYPE), "n_tab");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_ar, n_tab, REF_DBL_TYPE), "n_tab");
+    } else {
+      ref_malloc_init(tab_dist, n_tab, REF_DBL, 0.0);
+      ref_malloc_init(tab_h, n_tab, REF_DBL, 0.0);
+      ref_malloc_init(tab_ar, n_tab, REF_DBL, 1.0);
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_dist, n_tab, REF_DBL_TYPE),
+          "n_tab");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_h, n_tab, REF_DBL_TYPE), "n_tab");
+      RSS(ref_mpi_bcast(ref_mpi, (void *)tab_ar, n_tab, REF_DBL_TYPE), "n_tab");
+    }
+    have_spacing_table = REF_TRUE;
+  }
+
+  RAS(have_stepexp != have_spacing_table,
+      "set one and only one of --stepexp and --spacing-table");
 
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
 
-  if (aspect_ratio > 0.0) {
-    REF_DBL *grad_dist;
-    REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
-    ref_malloc(grad_dist, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_recon_gradient(ref_grid, distance, grad_dist, recon), "grad dist");
+  ref_malloc(grad_dist, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_recon_gradient(ref_grid, distance, grad_dist, recon), "grad dist");
+
+  if (have_stepexp) {
+    if (aspect_ratio > 0.0) {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        REF_DBL m[6];
+        REF_DBL d[12];
+        REF_DBL h;
+        REF_DBL s = distance[node];
+        RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+        ref_matrix_eig(d, 0) = 1.0 / (h * h);
+        ref_matrix_eig(d, 1) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
+        ref_matrix_eig(d, 2) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
+        ref_matrix_vec(d, 0, 0) = grad_dist[0 + 3 * node];
+        ref_matrix_vec(d, 1, 0) = grad_dist[1 + 3 * node];
+        ref_matrix_vec(d, 2, 0) = grad_dist[2 + 3 * node];
+        if (REF_SUCCESS == ref_math_normalize(&(d[3]))) {
+          RSS(ref_math_orthonormal_system(&(d[3]), &(d[6]), &(d[9])),
+              "ortho sys");
+          RSS(ref_matrix_form_m(d, m), "form m from d");
+        } else {
+          m[0] = 1.0 / (h * h);
+          m[1] = 0.0;
+          m[2] = 0.0;
+          m[3] = 1.0 / (h * h);
+          m[4] = 0.0;
+          m[5] = 1.0 / (h * h);
+        }
+        if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
+        RSS(ref_node_metric_set(ref_node, node, m), "set");
+      }
+    } else {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        REF_DBL m[6];
+        REF_DBL h;
+        REF_DBL s = distance[node];
+        RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+        m[0] = 1.0 / (h * h);
+        m[1] = 0.0;
+        m[2] = 0.0;
+        m[3] = 1.0 / (h * h);
+        m[4] = 0.0;
+        m[5] = 1.0 / (h * h);
+        if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
+        RSS(ref_node_metric_set(ref_node, node, m), "set");
+      }
+    }
+  }
+
+  if (have_spacing_table) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL m[6];
       REF_DBL d[12];
       REF_DBL h;
-      REF_DBL s = distance[node];
-      RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
+      REF_DBL dist = distance[node];
+      REF_INT i0, i1;
+      REF_DBL t0, t1;
+      RSS(ref_sort_search_dbl(n_tab, tab_dist, dist, &i0),
+          "first index on range");
+      i1 = i0 + 1;
+      t1 = 0.0;
+      if (ref_math_divisible((dist - tab_dist[i0]),
+                             (tab_dist[i1] - tab_dist[i0]))) {
+        t1 = (dist - tab_dist[i0]) / (tab_dist[i1] - tab_dist[i0]);
+      }
+      t1 = MIN(MAX(0.0, t1), 1.0);
+      t0 = 1.0 - t1;
+      h = t0 * tab_h[i0] + t1 * tab_h[i1];
+      aspect_ratio = t0 * tab_ar[i0] + t1 * tab_ar[i1];
       ref_matrix_eig(d, 0) = 1.0 / (h * h);
       ref_matrix_eig(d, 1) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
       ref_matrix_eig(d, 2) = 1.0 / (aspect_ratio * h * aspect_ratio * h);
@@ -442,26 +580,20 @@ static REF_STATUS stepexp_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
         m[5] = 1.0 / (h * h);
       }
       if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
-      RSS(ref_node_metric_set(ref_node, node, m), "set");
+      RSB(ref_node_metric_set(ref_node, node, m), "set", {
+        printf("dist %f h %f ar %f t0 %f t1 %f i0 %d i1 %d\n", dist, h,
+               aspect_ratio, t0, t1, i0, i1);
+        printf("tab_h[i0] %f tab_h[i1] %f tab_h[i0] %f tab_h[i1] %f\n",
+               tab_dist[i0], tab_dist[i1], tab_h[i0], tab_h[i1]);
+      });
     }
-    ref_free(grad_dist);
-  } else {
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL m[6];
-      REF_DBL h;
-      REF_DBL s = distance[node];
-      RSS(ref_metric_step_exp(s, &h, h0, h1, h2, s1, s2, width), "step exp");
-      m[0] = 1.0 / (h * h);
-      m[1] = 0.0;
-      m[2] = 0.0;
-      m[3] = 1.0 / (h * h);
-      m[4] = 0.0;
-      m[5] = 1.0 / (h * h);
-      if (ref_grid_twod(ref_grid)) RSS(ref_matrix_twod_m(m), "enforce 2d");
-      RSS(ref_node_metric_set(ref_node, node, m), "set");
-    }
+
+    ref_free(tab_ar);
+    ref_free(tab_h);
+    ref_free(tab_dist);
   }
 
+  ref_free(grad_dist);
   ref_free(distance);
   return REF_SUCCESS;
 }
@@ -472,7 +604,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   char *in_egads = NULL;
   REF_GRID ref_grid = NULL;
   REF_MPI ref_mpi = ref_mpi_orig;
-  REF_BOOL stepexp_metric = REF_FALSE;
+  REF_BOOL distance_metric = REF_FALSE;
   REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
@@ -709,7 +841,23 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       goto shutdown;
     }
     if (ref_mpi_once(ref_mpi)) printf(" --stepexp metric\n");
-    stepexp_metric = REF_TRUE;
+    distance_metric = REF_TRUE;
+    curvature_metric = REF_TRUE;
+  }
+
+  RXS(ref_args_find(argc, argv, "--spacing-table", &pos), REF_NOT_FOUND,
+      "metric arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (0 == ref_dict_n(ref_dict_bcs)) {
+      if (ref_mpi_once(ref_mpi))
+        printf(
+            "\nset viscous boundaries via --fun3d-mapbc or --viscous-tags "
+            "to use --spacing-table\n\n");
+      goto shutdown;
+    }
+    if (ref_mpi_once(ref_mpi))
+      printf("--spacing-table metric read from %s\n", argv[pos + 1]);
+    distance_metric = REF_TRUE;
     curvature_metric = REF_TRUE;
   }
 
@@ -733,8 +881,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   }
 
   if (curvature_metric) {
-    if (stepexp_metric) {
-      RSS(stepexp_metric_fill(ref_grid, ref_dict_bcs, argc, argv), "stepexp");
+    if (distance_metric) {
+      RSS(distance_metric_fill(ref_grid, ref_dict_bcs, argc, argv),
+          "distance metric fill");
     } else {
       if (spalding_yplus > 0.0) {
         RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity,
@@ -783,8 +932,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes)) && !form_quads;
     if (curvature_metric) {
-      if (stepexp_metric) {
-        RSS(stepexp_metric_fill(ref_grid, ref_dict_bcs, argc, argv), "stepexp");
+      if (distance_metric) {
+        RSS(distance_metric_fill(ref_grid, ref_dict_bcs, argc, argv),
+            "distance metric fill");
       } else {
         if (spalding_yplus > 0.0) {
           RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus,

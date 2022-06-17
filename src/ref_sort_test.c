@@ -238,6 +238,46 @@ int main(void) {
     REIS(REF_EMPTY, position, "0");
   }
 
+  { /* search dbl */
+    REF_INT n = 4, position = 0;
+    REF_DBL ascending_list[] = {0.0, 0.5, 1.0, 2.0};
+
+    REIS(REF_NOT_FOUND, ref_sort_search_dbl(0, ascending_list, -1.0, &position),
+         "search");
+    REIS(REF_EMPTY, position, "under");
+
+    RSS(ref_sort_search_dbl(1, ascending_list, -1.0, &position), "search");
+    REIS(0, position, "only");
+    RSS(ref_sort_search_dbl(1, ascending_list, 0.0, &position), "search");
+    REIS(0, position, "only");
+    RSS(ref_sort_search_dbl(1, ascending_list, 1.0, &position), "search");
+    REIS(0, position, "only");
+
+    RSS(ref_sort_search_dbl(2, ascending_list, -1.0, &position), "search");
+    REIS(0, position, "only");
+    RSS(ref_sort_search_dbl(2, ascending_list, 0.0, &position), "search");
+    REIS(0, position, "only");
+    RSS(ref_sort_search_dbl(2, ascending_list, 0.1, &position), "search");
+    REIS(0, position, "only");
+    RSS(ref_sort_search_dbl(2, ascending_list, 0.5, &position), "search");
+    REIS(0, position, "only");
+    RSS(ref_sort_search_dbl(2, ascending_list, 1.0, &position), "search");
+    REIS(0, position, "only");
+
+    RSS(ref_sort_search_dbl(n, ascending_list, -1.0, &position), "search");
+    REIS(0, position, "only");
+    RSS(ref_sort_search_dbl(n, ascending_list, 0.1, &position), "search");
+    REIS(0, position, "only");
+    RSS(ref_sort_search_dbl(n, ascending_list, 0.5, &position), "search");
+    REIS(1, position, "only");
+    RSS(ref_sort_search_dbl(n, ascending_list, 1.0, &position), "search");
+    REIS(2, position, "only");
+    RSS(ref_sort_search_dbl(n, ascending_list, 1.5, &position), "search");
+    REIS(2, position, "only");
+    RSS(ref_sort_search_dbl(n, ascending_list, 5.0, &position), "search");
+    REIS(2, position, "only");
+  }
+
   { /* heap sort zero int */
     REF_INT n = 0, original[1], sorted_index[1];
     original[0] = 1;

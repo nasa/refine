@@ -333,6 +333,63 @@ REF_FCN REF_STATUS ref_sort_search_glob(REF_INT n, REF_GLOB *ascending_list,
   return REF_NOT_FOUND;
 }
 
+REF_FCN REF_STATUS ref_sort_search_dbl(REF_INT n, REF_DBL *ascending_list,
+                                       REF_DBL target, REF_INT *position) {
+  REF_INT lower, upper, mid;
+
+  *position = REF_EMPTY;
+
+  /* printf("n %d target %f [",n,target);
+   * for(mid=0;mid<n;mid++)printf(" %f",ascending_list[mid]);
+   * printf(" ]\n"); */
+
+  if (n < 1) return REF_NOT_FOUND;
+  if (n == 1) {
+    *position = 0;
+    return REF_SUCCESS;
+  }
+  if (target <= ascending_list[0]) {
+    *position = 0;
+    return REF_SUCCESS;
+  }
+  if (target >= ascending_list[n - 1]) {
+    *position = n - 2;
+    return REF_SUCCESS;
+  }
+
+  lower = 0;
+  upper = n - 2;
+  mid = (lower + upper) >> 1; /* fast divide by two */
+
+  if (ascending_list[mid] <= target && target < ascending_list[mid + 1]) {
+    *position = mid;
+    return REF_SUCCESS;
+  }
+
+  while (lower < upper) {
+    if (ascending_list[lower] <= target && target < ascending_list[lower + 1]) {
+      *position = lower;
+      return REF_SUCCESS;
+    }
+    if (ascending_list[upper] <= target && target < ascending_list[upper + 1]) {
+      *position = upper;
+      return REF_SUCCESS;
+    }
+    if (ascending_list[mid] <= target && target < ascending_list[mid + 1]) {
+      *position = mid;
+      return REF_SUCCESS;
+    }
+    if (target >= ascending_list[mid]) {
+      lower = mid;
+    } else {
+      upper = mid;
+    }
+    mid = (lower + upper) >> 1;
+  }
+
+  return REF_FAILURE;
+}
+
 REF_INT ref_sort_rand_in_range(REF_INT min, REF_INT max) {
   return rand() % (max - min + 1) + min;
 }
