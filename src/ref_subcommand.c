@@ -473,6 +473,8 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       RSS(ref_mpi_bcast(ref_mpi, (void *)tab_h, n_tab, REF_DBL_TYPE), "n_tab");
       RSS(ref_mpi_bcast(ref_mpi, (void *)tab_ar, n_tab, REF_DBL_TYPE), "n_tab");
     } else {
+      RSS(ref_mpi_bcast(ref_mpi, (void *)&n_tab, 1, REF_INT_TYPE), "n_tab");
+      RAS(n_tab > 2, "table requires 2 entries");
       ref_malloc_init(tab_dist, n_tab, REF_DBL, 0.0);
       ref_malloc_init(tab_h, n_tab, REF_DBL, 0.0);
       ref_malloc_init(tab_ar, n_tab, REF_DBL, 1.0);
