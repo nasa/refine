@@ -473,6 +473,8 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       RSS(ref_mpi_bcast(ref_mpi, (void *)tab_h, n_tab, REF_DBL_TYPE), "n_tab");
       RSS(ref_mpi_bcast(ref_mpi, (void *)tab_ar, n_tab, REF_DBL_TYPE), "n_tab");
     } else {
+      RSS(ref_mpi_bcast(ref_mpi, (void *)&n_tab, 1, REF_INT_TYPE), "n_tab");
+      RAS(n_tab > 2, "table requires 2 entries");
       ref_malloc_init(tab_dist, n_tab, REF_DBL, 0.0);
       ref_malloc_init(tab_h, n_tab, REF_DBL, 0.0);
       ref_malloc_init(tab_ar, n_tab, REF_DBL, 1.0);
@@ -487,7 +489,7 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RAS(have_stepexp != have_spacing_table,
       "set one and only one of --stepexp and --spacing-table");
 
-  ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
 
