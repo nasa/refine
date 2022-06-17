@@ -487,7 +487,7 @@ static REF_STATUS distance_metric_fill(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RAS(have_stepexp != have_spacing_table,
       "set one and only one of --stepexp and --spacing-table");
 
-  ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
   RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
   ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
 
