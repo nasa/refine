@@ -20,6 +20,9 @@ wget https://acdl.mit.edu/ESP/PreBuilts/ESP${VERSION}Lin.tgz
 mkdir ${MODULE_DEST}
 tar xzf ESP${VERSION}Lin.tgz -C ${MODULE_DEST} --strip-components=1
 
+# insulate linking from OpenCASCADE path version
+(cd ${MODULE_DEST} && ln -s OpenCASCADE-* OpenCASCADE)
+
 mkdir -p ${MODFILE_BASE}
 cat > ${MODFILE_DEST} << EOF
 #%Module#
