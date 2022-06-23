@@ -11,8 +11,7 @@ fi
 
 TOPDIR='../../..'
 ESP="ESP/${ESP_VERSION}"
-PARMETIS="ParMETIS/${PARMETIS_VERSION}-${OPENMPI_VERSION}_intel_2017-${INTEL_VERSION}_CentOS7"
-OPENMPI_MODULE="openmpi_${OPENMPI_VERSION}_intel_2017"
+# PARMETIS="ParMETIS/${PARMETIS_VERSION}-${OPENMPI_VERSION}_intel_2017-${INTEL_VERSION}_CentOS7"
 
 echo Build ${PACKAGE} ${VERSION}
 
@@ -29,12 +28,13 @@ cd       _build_$VERSION
 ../${TOPDIR}/configure \
  --prefix=${MODULE_DEST} \
  --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
- --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
- --with-metis=${MODULE_ROOT}/${PARMETIS} \
- --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
+ --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE \
  --with-mpi=/usr/local/pkgs-modules/${OPENMPI_MODULE} \
  CC=icc \
  CFLAGS='-g -O2'
+
+# --with-metis=${MODULE_ROOT}/${PARMETIS} \
+# --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
 
  make -j 12 
  make install
@@ -58,7 +58,6 @@ set modmode  [module-info mode]
 set base    $MODULE_BASE
 set version $VERSION
 
-prereq ${INTEL_MODULE}
 prereq ${OPENMPI_MODULE}
 
 set logr "/bin"

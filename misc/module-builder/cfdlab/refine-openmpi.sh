@@ -10,7 +10,7 @@ else
 fi
 
 TOPDIR='../../..'
-PARMETIS="ParMETIS/${PARMETIS_VERSION}-${OPENMPI_VERSION}_intel_2017-${INTEL_VERSION}_CentOS7"
+# PARMETIS="ParMETIS/${PARMETIS_VERSION}-${OPENMPI_VERSION}_intel_2017-${INTEL_VERSION}_CentOS7"
 
 echo Build ${PACKAGE} ${VERSION}
 
@@ -27,11 +27,12 @@ cd       _build_$VERSION
 
 ../${TOPDIR}/configure \
  --prefix=${MODULE_DEST} \
- --with-metis=${MODULE_ROOT}/${PARMETIS} \
- --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
  CC=mpicc \
  CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
  LIBS=-lmpi
+
+# --with-metis=${MODULE_ROOT}/${PARMETIS} \
+# --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
 
  make -j 12 
  make install
@@ -55,7 +56,6 @@ set modmode  [module-info mode]
 set base    $MODULE_BASE
 set version $VERSION
 
-prereq ${INTEL_MODULE}
 prereq ${OPENMPI_MODULE}
 
 set logr "/bin"
