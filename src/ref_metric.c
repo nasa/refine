@@ -2115,6 +2115,176 @@ REF_FCN REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_FCN REF_STATUS ref_metric_closest_d(REF_DBL *normal, REF_DBL *m,
+                                               REF_DBL *d_out) {
+  REF_INT i, first_i, second_i;
+  REF_DBL dot, largest_dot, largest_eig;
+  REF_DBL d_in[12];
+  REF_DBL h;
+  RSS(ref_matrix_diag_m(m, d_in), "decomp");
+  /* metric eigenvector direction closest to normal */
+  largest_dot = -2.0;
+  first_i = REF_EMPTY;
+  for (i = 0; i < 3; i++) {
+    dot = ABS(ref_math_dot(normal, ref_matrix_vec_ptr(d_in, i)));
+    if (dot > largest_dot) {
+      largest_dot = dot;
+      first_i = i;
+    }
+  }
+  /* smallest spacing / largest eigenval direction remaining */
+  RUS(REF_EMPTY, first_i, "first_i not set");
+  second_i = REF_EMPTY;
+  largest_eig = -1.0;
+  for (i = 0; i < 3; i++) {
+    if (i == first_i) continue;
+    if (REF_EMPTY == second_i || ref_matrix_eig(d_in, i) > largest_eig) {
+      second_i = i;
+      largest_eig = ref_matrix_eig(d_in, i);
+    }
+  }
+  RUS(REF_EMPTY, second_i, "second_i not set");
+  RUS(second_i, first_i, "first_i same as second_i");
+  /* first eigenvector in normal direction */
+  for (i = 0; i < 3; i++) {
+    ref_matrix_vec(d_out, i, 0) = normal[i];
+  }
+  RSS(ref_math_normalize(ref_matrix_vec_ptr(d_out, 0)), "first");
+  /* second eigenvector, orthonormal to first eigenvector */
+  for (i = 0; i < 3; i++) {
+    ref_matrix_vec(d_out, i, 1) = ref_matrix_vec(d_in, i, second_i);
+  }
+  dot =
+      ref_math_dot(ref_matrix_vec_ptr(d_out, 0), ref_matrix_vec_ptr(d_out, 1));
+  for (i = 0; i < 3; i++) {
+    ref_matrix_vec(d_out, i, 1) -= dot * ref_matrix_vec(d_in, i, 0);
+  }
+  RSS(ref_math_normalize(ref_matrix_vec_ptr(d_out, 1)), "second");
+  ref_math_cross_product(ref_matrix_vec_ptr(d_out, 0),
+                         ref_matrix_vec_ptr(d_out, 1),
+                         ref_matrix_vec_ptr(d_out, 2));
+  RSS(ref_math_normalize(ref_matrix_vec_ptr(d_out, 2)), "third");
+
+  h = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 0));
+  RAS(ref_math_divisible(1.0, h * h), "eig 0")
+  ref_matrix_eig(d_out, 0) = 1.0 / (h * h);
+
+  h = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 1));
+  RAS(ref_math_divisible(1.0, h * h), "eig 1")
+  ref_matrix_eig(d_out, 1) = 1.0 / (h * h);
+
+  h = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 2));
+  RAS(ref_math_divisible(1.0, h * h), "eig 2")
+  ref_matrix_eig(d_out, 2) = 1.0 / (h * h);
+
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_metric_faceid_normal_spacing(REF_DBL *metric,
+                                                    REF_GRID ref_grid,
+                                                    REF_INT faceid,
+                                                    REF_DBL set_normal,
+                                                    REF_DBL ceil_normal) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL *new_log_metric;
+  REF_INT *hits;
+  REF_INT node;
+  REF_INT i;
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+  ref_malloc_init(new_log_metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (faceid == nodes[ref_cell_id_index(ref_cell)]) {
+      REF_DBL normal[3];
+      REF_INT cell_node;
+      RSS(ref_node_tri_normal(ref_node, nodes, normal), "vol");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        REF_DBL d[12], m[6], logm[6];
+        REF_DBL h;
+        node = nodes[cell_node];
+        RSS(ref_metric_closest_d(normal, &(metric[6 * node]), d), "closest");
+        if (set_normal > 0.0) {
+          h = set_normal;
+          RAS(ref_math_divisible(1.0, h * h), "eig 0");
+          ref_matrix_eig(d, 0) = 1.0 / (h * h);
+        }
+        if (ceil_normal > 0.0) {
+          RAS(ref_math_divisible(1.0, sqrt(ref_matrix_eig(d, 0))), "eig 0");
+          h = 1.0 / sqrt(ref_matrix_eig(d, 0));
+          h = MIN(h, ceil_normal);
+          RAS(ref_math_divisible(1.0, h * h), "eig 0");
+          ref_matrix_eig(d, 0) = 1.0 / (h * h);
+        }
+
+        RSS(ref_matrix_form_m(d, m), "form");
+        RSS(ref_matrix_log_m(m, logm), "form");
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node] += logm[i];
+        }
+        hits[node] += 1;
+      }
+    }
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, new_log_metric, 6), "ghost metric");
+  RSS(ref_node_ghost_int(ref_node, hits, 1), "ghost hits");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
+      }
+      hits[node] = -1;
+      RSS(ref_matrix_exp_m(&(new_log_metric[6 * node]), &(metric[6 * node])),
+          "form");
+    }
+  }
+
+  {
+    REF_EDGE ref_edge;
+    REF_INT edge, node0, node1;
+    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      if (0 <= hits[node0] && -1 == hits[node1]) {
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node0] += new_log_metric[i + 6 * node1];
+        }
+        hits[node0] += 1;
+      }
+      if (0 <= hits[node1] && -1 == hits[node0]) {
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node1] += new_log_metric[i + 6 * node0];
+        }
+        hits[node1] += 1;
+      }
+    }
+    ref_edge_free(ref_edge);
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, new_log_metric, 6), "ghost metric");
+  RSS(ref_node_ghost_int(ref_node, hits, 1), "ghost hits");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
+      }
+      hits[node] = -2;
+      RSS(ref_matrix_exp_m(&(new_log_metric[6 * node]), &(metric[6 * node])),
+          "form");
+    }
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, metric, 6), "ghost metric");
+
+  ref_free(new_log_metric);
+  ref_free(hits);
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_metric_multigrad(REF_DBL *metric, REF_GRID ref_grid,
                                         REF_DBL *grad, REF_INT p_norm,
                                         REF_DBL gradation,

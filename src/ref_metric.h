@@ -116,6 +116,13 @@ REF_FCN REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid);
 REF_FCN REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric,
                                                    REF_GRID ref_grid,
                                                    REF_DBL complexity);
+
+REF_FCN REF_STATUS ref_metric_faceid_normal_spacing(REF_DBL *metric,
+                                                    REF_GRID ref_grid,
+                                                    REF_INT faceid,
+                                                    REF_DBL set_normal,
+                                                    REF_DBL ceil_normal);
+
 REF_FCN REF_STATUS ref_metric_multigrad(REF_DBL *metric, REF_GRID ref_grid,
                                         REF_DBL *grad, REF_INT p_norm,
                                         REF_DBL gradation, REF_DBL complexity);
