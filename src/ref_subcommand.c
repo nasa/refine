@@ -371,7 +371,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
       ceil_normal_spacing = atof(argv[opt + 3]);
       tangential_aspect_ratio = atof(argv[opt + 4]);
       if (ref_mpi_once(ref_mpi))
-        printf(" --faceid_spacing %d %f %f %f\n", faceid, set_normal_spacing,
+        printf(" --faceid-spacing %d %f %f %f\n", faceid, set_normal_spacing,
                ceil_normal_spacing, tangential_aspect_ratio);
       RSS(ref_metric_faceid_spacing(metric, ref_grid, faceid,
                                     set_normal_spacing, ceil_normal_spacing,
