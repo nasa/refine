@@ -323,7 +323,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_INT node;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_DBL gradation = 10.0;
-  REF_INT pos;
+  REF_INT pos, opt;
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -359,6 +359,26 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
                                          complexity),
       "set complexity");
   RSS(ref_metric_parse(metric, ref_grid, argc, argv), "parse metric");
+  for (opt = 0; opt < argc - 4; opt++) {
+    if (strcmp(argv[opt], "--faceid-spacing") == 0) {
+      REF_INT faceid;
+      REF_DBL set_normal_spacing;
+      REF_DBL ceil_normal_spacing;
+      REF_DBL tangential_aspect_ratio;
+
+      faceid = atoi(argv[opt + 1]);
+      set_normal_spacing = atof(argv[opt + 2]);
+      ceil_normal_spacing = atof(argv[opt + 3]);
+      tangential_aspect_ratio = atof(argv[opt + 4]);
+      if (ref_mpi_once(ref_mpi))
+        printf(" --faceid_spacing %d %f %f %f\n", faceid, set_normal_spacing,
+               ceil_normal_spacing, tangential_aspect_ratio);
+      RSS(ref_metric_faceid_spacing(metric, ref_grid, faceid,
+                                    set_normal_spacing, ceil_normal_spacing,
+                                    tangential_aspect_ratio),
+          "faceid spacing");
+    }
+  }
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
   ref_free(uplus);
   ref_free(distance);
