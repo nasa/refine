@@ -535,6 +535,12 @@ cd ${source_dir}/acceptance/hemisphere/prism
 ( ./accept-hemisphere-prism.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-hemisphere-normal-spacing
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/hemisphere/normal-spacing
+( ./accept-hemisphere-normal-spacing.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 LOG=${root_dir}/log.accept-hemisphere-spacing-table
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/spacing-table
