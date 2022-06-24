@@ -2180,11 +2180,11 @@ static REF_FCN REF_STATUS ref_metric_closest_d(REF_DBL *normal, REF_DBL *m,
   return REF_SUCCESS;
 }
 
-REF_FCN REF_STATUS ref_metric_faceid_normal_spacing(REF_DBL *metric,
-                                                    REF_GRID ref_grid,
-                                                    REF_INT faceid,
-                                                    REF_DBL set_normal,
-                                                    REF_DBL ceil_normal) {
+REF_FCN REF_STATUS ref_metric_faceid_spacing(REF_DBL *metric, REF_GRID ref_grid,
+                                             REF_INT faceid,
+                                             REF_DBL set_normal_spacing,
+                                             REF_DBL ceil_normal_spacing,
+                                             REF_DBL tangential_aspect_ratio) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2204,19 +2204,24 @@ REF_FCN REF_STATUS ref_metric_faceid_normal_spacing(REF_DBL *metric,
         REF_DBL h;
         node = nodes[cell_node];
         RSS(ref_metric_closest_d(normal, &(metric[6 * node]), d), "closest");
-        if (set_normal > 0.0) {
-          h = set_normal;
+        if (set_normal_spacing > 0.0) {
+          h = set_normal_spacing;
           RAS(ref_math_divisible(1.0, h * h), "eig 0");
           ref_matrix_eig(d, 0) = 1.0 / (h * h);
         }
-        if (ceil_normal > 0.0) {
+        if (ceil_normal_spacing > 0.0) {
           RAS(ref_math_divisible(1.0, sqrt(ref_matrix_eig(d, 0))), "eig 0");
           h = 1.0 / sqrt(ref_matrix_eig(d, 0));
-          h = MIN(h, ceil_normal);
+          h = MIN(h, ceil_normal_spacing);
           RAS(ref_math_divisible(1.0, h * h), "eig 0");
           ref_matrix_eig(d, 0) = 1.0 / (h * h);
         }
-
+        if (tangential_aspect_ratio > 1.0) {
+          ref_matrix_eig(d, 2) =
+              MAX(ref_matrix_eig(d, 2), ref_matrix_eig(d, 1) *
+                                            tangential_aspect_ratio *
+                                            tangential_aspect_ratio);
+        }
         RSS(ref_matrix_form_m(d, m), "form");
         RSS(ref_matrix_log_m(m, logm), "form");
         for (i = 0; i < 6; i++) {
