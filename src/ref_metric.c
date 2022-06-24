@@ -2120,7 +2120,7 @@ static REF_FCN REF_STATUS ref_metric_closest_d(REF_DBL *normal, REF_DBL *m,
   REF_INT i, first_i, second_i;
   REF_DBL dot, largest_dot, largest_eig;
   REF_DBL d_in[12];
-  REF_DBL h;
+  REF_DBL ratio;
   RSS(ref_matrix_diag_m(m, d_in), "decomp");
   /* metric eigenvector direction closest to normal */
   largest_dot = -2.0;
@@ -2165,17 +2165,14 @@ static REF_FCN REF_STATUS ref_metric_closest_d(REF_DBL *normal, REF_DBL *m,
                          ref_matrix_vec_ptr(d_out, 2));
   RSS(ref_math_normalize(ref_matrix_vec_ptr(d_out, 2)), "third");
 
-  h = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 0));
-  RAS(ref_math_divisible(1.0, h * h), "eig 0")
-  ref_matrix_eig(d_out, 0) = 1.0 / (h * h);
+  ratio = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 0));
+  ref_matrix_eig(d_out, 0) = ratio * ratio;
 
-  h = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 1));
-  RAS(ref_math_divisible(1.0, h * h), "eig 1")
-  ref_matrix_eig(d_out, 1) = 1.0 / (h * h);
+  ratio = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 1));
+  ref_matrix_eig(d_out, 1) = ratio * ratio;
 
-  h = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 2));
-  RAS(ref_math_divisible(1.0, h * h), "eig 2")
-  ref_matrix_eig(d_out, 2) = 1.0 / (h * h);
+  ratio = ref_matrix_sqrt_vt_m_v(m, ref_matrix_vec_ptr(d_out, 2));
+  ref_matrix_eig(d_out, 2) = ratio * ratio;
 
   return REF_SUCCESS;
 }
@@ -2198,7 +2195,8 @@ REF_FCN REF_STATUS ref_metric_faceid_spacing(REF_DBL *metric, REF_GRID ref_grid,
     if (faceid == nodes[ref_cell_id_index(ref_cell)]) {
       REF_DBL normal[3];
       REF_INT cell_node;
-      RSS(ref_node_tri_normal(ref_node, nodes, normal), "vol");
+      RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal area");
+      RSS(ref_math_normalize(normal), "normalize");
       each_ref_cell_cell_node(ref_cell, cell_node) {
         REF_DBL d[12], m[6], logm[6];
         REF_DBL h;
