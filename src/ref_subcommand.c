@@ -4030,6 +4030,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_GRID ref_grid = NULL;
   REF_INT pos;
   REF_BOOL extrude = REF_FALSE;
+  REF_BOOL surface_only = REF_FALSE;
   size_t end_of_string;
 
   if (argc < 4) goto shutdown;
@@ -4105,6 +4106,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_INT group;
     REF_CELL ref_cell;
     if (ref_mpi_once(ref_mpi)) printf("  --surface deleting 3D cells\n");
+    surface_only = REF_TRUE;
     each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
       RSS(ref_cell_free(ref_cell), "free cell");
       RSS(ref_cell_create(&ref_grid_cell(ref_grid, group),
@@ -4209,15 +4211,23 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi))
-      printf("gather " REF_GLOB_FMT " nodes to %s\n",
-             ref_node_n_global(ref_grid_node(ref_grid)), out_file);
+    if (surface_only) {
+      if (ref_mpi_once(ref_mpi)) printf("gather surface to %s\n", out_file);
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("gather " REF_GLOB_FMT " nodes to %s\n",
+               ref_node_n_global(ref_grid_node(ref_grid)), out_file);
+    }
     RSS(ref_gather_by_extension(ref_grid, out_file), "gather");
     ref_mpi_stopwatch_stop(ref_mpi, "gather");
   } else {
-    if (ref_mpi_once(ref_mpi))
-      printf("export " REF_GLOB_FMT " nodes to %s\n",
-             ref_node_n_global(ref_grid_node(ref_grid)), out_file);
+    if (surface_only) {
+      if (ref_mpi_once(ref_mpi)) printf("export surface to %s\n", out_file);
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("export " REF_GLOB_FMT " nodes to %s\n",
+               ref_node_n_global(ref_grid_node(ref_grid)), out_file);
+    }
     RSS(ref_export_by_extension(ref_grid, out_file), "export");
     ref_mpi_stopwatch_stop(ref_mpi, "export");
   }
@@ -4238,6 +4248,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT ldim;
   REF_DBL *field;
   REF_INT pos;
+  REF_BOOL surface_only = REF_FALSE;
 
   if (argc < 5) goto shutdown;
   in_mesh = argv[2];
@@ -4541,6 +4552,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_INT group;
     REF_CELL ref_cell;
     if (ref_mpi_once(ref_mpi)) printf("  --surface deleting 3D cells\n");
+    surface_only = REF_TRUE;
     each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
       RSS(ref_cell_free(ref_cell), "free cell");
       RSS(ref_cell_create(&ref_grid_cell(ref_grid, group),
@@ -4554,8 +4566,14 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf("skipping write of %d ldim to %s\n", ldim, out_sol);
   } else {
-    if (ref_mpi_once(ref_mpi))
-      printf("write %d ldim solution %s\n", ldim, out_sol);
+    if (surface_only) {
+      if (ref_mpi_once(ref_mpi))
+        printf("write %d ldim solution surface to %s\n", ldim, out_sol);
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("write %d ldim solution of " REF_GLOB_FMT " nodes to %s\n", ldim,
+               ref_node_n_global(ref_grid_node(ref_grid)), out_sol);
+    }
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, out_sol),
         "gather");
     ref_mpi_stopwatch_stop(ref_mpi, "write solution");
