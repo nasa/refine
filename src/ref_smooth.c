@@ -1535,6 +1535,9 @@ REF_FCN REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_BOOL accept;
 
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  if (!ref_cell_node_empty(ref_grid_pyr(ref_grid), node)) return REF_SUCCESS;
+  if (!ref_cell_node_empty(ref_grid_pri(ref_grid), node)) return REF_SUCCESS;
+  if (!ref_cell_node_empty(ref_grid_hex(ref_grid), node)) return REF_SUCCESS;
 
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
