@@ -2941,6 +2941,14 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     gradation = atof(argv[pos + 1]);
   }
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("complexity %f\n", complexity);
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("reconstruction %d\n", (int)reconstruction);
+  }
+  RAS(complexity > 1.0e-20, "complexity must be greater than zero");
+
   aspect_ratio = -1.0;
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
@@ -3187,13 +3195,6 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(extract_displaced_xyz(ref_grid_node(ref_grid), &ldim, &initial_field,
                               &displaced),
         "extract displacments");
-  }
-
-  if (ref_mpi_once(ref_mpi)) {
-    printf("complexity %f\n", complexity);
-    printf("Lp=%d\n", p);
-    printf("gradation %f\n", gradation);
-    printf("reconstruction %d\n", (int)reconstruction);
   }
 
   ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
