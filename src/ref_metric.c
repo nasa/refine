@@ -1033,6 +1033,9 @@ REF_FCN REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
   for (relaxations = 0; relaxations < 20; relaxations++) {
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (!ref_math_divisible(complexity, current_complexity)) {
+      if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+        printf("div zero target %.18e current %.18e\n", complexity,
+               current_complexity);
       return REF_DIV_ZERO;
     }
     each_ref_node_valid_node(ref_node, node) {
