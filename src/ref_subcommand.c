@@ -849,6 +849,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf(" --spalding %e %f law of the wall metric\n", spalding_yplus,
              complexity);
+    RAS(complexity > 1.0e-20, "complexity must be greater than zero");
     curvature_metric = REF_TRUE;
   }
 
@@ -891,6 +892,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf(" --implied-complexity %f implied metric scaled to complexity\n",
              complexity);
+    RAS(complexity > 1.0e-20, "complexity must be greater than zero");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_imply_from(metric, ref_grid), "imply metric");
     ref_mpi_stopwatch_stop(ref_mpi, "imply metric");
@@ -920,6 +922,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
           complexity = atof(argv[pos + 1]);
           if (ref_mpi_once(ref_mpi))
             printf("--facelift-metric %f\n", complexity);
+          RAS(complexity > 1.0e-20, "complexity must be greater than zero");
           RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
           ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
         }
@@ -969,6 +972,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
             complexity = atof(argv[pos + 1]);
             if (ref_mpi_once(ref_mpi))
               printf("--facelift-metric %f\n", complexity);
+            RAS(complexity > 1.0e-20, "complexity must be greater than zero");
             RSS(ref_facelift_multiscale(ref_grid, complexity), "metric");
             ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
           }
@@ -2941,6 +2945,14 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     gradation = atof(argv[pos + 1]);
   }
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("complexity %f\n", complexity);
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("reconstruction %d\n", (int)reconstruction);
+  }
+  RAS(complexity > 1.0e-20, "complexity must be greater than zero");
+
   aspect_ratio = -1.0;
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
@@ -3187,13 +3199,6 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(extract_displaced_xyz(ref_grid_node(ref_grid), &ldim, &initial_field,
                               &displaced),
         "extract displacments");
-  }
-
-  if (ref_mpi_once(ref_mpi)) {
-    printf("complexity %f\n", complexity);
-    printf("Lp=%d\n", p);
-    printf("gradation %f\n", gradation);
-    printf("reconstruction %d\n", (int)reconstruction);
   }
 
   ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
@@ -3726,6 +3731,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("reconstruction %d\n", (int)reconstruction);
     printf("buffer %d (zero is inactive)\n", buffer);
   }
+  RAS(complexity > 1.0e-20, "complexity must be greater than zero");
 
   ref_mpi_stopwatch_start(ref_mpi);
 
