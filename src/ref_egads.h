@@ -122,8 +122,9 @@ REF_FCN REF_STATUS ref_egads_get_real_attribute(REF_GEOM ref_geom, REF_INT type,
                                                 REF_INT id, const char *name,
                                                 const REF_DBL **value,
                                                 REF_INT *length);
-REF_FCN REF_STATUS ref_egads_extract_mapbc(REF_GEOM ref_geom, const char *mapbc,
-                                           REF_BOOL axi);
+REF_FCN REF_STATUS ref_egads_extract_fun3d_mapbc(REF_GEOM ref_geom,
+                                                 const char *mapbc,
+                                                 REF_BOOL axi);
 
 END_C_DECLORATION
 

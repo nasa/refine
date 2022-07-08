@@ -1305,7 +1305,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     sprintf(filename, "%s-vol.mapbc", project);
     printf("extracting %s from 'bc_name' attributes\n", filename);
     if (REF_SUCCESS ==
-        ref_egads_extract_mapbc(ref_grid_geom(ref_grid), filename, axi)) {
+        ref_egads_extract_fun3d_mapbc(ref_grid_geom(ref_grid), filename, axi)) {
       printf("%s extracted\n", filename);
     } else {
       printf("one or more 'bc_name' attributes not set, mapbc not written\n");
