@@ -1,4 +1,6 @@
 
+esp_module=ESP/120-beta.2022.07.13.0553
+
 module load intel_2018.3.222
 module load mpt-2.23
 
@@ -10,6 +12,6 @@ export parmetis32_path="${module_path}/ParMETIS/4.0.3-mpt-2.23-intel_2018.3.222"
 export parmetis64_path="${module_path}/ParMETIS-64/4.0.3-mpt-2.23-intel_2018.3.222"
 export zoltan_path="${module_path}/Zoltan/3.82-mpt-2.23-intel_2018.3.222"
 
-export egads_path="${module_path}/ESP/120/EngSketchPad"
-export opencascade_path="${module_path}/ESP/120/OpenCASCADE"
+export egads_path="${module_path}/${esp_module}/EngSketchPad"
+export opencascade_path="${module_path}/${esp_module}/OpenCASCADE"
 
