@@ -4508,6 +4508,11 @@ REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
   RNS(file, "unable to open file");
 
+ fprintf(file, "# generated from refine with EGADS atrributes\n");
+ fprintf(file, "# bc tags translated from known FUN3D tags when possible\n");
+ fprintf(file, "#\n");
+ fprintf(file, "# patch no.     bc      family   surfs    surfids    name\n");
+
   if (ref_geom->manifold) {
     REF_INT face_id;
     const char *attribute = NULL;
