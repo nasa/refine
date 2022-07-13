@@ -2277,6 +2277,19 @@ int main(int argc, char *argv[]) {
     generic = 3000;
     RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "tangent");
     REIS(5, usm3d, "tangent");
+
+    generic = 5051;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "back pressure");
+    REIS(101, usm3d, "back pressure");
+    generic = 5052;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "mach outflow");
+    REIS(101, usm3d, "mach outflow");
+    generic = 7011;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "total pressure");
+    REIS(102, usm3d, "total pressure");
+    generic = 7036;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "total pressure");
+    REIS(103, usm3d, "total pressure");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
