@@ -4500,3 +4500,84 @@ REF_FCN REF_STATUS ref_egads_extract_fun3d_mapbc(REF_GEOM ref_geom,
 
   return REF_SUCCESS;
 }
+
+REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
+                                                 const char *mapbc) {
+  FILE *file;
+  file = fopen(mapbc, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
+  RNS(file, "unable to open file");
+
+  if (ref_geom->manifold) {
+    REF_INT face_id;
+    const char *attribute = NULL;
+    for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
+      if (REF_SUCCESS != ref_egads_get_attribute(ref_geom, REF_GEOM_FACE,
+                                                 face_id, "bc_name",
+                                                 &attribute)) {
+        printf("bc_name not set for face %d\n", face_id);
+        return REF_NOT_FOUND;
+      }
+    }
+    fprintf(file, "%d\n", ref_geom->nface);
+    for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
+      char *bc_name;
+      REF_SIZE len, i;
+      RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, face_id, "bc_name",
+                                  &attribute),
+          "get");
+      RNS(attribute, "attribute NULL");
+      len = strlen(attribute);
+      RAS(10000 > len, "attribute more than 10000 bytes");
+      ref_malloc(bc_name, (REF_LONG)(len + 1), char);
+      strcpy(bc_name, attribute);
+      for (i = 0; i < len; i++) {
+        if ('_' == bc_name[i]) {
+          bc_name[i] = ' ';
+          break;
+        }
+      }
+      fprintf(file, "%d %s\n", face_id, bc_name);
+      ref_free(bc_name);
+    }
+  } else {
+    REF_INT edge_id;
+    const char *attribute = NULL;
+    for (edge_id = 1; edge_id <= ref_geom->nedge; edge_id++) {
+      if (REF_SUCCESS != ref_egads_get_attribute(ref_geom, REF_GEOM_EDGE,
+                                                 edge_id, "bc_name",
+                                                 &attribute)) {
+        printf("bc_name not set for edge %d\n", edge_id);
+        return REF_NOT_FOUND;
+      }
+    }
+    fprintf(file, "%d\n", 2 + ref_geom->nedge);
+    for (edge_id = 1; edge_id <= ref_geom->nedge; edge_id++) {
+      char *bc_name;
+      REF_SIZE len, i;
+      RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_EDGE, edge_id, "bc_name",
+                                  &attribute),
+          "get");
+      RNS(attribute, "attribute NULL");
+      len = strlen(attribute);
+      RAS(10000 > len, "attribute more than 10000 bytes");
+      ref_malloc(bc_name, (REF_LONG)(len + 1), char);
+      strcpy(bc_name, attribute);
+      for (i = 0; i < len; i++) {
+        if ('_' == bc_name[i]) {
+          bc_name[i] = ' ';
+          break;
+        }
+      }
+      fprintf(file, "%d %s\n", edge_id, bc_name);
+      ref_free(bc_name);
+    }
+    edge_id = ref_geom->nedge + 1;
+    fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-min");
+    edge_id = ref_geom->nedge + 2;
+    fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-max");
+  }
+  fclose(file);
+
+  return REF_SUCCESS;
+}
