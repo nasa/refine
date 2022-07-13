@@ -24,6 +24,7 @@ OCC_TGZ=OCC${OCC_VERSION}lin64.tgz
 rm -rf OCC*lin*
 wget -N	https://acdl.mit.edu/ESP/${OCC_TGZ}
 OCC_DEST=${MODULE_DEST}/OpenCASCADE
+mkdir -p ${OCC_DEST}
 tar xzf ${OCC_TGZ} -C ${OCC_DEST} --strip-components=1
 
 rm -rf EngSketchPad
