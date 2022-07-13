@@ -4505,6 +4505,7 @@ REF_FCN REF_STATUS ref_egads_extract_fun3d_mapbc(REF_GEOM ref_geom,
 REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
                                                  const char *mapbc) {
   FILE *file;
+  REF_INT usm3d_type;
   file = fopen(mapbc, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
   RNS(file, "unable to open file");
@@ -4529,7 +4530,7 @@ REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
       char *bc_name;
       char *name = NULL;
       REF_SIZE len, i;
-      REF_INT bc_type, usm3d_type;
+      REF_INT bc_type;
       RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, face_id, "bc_name",
                                   &attribute),
           "get");
@@ -4563,10 +4564,11 @@ REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
         return REF_NOT_FOUND;
       }
     }
-    fprintf(file, "%d\n", 2 + ref_geom->nedge);
     for (edge_id = 1; edge_id <= ref_geom->nedge; edge_id++) {
       char *bc_name;
+      char *name = NULL;
       REF_SIZE len, i;
+      REF_INT bc_type;
       RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_EDGE, edge_id, "bc_name",
                                   &attribute),
           "get");
@@ -4577,17 +4579,25 @@ REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
       strcpy(bc_name, attribute);
       for (i = 0; i < len; i++) {
         if ('_' == bc_name[i]) {
-          bc_name[i] = ' ';
+          bc_name[i] = '\n';
+          name = &(bc_name[i + 1]);
           break;
         }
       }
-      fprintf(file, "%d %s\n", edge_id, bc_name);
+      RNS(name, "underscore not found in bc_name");
+      bc_type = atoi(bc_name);
+      RSS(ref_phys_usm3d_bc_tag(bc_type, &usm3d_type), "usm3d bc tags");
+      fprintf(file, "%d %d %d %d %d %s\n", edge_id, usm3d_type, usm3d_type, 0,
+              0, name);
       ref_free(bc_name);
     }
+    usm3d_type = 1; /* y symmetry */
     edge_id = ref_geom->nedge + 1;
-    fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-min");
+    fprintf(file, "%d %d %d %d %d %s\n", edge_id, usm3d_type, usm3d_type, 0, 0,
+            "symmetry-y-min");
     edge_id = ref_geom->nedge + 2;
-    fprintf(file, "%d %s\n", edge_id, "6662 symmetry-y-max");
+    fprintf(file, "%d %d %d %d %d %s\n", edge_id, usm3d_type, usm3d_type, 0, 0,
+            "symmetry-y-max");
   }
   fclose(file);
 
