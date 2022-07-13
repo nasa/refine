@@ -1,5 +1,5 @@
 
-esp_module=ESP/120
+esp_module=ESP/120-beta.2022.07.13.0553
 
 module use --append /u/shared/fun3d/fun3d_users/modulefiles
 module use --append /u/shared/fun3d/fun3d_users/test_modulefiles
