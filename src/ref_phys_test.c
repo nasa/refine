@@ -2256,6 +2256,13 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  { /* USM3D BC Flags */
+    REF_INT generic, usm3d;
+    generic = 4;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "below 1k");
+    REIS(generic, usm3d, "same below 1k");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

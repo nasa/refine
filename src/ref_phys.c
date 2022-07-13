@@ -1621,3 +1621,8 @@ REF_FCN REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
   };
   return REF_SUCCESS;
 }
+
+REF_FCN REF_STATUS ref_phys_usm3d_bc_tag(REF_INT generic, REF_INT *usm3d) {
+  *usm3d = generic;
+  return REF_SUCCESS;
+}
