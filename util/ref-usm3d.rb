@@ -3,7 +3,6 @@
 class FUN3D
 
  @@dsl_methods = %w[ 
-     fun3d_directory
      refine_directory
      usm3d_executable
      root_project
@@ -16,14 +15,7 @@ class FUN3D
      window
      windows
      all_cl
-     flo_cl
-     adj_cl
-     rad_cl
      ref_cl
-     all_nl
-     flo_nl
-     adj_nl
-     rad_nl
      pause
      breadcrumb_filename
      schedule_filename
@@ -58,25 +50,18 @@ class FUN3D
   schedule_complexity_per_core 1000
   schedule_max_complexity 30_000_000
   schedule_clean true
-  schedule_filename 'f3d_criteria.dat'
-  breadcrumb_filename 'f3d.breadcrumbs'
+  schedule_filename 'schedule_criteria.dat'
+  breadcrumb_filename 'ref.breadcrumbs'
   mpirun_command 'mpiexec'
  END_OF_DEFAULTS
 
  GROWABLE_DEFAULTS = <<-END_OF_GLOWABLE_DEFAULTS
   all_cl ""
   flo_cl ""
-  adj_cl ""
-  rad_cl ""
   ref_cl ""
-  all_nl Hash.new
-  flo_nl Hash.new
-  adj_nl Hash.new
-  rad_nl Hash.new
  END_OF_GLOWABLE_DEFAULTS
 
  def initialize()
-  fun3d_directory File.dirname(__FILE__)
   refine_directory ''
   if (ENV::has_key?('USMEXE'))
     usm3d_executable ENV['USMEXE']
@@ -101,21 +86,6 @@ class FUN3D
   prj += sprintf(project_iteration_format,iter) if iter
   prj += sprintf('_win'+project_iteration_format,win) if win
   prj
- end
-
- def input(hash = Hash.new, new_file = 'Flow/fun3d.nml')
-  hash['project_rootname'] = "'#{project}'" unless hash['project_rootname']
-  File.open(new_file,'w') do |f|
-   IO.readlines('fun3d.nml').each do |line|
-    hash.each_pair do |key,value|
-     regex = /^\s*#{Regexp.escape(key)}\s*=.*/
-     replacement = "#{key} = #{value}"
-     line.gsub!(regex,replacement)
-    end
-    f.puts line
-   end
-  end
-  `cp perturb.input Flow` if File.exist?( 'perturb.input' )
  end
 
  def have_project_extension?(extension)
@@ -265,43 +235,6 @@ class FUN3D
    printf("%d %f # sh\n",@iteration,Time.now-start_time)
  end
 
- def viscous_tags( mapbc = "Flow/#{project}.mapbc", separator = ',' )
-   wall_distance_varietals = [4000,-4000,4075,4100,4110,-4110,-4100,6200,6210]
-   tags = Array.new
-   lines = IO.readlines(mapbc)
-   n = lines[0].to_i
-   n.times.each do |i|
-     cols = lines[1+i].split()
-     face_tag = cols[0].to_i
-     bc_type = cols[1].to_i
-     tags << face_tag if ( wall_distance_varietals.include?(bc_type) )
-   end
-   tags.join(separator)
- end
-
- def dist(command = nil, stdoutfile = 'dist_out', expected_file_without_path = nil)
-  `cp #{root_project}.mapbc Flow/#{project}.mapbc` if File.exist?("#{root_project}.mapbc")
-  `cp #{project(1)}.mapbc Flow/#{project}.mapbc` if File.exist?("#{project(1)}.mapbc")
-   input_file = "#{project}.meshb"
-   input_file = "#{project}.b8.ugrid" if (File.exist?("Flow/#{project}.b8.ugrid"))
-   input_file = "#{project}.lb8.ugrid" if (File.exist?("Flow/#{project}.lb8.ugrid"))
-   capture = " < /dev/null | tee #{stdoutfile} > #{project}_#{stdoutfile}"
-   comm = command || "( cd Flow && " +
-             exec_prefix +
-             " ParallelDistanceCalculator " +
-             " #{input_file} " +
-             " --commas #{viscous_tags()} " +
-             capture +
-             " )"
-   puts comm
-   nap
-   raise("ParallelDistanceCalculator nonzero exit code") unless system(comm)
-   nap
-   expected_file_without_path =
-     expected_file_without_path || #{project}-distance.solb"
-   expect_file("Flow/#{expected_file_without_path}")
- end
-
  def clean_step()
    clean_files = []
    %w[ .lb8.ugrid -distance.solb -distance.solb.names .flow .grid_info .mapbc .meshb -restart.solb _volume.solb].each do |suffix|
@@ -328,20 +261,6 @@ class FUN3D
    end
  end
 
- def refdist(opts = '')
-   `cp #{root_project}.mapbc Flow/#{project}.mapbc` if File.exist?("#{root_project}.mapbc")
-   `cp #{project(1)}.mapbc Flow/#{project}.mapbc` if File.exist?("#{project(1)}.mapbc")
-   input_file = "#{project}.meshb"
-   input_file = "#{project}.b8.ugrid" if (File.exist?("Flow/#{project}.b8.ugrid"))
-   input_file = "#{project}.lb8.ugrid" if (File.exist?("Flow/#{project}.lb8.ugrid"))
-   ref("refmpi distance " +
-       " #{input_file} " +
-       " #{project}-distance.solb " +
-       " --fun3d-mapbc #{project}.mapbc ",
-       "refdist_out",
-       "#{project}-distance.solb")
- end
-
  def ref( comm, stdoutfile = '', expected_file_without_path = nil)
    capture = (stdoutfile.empty? ? '':" < /dev/null | tee #{stdoutfile} > #{project}_#{stdoutfile}")
    command = "( cd Flow && " +
@@ -364,149 +283,6 @@ class FUN3D
        comm.split(' ').delete_if{ |f| f.match(/^-/) }.last
      expect_file('Flow/'+last_arg_without_leading_dash)
    end
- end
-
- def flo( extra_nl = Hash.new, extra_cl = '' )
-  `cp #{project(1)}.knife Flow/#{project}.knife` if File.exist?("#{project(1)}.knife")
-  `cp #{project(1)}.cutbc Flow/#{project}.cutbc` if File.exist?("#{project(1)}.cutbc")
-  `cp sfe.cfg Flow` if File.exist?("sfe.cfg")
-  name_list = Hash.new
-  name_list['restart_read'] = "'#{have_file_extension?('flow') ? 'on':'off'}'"
-  name_list['distance_from_file'] = "'#{have_project_extension?('-distance.solb') ? "#{project}-distance.solb":''}'"
-  name_list['import_from'] = "'#{have_project_extension?('-restart.solb') ? "#{project}-restart.solb":''}'"
-  name_list = name_list.merge(all_nl).merge(flo_nl).merge(extra_nl)
-  input(name_list)
-  system("( cd Flow && cp fun3d.nml #{project}_flow_fun3d.nml)")
-  system("( cd Flow && cp sfe.cfg #{project}_flow_sfe.cfg)") if File.exist?("Flow/sfe.cfg")
-  `cp presb.input Flow` if File.exist?("presb.input")
-  `cp SBtarget.sig Flow` if File.exist?("SBtarget.sig")
-  `cp #{root_project}.mapbc Flow/#{project}.mapbc` if File.exist?("#{root_project}.mapbc")
-  `cp #{project(1)}.mapbc Flow/#{project}.mapbc` if File.exist?("#{project(1)}.mapbc")
-  command = "( cd Flow && " +
-            exec_prefix +
-            " nodet_mpi " +
-             [all_cl,flo_cl,extra_cl].join(' ') +
-            "< /dev/null | tee flow_out > #{project}_flow_out )"
-  puts command
-  nap
-  start_time = Time.now
-  raise("flow solver nonzero exit code") unless system(command)
-  printf("%d %f # flo\n",@iteration,Time.now-start_time)
-  nap
-  read_forces( )
- end
-
- def complex( )
-  `mkdir Complex`
-  %w[ fgrid fastbc cogsg bc mapbc knife cutbc ugrid msh amdba ].each do |ext| 
-   file = "#{project}.#{ext}"
-   if File.exist?(file)
-    command = "cp #{file} Complex"
-    puts command
-    system command
-   end
-  end
-  Dir["Flow/fun3d.nml"].each do |target|
-   `( cd Complex && ln -s ../#{target} .)`
-  end
-  `cp perturb.input Complex`
-  command = "( cd Complex && " +
-            exec_prefix +
-            " complex_nodet_mpi " +
-             [all_cl,flo_cl].join(' ') +
-            "< /dev/null | tee flow_out > #{project}_flow_out )"
-  puts command
-  nap
-  start_time = Time.now
-  raise("complex flow solver nonzero exit code") unless system(command)
-  printf("%d %f # complex\n",@iteration,Time.now-start_time)
-  nap
- end
-
- def read_forces( )
-  IO.readlines("Flow/#{project}.forces").each do |line|
-   line.scan(/C\S+\s*=\s*\S+/) do |force|
-    eval("def #{force.gsub(/=/,';')};end".downcase)
-   end
-  end
- end
-
- def adj( extra_nl = Hash.new, extra_cl = '' )
-  required_file_suffix('flow')
-  name_list = Hash.new.merge(all_nl).merge(adj_nl).merge(extra_nl)
-  name_list['restart_read'] = "'#{ have_file_extension?('adj') ? 'on':'off'}'"
-  input(name_list)
-  system("( cd Flow && cp fun3d.nml #{project}_dual_fun3d.nml)")
-  `cp presb.input Adjoint` if File.exist?("presb.input")
-  `cp SBtarget.sig Adjoint` if File.exist?("SBtarget.sig")
-  command = "( cd Adjoint && " +
-            exec_prefix +
-            " dual_mpi " +
-            [all_cl,adj_cl,extra_cl].join(' ') +
-            "< /dev/null | tee dual_out > #{project}_dual_out " +
-            ")"
-  puts command
-  nap
-  start_time = Time.now
-  raise("adjoint solver nonzero exit code") unless system(command)
-  printf("%d %f # adj\n",@iteration,Time.now-start_time)
-  nap
-  %w[ pressure_signatures.dat sboom.data SBground.sig Gradient.plt ].each do |file|
-   `cp Adjoint/#{file} Adjoint/#{project}_#{file}` if File.exist?( "Adjoint/#{file}" )
-  end
- end
-
- def rad( extra_nl = Hash.new, extra_cl = '' )
-  required_file_suffix('flow')
-  required_file_suffix('adj')
-  name_list = Hash.new.merge(all_nl).merge(rad_nl).merge(extra_nl)
-  name_list['adapt_project'] = "'#{project(@iteration+1)}'"
-  input(name_list)
-  system("( cd Flow && cp fun3d.nml #{project}_rad_fun3d.nml)")
-  `cp faux_input Adjoint` if File.exist?("faux_input")
-  `cp #{project(1)}.freeze Adjoint/#{project}.freeze` if File.exist?("#{project(1)}.freeze")
-  `cp #{project(1)}.knife Adjoint/refine.knife` if File.exist?("#{project(1)}.knife")
-  `cp presb.input Adjoint` if File.exist?("presb.input")
-  `cp SBtarget.sig Adjoint` if File.exist?("SBtarget.sig")
-  command = "( cd Adjoint && " +
-            exec_prefix +
-            " dual_mpi " +
-            " --rad " +
-            " --adapt " +
-            [all_cl,rad_cl,extra_cl].join(' ')  +
-            "< /dev/null | tee rad_out > #{project}_rad_out " +
-            ")"
-  puts command
-  nap
-  start_time = Time.now
-  raise("rad adapt nonzero exit code") unless system(command)
-  printf("%d %f # rad\n",@iteration,Time.now-start_time)
-  nap
- end
-
- def adapt( extra_nl = Hash.new, extra_cl = '' )
-  required_file_suffix('flow')
-  name_list = Hash.new
-  name_list['adapt_project'] = "'#{project(@iteration+1)}'"
-  name_list = name_list.merge(all_nl).merge(rad_nl).merge(extra_nl)
-  name_list['restart_read'] = "'on'"
-  input(name_list)
-  system("( cd Flow && cp fun3d.nml #{project}_adapt_fun3d.nml)")
-  `cp faux_input Flow` if File.exist?("faux_input")
-  `cp #{project(1)}.freeze Flow/#{project}.freeze` if File.exist?("#{project(1)}.freeze")
-  command = "( cd Flow && " +
-            exec_prefix +
-            " nodet_mpi " +
-            " --adapt " +
-            [all_cl,rad_cl,extra_cl].join(' ')  +
-            "< /dev/null | tee adapt_out > #{project}_adapt_out " +
-            ")"
-  puts command
-  nap
-  start_time = Time.now
-  raise("adapt nonzero exit code") unless system(command)
-  printf("%d %f # adapt\n",@iteration,Time.now-start_time)
-  nap
  end
 
  def usm( )
@@ -547,21 +323,8 @@ class FUN3D
   eval("def cm;     #{col[7]}; end")
  end
 
- def global_refine
-   flo(extra_nl={}, extra_cl="--embed_grid")
-   %w[ fgrid fastbc cogsg bc mapbc knife cutbc ugrid lb8.ugrid b8.ugrid msh amdba ].each do |ext| 
-     file = "#{project}_embed.#{ext}"
-     if File.exist?("Flow/#{file}")
-       command = "( cd Flow && mv #{file} #{project(@iteration+1)}.#{ext} )"
-       puts command
-       system command
-     end
-   end
- end
-
  def iteration_steps
-   refdist
-   flo
+   usm
    ref_loop_or_exit
  end
 
@@ -576,20 +339,8 @@ class FUN3D
    end
  end
 
- def full_path_for(exec)
-   ['','../FUN3D_90','../Adjoint','../Complex/FUN3D_90','../utils'].each do |dir|
-     path = File.join(File.join(fun3d_directory,dir),exec)
-     return path if ( File.executable? path )
-   end
-  puts " Unable to find #{exec} in path."
-  puts " Make sure #{$0} is in the FUN3D installed bin directory,"
-  puts "   not a copy or link."
-  puts " Alternatively, set fun3d_directory in case_specifics."
-  raise("can not find #{exec} in path")
- end
-
  def setup
-  `mkdir -p Flow Adjoint`
+  `mkdir -p Flow`
   %w[ fgrid fastbc cogsg bc mapbc knife cutbc meshb ugrid lb8.ugrid b8.ugrid msh amdba ].each do |ext|
    file = "#{project}.#{ext}"
    if File.exist?(file)
@@ -598,29 +349,7 @@ class FUN3D
     system command
    end
   end
-
-  gengas_files = ["tdata", "species_thermo_data", "species_transp_data",
-                  "species_transp_data_0", "kinetic_data"]
-  optional_files = ["#{root_project}_g.msh", "moving_body.input",
-                    "rotor.input"] + gengas_files
-  optional_files.each do |file|
-   if File.exist?(file)
-    command = "cp #{file} Flow"
-    puts command
-    system command
-   end
-  end
-
-  100.times do |prop|
-   file = sprintf("propeller_properties%d.dat",prop)
-   if File.exist?(file)
-    command = "cp #{file} Flow"
-    puts command
-    system command
-   end
-  end
-
- end
+end
 
 end
 
@@ -628,53 +357,6 @@ def conditional_tail(file, lines=5)
   if File.exists?(file)
     puts file+' -------------'
     system("tail -#{lines} #{file}")
-  end
-end
-
-def rubber_data_writer(function)
-  File.open('rubber.data','w') do |f|
-    f.puts <<END_OF_RUBBER
-################################################################################
-########################### Design Variable Information ########################
-################################################################################
-Global design variables (Mach number, AOA, Yaw, Noninertial rates)
-  Var Active         Value               Lower Bound            Upper Bound
- Mach    0   0.100000000000000E+01  0.000000000000000E+00  0.500000000000000E+01
-  AOA    0   0.100000000000000E+01  0.000000000000000E+00  0.500000000000000E+01
-  Yaw    0   0.000000000000000E+00  0.000000000000000E+00  0.000000000000000E+00
-xrate    0   0.000000000000000E+00  0.000000000000000E+00  0.000000000000000E+00
-yrate    0   0.000000000000000E+00  0.000000000000000E+00  0.000000000000000E+00
-zrate    0   0.000000000000000E+00  0.000000000000000E+00  0.000000000000000E+00
-Number of bodies
-    0
-#########################################################################
-############################ Function Information #######################
-#########################################################################
-Number of composite functions for design problem statement
-    1
-#########################################################################
-Cost function (1) or constraint (2)
-    1
-If constraint, lower and upper bounds
-              0.100000000000000              0.500000000000000
-Number of components for function   1
-    1
-Physical timestep interval where function is defined
-    1     1
-Composite function weight, target, and power
-1.0 0.0 1.0
-Components of function   1: boundary id (0=all)/name/value/weight/target/power
-    0 #{function}                     -0.0           1.000    0.00000  1.00
-Current value of function   1
-            -0.000000000000000
-Current derivatives of function wrt global design variables
-             0.000000000000000
-             0.000000000000000
-             0.000000000000000
-             0.000000000000000
-             0.000000000000000
-             0.000000000000000
-END_OF_RUBBER
   end
 end
 
@@ -692,34 +374,23 @@ if ( __FILE__ == $0 )
     conditional_tail 'Flow/flow_out'
     conditional_tail 'Flow/refine_out'
     conditional_tail 'Flow/adapt_out'
-    conditional_tail 'Adjoint/dual_out'
-    conditional_tail 'Adjoint/rad_out'
   when 'watch'
     exec("watch #{$0} view")
   when 'hist'
     exec(File.join(File.dirname(__FILE__),'hist2gnuplot'))
   when 'clean'
-    fun3d = FUN3D.new
-    fun3d.sh("rm -rf Flow Adjoint Complex output "+
-             "#{fun3d.breadcrumb_filename} #{fun3d.schedule_filename}")
+    obj = FUN3D.new
+    obj.sh("rm -rf Flow output "+
+             "#{obj.breadcrumb_filename} #{obj.schedule_filename}")
   when 'shutdown'
-    comm = 'killall -9 nodet_mpi dual_mpi complex_nodet_mpi ruby' ; puts comm ; system comm
-  when 'check'
-    fun3d = FUN3D.new
-    fun3d.setup
-    fun3d.flo
-    fun3d.adj
-    fun3d.complex
-    comm = 'grep dfunc Complex/flow_out Adjoint/dual_out'
-    puts comm ; system comm
+    comm = 'killall -9 ruby' ; puts comm ; system comm
   when 'iterate'
-    fun3d = FUN3D.new
-    File.open(fun3d.breadcrumb_filename,'w') do |f|
+    obj = FUN3D.new
+    File.open(obj.breadcrumb_filename,'w') do |f|
       f.puts "#{`uname -n`.chomp}:#{Process.pid}"
     end
-    fun3d.iterate
-  when 'function'
-    rubber_data_writer(ARGV[1]||'cd')
+    obj.iterate
+  
   else
     puts "usage: #{File.basename($0)} <command>"
     puts
@@ -731,7 +402,6 @@ if ( __FILE__ == $0 )
     puts " watch           Watch the result of view"
     puts " shutdown        Kill all running fun3d and ruby processes"
     puts " clean           Remove output and sub directories"
-    puts " function [name] write rubber.data with cost function [name]"
     puts
     puts " Defaults in the case_specific input file:"
     puts FUN3D::DEFAULTS
