@@ -29,6 +29,7 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
+#include "ref_phys.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -4508,10 +4509,10 @@ REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc);
   RNS(file, "unable to open file");
 
- fprintf(file, "# generated from refine with EGADS atrributes\n");
- fprintf(file, "# bc tags translated from known FUN3D tags when possible\n");
- fprintf(file, "#\n");
- fprintf(file, "# patch no.     bc      family   surfs    surfids    name\n");
+  fprintf(file, "# generated from refine with EGADS atrributes\n");
+  fprintf(file, "# bc tags translated from known FUN3D tags when possible\n");
+  fprintf(file, "#\n");
+  fprintf(file, "# patch no.     bc      family   surfs    surfids    name\n");
 
   if (ref_geom->manifold) {
     REF_INT face_id;
@@ -4524,10 +4525,11 @@ REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
         return REF_NOT_FOUND;
       }
     }
-    fprintf(file, "%d\n", ref_geom->nface);
     for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
       char *bc_name;
+      char *name = NULL;
       REF_SIZE len, i;
+      REF_INT bc_type, usm3d_type;
       RSS(ref_egads_get_attribute(ref_geom, REF_GEOM_FACE, face_id, "bc_name",
                                   &attribute),
           "get");
@@ -4536,13 +4538,18 @@ REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
       RAS(10000 > len, "attribute more than 10000 bytes");
       ref_malloc(bc_name, (REF_LONG)(len + 1), char);
       strcpy(bc_name, attribute);
-      for (i = 0; i < len; i++) {
+      for (i = 0; i < len - 1; i++) {
         if ('_' == bc_name[i]) {
-          bc_name[i] = ' ';
+          bc_name[i] = '\n';
+          name = &(bc_name[i + 1]);
           break;
         }
       }
-      fprintf(file, "%d %s\n", face_id, bc_name);
+      RNS(name, "underscore not found in bc_name");
+      bc_type = atoi(bc_name);
+      RSS(ref_phys_usm3d_bc_tag(bc_type, &usm3d_type), "usm3d bc tags");
+      fprintf(file, "%d %d %d %d %d %s\n", face_id, usm3d_type, usm3d_type, 0,
+              0, name);
       ref_free(bc_name);
     }
   } else {

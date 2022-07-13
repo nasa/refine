@@ -1307,6 +1307,15 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (REF_SUCCESS ==
         ref_egads_extract_fun3d_mapbc(ref_grid_geom(ref_grid), filename, axi)) {
       printf("%s extracted\n", filename);
+      RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos) {
+        sprintf(filename, "%s-usm3d.mapbc", project);
+        printf("extracting %s from 'bc_name' attributes\n", filename);
+        RSS(ref_egads_extract_usm3d_mapbc(ref_grid_geom(ref_grid), filename),
+            "");
+        printf("%s extracted\n", filename);
+      }
     } else {
       printf("one or more 'bc_name' attributes not set, mapbc not written\n");
       printf(
