@@ -14,23 +14,21 @@ else
    . common.sh
 fi
 
-OCC_VERSION=7.4.1
-
-OCC_COPY_SOURCE="${MODULE_BASE}/119/OpenCASCADE-${OCC_VERSION}"
-OCC_COPY_DEST="${MODULE_DEST}/OpenCASCADE-${OCC_VERSION}"
-OCC_COPY_LINK=${MODULE_DEST}/OpenCASCADE
-
 echo Build ${PACKAGE} ${VERSION}
 
 module purge
-
 mkdir ${MODULE_DEST}
-cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
-( cd ${MODULE_DEST} && ln -s OpenCASCADE-${OCC_VERSION} OpenCASCADE )
+
+OCC_VERSION=760
+OCC_TGZ=OCC${OCC_VERSION}lin64.tgz
+rm -rf OCC*lin*
+wget -N	https://acdl.mit.edu/ESP/${OCC_TGZ}
+OCC_DEST=${MODULE_DEST}/OpenCASCADE
+tar xzf ${OCC_TGZ} -C ${OCC_DEST} --strip-components=1
 
 rm -rf EngSketchPad
 tar xzf ESPbeta.tgz
-( cd EngSketchPad/config && ./makeEnv ${OCC_COPY_LINK} )
+( cd EngSketchPad/config && ./makeEnv ${OCC_DEST} )
 ( cd EngSketchPad/src && . ../ESPenv.sh && make CC=gcc CXX=g++ FCOMP=gfortran)
 
 mkdir ${MODULE_DEST}/EngSketchPad
