@@ -4,3 +4,4 @@ EXTRA_DIST = \
 
 dist_bin_SCRIPTS = \
 	ref-usm3d
+
