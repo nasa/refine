@@ -990,6 +990,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
   }
 
+  RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "parse usm3d");
+  if (REF_EMPTY != pos) {
+    RSS(ref_egads_enforce_y_symmetry(ref_grid), "RSS");
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+  }
+
   RSS(ref_node_implicit_global_from_local(ref_grid_node(ref_grid)),
       "implicit global");
   ref_mpi_stopwatch_stop(ref_mpi, "implicit global");
@@ -1305,8 +1311,17 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     sprintf(filename, "%s-vol.mapbc", project);
     printf("extracting %s from 'bc_name' attributes\n", filename);
     if (REF_SUCCESS ==
-        ref_egads_extract_mapbc(ref_grid_geom(ref_grid), filename, axi)) {
+        ref_egads_extract_fun3d_mapbc(ref_grid_geom(ref_grid), filename, axi)) {
       printf("%s extracted\n", filename);
+      RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos) {
+        sprintf(filename, "%s-usm3d.mapbc", project);
+        printf("extracting %s from 'bc_name' attributes\n", filename);
+        RSS(ref_egads_extract_usm3d_mapbc(ref_grid_geom(ref_grid), filename),
+            "");
+        printf("%s extracted\n", filename);
+      }
     } else {
       printf("one or more 'bc_name' attributes not set, mapbc not written\n");
       printf(
@@ -3496,6 +3511,12 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_migrate_to_balance(ref_grid), "balance");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
+  }
+
+  RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "parse usm3d");
+  if (REF_EMPTY != pos) {
+    RSS(ref_egads_enforce_y_symmetry(ref_grid), "RSS");
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
   }
 
   RSS(ref_node_implicit_global_from_local(ref_grid_node(ref_grid)),

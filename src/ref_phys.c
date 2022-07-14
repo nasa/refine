@@ -1621,3 +1621,20 @@ REF_FCN REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
   };
   return REF_SUCCESS;
 }
+
+REF_FCN REF_STATUS ref_phys_usm3d_bc_tag(REF_INT generic, REF_INT *usm3d) {
+  *usm3d = generic;
+
+  if (6662 == generic) *usm3d = 1; /* y symmetry */
+  if (5026 == generic) *usm3d = 2; /* extrapolate */
+  if (5000 == generic) *usm3d = 3; /* farfield riem */
+  if (4000 == generic) *usm3d = 4; /* viscous solid */
+  if (3000 == generic) *usm3d = 5; /* tangency */
+
+  if (5051 == generic) *usm3d = 101; /* back pressure */
+  if (5052 == generic) *usm3d = 101; /* mach outflow */
+  if (7011 == generic) *usm3d = 102; /* total pressure */
+  if (7036 == generic) *usm3d = 103; /* total pressure */
+
+  return REF_SUCCESS;
+}

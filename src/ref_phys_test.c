@@ -2256,6 +2256,42 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  { /* USM3D BC Flags */
+    REF_INT generic, usm3d;
+
+    generic = 4;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "below 1k");
+    REIS(generic, usm3d, "same below 1k");
+    generic = 6662;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "y symm");
+    REIS(1, usm3d, "y symm");
+    generic = 5026;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "extrap");
+    REIS(2, usm3d, "extrap");
+    generic = 5000;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "farfield");
+    REIS(3, usm3d, "farfield");
+    generic = 4000;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "no slip");
+    REIS(4, usm3d, "no slip");
+    generic = 3000;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "tangent");
+    REIS(5, usm3d, "tangent");
+
+    generic = 5051;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "back pressure");
+    REIS(101, usm3d, "back pressure");
+    generic = 5052;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "mach outflow");
+    REIS(101, usm3d, "mach outflow");
+    generic = 7011;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "total pressure");
+    REIS(102, usm3d, "total pressure");
+    generic = 7036;
+    RSS(ref_phys_usm3d_bc_tag(generic, &usm3d), "total pressure");
+    REIS(103, usm3d, "total pressure");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

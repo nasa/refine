@@ -275,7 +275,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "cylinder"), "create");
 
-    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc, axi),
+    REIS(REF_NOT_FOUND, ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi),
          "can't mapbc without attributes");
 
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 1, "bc_name",
@@ -285,7 +285,7 @@ int main(int argc, char *argv[]) {
                                 "2000_side2"),
         "add");
 
-    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc, axi),
+    REIS(REF_NOT_FOUND, ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi),
          "can't mapbc without all attributes");
 
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 3, "bc_name",
@@ -294,7 +294,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_FACE, 4, "bc_name",
                                 "4000_side4"),
         "add");
-    RSS(ref_egads_extract_mapbc(ref_geom, mapbc, axi), "write mapbc");
+    RSS(ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi), "write mapbc");
     RSS(ref_geom_free(ref_geom), "free geom");
 
     {
@@ -332,7 +332,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "square"), "create");
 
-    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc, axi),
+    REIS(REF_NOT_FOUND, ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi),
          "can't mapbc without attributes");
 
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 1, "bc_name",
@@ -342,7 +342,7 @@ int main(int argc, char *argv[]) {
                                 "2000_side2"),
         "add");
 
-    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc, axi),
+    REIS(REF_NOT_FOUND, ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi),
          "can't mapbc without all attributes");
 
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 3, "bc_name",
@@ -351,7 +351,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 4, "bc_name",
                                 "4000_side4"),
         "add");
-    RSS(ref_egads_extract_mapbc(ref_geom, mapbc, axi), "write mapbc");
+    RSS(ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi), "write mapbc");
     RSS(ref_geom_free(ref_geom), "free geom");
 
     {
@@ -395,7 +395,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_create(&ref_geom), "create geom");
     RSS(ref_egads_construct(ref_geom, "square"), "create");
 
-    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc, axi),
+    REIS(REF_NOT_FOUND, ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi),
          "can't mapbc without attributes");
 
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 1, "bc_name",
@@ -405,7 +405,7 @@ int main(int argc, char *argv[]) {
                                 "2000_side2"),
         "add");
 
-    REIS(REF_NOT_FOUND, ref_egads_extract_mapbc(ref_geom, mapbc, axi),
+    REIS(REF_NOT_FOUND, ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi),
          "can't mapbc without all attributes");
 
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 3, "bc_name",
@@ -414,7 +414,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_add_attribute(ref_geom, REF_GEOM_EDGE, 4, "bc_name",
                                 "4000_side4"),
         "add");
-    RSS(ref_egads_extract_mapbc(ref_geom, mapbc, axi), "write mapbc");
+    RSS(ref_egads_extract_fun3d_mapbc(ref_geom, mapbc, axi), "write mapbc");
     RSS(ref_geom_free(ref_geom), "free geom");
 
     {

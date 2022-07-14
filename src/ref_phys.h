@@ -123,6 +123,8 @@ REF_FCN REF_STATUS ref_phys_ddes_blend(REF_DBL mach, REF_DBL reynolds_number,
                                        REF_DBL distance, REF_DBL nu,
                                        REF_DBL *fd);
 
+REF_FCN REF_STATUS ref_phys_usm3d_bc_tag(REF_INT generic, REF_INT *usm3d);
+
 END_C_DECLORATION
 
 #endif /* REF_PHYS_H */

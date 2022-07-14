@@ -1198,18 +1198,20 @@ REF_FCN REF_STATUS ref_cavity_form_insert2_unconstrain(REF_CAVITY ref_cavity,
 
   if (ref_cavity_debug(ref_cavity))
     printf(" unconst form tri state %d of %d old %d new\n",
-           ref_cavity_state(ref_cavity),
+           (int)ref_cavity_state(ref_cavity),
            ref_list_n(ref_cavity_tri_list(ref_cavity)),
            ref_cavity_nseg(ref_cavity));
 
   /* conform seg */
   RSS(ref_cavity_verify_seg_manifold(ref_cavity), "ball seg manifold");
   if (ref_cavity_debug(ref_cavity))
-    printf(" unconst manifold tri state %d\n", ref_cavity_state(ref_cavity));
+    printf(" unconst manifold tri state %d\n",
+           (int)ref_cavity_state(ref_cavity));
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_FAILURE;
   RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge boundary");
   if (ref_cavity_debug(ref_cavity))
-    printf(" unconst enlarge tri state %d\n", ref_cavity_state(ref_cavity));
+    printf(" unconst enlarge tri state %d\n",
+           (int)ref_cavity_state(ref_cavity));
   if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_FAILURE;
   ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
 
