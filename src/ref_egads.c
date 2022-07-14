@@ -4673,6 +4673,7 @@ REF_FCN REF_STATUS ref_egads_enforce_y_symmetry(REF_GRID ref_grid) {
         if (ref_math_divisible(bbox[3] - bbox[2], diag)) {
           rel_error = bbox[3] - bbox[2] / diag;
           ymid = 0.5 * (bbox[3] + bbox[2]);
+          if (ABS(ymid) < bbox[3] - bbox[2]) ymid = 0.0;
           if (ref_mpi_once(ref_mpi))
             printf("face %d min %.3e max %.3e relative y error %.3e\n", face_id,
                    bbox[2], bbox[3], rel_error);
