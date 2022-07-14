@@ -4603,3 +4603,94 @@ REF_FCN REF_STATUS ref_egads_extract_usm3d_mapbc(REF_GEOM ref_geom,
 
   return REF_SUCCESS;
 }
+
+REF_FCN REF_STATUS ref_egads_enforce_y_symmetry(REF_GRID ref_grid) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  if (ref_geom->manifold) {
+    REF_INT face_id;
+    const char *attribute = NULL;
+    for (face_id = 1; face_id <= ref_geom->nface; face_id++) {
+      char *bc_name;
+      REF_SIZE len, i;
+      REF_INT bc_type, usm3d_type;
+      if (REF_SUCCESS != ref_egads_get_attribute(ref_geom, REF_GEOM_FACE,
+                                                 face_id, "bc_name",
+                                                 &attribute)) {
+        continue;
+      }
+      RNS(attribute, "attribute NULL");
+      len = strlen(attribute);
+      RAS(10000 > len, "attribute more than 10000 bytes");
+      ref_malloc(bc_name, (REF_LONG)(len + 1), char);
+      strcpy(bc_name, attribute);
+      for (i = 0; i < len - 1; i++) {
+        if ('_' == bc_name[i]) {
+          bc_name[i] = '\n';
+          break;
+        }
+      }
+      bc_type = atoi(bc_name);
+      RSS(ref_phys_usm3d_bc_tag(bc_type, &usm3d_type), "usm3d bc tags");
+      ref_free(bc_name);
+      if (1 == usm3d_type) {
+        REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+        REF_NODE ref_node = ref_grid_node(ref_grid);
+        REF_CELL ref_cell = ref_grid_tri(ref_grid);
+        REF_DBL temp, diag, bbox[6], rel_error, ymid;
+        REF_INT node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+        bbox[0] = REF_DBL_MAX;
+        bbox[1] = -REF_DBL_MAX;
+        bbox[2] = REF_DBL_MAX;
+        bbox[3] = -REF_DBL_MAX;
+        bbox[4] = REF_DBL_MAX;
+        bbox[5] = -REF_DBL_MAX;
+        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+          if (face_id == nodes[ref_cell_id_index(ref_cell)]) {
+            each_ref_cell_cell_node(ref_cell, cell_node) {
+              node = nodes[cell_node];
+              bbox[0] = MIN(bbox[0], ref_node_xyz(ref_node, 0, node));
+              bbox[1] = MAX(bbox[1], ref_node_xyz(ref_node, 0, node));
+              bbox[2] = MIN(bbox[2], ref_node_xyz(ref_node, 1, node));
+              bbox[3] = MAX(bbox[3], ref_node_xyz(ref_node, 1, node));
+              bbox[4] = MIN(bbox[4], ref_node_xyz(ref_node, 2, node));
+              bbox[5] = MAX(bbox[5], ref_node_xyz(ref_node, 2, node));
+            }
+          }
+        }
+        temp = bbox[0];
+        RSS(ref_mpi_min(ref_mpi, &temp, &(bbox[0]), REF_DBL_TYPE), "min");
+        temp = bbox[1];
+        RSS(ref_mpi_max(ref_mpi, &temp, &(bbox[1]), REF_DBL_TYPE), "max");
+        temp = bbox[2];
+        RSS(ref_mpi_min(ref_mpi, &temp, &(bbox[2]), REF_DBL_TYPE), "min");
+        temp = bbox[3];
+        RSS(ref_mpi_max(ref_mpi, &temp, &(bbox[3]), REF_DBL_TYPE), "max");
+        temp = bbox[4];
+        RSS(ref_mpi_min(ref_mpi, &temp, &(bbox[4]), REF_DBL_TYPE), "min");
+        temp = bbox[5];
+        RSS(ref_mpi_max(ref_mpi, &temp, &(bbox[5]), REF_DBL_TYPE), "max");
+        diag = sqrt(pow(bbox[1] - bbox[0], 2) + pow(bbox[5] - bbox[4], 2));
+        if (ref_math_divisible(bbox[3] - bbox[2], diag)) {
+          rel_error = bbox[3] - bbox[2] / diag;
+          ymid = 0.5 * (bbox[3] + bbox[2]);
+          if (ref_mpi_once(ref_mpi))
+            printf("face %d min %.3e max %.3e relative y error %.3e\n", face_id,
+                   bbox[2], bbox[3], rel_error);
+          if (rel_error < 1.0e-8) {
+            if (ref_mpi_once(ref_mpi))
+              printf("face %d y set to %e\n", face_id, ymid);
+            each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+              if (face_id == nodes[ref_cell_id_index(ref_cell)]) {
+                each_ref_cell_cell_node(ref_cell, cell_node) {
+                  node = nodes[cell_node];
+                  ref_node_xyz(ref_node, 1, node) = ymid;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return REF_SUCCESS;
+}

@@ -990,6 +990,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
   }
 
+  RSS(ref_egads_enforce_y_symmetry(ref_grid), "RSS");
+  RSS(ref_validation_cell_volume(ref_grid), "vol");
+
   RSS(ref_node_implicit_global_from_local(ref_grid_node(ref_grid)),
       "implicit global");
   ref_mpi_stopwatch_stop(ref_mpi, "implicit global");
@@ -3506,6 +3509,9 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
   }
+
+  RSS(ref_egads_enforce_y_symmetry(ref_grid), "RSS");
+  RSS(ref_validation_cell_volume(ref_grid), "vol");
 
   RSS(ref_node_implicit_global_from_local(ref_grid_node(ref_grid)),
       "implicit global");
