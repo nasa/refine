@@ -15,6 +15,7 @@ class FUN3D
      window
      windows
      all_cl
+     flo_cl
      ref_cl
      pause
      breadcrumb_filename
@@ -298,7 +299,7 @@ class FUN3D
 
   command = "( cd Flow && " +
             exec_prefix +
-            " #{usm3d_executable} #{project} " +
+            " #{usm3d_executable} #{project} #{flo_cl} " +
             "< /dev/null | tee flow_out > #{project}_flow_out )"
   puts command
   nap
