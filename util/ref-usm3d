@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 
 class FUN3D
-
- @@dsl_methods = %w[ 
+  @@dsl_methods = %w[
      refine_directory
      usm3d_executable
      root_project
@@ -28,13 +27,13 @@ class FUN3D
      schedule_complexity_per_core
      schedule_max_complexity
      schedule_clean
- ]
+  ]
 
- @@dsl_methods.each do |dsl_method|
-  eval "def #{dsl_method}(value=@#{dsl_method});@#{dsl_method}=value;end"
- end
+  @@dsl_methods.each do |dsl_method|
+    eval "def #{dsl_method}(value=@#{dsl_method});@#{dsl_method}=value;end"
+  end
 
- DEFAULTS = <<-END_OF_DEFAULTS
+  DEFAULTS = <<-END_OF_DEFAULTS
   root_project ''
   project_iteration_format '%02d'
   first_iteration 1
@@ -56,342 +55,339 @@ class FUN3D
   mpirun_command 'mpiexec'
  END_OF_DEFAULTS
 
- GROWABLE_DEFAULTS = <<-END_OF_GLOWABLE_DEFAULTS
+  GROWABLE_DEFAULTS = <<-END_OF_GLOWABLE_DEFAULTS
   all_cl ""
   flo_cl ""
   ref_cl ""
  END_OF_GLOWABLE_DEFAULTS
 
- def initialize()
-  refine_directory ''
-  if (ENV::has_key?('USMEXE'))
-    usm3d_executable ENV['USMEXE']
-  else
-    usm3d_executable 'usm3d.x'
+  def initialize()
+    refine_directory ""
+    if (ENV::has_key?("USMEXE"))
+      usm3d_executable ENV["USMEXE"]
+    else
+      usm3d_executable "usm3d.x"
+    end
+    eval DEFAULTS
+    iteration 1
+    eval GROWABLE_DEFAULTS
+    load_case_specifics
   end
-  eval DEFAULTS
-  iteration 1
-  eval GROWABLE_DEFAULTS
-  load_case_specifics
- end
 
- def load_case_specifics(file_name = 'case_specifics')
-  if File.exist?(file_name)
-   eval GROWABLE_DEFAULTS
-   eval IO.readlines(file_name).join("\n") 
-  end
- end
-
- def project(iter=@iteration,win=@window)
-  prj = @root_project
-  prj += sprintf(project_iteration_format,iter) if iter
-  prj += sprintf('_win'+project_iteration_format,win) if win
-  prj
- end
-
- def have_project_extension?(extension)
-   File.size?( "Flow/#{project}#{extension}" )
- end
-
- def have_file_extension?(suffix)
-  if suffix =~ /adj/
-    File.size?( "Adjoint/#{project}.adjoint" )
-  else
-    File.size?( "Flow/#{project}.#{suffix}" )
-  end
- end
-
- def required_file_suffix(suffix)
-   unless have_file_extension?(suffix)
-     raise("#{project} #{suffix} file zero length or missing")
-   end
- end
-
- def expect_file(filename)
-   unless File.size?(filename)
-     raise("expected file #{filename} zero length or missing")
-   end
- end
-
- def exec_prefix()
-   cores = number_of_processors ||
-           schedule_cores(schedule_max_cores,schedule_complexity_per_core)
-   if (cores > 1) then
-     "#{mpirun_command} -np #{cores}"
-   else
-     " "
-   end
- end
-
- def schedule_current()
-   complexity = schedule_initial_complexity
-   if File.file?(schedule_filename)
-     lines = IO.readlines(schedule_filename)
-     complexity = lines.last.split[1].to_i # last complexity
-   end
-   return complexity
- end
- 
- def schedule_parse()
-   current_complexity = schedule_initial_complexity
-   next_complexity = schedule_initial_complexity
-   if File.file?(schedule_filename)
-     lines = IO.readlines(schedule_filename)
-     current_complexity = lines.last.split[1].to_i # last line complexity
-     next_complexity = lines.last.split[2].to_i # last line complexity target
-   end
-   return current_complexity, next_complexity
- end
-
- def first_iteration_inferred_from_newest_meshb
-   if (Dir['Flow/*.meshb'].empty?) then
-     first_iteration 1
-   else
-     newest_meshb = Dir['Flow/*.meshb'].sort_by{|meshb| File.mtime(meshb)}.last
-     iter = newest_meshb.sub(/Flow\/#{root_project}/,'').sub(/\.meshb/,'').to_i
-     first_iteration iter
-   end
- end
-
- def schedule_max_cores_inferred_from_batch_environment
-   if (ENV::has_key?('PBS_NODEFILE'))
-     schedule_max_cores IO.readlines(ENV['PBS_NODEFILE']).length
-   end
-   if (ENV::has_key?('SLURM_JOB_NUM_NODES'))
-     schedule_max_cores ENV['SLURM_JOB_NUM_NODES'].to_i
-   end
- end
-
- def schedule_cores(max_cores = schedule_max_cores,
-                    complexity_per_core = schedule_complexity_per_core)
-   cores_desired =
-     (schedule_current().to_f / schedule_complexity_per_core.to_f).round
-   return [2,[cores_desired,schedule_max_cores].min].max
- end
-
- def schedule_append(current_complexity, next_complexity)
-   open(schedule_filename, 'a') do |f|
-     f.puts "#{iteration} #{current_complexity} #{next_complexity} #{schedule_force}"
-   end
- end
-
- def schedule_parse_history(current)
-   iterations_at_complexity = 0
-   forces = []
-   if File.file?(schedule_filename)
-     lines = IO.readlines(schedule_filename)
-     lines.reverse.each do |line|
-       complexity = line.split[1].to_i
-       if (complexity != current) then
-         break
-       end
-       iterations_at_complexity += 1
-       forces << line.split[3].to_f if (iterations_at_complexity <= 2)
-     end
-   end
-   iterations_at_complexity += 1
-   forces << schedule_force()
-   return iterations_at_complexity, forces
- end
-
- def schedule_next()
-  current_complexity, next_complexity = schedule_parse()
-  iterations_at_complexity, forces = schedule_parse_history(current_complexity)
-  puts " #{iterations_at_complexity} meshes at #{schedule_current()}"
-  puts " force history #{forces.join(' ')}"
-  if (iterations_at_complexity >= schedule_subiteration_limit) then
-    next_complexity *= 2
-  else
-    if (iterations_at_complexity > 3) then
-      force_range = forces.max - forces.min
-      force_mid = 0.5*(forces.max + forces.min)
-      relative_tol = schedule_relative_tol
-      printf("mid %f range %e tol %e\n",
-             force_mid, force_range, relative_tol*force_mid)
-      next_complexity *= 2 if ( relative_tol*force_mid.abs > force_range)
+  def load_case_specifics(file_name = "case_specifics")
+    if File.exist?(file_name)
+      eval GROWABLE_DEFAULTS
+      eval IO.readlines(file_name).join("\n")
     end
   end
-  current_complexity=[next_complexity,
-    (current_complexity.to_f*schedule_complexity_growth.to_f).ceil].min
-  schedule_append(current_complexity, next_complexity)
-  return current_complexity
- end
 
- def schedule_meshes_to_double( number_of_meshes )
-   schedule_complexity_growth 2.0**(1.0/number_of_meshes.to_f)
- end
- 
- def nap( duration = @pause )
-   if duration > 0 
-     puts "sleeping #{duration} seconds"
-     sleep(duration)
-   end
- end
+  def project(iter = @iteration, win = @window)
+    prj = @root_project
+    prj += sprintf(project_iteration_format, iter) if iter
+    prj += sprintf("_win" + project_iteration_format, win) if win
+    prj
+  end
 
- def sh(comm)
-   puts comm
-   nap
-   start_time = Time.now
-   raise("nonzero exit code") unless system(comm)
-   printf("%d %f # sh\n",@iteration,Time.now-start_time)
- end
+  def have_project_extension?(extension)
+    File.size?("Flow/#{project}#{extension}")
+  end
 
- def clean_step()
-   clean_files = []
-   %w[ .lb8.ugrid -distance.solb -distance.solb.names .flow .grid_info .mapbc .meshb -restart.solb _volume.solb].each do |suffix|
-     clean_files << "Flow/#{project}#{suffix}"
-   end
-   sh("rm -rf #{clean_files.join(' ')}")
- end
+  def have_file_extension?(suffix)
+    if suffix =~ /adj/
+      File.size?("Adjoint/#{project}.adjoint")
+    else
+      File.size?("Flow/#{project}.#{suffix}")
+    end
+  end
 
- def ref_loop_or_exit(opts = '')
-   current_complexity = schedule_current()
-   complexity = schedule_next()
-   complexity_limit = schedule_max_complexity
-   if (complexity > complexity_limit) then
-     puts "next complexity #{complexity} larger than complexity_limit #{complexity_limit}"
-     puts "done."
-     exit
-   end
-   ref("refmpi loop #{project} #{project(@iteration+1)} #{complexity} "+
-       ref_cl+' '+opts,
-       "refine_out",
-       "#{project(@iteration+1)}.meshb")
-   if (schedule_clean && current_complexity == complexity) then
-     clean_step()
-   end
- end
+  def required_file_suffix(suffix)
+    unless have_file_extension?(suffix)
+      raise("#{project} #{suffix} file zero length or missing")
+    end
+  end
 
- def ref( comm, stdoutfile = '', expected_file_without_path = nil)
-   capture = (stdoutfile.empty? ? '':" < /dev/null | tee #{stdoutfile} > #{project}_#{stdoutfile}")
-   command = "( cd Flow && " +
-             exec_prefix +
-             " " +
-             @refine_directory +
-             comm +
-             capture +
-             " )"
-   puts command
-   nap
-   start_time = Time.now
-   raise("refine nonzero exit code") unless system(command)
-   printf("%d %f # ref\n",@iteration,Time.now-start_time)
-   nap
-   if ( expected_file_without_path ) then
-     expect_file('Flow/'+expected_file_without_path)
-   else
-     last_arg_without_leading_dash =
-       comm.split(' ').delete_if{ |f| f.match(/^-/) }.last
-     expect_file('Flow/'+last_arg_without_leading_dash)
-   end
- end
+  def expect_file(filename)
+    unless File.size?(filename)
+      raise("expected file #{filename} zero length or missing")
+    end
+  end
 
- def usm( )
-  sh("cp #{root_project}.inpt Flow/#{project}.inpt") if File.exist?("#{root_project}.inpt")
-  sh("cp #{project(1)}.inpt Flow/#{project}.inpt") if File.exist?("#{project(1)}.inpt")
-  sh("cp #{root_project}.mapbc Flow/#{project}.mapbc") if File.exist?("#{root_project}.mapbc")
-  sh("cp #{project(1)}.mapbc Flow/#{project}.mapbc") if File.exist?("#{project(1)}.mapbc")
+  def exec_prefix()
+    cores = number_of_processors ||
+            schedule_cores(schedule_max_cores, schedule_complexity_per_core)
+    if (cores > 1)
+      "#{mpirun_command} -np #{cores}"
+    else
+      " "
+    end
+  end
 
-  sh("rm -rf Flow/tet.out Flow/timer.out Flow/fort.* Flow/*.finaliface.* " +
-     " Flow/*.frincells.* Flow/*.fringebdry.*  Flow/*.parpart.* " +
-     " Flow/*.walldist.* Flow/CELLS*")
-  sh("rm -rf Flow/volume.plt Flow/surface.plt Flow/hist.plt")
+  def schedule_current()
+    complexity = schedule_initial_complexity
+    if File.file?(schedule_filename)
+      lines = IO.readlines(schedule_filename)
+      complexity = lines.last.split[1].to_i # last complexity
+    end
+    return complexity
+  end
 
-  command = "( cd Flow && " +
-            exec_prefix +
-            " #{usm3d_executable} #{project} #{flo_cl} " +
-            "< /dev/null | tee flow_out > #{project}_flow_out )"
-  puts command
-  nap
-  start_time = Time.now
-  raise("flow solver nonzero exit code") unless system(command)
-  printf("%d %f # flo\n",@iteration,Time.now-start_time)
-  nap
+  def schedule_parse()
+    current_complexity = schedule_initial_complexity
+    next_complexity = schedule_initial_complexity
+    if File.file?(schedule_filename)
+      lines = IO.readlines(schedule_filename)
+      current_complexity = lines.last.split[1].to_i # last line complexity
+      next_complexity = lines.last.split[2].to_i # last line complexity target
+    end
+    return current_complexity, next_complexity
+  end
 
-  expect_file("Flow/volume.plt")
-  sh("mv Flow/volume.plt Flow/#{project}_volume.plt")
-  sh("mv Flow/surface.plt Flow/#{project}_surface.plt")
-  sh("mv Flow/hist.plt Flow/#{project}_hist.plt")
+  def first_iteration_inferred_from_newest_meshb
+    if (Dir["Flow/*.meshb"].empty?)
+      first_iteration 1
+    else
+      newest_meshb = Dir["Flow/*.meshb"].sort_by { |meshb| File.mtime(meshb) }.last
+      iter = newest_meshb.sub(/Flow\/#{root_project}/, "").sub(/\.meshb/, "").to_i
+      first_iteration iter
+    end
+  end
 
-  # read forces for scheduling complexity
-  line = IO.readlines("Flow/#{project}_hist.plt").last
-  col = line.split(' ')
-  eval("def res;    #{col[2]}; end")
-  eval("def logres; #{col[3]}; end")
-  eval("def cl;     #{col[4]}; end")
-  eval("def cd;     #{col[5]}; end")
-  eval("def cdv;    #{col[6]}; end")
-  eval("def cm;     #{col[7]}; end")
- end
+  def schedule_max_cores_inferred_from_batch_environment
+    if (ENV::has_key?("PBS_NODEFILE"))
+      schedule_max_cores IO.readlines(ENV["PBS_NODEFILE"]).length
+    end
+    if (ENV::has_key?("SLURM_JOB_NUM_NODES"))
+      schedule_max_cores ENV["SLURM_JOB_NUM_NODES"].to_i
+    end
+  end
 
- def iteration_steps
-   usm
-   ref_loop_or_exit
- end
+  def schedule_cores(max_cores = schedule_max_cores,
+                     complexity_per_core = schedule_complexity_per_core)
+    cores_desired =
+      (schedule_current().to_f / schedule_complexity_per_core.to_f).round
+    return [2, [cores_desired, schedule_max_cores].min].max
+  end
 
- def iterate
-   @iteration = first_iteration
-   setup if ( 1 == @iteration )
-   while ( @iteration <= last_iteration )
-     load_case_specifics
-     iteration_steps
-     break if ( @iteration >= last_iteration )
-     @iteration += 1
-   end
- end
+  def schedule_append(current_complexity, next_complexity)
+    open(schedule_filename, "a") do |f|
+      f.puts "#{iteration} #{current_complexity} #{next_complexity} #{schedule_force}"
+    end
+  end
 
- def setup
-  `mkdir -p Flow`
-  %w[ fgrid fastbc cogsg bc mapbc knife cutbc meshb ugrid lb8.ugrid b8.ugrid msh amdba ].each do |ext|
-   file = "#{project}.#{ext}"
-   if File.exist?(file)
-    command = "cp #{file} Flow"
+  def schedule_parse_history(current)
+    iterations_at_complexity = 0
+    forces = []
+    if File.file?(schedule_filename)
+      lines = IO.readlines(schedule_filename)
+      lines.reverse.each do |line|
+        complexity = line.split[1].to_i
+        if (complexity != current)
+          break
+        end
+        iterations_at_complexity += 1
+        forces << line.split[3].to_f if (iterations_at_complexity <= 2)
+      end
+    end
+    iterations_at_complexity += 1
+    forces << schedule_force()
+    return iterations_at_complexity, forces
+  end
+
+  def schedule_next()
+    current_complexity, next_complexity = schedule_parse()
+    iterations_at_complexity, forces = schedule_parse_history(current_complexity)
+    puts " #{iterations_at_complexity} meshes at #{schedule_current()}"
+    puts " force history #{forces.join(" ")}"
+    if (iterations_at_complexity >= schedule_subiteration_limit)
+      next_complexity *= 2
+    else
+      if (iterations_at_complexity > 3)
+        force_range = forces.max - forces.min
+        force_mid = 0.5 * (forces.max + forces.min)
+        relative_tol = schedule_relative_tol
+        printf("mid %f range %e tol %e\n",
+               force_mid, force_range, relative_tol * force_mid)
+        next_complexity *= 2 if (relative_tol * force_mid.abs > force_range)
+      end
+    end
+    current_complexity = [next_complexity,
+                          (current_complexity.to_f * schedule_complexity_growth.to_f).ceil].min
+    schedule_append(current_complexity, next_complexity)
+    return current_complexity
+  end
+
+  def schedule_meshes_to_double(number_of_meshes)
+    schedule_complexity_growth 2.0 ** (1.0 / number_of_meshes.to_f)
+  end
+
+  def nap(duration = @pause)
+    if duration > 0
+      puts "sleeping #{duration} seconds"
+      sleep(duration)
+    end
+  end
+
+  def sh(comm)
+    puts comm
+    nap
+    start_time = Time.now
+    raise("nonzero exit code") unless system(comm)
+    printf("%d %f # sh\n", @iteration, Time.now - start_time)
+  end
+
+  def clean_step()
+    clean_files = []
+    %w[ .lb8.ugrid -distance.solb -distance.solb.names .flow .grid_info .mapbc .meshb -restart.solb _volume.solb ].each do |suffix|
+      clean_files << "Flow/#{project}#{suffix}"
+    end
+    sh("rm -rf #{clean_files.join(" ")}")
+  end
+
+  def ref_loop_or_exit(opts = "")
+    current_complexity = schedule_current()
+    complexity = schedule_next()
+    complexity_limit = schedule_max_complexity
+    if (complexity > complexity_limit)
+      puts "next complexity #{complexity} larger than complexity_limit #{complexity_limit}"
+      puts "done."
+      exit
+    end
+    ref("refmpi loop #{project} #{project(@iteration + 1)} #{complexity} " +
+        ref_cl + " " + opts,
+        "refine_out",
+        "#{project(@iteration + 1)}.meshb")
+    if (schedule_clean && current_complexity == complexity)
+      clean_step()
+    end
+  end
+
+  def ref(comm, stdoutfile = "", expected_file_without_path = nil)
+    capture = (stdoutfile.empty? ? "" : " < /dev/null | tee #{stdoutfile} > #{project}_#{stdoutfile}")
+    command = "( cd Flow && " +
+              exec_prefix +
+              " " +
+              @refine_directory +
+              comm +
+              capture +
+              " )"
     puts command
-    system command
-   end
+    nap
+    start_time = Time.now
+    raise("refine nonzero exit code") unless system(command)
+    printf("%d %f # ref\n", @iteration, Time.now - start_time)
+    nap
+    if (expected_file_without_path)
+      expect_file("Flow/" + expected_file_without_path)
+    else
+      last_arg_without_leading_dash =
+        comm.split(" ").delete_if { |f| f.match(/^-/) }.last
+      expect_file("Flow/" + last_arg_without_leading_dash)
+    end
+  end
+
+  def usm()
+    sh("cp #{root_project}.inpt Flow/#{project}.inpt") if File.exist?("#{root_project}.inpt")
+    sh("cp #{project(1)}.inpt Flow/#{project}.inpt") if File.exist?("#{project(1)}.inpt")
+    sh("cp #{root_project}.mapbc Flow/#{project}.mapbc") if File.exist?("#{root_project}.mapbc")
+    sh("cp #{project(1)}.mapbc Flow/#{project}.mapbc") if File.exist?("#{project(1)}.mapbc")
+
+    sh("rm -rf Flow/tet.out Flow/timer.out Flow/fort.* Flow/*.finaliface.* " +
+       " Flow/*.frincells.* Flow/*.fringebdry.*  Flow/*.parpart.* " +
+       " Flow/*.walldist.* Flow/CELLS*")
+    sh("rm -rf Flow/volume.plt Flow/surface.plt Flow/hist.plt")
+
+    command = "( cd Flow && " +
+              exec_prefix +
+              " #{usm3d_executable} #{project} #{flo_cl} " +
+              "< /dev/null | tee flow_out > #{project}_flow_out )"
+    puts command
+    nap
+    start_time = Time.now
+    raise("flow solver nonzero exit code") unless system(command)
+    printf("%d %f # flo\n", @iteration, Time.now - start_time)
+    nap
+
+    expect_file("Flow/volume.plt")
+    sh("mv Flow/volume.plt Flow/#{project}_volume.plt")
+    sh("mv Flow/surface.plt Flow/#{project}_surface.plt")
+    sh("mv Flow/hist.plt Flow/#{project}_hist.plt")
+
+    # read forces for scheduling complexity
+    line = IO.readlines("Flow/#{project}_hist.plt").last
+    col = line.split(" ")
+    eval("def res;    #{col[2]}; end")
+    eval("def logres; #{col[3]}; end")
+    eval("def cl;     #{col[4]}; end")
+    eval("def cd;     #{col[5]}; end")
+    eval("def cdv;    #{col[6]}; end")
+    eval("def cm;     #{col[7]}; end")
+  end
+
+  def iteration_steps
+    usm
+    ref_loop_or_exit
+  end
+
+  def iterate
+    @iteration = first_iteration
+    setup if (1 == @iteration)
+    while (@iteration <= last_iteration)
+      load_case_specifics
+      iteration_steps
+      break if (@iteration >= last_iteration)
+      @iteration += 1
+    end
+  end
+
+  def setup
+    `mkdir -p Flow`
+    %w[ fgrid fastbc cogsg bc mapbc knife cutbc meshb ugrid lb8.ugrid b8.ugrid msh amdba ].each do |ext|
+      file = "#{project}.#{ext}"
+      if File.exist?(file)
+        command = "cp #{file} Flow"
+        puts command
+        system command
+      end
+    end
   end
 end
 
-end
-
-def conditional_tail(file, lines=5)
+def conditional_tail(file, lines = 5)
   if File.exists?(file)
-    puts file+' -------------'
+    puts file + " -------------"
     system("tail -#{lines} #{file}")
   end
 end
 
-if ( __FILE__ == $0 )
-
+if (__FILE__ == $0)
   STDOUT.sync = true # to encourage real-time status messages
 
   case ARGV[0]
-  when 'start'
+  when "start"
     system("nohup #{$0} iterate < /dev/null >> output &")
     puts 'started, see `output\' file or f3d watch'
-  when 'view'
-    system('pwd')
-    conditional_tail 'output', 3
-    conditional_tail 'Flow/flow_out'
-    conditional_tail 'Flow/refine_out'
-    conditional_tail 'Flow/adapt_out'
-  when 'watch'
+  when "view"
+    system("pwd")
+    conditional_tail "output", 3
+    conditional_tail "Flow/flow_out"
+    conditional_tail "Flow/refine_out"
+    conditional_tail "Flow/adapt_out"
+  when "watch"
     exec("watch #{$0} view")
-  when 'hist'
-    exec(File.join(File.dirname(__FILE__),'hist2gnuplot'))
-  when 'clean'
+  when "hist"
+    exec(File.join(File.dirname(__FILE__), "hist2gnuplot"))
+  when "clean"
     obj = FUN3D.new
-    obj.sh("rm -rf Flow output "+
-             "#{obj.breadcrumb_filename} #{obj.schedule_filename}")
-  when 'shutdown'
-    comm = 'killall -9 ruby' ; puts comm ; system comm
-  when 'iterate'
+    obj.sh("rm -rf Flow output " +
+           "#{obj.breadcrumb_filename} #{obj.schedule_filename}")
+  when "shutdown"
+    comm = "killall -9 ruby"; puts comm; system comm
+  when "iterate"
     obj = FUN3D.new
-    File.open(obj.breadcrumb_filename,'w') do |f|
+    File.open(obj.breadcrumb_filename, "w") do |f|
       f.puts "#{`uname -n`.chomp}:#{Process.pid}"
     end
     obj.iterate
-  
   else
     puts "usage: #{File.basename($0)} <command>"
     puts
@@ -409,4 +405,3 @@ if ( __FILE__ == $0 )
     puts FUN3D::GROWABLE_DEFAULTS
   end
 end
-
