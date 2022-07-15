@@ -17,6 +17,11 @@ PREFIX="/swbuild/fun3d/shared/fun3d_users" # where everything is anchored
 MODULE_ROOT="${PREFIX}/modules"         # where the built artifacts reside
 MODFILE_ROOT="${PREFIX}/modulefiles"    # where the modulefiles reside
 
+MPT_WITH="/opt/hpe/hpc/mpt/mpt-${MPT_VERSION}"
+PARMETIS_WITH="${MODULE_ROOT}/ParMETIS-64/4.0.3_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
+EGADS_WITH="${MODULE_ROOT}/ESP/${ESP_VERSION}/EngSketchPad"
+OCC_WITH="${MODULE_ROOT}/ESP/${ESP_VERSION}/OpenCASCADE"
+
 # artifacts
 MODULE_BASE="${MODULE_ROOT}/${PACKAGE}"
 MODULE_DEST="${MODULE_BASE}/${VERSION}"
