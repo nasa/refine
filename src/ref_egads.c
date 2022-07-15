@@ -4677,7 +4677,7 @@ REF_FCN REF_STATUS ref_egads_enforce_y_symmetry(REF_GRID ref_grid) {
           if (ref_mpi_once(ref_mpi))
             printf("face %d min %.3e max %.3e relative y error %.3e\n", face_id,
                    bbox[2], bbox[3], rel_error);
-          if (rel_error < 1.0e-8) {
+          if (rel_error < 1.0e-4) {
             if (ref_mpi_once(ref_mpi))
               printf("face %d y set to %e\n", face_id, ymid);
             each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
