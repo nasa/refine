@@ -12,8 +12,6 @@ else
 fi
 
 TOPDIR='../../..'
-PARMETIS="ParMETIS-64/${PARMETIS_VERSION}_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
-ESP="ESP/${ESP_VERSION}"
 
 echo Build ${PACKAGE} ${VERSION}
 
@@ -30,9 +28,9 @@ cd       _build_$VERSION
 
 ../${TOPDIR}/configure \
   --prefix=${MODULE_DEST} \
-  --with-metis=${MODULE_ROOT}/${PARMETIS} \
-  --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
-  --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
+  --with-metis=${PARMETIS_WITH} \
+  --with-parmetis=${PARMETIS_WITH} \
+  --with-EGADS=${EGADS_WITH} \
   --enable-lite \
   CC=icc \
   CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
