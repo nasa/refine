@@ -46,3 +46,25 @@ REF_FCN REF_STATUS ref_oct_free(REF_OCT ref_oct) {
   ref_free(ref_oct);
   return REF_SUCCESS;
 }
+
+REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
+  FILE *f;
+  const char *zonetype = "febrick";
+  f = fopen(filename, "w");
+  if (NULL == (void *)f) printf("unable to open %s\n", filename);
+  RNS(f, "unable to open file");
+
+  fprintf(f, "title=\"tecplot refine octree\"\n");
+  fprintf(f, "variables = \"x\" \"y\" \"z\"\n");
+
+  fprintf(f,
+          "zone t=\"octree\", nodes=%d, elements=%d, datapacking=%s, "
+          "zonetype=%s\n",
+          8, 1, "point", zonetype);
+
+  fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[2],
+          ref_oct->bbox[4]);
+
+  fclose(f);
+  return REF_SUCCESS;
+}

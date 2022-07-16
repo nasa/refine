@@ -22,12 +22,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_args.h"
 #include "ref_mpi.h"
 
 int main(int argc, char *argv[]) {
-REF_MPI ref_mpi;
+  REF_INT pos;
+  REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
+
+  RXS(ref_args_find(argc, argv, "--tec", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY && pos + 1 < argc) {
+    REF_OCT ref_oct;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_tec(ref_oct, argv[pos + 1]), "tec");
+    RSS(ref_oct_free(ref_oct), "search oct");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   { /* create */
     REF_OCT ref_oct;
@@ -35,7 +48,7 @@ REF_MPI ref_mpi;
     RSS(ref_oct_free(ref_oct), "search oct");
   }
 
-RSS(ref_mpi_free(ref_mpi), "mpi free");
+  RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
 }
