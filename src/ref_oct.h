@@ -30,6 +30,8 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 struct REF_OCT_STRUCT {
   REF_DBL bbox[6];
+  REF_INT n, max;
+  REF_INT *children;
 };
 
 REF_FCN REF_STATUS ref_oct_create(REF_OCT *ref_oct);

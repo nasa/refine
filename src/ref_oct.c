@@ -38,11 +38,17 @@ REF_FCN REF_STATUS ref_oct_create(REF_OCT *ref_oct_ptr) {
   ref_oct->bbox[4] = 0.0;
   ref_oct->bbox[5] = 1.0;
 
+  ref_oct->n = 1;
+  ref_oct->max = 9;
+  ref_oct->children = NULL;
+  ref_malloc_init(ref_oct->children, 8 * ref_oct->max, REF_INT, REF_EMPTY);
+
   return REF_SUCCESS;
 }
 
 REF_FCN REF_STATUS ref_oct_free(REF_OCT ref_oct) {
   if (NULL == (void *)ref_oct) return REF_NULL;
+  ref_free(ref_oct->children);
   ref_free(ref_oct);
   return REF_SUCCESS;
 }
