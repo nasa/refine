@@ -64,6 +64,22 @@ REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
 
   fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[2],
           ref_oct->bbox[4]);
+  fprintf(f, "%f %f %f\n", ref_oct->bbox[1], ref_oct->bbox[2],
+          ref_oct->bbox[4]);
+  fprintf(f, "%f %f %f\n", ref_oct->bbox[1], ref_oct->bbox[3],
+          ref_oct->bbox[4]);
+  fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[3],
+          ref_oct->bbox[4]);
+  fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[2],
+          ref_oct->bbox[5]);
+  fprintf(f, "%f %f %f\n", ref_oct->bbox[1], ref_oct->bbox[2],
+          ref_oct->bbox[5]);
+  fprintf(f, "%f %f %f\n", ref_oct->bbox[1], ref_oct->bbox[3],
+          ref_oct->bbox[5]);
+  fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[3],
+          ref_oct->bbox[5]);
+
+  fprintf(f, "%d %d %d %d %d %d %d %d\n", 1, 2, 3, 4, 5, 6, 7, 8);
 
   fclose(f);
   return REF_SUCCESS;
