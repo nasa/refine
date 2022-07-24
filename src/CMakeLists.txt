@@ -41,6 +41,7 @@ set(REF_TWO_HEADERS
         ref_migrate.h
         ref_mpi.h
         ref_node.h
+        ref_oct.h
         ref_part.h
         ref_phys.h
         ref_recon.h
@@ -91,6 +92,7 @@ set(REF_CORE_SRC
         ref_meshlink.c
         ref_metric.c
         ref_node.c
+        ref_oct.c
         ref_part.c
         ref_phys.c
         ref_recon.c
@@ -277,6 +279,7 @@ set(REF_TESTS
         ref_migrate_test.c
         ref_mpi_test.c
         ref_node_test.c
+        ref_oct_test.c
         ref_part_test.c
         ref_phys_test.c
         ref_recon_test.c

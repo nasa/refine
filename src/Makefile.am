@@ -14,7 +14,7 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_malloc.h \
 	ref_math.h ref_matrix.h ref_meshlink.h \
 	ref_metric.h ref_migrate.h ref_mpi.h \
-	ref_node.h ref_part.h ref_phys.h ref_recon.h \
+	ref_node.h ref_oct.h ref_part.h ref_phys.h ref_recon.h \
 	ref_search.h ref_shard.h ref_smooth.h ref_sort.h ref_split.h \
 	ref_subdiv.h ref_swap.h ref_validation.h
 
@@ -60,6 +60,7 @@ librefine_core_a_SOURCES = \
 	ref_matrix.c \
 	ref_metric.c \
 	ref_node.c \
+	ref_oct.c \
 	ref_part.c \
 	ref_phys.c \
 	ref_recon.c \
@@ -370,6 +371,11 @@ TESTS += ref_node_test
 noinst_PROGRAMS += ref_node_test
 ref_node_test_SOURCES = ref_node_test.c
 ref_node_test_LDADD = $(default_ldadd)
+
+TESTS += ref_oct_test
+noinst_PROGRAMS += ref_oct_test
+ref_oct_test_SOURCES = ref_oct_test.c
+ref_oct_test_LDADD = $(default_ldadd)
 
 TESTS += ref_part_test
 noinst_PROGRAMS += ref_part_test
