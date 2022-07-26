@@ -426,7 +426,7 @@ REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,
-                                        REF_DBL alpha_rad) {
+                                        REF_DBL alpha_rad, REF_BOOL on_rails) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -449,7 +449,6 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   REF_BOOL problem_detected = REF_FALSE;
 
-  REF_BOOL on_rails = REF_FALSE;
   REF_INT rail_max = 10000;
   REF_INT *rail_n = NULL;
   REF_DBL **rail_xyz = NULL;

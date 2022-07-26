@@ -37,7 +37,7 @@ REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,
-                                        REF_DBL alpha_rad);
+                                        REF_DBL alpha_rad, REF_BOOL on_rails);
 
 REF_FCN REF_STATUS ref_inflate_rate(REF_INT nlayers, REF_DBL first_thickness,
                                     REF_DBL total_thickness, REF_DBL *rate);

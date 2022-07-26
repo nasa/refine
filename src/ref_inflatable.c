@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
   char *mapbc_file_name, *family_name;
 
   REF_BOOL debug = REF_FALSE;
+  REF_BOOL on_rails = REF_FALSE;
 
   if (7 > argc) {
     printf(
@@ -128,6 +129,14 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
     ref_gather_blocking_frame(ref_grid, "core");
+  }
+
+  pos = REF_EMPTY;
+  RXS(ref_args_find(argc, argv, "--rails", &pos), REF_NOT_FOUND,
+      "debug search");
+  if (REF_EMPTY != pos) {
+    on_rails = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf(" --rails %d\n", (int)on_rails);
   }
 
   aoa_pos = REF_EMPTY;
@@ -271,7 +280,7 @@ int main(int argc, char *argv[]) {
     xshift = thickness / tan(mach_angle_rad);
     if (extrude_radially) {
       RSS(ref_inflate_radially(ref_grid, faceids, origin, thickness,
-                               mach_angle_rad, alpha_rad),
+                               mach_angle_rad, alpha_rad, on_rails),
           "inflate");
     } else {
       RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
