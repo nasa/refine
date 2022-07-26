@@ -27,6 +27,7 @@
 #include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_sort.h"
 
 REF_FCN REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
                                            REF_DBL *min_dot) {
@@ -514,6 +515,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
     each_ref_dict_key_index(faceids, i) {
       REF_DBL phi, phi0, phi1;
+      REF_INT *order;
+      REF_DBL *tmp;
       RSS(ref_mpi_allconcat(ref_mpi, 3, rail_n[i], rail_xyz[i], &n, &source,
                             (void **)&concatenated, REF_DBL_TYPE),
           "concat");
@@ -550,6 +553,50 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           rail_n1[i]++;
         }
       }
+
+      ref_malloc(order, rail_n[i], REF_INT);
+      ref_malloc(tmp, rail_n[i], REF_DBL);
+      RSS(ref_sort_heap_dbl(rail_n0[i], rail_x0[i], order), "heap0");
+      for (node = 0; node < rail_n0[i]; node++) {
+        tmp[order[node]] = rail_x0[i][node];
+      }
+      for (node = 0; node < rail_n0[i]; node++) {
+        rail_x0[i][node] = tmp[node];
+      }
+      for (node = 0; node < rail_n0[i]; node++) {
+        tmp[order[node]] = rail_yz0[i][0 + 2 * node];
+      }
+      for (node = 0; node < rail_n0[i]; node++) {
+        rail_yz0[i][0 + 2 * node] = tmp[node];
+      }
+      for (node = 0; node < rail_n0[i]; node++) {
+        tmp[order[node]] = rail_yz0[i][1 + 2 * node];
+      }
+      for (node = 0; node < rail_n0[i]; node++) {
+        rail_yz0[i][1 + 2 * node] = tmp[node];
+      }
+      RSS(ref_sort_heap_dbl(rail_n1[i], rail_x1[i], order), "heap1");
+      for (node = 0; node < rail_n1[i]; node++) {
+        tmp[order[node]] = rail_x1[i][node];
+      }
+      for (node = 0; node < rail_n1[i]; node++) {
+        rail_x1[i][node] = tmp[node];
+      }
+      for (node = 0; node < rail_n1[i]; node++) {
+        tmp[order[node]] = rail_yz1[i][0 + 2 * node];
+      }
+      for (node = 0; node < rail_n1[i]; node++) {
+        rail_yz1[i][0 + 2 * node] = tmp[node];
+      }
+      for (node = 0; node < rail_n1[i]; node++) {
+        tmp[order[node]] = rail_yz1[i][1 + 2 * node];
+      }
+      for (node = 0; node < rail_n1[i]; node++) {
+        rail_yz1[i][1 + 2 * node] = tmp[node];
+      }
+      ref_free(tmp);
+      ref_free(order);
+
       if (ref_mpi_once(ref_mpi)) {
         printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f of %6d %6d\n",
                ref_dict_key(faceids, i), rail_orient[i], rail_n[i],
@@ -557,6 +604,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       }
     }
   }
+
   o2n_max = ref_node_max(ref_node);
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
