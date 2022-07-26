@@ -454,7 +454,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_DBL **rail_xyz = NULL;
 
   if (on_rails) {
-    REF_INT i;
+    REF_INT i, n, *source;
+    REF_DBL *concatenated;
     ref_malloc_init(rail_n, ref_dict_n(faceids), REF_INT, 0);
     ref_malloc_init(rail_xyz, ref_dict_n(faceids), REF_DBL *, NULL);
     each_ref_dict_key_index(faceids, i) {
@@ -491,6 +492,17 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           }
         }
       }
+    }
+
+    each_ref_dict_key_index(faceids, i) {
+      RSS(ref_mpi_allconcat(ref_mpi, 3, rail_n[i], rail_xyz[i], &n, &source,
+                            (void **)&concatenated, REF_DBL_TYPE),
+          "concat");
+      ref_free(rail_xyz[i]);
+      rail_n[i] = n;
+      rail_xyz[i] = concatenated;
+      if (ref_mpi_once(ref_mpi))
+        printf("id %d has %d\n", ref_dict_key(faceids, i), rail_n[i]);
     }
   }
 
