@@ -1,10 +1,4 @@
-# cigar.csm written by ocsmSave (v1.20)
 
-# Constant, Design, and Output Parameters:
-
-# Global Attributes:
-
-# Branches:
 skbeg     0   0   0   1
    skvar     xy   0.000000;0.000000;0.000000;1.000000;0.000000;0.000000;1.000000;0.100000;0.000000;0.500000;0.200000;0.000000;0.000000;0.100000;0.000000;
    skcon     X   1   -1  0
@@ -23,5 +17,29 @@ skbeg     0   0   0   1
    spline    ::x[5]   ::y[5]   0
    linseg    ::x[1]   ::y[1]   0
 skend     0
+rotatex 90 0 0
+store plane
+restore plane
+set n 6
+revolve 0 0 0 1 0 0 -180/n
+select face 1
+attribute bc_name $5000_outflow
+select face 2
+attribute bc_name $5000_cigar
+select face 3
+attribute bc_name $5000_inflow
+select face 4
+attribute bc_name $6662_ysymm
+select face 5
+attribute bc_name $6662_ysymm
+store slice
+restore slice
 
-end
+patbeg i n-1
+ restore slice
+ rotatex -i*180/n 0 0
+ union
+patend
+
+dump cigar.egads
+
