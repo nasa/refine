@@ -463,11 +463,32 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     }
     each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
       if (ref_dict_has_key(faceids, nodes[3])) {
+        REF_INT dict_index;
+        RSS(ref_dict_location(faceids, nodes[3], &dict_index), "loc");
         for (tri_node = 0; tri_node < 3; tri_node++) {
           REF_INT max_id = 4, n_id = 0, ids[4];
           node = nodes[tri_node];
-          RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
-          if (n_id > 1) {
+          if (ref_node_owned(ref_node, node)) {
+            RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
+            if (n_id > 1) {
+              if (rail_n[dict_index] >= rail_max) THROW("out of rail_max");
+
+              normal[0] = 0.0;
+              normal[1] = ref_node_xyz(ref_node, 1, node) - origin[1];
+              normal[2] = ref_node_xyz(ref_node, 2, node) - origin[2];
+              RSS(ref_math_normalize(normal), "make norm");
+              phi_rad = atan2(normal[1], normal[2]);
+              alpha_weighting = cos(phi_rad);
+              xshift =
+                  thickness / tan(mach_angle_rad + alpha_weighting * alpha_rad);
+              rail_xyz[dict_index][0 + 3 * rail_n[dict_index]] =
+                  xshift + ref_node_xyz(ref_node, 0, node);
+              rail_xyz[dict_index][1 + 3 * rail_n[dict_index]] =
+                  thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
+              rail_xyz[dict_index][2 + 3 * rail_n[dict_index]] =
+                  thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
+              rail_n[dict_index]++;
+            }
           }
         }
       }
