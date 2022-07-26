@@ -412,6 +412,8 @@ REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(o2g);
   ref_free(o2n);
 
+  ref_gather_blocking_frame(ref_grid, "layer");
+
   if (problem_detected) {
     printf("ERROR: inflated grid invalid, writing ref_inflate_problem.tec\n");
     RSS(ref_export_tec_surf(ref_grid, "ref_inflate_problem.tec"), "tec");
@@ -593,6 +595,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   ref_free(o2g);
   ref_free(o2n);
+
+  ref_gather_blocking_frame(ref_grid, "layer");
 
   if (problem_detected) {
     printf("ERROR: inflated grid invalid, writing ref_inflate_problem.tec\n");

@@ -68,6 +68,8 @@ int main(int argc, char *argv[]) {
   REF_INT bc_type;
   char *mapbc_file_name, *family_name;
 
+  REF_BOOL debug = REF_FALSE;
+
   if (7 > argc) {
     printf(
         "usage: \n %s input.grid nlayers first_thickness total_thickness mach "
@@ -114,6 +116,19 @@ int main(int argc, char *argv[]) {
   mach = atof(argv[5]);
 
   last_face_arg = argc;
+
+  pos = REF_EMPTY;
+  RXS(ref_args_find(argc, argv, "--debug", &pos), REF_NOT_FOUND,
+      "debug search");
+  if (REF_EMPTY != pos) {
+    debug = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf(" --debug %d\n", (int)debug);
+  }
+  if (debug) {
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "movie on");
+    ref_gather_blocking_frame(ref_grid, "core");
+  }
 
   aoa_pos = REF_EMPTY;
   RXS(ref_args_find(argc, argv, "--aoa", &aoa_pos), REF_NOT_FOUND,
