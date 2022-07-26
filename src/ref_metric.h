@@ -183,6 +183,8 @@ REF_FCN REF_STATUS ref_metric_step_exp(REF_DBL s, REF_DBL *h, REF_DBL h0,
 
 REF_FCN REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
                                     int narg, char *args[]);
+REF_FCN REF_STATUS ref_metric_parse_to_node(REF_GRID ref_grid, int narg,
+                                            char *args[]);
 REF_FCN REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom,
                                                   REF_DBL *xyz, REF_DBL *dist);
 

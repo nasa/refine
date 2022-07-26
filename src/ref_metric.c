@@ -3330,6 +3330,18 @@ REF_FCN REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_metric_parse_to_node(REF_GRID ref_grid, int argc,
+                                            char *argv[]) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *metric;
+  ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
+  RSS(ref_metric_from_node(metric, ref_node), "from");
+  RSS(ref_metric_parse(metric, ref_grid, argc, argv), "parse uniform");
+  RSS(ref_metric_to_node(metric, ref_node), "to");
+  ref_free(metric);
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_metric_isotropic(REF_DBL *metric, REF_GRID ref_grid,
                                         REF_DBL *hh) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
