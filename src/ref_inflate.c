@@ -453,13 +453,21 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT *rail_n = NULL;
   REF_DBL **rail_xyz = NULL;
   REF_DBL *rail_orient = NULL;
+  REF_DBL *rail_phi0 = NULL;
+  REF_DBL **rail_xyz0 = NULL;
+  REF_DBL *rail_phi1 = NULL;
+  REF_DBL **rail_xyz1 = NULL;
 
   if (on_rails) {
     REF_INT i, n, *source;
     REF_DBL *concatenated;
+    ref_malloc_init(rail_phi0, ref_dict_n(faceids), REF_DBL, -REF_DBL_MAX);
+    ref_malloc_init(rail_phi1, ref_dict_n(faceids), REF_DBL, REF_DBL_MAX);
     ref_malloc_init(rail_orient, ref_dict_n(faceids), REF_DBL, 1);
     ref_malloc_init(rail_n, ref_dict_n(faceids), REF_INT, 0);
     ref_malloc_init(rail_xyz, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_xyz0, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_xyz1, ref_dict_n(faceids), REF_DBL *, NULL);
     each_ref_dict_key_index(faceids, i) {
       ref_malloc(rail_xyz[i], rail_max, REF_DBL);
     }
@@ -512,9 +520,12 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
         phi0 = MIN(phi0, phi);
         phi1 = MAX(phi1, phi);
       }
+      rail_phi0[i] = phi0;
+      rail_phi1[i] = phi1;
       if (ref_mpi_once(ref_mpi)) {
         printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f\n",
-               ref_dict_key(faceids, i), rail_orient[i], rail_n[i], phi0, phi1);
+               ref_dict_key(faceids, i), rail_orient[i], rail_n[i],
+               rail_phi0[i], rail_phi1[i]);
       }
     }
   }
@@ -670,10 +681,14 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   if (on_rails) {
     REF_INT i;
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_xyz1[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_xyz0[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_xyz[i]); }
     ref_free(rail_xyz);
     ref_free(rail_n);
     ref_free(rail_orient);
+    ref_free(rail_phi1);
+    ref_free(rail_phi0);
   }
 
   if (problem_detected) {
