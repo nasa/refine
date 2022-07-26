@@ -470,7 +470,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           node = nodes[tri_node];
           if (ref_node_owned(ref_node, node)) {
             RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
-            if (n_id > 1) {
+            if (n_id > 1 || !ref_cell_node_empty(qua, node)) {
               if (rail_n[dict_index] >= rail_max) THROW("out of rail_max");
 
               normal[0] = 0.0;
@@ -495,14 +495,24 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     }
 
     each_ref_dict_key_index(faceids, i) {
+      REF_DBL phi, phi0, phi1;
       RSS(ref_mpi_allconcat(ref_mpi, 3, rail_n[i], rail_xyz[i], &n, &source,
                             (void **)&concatenated, REF_DBL_TYPE),
           "concat");
       ref_free(rail_xyz[i]);
       rail_n[i] = n;
       rail_xyz[i] = concatenated;
-      if (ref_mpi_once(ref_mpi))
-        printf("id %d has %d\n", ref_dict_key(faceids, i), rail_n[i]);
+      phi0 = REF_DBL_MAX;
+      phi1 = -REF_DBL_MAX;
+      for (node = 0; node < rail_n[i]; node++) {
+        phi = atan2(rail_xyz[i][1 + 3 * node], rail_xyz[i][2 + 3 * node]);
+        phi0 = MIN(phi0, phi);
+        phi1 = MAX(phi1, phi);
+      }
+      if (ref_mpi_once(ref_mpi)) {
+        printf("id %d has %d phi %f %f\n", ref_dict_key(faceids, i), rail_n[i],
+               phi0, phi1);
+      }
     }
   }
 
