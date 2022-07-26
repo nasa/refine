@@ -17,6 +17,7 @@ ${src}/ref bootstrap ${geomfile}
 
 ${src}/ref adapt cigar-vol.meshb \
       --egads ${geomfile} \
+      --uniform cyl ceil 0.05 1  0 0 0  1 0 0  1 1 \
       -x cigar.meshb \
       -x cigar.plt
 
