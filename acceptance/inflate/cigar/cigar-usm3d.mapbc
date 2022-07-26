@@ -1,0 +1,24 @@
+ # the date
+ # WARNING: mapbc file created from ugrid file
+ # WARNING: Boundary conditions must be remapped
+ # patch no.     bc      family   surfs    surfids    name
+         1         3         3      0      0 outflow
+         2         3         3      0      0 cigar
+         3         3         3      0      0 outflow
+         4         1         1      0      0 ysymm
+         5         3         3      0      0 inflow
+         6         3         3      0      0 cigar
+         7         3         3      0      0 outflow
+         8         1         1      0      0 ysymm
+         9         3         3      0      0 inflow
+        10         3         3      0      0 cigar
+        11         3         3      0      0 outflow
+        12         3         3      0      0 outflow
+        13         3         3      0      0 cigar
+        14         3         3      0      0 inflow
+        15         3         3      0      0 inflow
+        16         3         3      0      0 cigar
+        17         3         3      0      0 outflow
+        18         3         3      0      0 cigar
+        19         3         3      0      0 inflow
+        20         3         3      0      0 inflow
