@@ -451,6 +451,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   REF_INT rail_max = 10000;
   REF_INT *rail_n = NULL;
+  REF_INT *rail_n0 = NULL;
+  REF_INT *rail_n1 = NULL;
   REF_DBL **rail_xyz = NULL;
   REF_DBL *rail_orient = NULL;
   REF_DBL *rail_phi0 = NULL;
@@ -467,6 +469,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     ref_malloc_init(rail_phi1, ref_dict_n(faceids), REF_DBL, REF_DBL_MAX);
     ref_malloc_init(rail_orient, ref_dict_n(faceids), REF_DBL, 1);
     ref_malloc_init(rail_n, ref_dict_n(faceids), REF_INT, 0);
+    ref_malloc_init(rail_n0, ref_dict_n(faceids), REF_INT, 0);
+    ref_malloc_init(rail_n1, ref_dict_n(faceids), REF_INT, 0);
     ref_malloc_init(rail_xyz, ref_dict_n(faceids), REF_DBL *, NULL);
     ref_malloc_init(rail_x0, ref_dict_n(faceids), REF_DBL *, NULL);
     ref_malloc_init(rail_yz0, ref_dict_n(faceids), REF_DBL *, NULL);
@@ -526,14 +530,33 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       }
       rail_phi0[i] = phi0;
       rail_phi1[i] = phi1;
+
+      ref_malloc(rail_x0[i], rail_n[i], REF_DBL);
+      ref_malloc(rail_x1[i], rail_n[i], REF_DBL);
+      ref_malloc(rail_yz0[i], 2 * rail_n[i], REF_DBL);
+      ref_malloc(rail_yz1[i], 2 * rail_n[i], REF_DBL);
+      for (node = 0; node < rail_n[i]; node++) {
+        phi = atan2(rail_xyz[i][2 + 3 * node],
+                    rail_orient[i] * rail_xyz[i][1 + 3 * node]);
+        if (ABS(phi - rail_phi0[i]) < ABS(phi - rail_phi1[i])) {
+          rail_x0[i][rail_n0[i]] = rail_xyz[i][0 + 3 * node];
+          rail_yz0[i][rail_n0[i]] = rail_xyz[i][1 + 3 * node];
+          rail_yz0[i][rail_n0[i]] = rail_xyz[i][2 + 3 * node];
+          rail_n0[i]++;
+        } else {
+          rail_x1[i][rail_n1[i]] = rail_xyz[i][0 + 3 * node];
+          rail_yz1[i][rail_n1[i]] = rail_xyz[i][1 + 3 * node];
+          rail_yz1[i][rail_n1[i]] = rail_xyz[i][2 + 3 * node];
+          rail_n1[i]++;
+        }
+      }
       if (ref_mpi_once(ref_mpi)) {
-        printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f\n",
+        printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f of %6d %6d\n",
                ref_dict_key(faceids, i), rail_orient[i], rail_n[i],
-               rail_phi0[i], rail_phi1[i]);
+               rail_phi0[i], rail_phi1[i], rail_n0[i], rail_n1[i]);
       }
     }
   }
-
   o2n_max = ref_node_max(ref_node);
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
@@ -695,6 +718,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     ref_free(rail_yz0);
     ref_free(rail_x0);
     ref_free(rail_xyz);
+    ref_free(rail_n1);
+    ref_free(rail_n0);
     ref_free(rail_n);
     ref_free(rail_orient);
     ref_free(rail_phi1);
