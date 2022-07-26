@@ -454,9 +454,11 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_DBL **rail_xyz = NULL;
   REF_DBL *rail_orient = NULL;
   REF_DBL *rail_phi0 = NULL;
-  REF_DBL **rail_xyz0 = NULL;
+  REF_DBL **rail_x0 = NULL;
+  REF_DBL **rail_yz0 = NULL;
   REF_DBL *rail_phi1 = NULL;
-  REF_DBL **rail_xyz1 = NULL;
+  REF_DBL **rail_x1 = NULL;
+  REF_DBL **rail_yz1 = NULL;
 
   if (on_rails) {
     REF_INT i, n, *source;
@@ -466,8 +468,10 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     ref_malloc_init(rail_orient, ref_dict_n(faceids), REF_DBL, 1);
     ref_malloc_init(rail_n, ref_dict_n(faceids), REF_INT, 0);
     ref_malloc_init(rail_xyz, ref_dict_n(faceids), REF_DBL *, NULL);
-    ref_malloc_init(rail_xyz0, ref_dict_n(faceids), REF_DBL *, NULL);
-    ref_malloc_init(rail_xyz1, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_x0, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_yz0, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_x1, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_yz1, ref_dict_n(faceids), REF_DBL *, NULL);
     each_ref_dict_key_index(faceids, i) {
       ref_malloc(rail_xyz[i], rail_max, REF_DBL);
     }
@@ -681,9 +685,15 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   if (on_rails) {
     REF_INT i;
-    each_ref_dict_key_index(faceids, i) { ref_free(rail_xyz1[i]); }
-    each_ref_dict_key_index(faceids, i) { ref_free(rail_xyz0[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_yz1[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_x1[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_yz0[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_x0[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_xyz[i]); }
+    ref_free(rail_yz1);
+    ref_free(rail_x1);
+    ref_free(rail_yz0);
+    ref_free(rail_x0);
     ref_free(rail_xyz);
     ref_free(rail_n);
     ref_free(rail_orient);
