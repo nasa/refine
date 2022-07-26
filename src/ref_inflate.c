@@ -456,6 +456,26 @@ REF_FCN static REF_STATUS ref_inflate_sort_rail(REF_INT n, REF_DBL *x,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
+                                                   REF_DBL *yz) {
+  REF_INT orig, compact, max;
+  REF_DBL tol = 1e-8;
+  max = *n;
+  compact = 0;
+  for (orig = 1; orig < max; orig++) {
+    if (ABS(x[orig] - x[compact] > tol)) {
+      compact++;
+    }
+    if (orig != compact) {
+      x[compact] = x[orig];
+      yz[0 + 2 * compact] = yz[0 + 2 * orig];
+      yz[1 + 2 * compact] = yz[1 + 2 * orig];
+    }
+  }
+  *n = compact;
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,
@@ -547,6 +567,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
     each_ref_dict_key_index(faceids, i) {
       REF_DBL phi, phi0, phi1;
+      REF_INT old0, old1;
 
       RSS(ref_mpi_allconcat(ref_mpi, 3, rail_n[i], rail_xyz[i], &n, &source,
                             (void **)&concatenated, REF_DBL_TYPE),
@@ -590,10 +611,19 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       RSS(ref_inflate_sort_rail(rail_n1[i], rail_x1[i], rail_yz1[i]),
           "sort rail 1");
 
+      old0 = rail_n0[i];
+      old1 = rail_n1[i];
+      RSS(ref_inflate_compact_rail(&(rail_n0[i]), rail_x0[i], rail_yz0[i]),
+          "compact rail 0");
+      RSS(ref_inflate_compact_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i]),
+          "compact rail 1");
+
       if (ref_mpi_once(ref_mpi)) {
-        printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f of %6d %6d\n",
-               ref_dict_key(faceids, i), rail_orient[i], rail_n[i],
-               rail_phi0[i], rail_phi1[i], rail_n0[i], rail_n1[i]);
+        printf(
+            "id %4d orient %5.2f has %6d phi %5.2f %5.2f of %6d %6d was %6d "
+            "%6d\n",
+            ref_dict_key(faceids, i), rail_orient[i], rail_n[i], rail_phi0[i],
+            rail_phi1[i], rail_n0[i], rail_n1[i], old0, old1);
       }
     }
   }
