@@ -21,3 +21,11 @@ ${src}/ref adapt cigar-vol.meshb \
       -x cigar.meshb \
       -x cigar.plt
 
+${two}/ref_inflatable  \
+    cigar.meshb \
+    -10 \
+    0.05 \
+    5.0 \
+    1.4 \
+    --mapbc cigar-usm3d.mapbc cigar 3
+
