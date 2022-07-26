@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "ref_cell.h"
+#include "ref_cloud.h"
 #include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -449,6 +450,18 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   REF_BOOL problem_detected = REF_FALSE;
 
+  REF_BOOL on_rails = REF_FALSE;
+  REF_CLOUD *cloud = NULL;
+
+  if (on_rails) {
+    REF_INT i;
+    ref_malloc_init(cloud, 2 * ref_dict_n(faceids), REF_CLOUD, NULL);
+    each_ref_dict_key_index(faceids, i) {
+      RSS(ref_cloud_create(&(cloud[0 + 2 * i]), 3), "cloud");
+      RSS(ref_cloud_create(&(cloud[1 + 2 * i]), 3), "cloud");
+    }
+  }
+
   o2n_max = ref_node_max(ref_node);
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
@@ -597,6 +610,15 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(o2n);
 
   ref_gather_blocking_frame(ref_grid, "layer");
+
+  if (on_rails) {
+    REF_INT i;
+    each_ref_dict_key_index(faceids, i) {
+      RSS(ref_cloud_free(cloud[0 + 2 * i]), "free cloud");
+      RSS(ref_cloud_free(cloud[1 + 2 * i]), "free cloud");
+    }
+    ref_free(cloud);
+  }
 
   if (problem_detected) {
     printf("ERROR: inflated grid invalid, writing ref_inflate_problem.tec\n");
