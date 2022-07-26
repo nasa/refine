@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include "ref_cell.h"
-#include "ref_cloud.h"
 #include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -451,14 +450,17 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_BOOL problem_detected = REF_FALSE;
 
   REF_BOOL on_rails = REF_FALSE;
-  REF_CLOUD *cloud = NULL;
+  REF_INT rail_max = 10000;
+  REF_INT *rail_n = NULL;
+  REF_DBL **rail_xyz = NULL;
 
   if (on_rails) {
     REF_INT i;
-    ref_malloc_init(cloud, 2 * ref_dict_n(faceids), REF_CLOUD, NULL);
+    ref_malloc_init(rail_n, 2 * ref_dict_n(faceids), REF_INT, 0);
+    ref_malloc_init(rail_xyz, 2 * ref_dict_n(faceids), REF_DBL *, NULL);
     each_ref_dict_key_index(faceids, i) {
-      RSS(ref_cloud_create(&(cloud[0 + 2 * i]), 3), "cloud");
-      RSS(ref_cloud_create(&(cloud[1 + 2 * i]), 3), "cloud");
+      ref_malloc(rail_xyz[0 + 2 * i], rail_max, REF_DBL);
+      ref_malloc(rail_xyz[1 + 2 * i], rail_max, REF_DBL);
     }
   }
 
@@ -614,10 +616,11 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   if (on_rails) {
     REF_INT i;
     each_ref_dict_key_index(faceids, i) {
-      RSS(ref_cloud_free(cloud[0 + 2 * i]), "free cloud");
-      RSS(ref_cloud_free(cloud[1 + 2 * i]), "free cloud");
+      ref_free(rail_xyz[0 + 2 * i]);
+      ref_free(rail_xyz[1 + 2 * i]);
     }
-    ref_free(cloud);
+    ref_free(rail_xyz);
+    ref_free(rail_n);
   }
 
   if (problem_detected) {
