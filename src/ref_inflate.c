@@ -451,18 +451,15 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   REF_BOOL on_rails = REF_FALSE;
   REF_INT rail_max = 10000;
-  REF_INT *rail_id = NULL;
   REF_INT *rail_n = NULL;
   REF_DBL **rail_xyz = NULL;
 
   if (on_rails) {
     REF_INT i;
-    ref_malloc_init(rail_id, 2 * ref_dict_n(faceids), REF_INT, REF_EMPTY);
-    ref_malloc_init(rail_n, 2 * ref_dict_n(faceids), REF_INT, 0);
-    ref_malloc_init(rail_xyz, 2 * ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_n, ref_dict_n(faceids), REF_INT, 0);
+    ref_malloc_init(rail_xyz, ref_dict_n(faceids), REF_DBL *, NULL);
     each_ref_dict_key_index(faceids, i) {
-      ref_malloc(rail_xyz[0 + 2 * i], rail_max, REF_DBL);
-      ref_malloc(rail_xyz[1 + 2 * i], rail_max, REF_DBL);
+      ref_malloc(rail_xyz[i], rail_max, REF_DBL);
     }
     each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
       if (ref_dict_has_key(faceids, nodes[3])) {
@@ -470,6 +467,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           REF_INT max_id = 4, n_id = 0, ids[4];
           node = nodes[tri_node];
           RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
+          if (n_id > 1) {
+          }
         }
       }
     }
@@ -626,13 +625,9 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   if (on_rails) {
     REF_INT i;
-    each_ref_dict_key_index(faceids, i) {
-      ref_free(rail_xyz[0 + 2 * i]);
-      ref_free(rail_xyz[1 + 2 * i]);
-    }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_xyz[i]); }
     ref_free(rail_xyz);
     ref_free(rail_n);
-    ref_free(rail_id);
   }
 
   if (problem_detected) {
