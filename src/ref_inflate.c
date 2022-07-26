@@ -424,6 +424,38 @@ REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_inflate_sort_rail(REF_INT n, REF_DBL *x,
+                                                REF_DBL *yz) {
+  REF_INT node;
+  REF_INT *order;
+  REF_DBL *tmp;
+  ref_malloc(order, n, REF_INT);
+  ref_malloc(tmp, n, REF_DBL);
+  RSS(ref_sort_heap_dbl(n, x, order), "heap");
+  for (node = 0; node < n; node++) {
+    tmp[order[node]] = x[node];
+  }
+  for (node = 0; node < n; node++) {
+    x[node] = tmp[node];
+  }
+  for (node = 0; node < n; node++) {
+    tmp[order[node]] = yz[0 + 2 * node];
+  }
+  for (node = 0; node < n; node++) {
+    yz[0 + 2 * node] = tmp[node];
+  }
+  for (node = 0; node < n; node++) {
+    tmp[order[node]] = yz[1 + 2 * node];
+  }
+  for (node = 0; node < n; node++) {
+    yz[1 + 2 * node] = tmp[node];
+  }
+
+  ref_free(tmp);
+  ref_free(order);
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,
@@ -515,8 +547,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
     each_ref_dict_key_index(faceids, i) {
       REF_DBL phi, phi0, phi1;
-      REF_INT *order;
-      REF_DBL *tmp;
+
       RSS(ref_mpi_allconcat(ref_mpi, 3, rail_n[i], rail_xyz[i], &n, &source,
                             (void **)&concatenated, REF_DBL_TYPE),
           "concat");
@@ -554,48 +585,10 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
         }
       }
 
-      ref_malloc(order, rail_n[i], REF_INT);
-      ref_malloc(tmp, rail_n[i], REF_DBL);
-      RSS(ref_sort_heap_dbl(rail_n0[i], rail_x0[i], order), "heap0");
-      for (node = 0; node < rail_n0[i]; node++) {
-        tmp[order[node]] = rail_x0[i][node];
-      }
-      for (node = 0; node < rail_n0[i]; node++) {
-        rail_x0[i][node] = tmp[node];
-      }
-      for (node = 0; node < rail_n0[i]; node++) {
-        tmp[order[node]] = rail_yz0[i][0 + 2 * node];
-      }
-      for (node = 0; node < rail_n0[i]; node++) {
-        rail_yz0[i][0 + 2 * node] = tmp[node];
-      }
-      for (node = 0; node < rail_n0[i]; node++) {
-        tmp[order[node]] = rail_yz0[i][1 + 2 * node];
-      }
-      for (node = 0; node < rail_n0[i]; node++) {
-        rail_yz0[i][1 + 2 * node] = tmp[node];
-      }
-      RSS(ref_sort_heap_dbl(rail_n1[i], rail_x1[i], order), "heap1");
-      for (node = 0; node < rail_n1[i]; node++) {
-        tmp[order[node]] = rail_x1[i][node];
-      }
-      for (node = 0; node < rail_n1[i]; node++) {
-        rail_x1[i][node] = tmp[node];
-      }
-      for (node = 0; node < rail_n1[i]; node++) {
-        tmp[order[node]] = rail_yz1[i][0 + 2 * node];
-      }
-      for (node = 0; node < rail_n1[i]; node++) {
-        rail_yz1[i][0 + 2 * node] = tmp[node];
-      }
-      for (node = 0; node < rail_n1[i]; node++) {
-        tmp[order[node]] = rail_yz1[i][1 + 2 * node];
-      }
-      for (node = 0; node < rail_n1[i]; node++) {
-        rail_yz1[i][1 + 2 * node] = tmp[node];
-      }
-      ref_free(tmp);
-      ref_free(order);
+      RSS(ref_inflate_sort_rail(rail_n0[i], rail_x0[i], rail_yz0[i]),
+          "sort rail 0");
+      RSS(ref_inflate_sort_rail(rail_n1[i], rail_x1[i], rail_yz1[i]),
+          "sort rail 1");
 
       if (ref_mpi_once(ref_mpi)) {
         printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f of %6d %6d\n",
