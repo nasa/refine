@@ -687,6 +687,20 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
             thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
         ref_node_xyz(ref_node, 2, new_node) =
             thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
+        if (on_rails) {
+          REF_INT max_id = 4, n_id = 0, ids[4];
+          RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
+          if (1 == n_id && ref_cell_node_empty(qua, node)) {
+            REF_INT i0, i1, ind;
+            RSS(ref_dict_location(faceids, ids[0], &ind), "faceid loc");
+            RSS(ref_sort_search_dbl(rail_n0[ind], rail_x0[ind],
+                                    ref_node_xyz(ref_node, 0, new_node), &i0),
+                "rail i0");
+            RSS(ref_sort_search_dbl(rail_n1[ind], rail_x1[ind],
+                                    ref_node_xyz(ref_node, 0, new_node), &i1),
+                "rail i1");
+          }
+        }
       }
     }
   }
