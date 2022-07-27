@@ -717,12 +717,16 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
           if (1 == n_id && ref_cell_node_empty(qua, node)) {
             REF_INT ind;
-            REF_DBL xy0[2];
+            REF_DBL xy0[2], xy1[2];
             RSS(ref_dict_location(faceids, ids[0], &ind), "faceid loc");
             RSS(ref_inflate_interpolate_rail(
                     rail_n0[ind], rail_x0[ind], rail_yz0[ind],
                     ref_node_xyz(ref_node, 0, new_node), xy0),
                 "interp 0");
+            RSS(ref_inflate_interpolate_rail(
+                    rail_n1[ind], rail_x1[ind], rail_yz1[ind],
+                    ref_node_xyz(ref_node, 0, new_node), xy1),
+                "interp 1");
           }
         }
       }
