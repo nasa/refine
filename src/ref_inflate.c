@@ -482,6 +482,8 @@ REF_FCN static REF_STATUS ref_inflate_interpolate_rail(REF_INT n, REF_DBL *x,
                                                        REF_DBL *newyz) {
   REF_INT i0, i1;
   REF_DBL t0, t1;
+  if (xold < x[0] || x[n - 1] < xold)
+    printf("x range %f %f %f\n", x[0], xold, x[n - 1]);
   RSS(ref_sort_search_dbl(n, x, xold, &i0), "rail i0");
   i1 = i0 + 1;
   t1 = 0.0;
@@ -738,9 +740,11 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
             }
             t1 = MIN(MAX(0.0, t1), 1.0);
             t0 = 1.0 - t1;
+            /*
             printf("ind %d %d phi %f between %f %f weight %f %f \n",
                    ref_dict_key(faceids, ind), ids[0], phi, rail_phi0[ind],
                    rail_phi1[ind], t0, t1);
+            */
             /*
             printf(" old %f %f", ref_node_xyz(ref_node, 1, new_node),
                    ref_node_xyz(ref_node, 2, new_node));
