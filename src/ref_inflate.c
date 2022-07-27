@@ -568,9 +568,14 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_DBL **rail_x1 = NULL;
   REF_DBL **rail_yz1 = NULL;
 
+  REF_BOOL debug = REF_TRUE;
+
   if (on_rails) {
     REF_INT i, n, *source;
     REF_DBL *concatenated;
+    FILE *f = NULL;
+    if (debug && ref_mpi_once(ref_mpi)) f = fopen("ref_inflate_rail.tec", "w");
+
     ref_malloc_init(rail_phi0, ref_dict_n(faceids), REF_DBL, -REF_DBL_MAX);
     ref_malloc_init(rail_phi1, ref_dict_n(faceids), REF_DBL, REF_DBL_MAX);
     ref_malloc_init(rail_orient, ref_dict_n(faceids), REF_DBL, 1);
@@ -691,16 +696,20 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                ref_dict_key(faceids, i), rail_orient[i], rail_n[i],
                rail_phi0[i], rail_phi1[i], rail_n0[i], rail_n1[i]);
       }
-      if (REF_EMPTY == i && ref_mpi_once(ref_mpi)) {
-        printf("zone t=\"f%dphi0\"\n", i);
+      if (NULL != f) {
+        fprintf(f, "zone t=\"f%dphi0\"\n", i);
         for (node = 0; node < rail_n0[i]; node++)
-          printf(" %f %f %f\n", rail_x0[i][node], rail_yz0[i][0 + 2 * node],
-                 rail_yz0[i][1 + 2 * node]);
-        printf("zone t=\"f%dphi1\"\n", i);
+          fprintf(f, " %f %f %f\n", rail_x0[i][node], rail_yz0[i][0 + 2 * node],
+                  rail_yz0[i][1 + 2 * node]);
+        fprintf(f, "zone t=\"f%dphi1\"\n", i);
         for (node = 0; node < rail_n1[i]; node++)
-          printf(" %f %f %f\n", rail_x1[i][node], rail_yz1[i][0 + 2 * node],
-                 rail_yz1[i][1 + 2 * node]);
+          fprintf(f, " %f %f %f\n", rail_x1[i][node], rail_yz1[i][0 + 2 * node],
+                  rail_yz1[i][1 + 2 * node]);
       }
+    }
+    if (NULL != f) {
+      fclose(f);
+      f = NULL;
     }
   }
 
