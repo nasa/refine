@@ -492,6 +492,12 @@ REF_FCN static REF_STATUS ref_inflate_interpolate_rail(REF_INT n, REF_DBL *x,
   t0 = 1.0 - t1;
   newyz[0] = t0 * yz[0 + 2 * i0] + t1 * yz[0 + 2 * i1];
   newyz[1] = t0 * yz[1 + 2 * i0] + t1 * yz[1 + 2 * i1];
+
+  /*
+    printf("%f %f %f\n", xold - (t0 * x[i0] + t1 * x[i1]), xold,
+           (t0 * x[i0] + t1 * x[i1]));
+  */
+
   return REF_SUCCESS;
 }
 
