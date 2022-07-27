@@ -779,12 +779,19 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
             thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
         if (on_rails) {
           REF_INT max_id = 4, n_id = 0, ids[4];
+          REF_INT ind, jface;
           RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
-          if (1 == n_id && ref_cell_node_empty(qua, node)) {
-            REF_INT ind;
+          ind = REF_EMPTY;
+          for (jface = 0; jface < n_id; jface++) {
+            if (ref_dict_has_key(faceids, ids[jface])) {
+              RSS(ref_dict_location(faceids, ids[jface], &ind), "faceid loc");
+              break;
+            }
+          }
+          if (REF_EMPTY != ind) {
             REF_DBL yz0[2], yz1[2];
             REF_DBL t0, t1, phi;
-            RSS(ref_dict_location(faceids, ids[0], &ind), "faceid loc");
+            REF_DBL t_tol = 0.01;
             RSS(ref_inflate_interpolate_rail(
                     rail_n0[ind], rail_x0[ind], rail_yz0[ind],
                     ref_node_xyz(ref_node, 0, new_node), yz0),
@@ -803,6 +810,10 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
             }
             t1 = MIN(MAX(0.0, t1), 1.0);
             t0 = 1.0 - t1;
+
+            /* exclude points on edge of face */
+            if (t1 < t_tol || (1 - t_tol) < t1) continue;
+
             /*
             printf("ind %d %d phi %f between %f %f weight %f %f \n",
                    ref_dict_key(faceids, ind), ids[0], phi, rail_phi0[ind],
