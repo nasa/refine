@@ -631,6 +631,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           rail_n1[i]++;
         }
       }
+      REIS(rail_n[i], rail_n0[i] + rail_n1[i], "conservation of rail");
 
       RSS(ref_inflate_sort_rail(rail_n0[i], rail_x0[i], rail_yz0[i]),
           "sort rail 0");
