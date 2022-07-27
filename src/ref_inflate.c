@@ -619,13 +619,13 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                     rail_orient[i] * rail_xyz[i][1 + 3 * node]);
         if (ABS(phi - rail_phi0[i]) < ABS(phi - rail_phi1[i])) {
           rail_x0[i][rail_n0[i]] = rail_xyz[i][0 + 3 * node];
-          rail_yz0[i][rail_n0[i]] = rail_xyz[i][1 + 3 * node];
-          rail_yz0[i][rail_n0[i]] = rail_xyz[i][2 + 3 * node];
+          rail_yz0[i][0 + 2 * rail_n0[i]] = rail_xyz[i][1 + 3 * node];
+          rail_yz0[i][1 + 2 * rail_n0[i]] = rail_xyz[i][2 + 3 * node];
           rail_n0[i]++;
         } else {
           rail_x1[i][rail_n1[i]] = rail_xyz[i][0 + 3 * node];
-          rail_yz1[i][rail_n1[i]] = rail_xyz[i][1 + 3 * node];
-          rail_yz1[i][rail_n1[i]] = rail_xyz[i][2 + 3 * node];
+          rail_yz1[i][0 + 2 * rail_n1[i]] = rail_xyz[i][1 + 3 * node];
+          rail_yz1[i][1 + 2 * rail_n1[i]] = rail_xyz[i][2 + 3 * node];
           rail_n1[i]++;
         }
       }
