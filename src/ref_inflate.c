@@ -480,6 +480,29 @@ REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_inflate_extend_rail(REF_INT *n, REF_DBL *x,
+                                                  REF_DBL *yz) {
+  REF_DBL dx, l, dy;
+  if (2 > *n) return REF_SUCCESS;
+
+  dx = x[(*n) - 1] - x[(*n) - 2];
+  l = x[(*n) - 1] - x[0];
+  l = 0.25 * l;
+
+  if (ref_math_divisible(l, dx)) {
+    x[(*n)] = x[(*n) - 1] + l;
+
+    dy = yz[0 + 2 * ((*n) - 1)] - yz[0 + 2 * ((*n) - 2)];
+    yz[0 + 2 * (*n)] = yz[0 + 2 * ((*n) - 1)] + dy * (l / dx);
+
+    dy = yz[1 + 2 * ((*n) - 1)] - yz[1 + 2 * ((*n) - 2)];
+    yz[1 + 2 * (*n)] = yz[1 + 2 * ((*n) - 1)] + dy * (l / dx);
+
+    (*n)++;
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_inflate_interpolate_rail(REF_INT n, REF_DBL *x,
                                                        REF_DBL *yz,
                                                        REF_DBL xold,
@@ -652,6 +675,11 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           "compact rail 0");
       RSS(ref_inflate_compact_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i]),
           "compact rail 1");
+
+      RSS(ref_inflate_extend_rail(&(rail_n0[i]), rail_x0[i], rail_yz0[i]),
+          "extend rail 0");
+      RSS(ref_inflate_extend_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i]),
+          "extend rail 1");
 
       if (ref_mpi_once(ref_mpi)) {
         printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f of %6d %6d\n",
