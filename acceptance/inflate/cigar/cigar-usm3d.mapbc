@@ -5,20 +5,36 @@
          1         3         3      0      0 outflow
          2         3         3      0      0 cigar
          3         3         3      0      0 outflow
-         4         1         1      0      0 ysymm
+         4         3         3      0      0 outflow
          5         3         3      0      0 inflow
          6         3         3      0      0 cigar
-         7         3         3      0      0 outflow
-         8         1         1      0      0 ysymm
-         9         3         3      0      0 inflow
-        10         3         3      0      0 cigar
-        11         3         3      0      0 outflow
-        12         3         3      0      0 outflow
+         7         3         3      0      0 cigar
+         8         3         3      0      0 outflow
+         9         3         3      0      0 outflow
+        10         3         3      0      0 inflow
+        11         3         3      0      0 inflow
+        12         3         3      0      0 cigar
         13         3         3      0      0 cigar
-        14         3         3      0      0 inflow
-        15         3         3      0      0 inflow
-        16         3         3      0      0 cigar
-        17         3         3      0      0 outflow
+        14         3         3      0      0 outflow
+        15         3         3      0      0 outflow
+        16         3         3      0      0 inflow
+        17         3         3      0      0 inflow
         18         3         3      0      0 cigar
-        19         3         3      0      0 inflow
-        20         3         3      0      0 inflow
+        19         3         3      0      0 cigar
+        20         3         3      0      0 outflow
+        21         3         3      0      0 outflow
+        22         3         3      0      0 inflow
+        23         3         3      0      0 inflow
+        24         3         3      0      0 cigar
+        25         3         3      0      0 cigar
+        26         3         3      0      0 outflow
+        27         3         3      0      0 outflow
+        28         3         3      0      0 inflow
+        29         3         3      0      0 inflow
+        30         3         3      0      0 cigar
+        31         3         3      0      0 cigar
+        32         3         3      0      0 outflow
+        33         3         3      0      0 inflow
+        34         3         3      0      0 inflow
+        35         3         3      0      0 cigar
+        36         3         3      0      0 inflow

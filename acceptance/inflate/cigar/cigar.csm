@@ -20,8 +20,8 @@ skend     0
 rotatex 90 0 0
 store plane
 restore plane
-set n 6
-revolve 0 0 0 1 0 0 -180/n
+set n 12
+revolve 0 0 0 1 0 0 -360/n
 select face 1
 attribute bc_name $5000_outflow
 select face 2
@@ -37,7 +37,7 @@ restore slice
 
 patbeg i n-1
  restore slice
- rotatex -i*180/n 0 0
+ rotatex -i*360/n 0 0
  union
 patend
 

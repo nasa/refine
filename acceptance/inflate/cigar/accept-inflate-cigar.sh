@@ -13,19 +13,21 @@ fi
 geomfile=cigar.egads
 
 serveCSM -batch -skipTess cigar.csm
-${src}/ref bootstrap ${geomfile}
+${src}/ref bootstrap ${geomfile} -s 5
 
 ${src}/ref adapt cigar-vol.meshb \
+      -s 8 \
       --egads ${geomfile} \
       --uniform cyl ceil 0.05 1  0 0 0  1 0 0  1 1 \
       -x cigar.meshb \
       -x cigar.plt
 
-${two}/ref_inflatable  \
+${src}/ref_inflatable  \
     cigar.meshb \
     -10 \
-    0.05 \
+    0.1 \
     5.0 \
     1.4 \
-    --mapbc cigar-usm3d.mapbc cigar 3
+    --mapbc cigar-usm3d.mapbc cigar 3 \
+    --rails
 
