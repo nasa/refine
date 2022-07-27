@@ -660,7 +660,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
         if (ref_math_divisible((phi - rail_phi0[i]),
                                (rail_phi1[i] - rail_phi0[i]))) {
           REF_DBL t_phi = (phi - rail_phi0[i]) / (rail_phi1[i] - rail_phi0[i]);
-          REF_DBL t_tol = 0.01;
+          REF_DBL t_tol = 0.05;
           if (t_tol < t_phi && t_phi < (1.0 - t_tol)) continue;
         }
         if (ABS(phi - rail_phi0[i]) < ABS(phi - rail_phi1[i])) {
@@ -791,7 +791,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           if (REF_EMPTY != ind) {
             REF_DBL yz0[2], yz1[2];
             REF_DBL t0, t1, phi;
-            REF_DBL t_tol = 0.01;
+            REF_DBL t_tol = 0.05;
             RSS(ref_inflate_interpolate_rail(
                     rail_n0[ind], rail_x0[ind], rail_yz0[ind],
                     ref_node_xyz(ref_node, 0, new_node), yz0),
