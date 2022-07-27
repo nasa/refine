@@ -268,6 +268,7 @@ int main(int argc, char *argv[]) {
     printf("rate %f\n", rate);
     printf("layers %d\n", nlayers);
     printf("extrusion %d\n", extrude_radially);
+    printf("rails %d\n", on_rails);
   }
 
   if (REF_EMPTY == origin_pos)
@@ -304,6 +305,7 @@ int main(int argc, char *argv[]) {
     printf("rate %f\n", rate);
     printf("layers %d\n", nlayers);
     printf("extrusion %d\n", extrude_radially);
+    printf("rails %d\n", on_rails);
   }
 
   if (REF_EMPTY != scale_pos) {
