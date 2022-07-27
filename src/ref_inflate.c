@@ -433,19 +433,19 @@ REF_FCN static REF_STATUS ref_inflate_sort_rail(REF_INT n, REF_DBL *x,
   ref_malloc(tmp, n, REF_DBL);
   RSS(ref_sort_heap_dbl(n, x, order), "heap");
   for (node = 0; node < n; node++) {
-    tmp[order[node]] = x[node];
+    tmp[node] = x[order[node]];
   }
   for (node = 0; node < n; node++) {
     x[node] = tmp[node];
   }
   for (node = 0; node < n; node++) {
-    tmp[order[node]] = yz[0 + 2 * node];
+    tmp[node] = yz[0 + 2 * order[node]];
   }
   for (node = 0; node < n; node++) {
     yz[0 + 2 * node] = tmp[node];
   }
   for (node = 0; node < n; node++) {
-    tmp[order[node]] = yz[1 + 2 * node];
+    tmp[node] = yz[1 + 2 * order[node]];
   }
   for (node = 0; node < n; node++) {
     yz[1 + 2 * node] = tmp[node];
