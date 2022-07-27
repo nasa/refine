@@ -598,6 +598,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
     each_ref_dict_key_index(faceids, i) {
       REF_DBL phi, phi0, phi1;
+      REF_DBL ymax;
 
       RSS(ref_mpi_allconcat(ref_mpi, 3, rail_n[i], rail_xyz[i], &n, &source,
                             (void **)&concatenated, REF_DBL_TYPE),
@@ -605,6 +606,11 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       ref_free(rail_xyz[i]);
       rail_n[i] = n;
       rail_xyz[i] = concatenated;
+      ymax = -REF_DBL_MAX;
+      for (node = 0; node < rail_n[i]; node++) {
+        ymax = MAX(ymax, rail_xyz[i][1 + 3 * node]);
+      }
+      if (ymax < 0.0) rail_orient[i] = -1.0;
       phi0 = REF_DBL_MAX;
       phi1 = -REF_DBL_MAX;
       for (node = 0; node < rail_n[i]; node++) {
