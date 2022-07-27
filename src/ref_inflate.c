@@ -523,7 +523,7 @@ REF_FCN static REF_STATUS ref_inflate_interpolate_rail(REF_INT n, REF_DBL *x,
   newyz[1] = t0 * yz[1 + 2 * i0] + t1 * yz[1 + 2 * i1];
 
   if (xold < x[0] || x[(n)-1] < xold)
-    printf("%f %f %f\n", xold - (t0 * x[i0] + t1 * x[i1]), xold,
+    printf("extrap %f %f %f\n", xold - (t0 * x[i0] + t1 * x[i1]), xold,
            (t0 * x[i0] + t1 * x[i1]));
 
   return REF_SUCCESS;
