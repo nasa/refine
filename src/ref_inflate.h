@@ -34,6 +34,9 @@ REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
                                     REF_DBL *origin, REF_DBL thickness,
                                     REF_DBL xshift);
 
+REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
+                                            REF_DBL *yz);
+
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,

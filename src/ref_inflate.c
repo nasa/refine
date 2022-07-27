@@ -456,12 +456,15 @@ REF_FCN static REF_STATUS ref_inflate_sort_rail(REF_INT n, REF_DBL *x,
   return REF_SUCCESS;
 }
 
-REF_FCN static REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
-                                                   REF_DBL *yz) {
+REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
+                                            REF_DBL *yz) {
   REF_INT orig, compact, max;
   REF_DBL tol = 1e-8;
+  if (0 == *n) return REF_SUCCESS;
+
   max = *n;
   compact = 0;
+
   for (orig = 1; orig < max; orig++) {
     if (ABS(x[orig] - x[compact] > tol)) {
       compact++;
@@ -472,7 +475,8 @@ REF_FCN static REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
       yz[1 + 2 * compact] = yz[1 + 2 * orig];
     }
   }
-  *n = compact;
+  *n = compact + 1;
+
   return REF_SUCCESS;
 }
 
