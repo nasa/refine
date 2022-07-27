@@ -602,8 +602,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       phi0 = REF_DBL_MAX;
       phi1 = -REF_DBL_MAX;
       for (node = 0; node < rail_n[i]; node++) {
-        phi = atan2(rail_xyz[i][2 + 3 * node],
-                    rail_orient[i] * rail_xyz[i][1 + 3 * node]);
+        phi = atan2(rail_xyz[i][2 + 3 * node] - origin[2],
+                    rail_orient[i] * rail_xyz[i][1 + 3 * node] - origin[1]);
         phi0 = MIN(phi0, phi);
         phi1 = MAX(phi1, phi);
       }
@@ -717,16 +717,32 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
           if (1 == n_id && ref_cell_node_empty(qua, node)) {
             REF_INT ind;
-            REF_DBL xy0[2], xy1[2];
+            REF_DBL yz0[2], yz1[2];
+            REF_DBL t0, t1, phi;
             RSS(ref_dict_location(faceids, ids[0], &ind), "faceid loc");
             RSS(ref_inflate_interpolate_rail(
                     rail_n0[ind], rail_x0[ind], rail_yz0[ind],
-                    ref_node_xyz(ref_node, 0, new_node), xy0),
+                    ref_node_xyz(ref_node, 0, new_node), yz0),
                 "interp 0");
             RSS(ref_inflate_interpolate_rail(
                     rail_n1[ind], rail_x1[ind], rail_yz1[ind],
-                    ref_node_xyz(ref_node, 0, new_node), xy1),
+                    ref_node_xyz(ref_node, 0, new_node), yz1),
                 "interp 1");
+            phi = atan2(ref_node_xyz(ref_node, 2, new_node) - origin[2],
+                        rail_orient[ind] * ref_node_xyz(ref_node, 1, new_node) -
+                            origin[1]);
+            t1 = 0.0;
+            if (ref_math_divisible((phi - rail_phi0[ind]),
+                                   (rail_phi1[ind] - rail_phi0[ind]))) {
+              t1 = (phi - rail_phi0[ind]) / (rail_phi1[ind] - rail_phi0[ind]);
+            }
+            t1 = MIN(MAX(0.0, t1), 1.0);
+            t0 = 1.0 - t1;
+            printf("ind %d %d phi %f between %f %f weight %f %f \n",
+                   ref_dict_key(faceids, ind), ids[0], phi, rail_phi0[ind],
+                   rail_phi1[ind], t0, t1);
+            ref_node_xyz(ref_node, 1, new_node) = t0 * yz0[0] + t1 * yz1[0];
+            ref_node_xyz(ref_node, 2, new_node) = t0 * yz0[1] + t1 * yz1[1];
           }
         }
       }
