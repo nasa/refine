@@ -651,6 +651,13 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       for (node = 0; node < rail_n[i]; node++) {
         phi = atan2(rail_xyz[i][2 + 3 * node] - origin[2],
                     rail_orient[i] * rail_xyz[i][1 + 3 * node] - origin[1]);
+        /* exclude points in middle of face */
+        if (ref_math_divisible((phi - rail_phi0[i]),
+                               (rail_phi1[i] - rail_phi0[i]))) {
+          REF_DBL t_phi = (phi - rail_phi0[i]) / (rail_phi1[i] - rail_phi0[i]);
+          REF_DBL t_tol = 0.01;
+          if (t_tol < t_phi && t_phi < (1.0 - t_tol)) continue;
+        }
         if (ABS(phi - rail_phi0[i]) < ABS(phi - rail_phi1[i])) {
           rail_x0[i][rail_n0[i]] = rail_xyz[i][0 + 3 * node];
           rail_yz0[i][0 + 2 * rail_n0[i]] = rail_xyz[i][1 + 3 * node];
@@ -663,7 +670,6 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           rail_n1[i]++;
         }
       }
-      REIS(rail_n[i], rail_n0[i] + rail_n1[i], "conservation of rail");
 
       RSS(ref_inflate_sort_rail(rail_n0[i], rail_x0[i], rail_yz0[i]),
           "sort rail 0");
