@@ -476,6 +476,25 @@ REF_FCN static REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_inflate_interpolate_rail(REF_INT n, REF_DBL *x,
+                                                       REF_DBL *yz,
+                                                       REF_DBL xold,
+                                                       REF_DBL *newyz) {
+  REF_INT i0, i1;
+  REF_DBL t0, t1;
+  RSS(ref_sort_search_dbl(n, x, xold, &i0), "rail i0");
+  i1 = i0 + 1;
+  t1 = 0.0;
+  if (ref_math_divisible((xold - x[i0]), (x[i1] - x[i0]))) {
+    t1 = (xold - x[i0]) / (x[i1] - x[i0]);
+  }
+  t1 = MIN(MAX(0.0, t1), 1.0);
+  t0 = 1.0 - t1;
+  newyz[0] = t0 * yz[0 + 2 * i0] + t1 * yz[0 + 2 * i1];
+  newyz[1] = t0 * yz[1 + 2 * i0] + t1 * yz[1 + 2 * i1];
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,
@@ -691,14 +710,13 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           REF_INT max_id = 4, n_id = 0, ids[4];
           RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
           if (1 == n_id && ref_cell_node_empty(qua, node)) {
-            REF_INT i0, i1, ind;
+            REF_INT ind;
+            REF_DBL xy0[2];
             RSS(ref_dict_location(faceids, ids[0], &ind), "faceid loc");
-            RSS(ref_sort_search_dbl(rail_n0[ind], rail_x0[ind],
-                                    ref_node_xyz(ref_node, 0, new_node), &i0),
-                "rail i0");
-            RSS(ref_sort_search_dbl(rail_n1[ind], rail_x1[ind],
-                                    ref_node_xyz(ref_node, 0, new_node), &i1),
-                "rail i1");
+            RSS(ref_inflate_interpolate_rail(
+                    rail_n0[ind], rail_x0[ind], rail_yz0[ind],
+                    ref_node_xyz(ref_node, 0, new_node), xy0),
+                "interp 0");
           }
         }
       }
