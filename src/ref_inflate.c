@@ -741,6 +741,13 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
             printf("ind %d %d phi %f between %f %f weight %f %f \n",
                    ref_dict_key(faceids, ind), ids[0], phi, rail_phi0[ind],
                    rail_phi1[ind], t0, t1);
+            /*
+            printf(" old %f %f", ref_node_xyz(ref_node, 1, new_node),
+                   ref_node_xyz(ref_node, 2, new_node));
+            printf(" rail 0 %f %f", yz0[0], yz0[1]);
+            printf(" rail 1 %f %f", yz1[0], yz1[1]);
+            printf("\n");
+            */
             ref_node_xyz(ref_node, 1, new_node) = t0 * yz0[0] + t1 * yz1[0];
             ref_node_xyz(ref_node, 2, new_node) = t0 * yz0[1] + t1 * yz1[1];
           }
