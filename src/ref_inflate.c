@@ -482,21 +482,38 @@ REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
 
 REF_FCN static REF_STATUS ref_inflate_extend_rail(REF_INT *n, REF_DBL *x,
                                                   REF_DBL *yz) {
-  REF_DBL dx, l, dy;
+  REF_DBL dx, l, dy, dz;
+  REF_INT i;
   if (2 > *n) return REF_SUCCESS;
 
-  dx = x[(*n) - 1] - x[(*n) - 2];
   l = x[(*n) - 1] - x[0];
   l = 0.25 * l;
 
+  dx = x[1] - x[0];
+  dy = yz[0 + 2 * 1] - yz[0 + 2 * 0];
+  dz = yz[1 + 2 * 1] - yz[1 + 2 * 0];
+
+  /* shift to add first node */
+  for (i = (*n) - 1; i >= 0; i--) {
+    x[i + 1] = x[i];
+    yz[0 + 2 * (i + 1)] = yz[0 + 2 * (i)];
+    yz[1 + 2 * (i + 1)] = yz[1 + 2 * (i)];
+  }
+  (*n)++;
+
+  x[0] = x[1] - l;
+  yz[0 + 2 * 0] = yz[0 + 2 * 1] - dy * (l / dx);
+  yz[1 + 2 * 0] = yz[1 + 2 * 1] - dz * (l / dx);
+
+  dx = x[(*n) - 1] - x[(*n) - 2];
   if (ref_math_divisible(l, dx)) {
     x[(*n)] = x[(*n) - 1] + l;
 
     dy = yz[0 + 2 * ((*n) - 1)] - yz[0 + 2 * ((*n) - 2)];
     yz[0 + 2 * (*n)] = yz[0 + 2 * ((*n) - 1)] + dy * (l / dx);
 
-    dy = yz[1 + 2 * ((*n) - 1)] - yz[1 + 2 * ((*n) - 2)];
-    yz[1 + 2 * (*n)] = yz[1 + 2 * ((*n) - 1)] + dy * (l / dx);
+    dz = yz[1 + 2 * ((*n) - 1)] - yz[1 + 2 * ((*n) - 2)];
+    yz[1 + 2 * (*n)] = yz[1 + 2 * ((*n) - 1)] + dz * (l / dx);
 
     (*n)++;
   }
