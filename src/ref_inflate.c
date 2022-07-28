@@ -592,6 +592,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_DBL **rail_yz1 = NULL;
 
   REF_BOOL debug = REF_TRUE;
+  REF_BOOL verbose = REF_FALSE;
 
   if (on_rails) {
     REF_INT i, n, *source;
@@ -716,7 +717,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       RSS(ref_inflate_extend_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i]),
           "extend rail 1");
 
-      if (ref_mpi_once(ref_mpi)) {
+      if (verbose && ref_mpi_once(ref_mpi)) {
         printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f of %6d %6d\n",
                ref_dict_key(faceids, i), rail_orient[i], rail_n[i],
                rail_phi0[i], rail_phi1[i], rail_n0[i], rail_n1[i]);
