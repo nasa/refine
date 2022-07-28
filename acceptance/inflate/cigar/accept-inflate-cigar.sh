@@ -29,5 +29,6 @@ ${src}/ref_inflatable  \
     5.0 \
     1.4 \
     --mapbc cigar-usm3d.mapbc cigar 3 \
+    --origin 0 0 0.5 \
     --rails
 

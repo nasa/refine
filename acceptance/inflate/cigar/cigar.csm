@@ -41,5 +41,7 @@ patbeg i n-1
  union
 patend
 
+translate 0 0 0.5
+
 dump cigar.egads
 
