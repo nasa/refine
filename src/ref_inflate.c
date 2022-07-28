@@ -599,7 +599,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT *rail_n = NULL;
   REF_INT *rail_n0 = NULL;
   REF_INT *rail_n1 = NULL;
-  REF_DBL **rail_xyz = NULL;
+  REF_DBL **rail_xyzp = NULL;
   REF_DBL *rail_orient = NULL;
   REF_DBL *rail_phi0 = NULL;
   REF_DBL **rail_x0 = NULL;
@@ -623,13 +623,13 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     ref_malloc_init(rail_n, ref_dict_n(faceids), REF_INT, 0);
     ref_malloc_init(rail_n0, ref_dict_n(faceids), REF_INT, 0);
     ref_malloc_init(rail_n1, ref_dict_n(faceids), REF_INT, 0);
-    ref_malloc_init(rail_xyz, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_xyzp, ref_dict_n(faceids), REF_DBL *, NULL);
     ref_malloc_init(rail_x0, ref_dict_n(faceids), REF_DBL *, NULL);
     ref_malloc_init(rail_yz0, ref_dict_n(faceids), REF_DBL *, NULL);
     ref_malloc_init(rail_x1, ref_dict_n(faceids), REF_DBL *, NULL);
     ref_malloc_init(rail_yz1, ref_dict_n(faceids), REF_DBL *, NULL);
     each_ref_dict_key_index(faceids, i) {
-      ref_malloc(rail_xyz[i], rail_max, REF_DBL);
+      ref_malloc(rail_xyzp[i], 4 * rail_max, REF_DBL);
     }
     each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
       if (ref_dict_has_key(faceids, nodes[3])) {
@@ -653,11 +653,11 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
               alpha_weighting = cos(phi_rad);
               xshift =
                   thickness / tan(mach_angle_rad + alpha_weighting * alpha_rad);
-              rail_xyz[dict_index][0 + 3 * rail_n[dict_index]] =
+              rail_xyzp[dict_index][0 + 4 * rail_n[dict_index]] =
                   xshift + ref_node_xyz(ref_node, 0, node);
-              rail_xyz[dict_index][1 + 3 * rail_n[dict_index]] =
+              rail_xyzp[dict_index][1 + 4 * rail_n[dict_index]] =
                   thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
-              rail_xyz[dict_index][2 + 3 * rail_n[dict_index]] =
+              rail_xyzp[dict_index][2 + 4 * rail_n[dict_index]] =
                   thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
               rail_n[dict_index]++;
             }
@@ -670,22 +670,22 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       REF_DBL phi, phi0, phi1;
       REF_DBL ymax;
 
-      RSS(ref_mpi_allconcat(ref_mpi, 3, rail_n[i], rail_xyz[i], &n, &source,
+      RSS(ref_mpi_allconcat(ref_mpi, 4, rail_n[i], rail_xyzp[i], &n, &source,
                             (void **)&concatenated, REF_DBL_TYPE),
           "concat");
-      ref_free(rail_xyz[i]);
+      ref_free(rail_xyzp[i]);
       rail_n[i] = n;
-      rail_xyz[i] = concatenated;
+      rail_xyzp[i] = concatenated;
       ymax = -REF_DBL_MAX;
       for (node = 0; node < rail_n[i]; node++) {
-        ymax = MAX(ymax, rail_xyz[i][1 + 3 * node]);
+        ymax = MAX(ymax, rail_xyzp[i][1 + 4 * node]);
       }
       if (ymax < 0.0) rail_orient[i] = -1.0;
       phi0 = REF_DBL_MAX;
       phi1 = -REF_DBL_MAX;
       for (node = 0; node < rail_n[i]; node++) {
-        phi = atan2(rail_xyz[i][2 + 3 * node] - origin[2],
-                    rail_orient[i] * rail_xyz[i][1 + 3 * node] - origin[1]);
+        phi = atan2(rail_xyzp[i][2 + 4 * node] - origin[2],
+                    rail_orient[i] * rail_xyzp[i][1 + 4 * node] - origin[1]);
         phi0 = MIN(phi0, phi);
         phi1 = MAX(phi1, phi);
       }
@@ -697,8 +697,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       ref_malloc(rail_yz0[i], 2 * rail_n[i], REF_DBL);
       ref_malloc(rail_yz1[i], 2 * rail_n[i], REF_DBL);
       for (node = 0; node < rail_n[i]; node++) {
-        phi = atan2(rail_xyz[i][2 + 3 * node] - origin[2],
-                    rail_orient[i] * rail_xyz[i][1 + 3 * node] - origin[1]);
+        phi = atan2(rail_xyzp[i][2 + 4 * node] - origin[2],
+                    rail_orient[i] * rail_xyzp[i][1 + 4 * node] - origin[1]);
         /* exclude points in middle of face */
         if (ref_math_divisible((phi - rail_phi0[i]),
                                (rail_phi1[i] - rail_phi0[i]))) {
@@ -707,14 +707,14 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           if (t_tol < t_phi && t_phi < (1.0 - t_tol)) continue;
         }
         if (ABS(phi - rail_phi0[i]) < ABS(phi - rail_phi1[i])) {
-          rail_x0[i][rail_n0[i]] = rail_xyz[i][0 + 3 * node];
-          rail_yz0[i][0 + 2 * rail_n0[i]] = rail_xyz[i][1 + 3 * node];
-          rail_yz0[i][1 + 2 * rail_n0[i]] = rail_xyz[i][2 + 3 * node];
+          rail_x0[i][rail_n0[i]] = rail_xyzp[i][0 + 4 * node];
+          rail_yz0[i][0 + 2 * rail_n0[i]] = rail_xyzp[i][1 + 4 * node];
+          rail_yz0[i][1 + 2 * rail_n0[i]] = rail_xyzp[i][2 + 4 * node];
           rail_n0[i]++;
         } else {
-          rail_x1[i][rail_n1[i]] = rail_xyz[i][0 + 3 * node];
-          rail_yz1[i][0 + 2 * rail_n1[i]] = rail_xyz[i][1 + 3 * node];
-          rail_yz1[i][1 + 2 * rail_n1[i]] = rail_xyz[i][2 + 3 * node];
+          rail_x1[i][rail_n1[i]] = rail_xyzp[i][0 + 4 * node];
+          rail_yz1[i][0 + 2 * rail_n1[i]] = rail_xyzp[i][1 + 4 * node];
+          rail_yz1[i][1 + 2 * rail_n1[i]] = rail_xyzp[i][2 + 4 * node];
           rail_n1[i]++;
         }
       }
@@ -954,12 +954,12 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     each_ref_dict_key_index(faceids, i) { ref_free(rail_x1[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_yz0[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_x0[i]); }
-    each_ref_dict_key_index(faceids, i) { ref_free(rail_xyz[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_xyzp[i]); }
     ref_free(rail_yz1);
     ref_free(rail_x1);
     ref_free(rail_yz0);
     ref_free(rail_x0);
-    ref_free(rail_xyz);
+    ref_free(rail_xyzp);
     ref_free(rail_n1);
     ref_free(rail_n0);
     ref_free(rail_n);
