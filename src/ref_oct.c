@@ -68,8 +68,23 @@ REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
+                                           REF_DBL *bbox, FILE *f) {
+  RAS(0 >= node && node < ref_oct->n, "out of range node");
+  fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[4]);
+  fprintf(f, "%f %f %f\n", bbox[1], bbox[2], bbox[4]);
+  fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[4]);
+  fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[4]);
+  fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[5]);
+  fprintf(f, "%f %f %f\n", bbox[1], bbox[2], bbox[5]);
+  fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[5]);
+  fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[5]);
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
   FILE *f;
+  REF_INT i;
   const char *zonetype = "febrick";
   f = fopen(filename, "w");
   if (NULL == (void *)f) printf("unable to open %s\n", filename);
@@ -81,27 +96,14 @@ REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
   fprintf(f,
           "zone t=\"octree\", nodes=%d, elements=%d, datapacking=%s, "
           "zonetype=%s\n",
-          8, 1, "point", zonetype);
+          8 * ref_oct->n, ref_oct->n, "point", zonetype);
 
-  fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[2],
-          ref_oct->bbox[4]);
-  fprintf(f, "%f %f %f\n", ref_oct->bbox[1], ref_oct->bbox[2],
-          ref_oct->bbox[4]);
-  fprintf(f, "%f %f %f\n", ref_oct->bbox[1], ref_oct->bbox[3],
-          ref_oct->bbox[4]);
-  fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[3],
-          ref_oct->bbox[4]);
-  fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[2],
-          ref_oct->bbox[5]);
-  fprintf(f, "%f %f %f\n", ref_oct->bbox[1], ref_oct->bbox[2],
-          ref_oct->bbox[5]);
-  fprintf(f, "%f %f %f\n", ref_oct->bbox[1], ref_oct->bbox[3],
-          ref_oct->bbox[5]);
-  fprintf(f, "%f %f %f\n", ref_oct->bbox[0], ref_oct->bbox[3],
-          ref_oct->bbox[5]);
+  RSS(ref_oct_tec_node(ref_oct, 0, ref_oct->bbox, f), "draw root box");
 
-  fprintf(f, "%d %d %d %d %d %d %d %d\n", 1, 2, 3, 4, 5, 6, 7, 8);
-
+  for (i = 0; i < ref_oct->n; i++) {
+    fprintf(f, "%d %d %d %d %d %d %d %d\n", 1 + 8 * i, 2 + 8 * i, 3 + 8 * i,
+            4 + 8 * i, 5 + 8 * i, 6 + 8 * i, 7 + 8 * i, 8 + 8 * i);
+  }
   fclose(f);
   return REF_SUCCESS;
 }
