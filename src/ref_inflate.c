@@ -27,6 +27,7 @@
 #include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_sort.h"
 
 REF_FCN REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
                                            REF_DBL *min_dot) {
@@ -412,6 +413,8 @@ REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(o2g);
   ref_free(o2n);
 
+  ref_gather_blocking_frame(ref_grid, "layer");
+
   if (problem_detected) {
     printf("ERROR: inflated grid invalid, writing ref_inflate_problem.tec\n");
     RSS(ref_export_tec_surf(ref_grid, "ref_inflate_problem.tec"), "tec");
@@ -421,10 +424,167 @@ REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_inflate_sort_rail(REF_INT n, REF_DBL *x,
+                                                REF_DBL *yz, REF_DBL *phi) {
+  REF_INT node;
+  REF_INT *order;
+  REF_DBL *tmp;
+  ref_malloc(order, n, REF_INT);
+  ref_malloc(tmp, n, REF_DBL);
+  RSS(ref_sort_heap_dbl(n, x, order), "heap");
+  for (node = 0; node < n; node++) {
+    tmp[node] = x[order[node]];
+  }
+  for (node = 0; node < n; node++) {
+    x[node] = tmp[node];
+  }
+  for (node = 0; node < n; node++) {
+    tmp[node] = yz[0 + 2 * order[node]];
+  }
+  for (node = 0; node < n; node++) {
+    yz[0 + 2 * node] = tmp[node];
+  }
+  for (node = 0; node < n; node++) {
+    tmp[node] = yz[1 + 2 * order[node]];
+  }
+  for (node = 0; node < n; node++) {
+    yz[1 + 2 * node] = tmp[node];
+  }
+  for (node = 0; node < n; node++) {
+    tmp[node] = phi[order[node]];
+  }
+  for (node = 0; node < n; node++) {
+    phi[node] = tmp[node];
+  }
+  ref_free(tmp);
+  ref_free(order);
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x, REF_DBL *yz,
+                                            REF_DBL *phi) {
+  REF_INT orig, compact, max;
+  REF_DBL tol = 1e-8;
+  if (0 == *n) return REF_SUCCESS;
+
+  max = *n;
+  compact = 0;
+
+  for (orig = 1; orig < max; orig++) {
+    if (ABS(x[orig] - x[compact] > tol)) {
+      compact++;
+    }
+    if (orig != compact) {
+      x[compact] = x[orig];
+      yz[0 + 2 * compact] = yz[0 + 2 * orig];
+      yz[1 + 2 * compact] = yz[1 + 2 * orig];
+      phi[compact] = phi[orig];
+    }
+  }
+  *n = compact + 1;
+
+  return REF_SUCCESS;
+}
+
+REF_FCN static REF_STATUS ref_inflate_extend_rail(REF_INT *n, REF_DBL *x,
+                                                  REF_DBL *yz, REF_DBL *phi) {
+  REF_DBL dx, l, dy, dz, dp;
+  REF_INT i;
+  if (2 > *n) return REF_SUCCESS;
+
+  l = x[(*n) - 1] - x[0];
+  l = 0.25 * l;
+
+  dx = x[1] - x[0];
+  dy = yz[0 + 2 * 1] - yz[0 + 2 * 0];
+  dz = yz[1 + 2 * 1] - yz[1 + 2 * 0];
+  dp = phi[1] - phi[0];
+
+  /* shift to add first node */
+  for (i = (*n) - 1; i >= 0; i--) {
+    x[i + 1] = x[i];
+    yz[0 + 2 * (i + 1)] = yz[0 + 2 * (i)];
+    yz[1 + 2 * (i + 1)] = yz[1 + 2 * (i)];
+    phi[(i + 1)] = phi[(i)];
+  }
+  (*n)++;
+
+  x[0] = x[1] - l;
+  yz[0 + 2 * 0] = yz[0 + 2 * 1] - dy * (l / dx);
+  yz[1 + 2 * 0] = yz[1 + 2 * 1] - dz * (l / dx);
+  phi[0] = phi[1] - dp * (l / dx);
+
+  dx = x[(*n) - 1] - x[(*n) - 2];
+  if (ref_math_divisible(l, dx)) {
+    x[(*n)] = x[(*n) - 1] + l;
+
+    dy = yz[0 + 2 * ((*n) - 1)] - yz[0 + 2 * ((*n) - 2)];
+    yz[0 + 2 * (*n)] = yz[0 + 2 * ((*n) - 1)] + dy * (l / dx);
+
+    dz = yz[1 + 2 * ((*n) - 1)] - yz[1 + 2 * ((*n) - 2)];
+    yz[1 + 2 * (*n)] = yz[1 + 2 * ((*n) - 1)] + dz * (l / dx);
+
+    dp = phi[((*n) - 1)] - phi[((*n) - 2)];
+    phi[(*n)] = phi[((*n) - 1)] + dp * (l / dx);
+
+    (*n)++;
+  }
+  return REF_SUCCESS;
+}
+
+REF_FCN static REF_STATUS ref_inflate_interpolate_rail(
+    REF_INT n, REF_DBL *x, REF_DBL *yz, REF_DBL *phi, REF_DBL xold,
+    REF_DBL *newyz, REF_DBL *newphi) {
+  REF_INT i0, i1;
+  REF_DBL t0, t1;
+  if (xold < x[0] || x[n - 1] < xold)
+    printf("x range %f %f %f\n", x[0], xold, x[n - 1]);
+  RSS(ref_sort_search_dbl(n, x, xold, &i0), "rail i0");
+  i1 = i0 + 1;
+  t1 = 0.0;
+  if (ref_math_divisible((xold - x[i0]), (x[i1] - x[i0]))) {
+    t1 = (xold - x[i0]) / (x[i1] - x[i0]);
+  }
+  t1 = MIN(MAX(0.0, t1), 1.0);
+  t0 = 1.0 - t1;
+  newyz[0] = t0 * yz[0 + 2 * i0] + t1 * yz[0 + 2 * i1];
+  newyz[1] = t0 * yz[1 + 2 * i0] + t1 * yz[1 + 2 * i1];
+  *newphi = t0 * phi[i0] + t1 * phi[i1];
+
+  if (xold < x[0] || x[(n)-1] < xold)
+    printf("extrap %f %f %f\n", xold - (t0 * x[i0] + t1 * x[i1]), xold,
+           (t0 * x[i0] + t1 * x[i1]));
+
+  return REF_SUCCESS;
+}
+
+REF_FCN static REF_STATUS ref_inflate_rail_node(REF_GRID ref_grid,
+                                                REF_DICT faceids, REF_INT node,
+                                                REF_BOOL *in_rail,
+                                                REF_INT *ind) {
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_INT max_id = 4, n_id = 0, ids[4], i, nactive;
+  *in_rail = REF_FALSE;
+  *ind = REF_EMPTY;
+  RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
+  nactive = 0;
+  for (i = 0; i < n_id; i++) {
+    if (ref_dict_has_key(faceids, ids[i])) {
+      RSS(ref_dict_location(faceids, ids[i], ind), "faceid loc");
+      nactive++;
+    }
+  }
+  RAS(nactive > 0, "no tris active");
+  RAS(nactive < 3, "three or more tri actve");
+  *in_rail = (nactive > 1);
+  if (*in_rail) *ind = REF_EMPTY;
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,
-                                        REF_DBL alpha_rad) {
+                                        REF_DBL alpha_rad, REF_BOOL on_rails) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -446,6 +606,170 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_DBL normal[3];
 
   REF_BOOL problem_detected = REF_FALSE;
+
+  REF_INT rail_max = 10000;
+  REF_INT *rail_n = NULL;
+  REF_INT *rail_n0 = NULL;
+  REF_INT *rail_n1 = NULL;
+  REF_DBL **rail_xyzp = NULL;
+  REF_DBL *rail_orient = NULL;
+  REF_DBL **rail_phi0 = NULL;
+  REF_DBL **rail_x0 = NULL;
+  REF_DBL **rail_yz0 = NULL;
+  REF_DBL **rail_phi1 = NULL;
+  REF_DBL **rail_x1 = NULL;
+  REF_DBL **rail_yz1 = NULL;
+
+  REF_BOOL debug = REF_TRUE;
+  REF_BOOL verbose = REF_FALSE;
+
+  if (on_rails) {
+    REF_INT i, n, *source;
+    REF_DBL *concatenated;
+    FILE *f = NULL;
+    if (debug && ref_mpi_once(ref_mpi)) f = fopen("ref_inflate_rail.tec", "w");
+
+    ref_malloc_init(rail_phi0, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_phi1, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_orient, ref_dict_n(faceids), REF_DBL, 1);
+    ref_malloc_init(rail_n, ref_dict_n(faceids), REF_INT, 0);
+    ref_malloc_init(rail_n0, ref_dict_n(faceids), REF_INT, 0);
+    ref_malloc_init(rail_n1, ref_dict_n(faceids), REF_INT, 0);
+    ref_malloc_init(rail_xyzp, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_x0, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_yz0, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_x1, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_yz1, ref_dict_n(faceids), REF_DBL *, NULL);
+    each_ref_dict_key_index(faceids, i) {
+      ref_malloc(rail_xyzp[i], 4 * rail_max, REF_DBL);
+    }
+    each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
+      if (ref_dict_has_key(faceids, nodes[3])) {
+        REF_INT dict_index;
+        RSS(ref_dict_location(faceids, nodes[3], &dict_index), "loc");
+        for (tri_node = 0; tri_node < 3; tri_node++) {
+          node = nodes[tri_node];
+          if (ref_node_owned(ref_node, node)) {
+            REF_INT ind;
+            REF_BOOL in_rail;
+            RSS(ref_inflate_rail_node(ref_grid, faceids, node, &in_rail, &ind),
+                "in rail");
+            if (in_rail) {
+              if (rail_n[dict_index] >= rail_max) THROW("out of rail_max");
+
+              normal[0] = 0.0;
+              normal[1] = ref_node_xyz(ref_node, 1, node) - origin[1];
+              normal[2] = ref_node_xyz(ref_node, 2, node) - origin[2];
+              RSS(ref_math_normalize(normal), "make norm");
+              phi_rad = atan2(normal[1], normal[2]);
+              alpha_weighting = cos(phi_rad);
+              xshift =
+                  thickness / tan(mach_angle_rad + alpha_weighting * alpha_rad);
+              rail_xyzp[dict_index][0 + 4 * rail_n[dict_index]] =
+                  xshift + ref_node_xyz(ref_node, 0, node);
+              rail_xyzp[dict_index][1 + 4 * rail_n[dict_index]] =
+                  thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
+              rail_xyzp[dict_index][2 + 4 * rail_n[dict_index]] =
+                  thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
+              rail_n[dict_index]++;
+            }
+          }
+        }
+      }
+    }
+
+    each_ref_dict_key_index(faceids, i) {
+      REF_DBL phi0, phi1;
+      REF_DBL ymax;
+
+      RSS(ref_mpi_allconcat(ref_mpi, 4, rail_n[i], rail_xyzp[i], &n, &source,
+                            (void **)&concatenated, REF_DBL_TYPE),
+          "concat");
+      ref_free(rail_xyzp[i]);
+      rail_n[i] = n;
+      rail_xyzp[i] = concatenated;
+      ymax = -REF_DBL_MAX;
+      for (node = 0; node < rail_n[i]; node++) {
+        ymax = MAX(ymax, rail_xyzp[i][1 + 4 * node]);
+      }
+      if (ymax < 0.0) rail_orient[i] = -1.0;
+      phi0 = REF_DBL_MAX;
+      phi1 = -REF_DBL_MAX;
+      for (node = 0; node < rail_n[i]; node++) {
+        rail_xyzp[i][3 + 4 * node] =
+            atan2(rail_xyzp[i][2 + 4 * node] - origin[2],
+                  rail_orient[i] * rail_xyzp[i][1 + 4 * node] - origin[1]);
+        phi0 = MIN(phi0, rail_xyzp[i][3 + 4 * node]);
+        phi1 = MAX(phi1, rail_xyzp[i][3 + 4 * node]);
+      }
+
+      ref_malloc(rail_x0[i], rail_n[i], REF_DBL);
+      ref_malloc(rail_x1[i], rail_n[i], REF_DBL);
+      ref_malloc(rail_yz0[i], 2 * rail_n[i], REF_DBL);
+      ref_malloc(rail_yz1[i], 2 * rail_n[i], REF_DBL);
+      ref_malloc(rail_phi0[i], rail_n[i], REF_DBL);
+      ref_malloc(rail_phi1[i], rail_n[i], REF_DBL);
+      for (node = 0; node < rail_n[i]; node++) {
+        if (ABS(rail_xyzp[i][3 + 4 * node] - phi0) <
+            ABS(rail_xyzp[i][3 + 4 * node] - phi1)) {
+          rail_x0[i][rail_n0[i]] = rail_xyzp[i][0 + 4 * node];
+          rail_yz0[i][0 + 2 * rail_n0[i]] = rail_xyzp[i][1 + 4 * node];
+          rail_yz0[i][1 + 2 * rail_n0[i]] = rail_xyzp[i][2 + 4 * node];
+          rail_phi0[i][rail_n0[i]] = rail_xyzp[i][3 + 4 * node];
+          rail_n0[i]++;
+        } else {
+          rail_x1[i][rail_n1[i]] = rail_xyzp[i][0 + 4 * node];
+          rail_yz1[i][0 + 2 * rail_n1[i]] = rail_xyzp[i][1 + 4 * node];
+          rail_yz1[i][1 + 2 * rail_n1[i]] = rail_xyzp[i][2 + 4 * node];
+          rail_phi1[i][rail_n1[i]] = rail_xyzp[i][3 + 4 * node];
+          rail_n1[i]++;
+        }
+      }
+
+      RSS(ref_inflate_sort_rail(rail_n0[i], rail_x0[i], rail_yz0[i],
+                                rail_phi0[i]),
+          "sort rail 0");
+      RSS(ref_inflate_sort_rail(rail_n1[i], rail_x1[i], rail_yz1[i],
+                                rail_phi1[i]),
+          "sort rail 1");
+
+      RSS(ref_inflate_compact_rail(&(rail_n0[i]), rail_x0[i], rail_yz0[i],
+                                   rail_phi0[i]),
+          "compact rail 0");
+      RSS(ref_inflate_compact_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i],
+                                   rail_phi1[i]),
+          "compact rail 1");
+
+      RSS(ref_inflate_extend_rail(&(rail_n0[i]), rail_x0[i], rail_yz0[i],
+                                  rail_phi0[i]),
+          "extend rail 0");
+      RSS(ref_inflate_extend_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i],
+                                  rail_phi1[i]),
+          "extend rail 1");
+
+      if (verbose && ref_mpi_once(ref_mpi)) {
+        printf("id %4d orient %5.2f has %6d of %6d %6d\n",
+               ref_dict_key(faceids, i), rail_orient[i], rail_n[i], rail_n0[i],
+               rail_n1[i]);
+      }
+      if (NULL != f) {
+        fprintf(f, "zone t=\"f%dphi0\"\n", i);
+        for (node = 0; node < rail_n0[i]; node++)
+          fprintf(f, " %f %f %f %f\n", rail_x0[i][node],
+                  rail_yz0[i][0 + 2 * node], rail_yz0[i][1 + 2 * node],
+                  rail_phi0[i][node]);
+        fprintf(f, "zone t=\"f%dphi1\"\n", i);
+        for (node = 0; node < rail_n1[i]; node++)
+          fprintf(f, " %f %f %f %f\n", rail_x1[i][node],
+                  rail_yz1[i][0 + 2 * node], rail_yz1[i][1 + 2 * node],
+                  rail_phi1[i][node]);
+      }
+    }
+    if (NULL != f) {
+      fclose(f);
+      f = NULL;
+    }
+  }
 
   o2n_max = ref_node_max(ref_node);
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
@@ -511,6 +835,48 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
             thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
         ref_node_xyz(ref_node, 2, new_node) =
             thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
+        if (on_rails) {
+          REF_INT ind;
+          REF_BOOL in_rail;
+          RSS(ref_inflate_rail_node(ref_grid, faceids, node, &in_rail, &ind),
+              "in rail");
+          if (!in_rail) {
+            REF_DBL yz0[2], yz1[2], phi0, phi1;
+            REF_DBL t0, t1, phi;
+            RSS(ref_inflate_interpolate_rail(
+                    rail_n0[ind], rail_x0[ind], rail_yz0[ind], rail_phi0[ind],
+                    ref_node_xyz(ref_node, 0, new_node), yz0, &phi0),
+                "interp 0");
+            RSS(ref_inflate_interpolate_rail(
+                    rail_n1[ind], rail_x1[ind], rail_yz1[ind], rail_phi1[ind],
+                    ref_node_xyz(ref_node, 0, new_node), yz1, &phi1),
+                "interp 1");
+            phi = atan2(ref_node_xyz(ref_node, 2, new_node) - origin[2],
+                        rail_orient[ind] * ref_node_xyz(ref_node, 1, new_node) -
+                            origin[1]);
+            t1 = 0.0;
+            if (ref_math_divisible((phi - phi0), (phi1 - phi0))) {
+              t1 = (phi - phi0) / (phi1 - phi0);
+            }
+            t1 = MIN(MAX(0.0, t1), 1.0);
+            t0 = 1.0 - t1;
+
+            /*
+            printf("ind %d %d phi %f between %f %f weight %f %f \n",
+                   ref_dict_key(faceids, ind), ids[0], phi, rail_phi0[ind],
+                   rail_phi1[ind], t0, t1);
+            */
+            /*
+            printf(" old %f %f", ref_node_xyz(ref_node, 1, new_node),
+                   ref_node_xyz(ref_node, 2, new_node));
+            printf(" rail 0 %f %f", yz0[0], yz0[1]);
+            printf(" rail 1 %f %f", yz1[0], yz1[1]);
+            printf("\n");
+            */
+            ref_node_xyz(ref_node, 1, new_node) = t0 * yz0[0] + t1 * yz1[0];
+            ref_node_xyz(ref_node, 2, new_node) = t0 * yz0[1] + t1 * yz1[1];
+          }
+        }
       }
     }
   }
@@ -594,9 +960,40 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(o2g);
   ref_free(o2n);
 
+  ref_gather_blocking_frame(ref_grid, "layer");
+
+  if (on_rails) {
+    REF_INT i;
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_phi1[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_yz1[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_x1[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_phi0[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_yz0[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_x0[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_xyzp[i]); }
+    ref_free(rail_yz1);
+    ref_free(rail_x1);
+    ref_free(rail_yz0);
+    ref_free(rail_x0);
+    ref_free(rail_xyzp);
+    ref_free(rail_n1);
+    ref_free(rail_n0);
+    ref_free(rail_n);
+    ref_free(rail_orient);
+    ref_free(rail_phi1);
+    ref_free(rail_phi0);
+  }
+
+  RSS(ref_mpi_all_or(ref_mpi, &problem_detected), "share problems");
   if (problem_detected) {
-    printf("ERROR: inflated grid invalid, writing ref_inflate_problem.tec\n");
-    RSS(ref_export_tec_surf(ref_grid, "ref_inflate_problem.tec"), "tec");
+    char filename[1024];
+    sprintf(filename, "ref_inflate_problem_%04d.tec", ref_mpi_rank(ref_mpi));
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "ERROR: inflated grid invalid, writing ref_inflate_problem_*.tec\n");
+    if (ref_cell_n(tri) + ref_cell_n(qua) > 0)
+      ref_export_tec_surf(ref_grid, filename);
+    ref_mpi_stopwatch_stop(ref_mpi, "throw");
     THROW("problem detected, examine ref_inflate_problem.tec");
   }
 

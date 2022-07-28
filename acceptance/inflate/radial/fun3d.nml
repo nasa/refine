@@ -1,0 +1,25 @@
+&project
+  project_rootname = 'inflated'
+/
+&raw_grid
+  grid_format = 'aflr3'
+/
+&governing_equations
+  viscous_terms = 'inviscid'
+/
+&reference_physical_properties
+  mach_number     = 1.68
+  angle_of_attack = 0.0
+/
+&code_run_control
+  restart_read       = 'off'
+  steps              = 150
+  stopping_tolerance = 1.0e-12
+/
+&global
+  boundary_animation_freq = -1
+/
+&boundary_output_variables
+  number_of_boundaries = -1
+  boundary_list        = '1-6'
+/

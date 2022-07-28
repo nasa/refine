@@ -928,12 +928,22 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         }
       }
     }
+    RXS(ref_args_find(argc, argv, "--uniform", &pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY != pos) {
+      RSS(ref_metric_parse_to_node(ref_grid, argc, argv), "parse uniform");
+    }
   } else {
     if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
         ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
       RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
       RSS(ref_validation_cell_volume(ref_grid), "vol");
       ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+    }
+    RXS(ref_args_find(argc, argv, "--uniform", &pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY != pos) {
+      RSS(ref_metric_parse_to_node(ref_grid, argc, argv), "parse uniform");
     }
     RSS(ref_grid_cache_background(ref_grid), "cache");
     ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
@@ -968,6 +978,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         } else {
           RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
           ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+          RXS(ref_args_find(argc, argv, "--facelift-metric", &pos),
+              REF_NOT_FOUND, "arg search");
           if (REF_EMPTY != pos && pos < argc - 1) {
             complexity = atof(argv[pos + 1]);
             if (ref_mpi_once(ref_mpi))
@@ -977,6 +989,11 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
             ref_mpi_stopwatch_stop(ref_mpi, "facelift metric");
           }
         }
+      }
+      RXS(ref_args_find(argc, argv, "--uniform", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos) {
+        RSS(ref_metric_parse_to_node(ref_grid, argc, argv), "parse uniform");
       }
     } else {
       RSS(ref_metric_synchronize(ref_grid), "sync with background");
