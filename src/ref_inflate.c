@@ -828,7 +828,6 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           if (!in_rail) {
             REF_DBL yz0[2], yz1[2];
             REF_DBL t0, t1, phi;
-            REF_DBL t_tol = 0.05;
             RSS(ref_inflate_interpolate_rail(
                     rail_n0[ind], rail_x0[ind], rail_yz0[ind],
                     ref_node_xyz(ref_node, 0, new_node), yz0),
@@ -847,9 +846,6 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
             }
             t1 = MIN(MAX(0.0, t1), 1.0);
             t0 = 1.0 - t1;
-
-            /* exclude points on edge of face */
-            if (t1 < t_tol || (1 - t_tol) < t1) continue;
 
             /*
             printf("ind %d %d phi %f between %f %f weight %f %f \n",
