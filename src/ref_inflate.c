@@ -425,7 +425,7 @@ REF_FCN REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 }
 
 REF_FCN static REF_STATUS ref_inflate_sort_rail(REF_INT n, REF_DBL *x,
-                                                REF_DBL *yz) {
+                                                REF_DBL *yz, REF_DBL *phi) {
   REF_INT node;
   REF_INT *order;
   REF_DBL *tmp;
@@ -450,14 +450,19 @@ REF_FCN static REF_STATUS ref_inflate_sort_rail(REF_INT n, REF_DBL *x,
   for (node = 0; node < n; node++) {
     yz[1 + 2 * node] = tmp[node];
   }
-
+  for (node = 0; node < n; node++) {
+    tmp[node] = phi[order[node]];
+  }
+  for (node = 0; node < n; node++) {
+    phi[node] = tmp[node];
+  }
   ref_free(tmp);
   ref_free(order);
   return REF_SUCCESS;
 }
 
-REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
-                                            REF_DBL *yz) {
+REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x, REF_DBL *yz,
+                                            REF_DBL *phi) {
   REF_INT orig, compact, max;
   REF_DBL tol = 1e-8;
   if (0 == *n) return REF_SUCCESS;
@@ -473,6 +478,7 @@ REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
       x[compact] = x[orig];
       yz[0 + 2 * compact] = yz[0 + 2 * orig];
       yz[1 + 2 * compact] = yz[1 + 2 * orig];
+      phi[compact] = phi[orig];
     }
   }
   *n = compact + 1;
@@ -481,8 +487,8 @@ REF_FCN REF_STATUS ref_inflate_compact_rail(REF_INT *n, REF_DBL *x,
 }
 
 REF_FCN static REF_STATUS ref_inflate_extend_rail(REF_INT *n, REF_DBL *x,
-                                                  REF_DBL *yz) {
-  REF_DBL dx, l, dy, dz;
+                                                  REF_DBL *yz, REF_DBL *phi) {
+  REF_DBL dx, l, dy, dz, dp;
   REF_INT i;
   if (2 > *n) return REF_SUCCESS;
 
@@ -492,18 +498,21 @@ REF_FCN static REF_STATUS ref_inflate_extend_rail(REF_INT *n, REF_DBL *x,
   dx = x[1] - x[0];
   dy = yz[0 + 2 * 1] - yz[0 + 2 * 0];
   dz = yz[1 + 2 * 1] - yz[1 + 2 * 0];
+  dp = phi[1] - phi[0];
 
   /* shift to add first node */
   for (i = (*n) - 1; i >= 0; i--) {
     x[i + 1] = x[i];
     yz[0 + 2 * (i + 1)] = yz[0 + 2 * (i)];
     yz[1 + 2 * (i + 1)] = yz[1 + 2 * (i)];
+    phi[(i + 1)] = phi[(i)];
   }
   (*n)++;
 
   x[0] = x[1] - l;
   yz[0 + 2 * 0] = yz[0 + 2 * 1] - dy * (l / dx);
   yz[1 + 2 * 0] = yz[1 + 2 * 1] - dz * (l / dx);
+  phi[0] = phi[1] - dp * (l / dx);
 
   dx = x[(*n) - 1] - x[(*n) - 2];
   if (ref_math_divisible(l, dx)) {
@@ -515,15 +524,17 @@ REF_FCN static REF_STATUS ref_inflate_extend_rail(REF_INT *n, REF_DBL *x,
     dz = yz[1 + 2 * ((*n) - 1)] - yz[1 + 2 * ((*n) - 2)];
     yz[1 + 2 * (*n)] = yz[1 + 2 * ((*n) - 1)] + dz * (l / dx);
 
+    dp = phi[((*n) - 1)] - phi[((*n) - 2)];
+    phi[(*n)] = phi[((*n) - 1)] + dp * (l / dx);
+
     (*n)++;
   }
   return REF_SUCCESS;
 }
 
-REF_FCN static REF_STATUS ref_inflate_interpolate_rail(REF_INT n, REF_DBL *x,
-                                                       REF_DBL *yz,
-                                                       REF_DBL xold,
-                                                       REF_DBL *newyz) {
+REF_FCN static REF_STATUS ref_inflate_interpolate_rail(
+    REF_INT n, REF_DBL *x, REF_DBL *yz, REF_DBL *phi, REF_DBL xold,
+    REF_DBL *newyz, REF_DBL *newphi) {
   REF_INT i0, i1;
   REF_DBL t0, t1;
   if (xold < x[0] || x[n - 1] < xold)
@@ -538,6 +549,7 @@ REF_FCN static REF_STATUS ref_inflate_interpolate_rail(REF_INT n, REF_DBL *x,
   t0 = 1.0 - t1;
   newyz[0] = t0 * yz[0 + 2 * i0] + t1 * yz[0 + 2 * i1];
   newyz[1] = t0 * yz[1 + 2 * i0] + t1 * yz[1 + 2 * i1];
+  *newphi = t0 * phi[i0] + t1 * phi[i1];
 
   if (xold < x[0] || x[(n)-1] < xold)
     printf("extrap %f %f %f\n", xold - (t0 * x[i0] + t1 * x[i1]), xold,
@@ -601,10 +613,10 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT *rail_n1 = NULL;
   REF_DBL **rail_xyzp = NULL;
   REF_DBL *rail_orient = NULL;
-  REF_DBL *rail_phi0 = NULL;
+  REF_DBL **rail_phi0 = NULL;
   REF_DBL **rail_x0 = NULL;
   REF_DBL **rail_yz0 = NULL;
-  REF_DBL *rail_phi1 = NULL;
+  REF_DBL **rail_phi1 = NULL;
   REF_DBL **rail_x1 = NULL;
   REF_DBL **rail_yz1 = NULL;
 
@@ -617,8 +629,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     FILE *f = NULL;
     if (debug && ref_mpi_once(ref_mpi)) f = fopen("ref_inflate_rail.tec", "w");
 
-    ref_malloc_init(rail_phi0, ref_dict_n(faceids), REF_DBL, -REF_DBL_MAX);
-    ref_malloc_init(rail_phi1, ref_dict_n(faceids), REF_DBL, REF_DBL_MAX);
+    ref_malloc_init(rail_phi0, ref_dict_n(faceids), REF_DBL *, NULL);
+    ref_malloc_init(rail_phi1, ref_dict_n(faceids), REF_DBL *, NULL);
     ref_malloc_init(rail_orient, ref_dict_n(faceids), REF_DBL, 1);
     ref_malloc_init(rail_n, ref_dict_n(faceids), REF_INT, 0);
     ref_malloc_init(rail_n0, ref_dict_n(faceids), REF_INT, 0);
@@ -690,57 +702,67 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
         phi0 = MIN(phi0, rail_xyzp[i][3 + 4 * node]);
         phi1 = MAX(phi1, rail_xyzp[i][3 + 4 * node]);
       }
-      rail_phi0[i] = phi0;
-      rail_phi1[i] = phi1;
 
       ref_malloc(rail_x0[i], rail_n[i], REF_DBL);
       ref_malloc(rail_x1[i], rail_n[i], REF_DBL);
       ref_malloc(rail_yz0[i], 2 * rail_n[i], REF_DBL);
       ref_malloc(rail_yz1[i], 2 * rail_n[i], REF_DBL);
+      ref_malloc(rail_phi0[i], rail_n[i], REF_DBL);
+      ref_malloc(rail_phi1[i], rail_n[i], REF_DBL);
       for (node = 0; node < rail_n[i]; node++) {
         if (ABS(rail_xyzp[i][3 + 4 * node] - phi0) <
             ABS(rail_xyzp[i][3 + 4 * node] - phi1)) {
           rail_x0[i][rail_n0[i]] = rail_xyzp[i][0 + 4 * node];
           rail_yz0[i][0 + 2 * rail_n0[i]] = rail_xyzp[i][1 + 4 * node];
           rail_yz0[i][1 + 2 * rail_n0[i]] = rail_xyzp[i][2 + 4 * node];
+          rail_phi0[i][rail_n0[i]] = rail_xyzp[i][3 + 4 * node];
           rail_n0[i]++;
         } else {
           rail_x1[i][rail_n1[i]] = rail_xyzp[i][0 + 4 * node];
           rail_yz1[i][0 + 2 * rail_n1[i]] = rail_xyzp[i][1 + 4 * node];
           rail_yz1[i][1 + 2 * rail_n1[i]] = rail_xyzp[i][2 + 4 * node];
+          rail_phi1[i][rail_n1[i]] = rail_xyzp[i][3 + 4 * node];
           rail_n1[i]++;
         }
       }
 
-      RSS(ref_inflate_sort_rail(rail_n0[i], rail_x0[i], rail_yz0[i]),
+      RSS(ref_inflate_sort_rail(rail_n0[i], rail_x0[i], rail_yz0[i],
+                                rail_phi0[i]),
           "sort rail 0");
-      RSS(ref_inflate_sort_rail(rail_n1[i], rail_x1[i], rail_yz1[i]),
+      RSS(ref_inflate_sort_rail(rail_n1[i], rail_x1[i], rail_yz1[i],
+                                rail_phi1[i]),
           "sort rail 1");
 
-      RSS(ref_inflate_compact_rail(&(rail_n0[i]), rail_x0[i], rail_yz0[i]),
+      RSS(ref_inflate_compact_rail(&(rail_n0[i]), rail_x0[i], rail_yz0[i],
+                                   rail_phi0[i]),
           "compact rail 0");
-      RSS(ref_inflate_compact_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i]),
+      RSS(ref_inflate_compact_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i],
+                                   rail_phi1[i]),
           "compact rail 1");
 
-      RSS(ref_inflate_extend_rail(&(rail_n0[i]), rail_x0[i], rail_yz0[i]),
+      RSS(ref_inflate_extend_rail(&(rail_n0[i]), rail_x0[i], rail_yz0[i],
+                                  rail_phi0[i]),
           "extend rail 0");
-      RSS(ref_inflate_extend_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i]),
+      RSS(ref_inflate_extend_rail(&(rail_n1[i]), rail_x1[i], rail_yz1[i],
+                                  rail_phi1[i]),
           "extend rail 1");
 
       if (verbose && ref_mpi_once(ref_mpi)) {
-        printf("id %4d orient %5.2f has %6d phi %5.2f %5.2f of %6d %6d\n",
-               ref_dict_key(faceids, i), rail_orient[i], rail_n[i],
-               rail_phi0[i], rail_phi1[i], rail_n0[i], rail_n1[i]);
+        printf("id %4d orient %5.2f has %6d of %6d %6d\n",
+               ref_dict_key(faceids, i), rail_orient[i], rail_n[i], rail_n0[i],
+               rail_n1[i]);
       }
       if (NULL != f) {
         fprintf(f, "zone t=\"f%dphi0\"\n", i);
         for (node = 0; node < rail_n0[i]; node++)
-          fprintf(f, " %f %f %f\n", rail_x0[i][node], rail_yz0[i][0 + 2 * node],
-                  rail_yz0[i][1 + 2 * node]);
+          fprintf(f, " %f %f %f %f\n", rail_x0[i][node],
+                  rail_yz0[i][0 + 2 * node], rail_yz0[i][1 + 2 * node],
+                  rail_phi0[i][node]);
         fprintf(f, "zone t=\"f%dphi1\"\n", i);
         for (node = 0; node < rail_n1[i]; node++)
-          fprintf(f, " %f %f %f\n", rail_x1[i][node], rail_yz1[i][0 + 2 * node],
-                  rail_yz1[i][1 + 2 * node]);
+          fprintf(f, " %f %f %f %f\n", rail_x1[i][node],
+                  rail_yz1[i][0 + 2 * node], rail_yz1[i][1 + 2 * node],
+                  rail_phi1[i][node]);
       }
     }
     if (NULL != f) {
@@ -819,23 +841,22 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
           RSS(ref_inflate_rail_node(ref_grid, faceids, node, &in_rail, &ind),
               "in rail");
           if (!in_rail) {
-            REF_DBL yz0[2], yz1[2];
+            REF_DBL yz0[2], yz1[2], phi0, phi1;
             REF_DBL t0, t1, phi;
             RSS(ref_inflate_interpolate_rail(
-                    rail_n0[ind], rail_x0[ind], rail_yz0[ind],
-                    ref_node_xyz(ref_node, 0, new_node), yz0),
+                    rail_n0[ind], rail_x0[ind], rail_yz0[ind], rail_phi0[ind],
+                    ref_node_xyz(ref_node, 0, new_node), yz0, &phi0),
                 "interp 0");
             RSS(ref_inflate_interpolate_rail(
-                    rail_n1[ind], rail_x1[ind], rail_yz1[ind],
-                    ref_node_xyz(ref_node, 0, new_node), yz1),
+                    rail_n1[ind], rail_x1[ind], rail_yz1[ind], rail_phi1[ind],
+                    ref_node_xyz(ref_node, 0, new_node), yz1, &phi1),
                 "interp 1");
             phi = atan2(ref_node_xyz(ref_node, 2, new_node) - origin[2],
                         rail_orient[ind] * ref_node_xyz(ref_node, 1, new_node) -
                             origin[1]);
             t1 = 0.0;
-            if (ref_math_divisible((phi - rail_phi0[ind]),
-                                   (rail_phi1[ind] - rail_phi0[ind]))) {
-              t1 = (phi - rail_phi0[ind]) / (rail_phi1[ind] - rail_phi0[ind]);
+            if (ref_math_divisible((phi - phi0), (phi1 - phi0))) {
+              t1 = (phi - phi0) / (phi1 - phi0);
             }
             t1 = MIN(MAX(0.0, t1), 1.0);
             t0 = 1.0 - t1;
@@ -943,8 +964,10 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   if (on_rails) {
     REF_INT i;
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_phi1[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_yz1[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_x1[i]); }
+    each_ref_dict_key_index(faceids, i) { ref_free(rail_phi0[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_yz0[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_x0[i]); }
     each_ref_dict_key_index(faceids, i) { ref_free(rail_xyzp[i]); }

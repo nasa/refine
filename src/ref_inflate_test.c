@@ -135,14 +135,16 @@ int main() {
     REF_INT n = 2;
     REF_DBL x[] = {0, 0};
     REF_DBL yz[] = {10, 20, 10, 20};
-    RSS(ref_inflate_compact_rail(&n, x, yz), "compact");
+    REF_DBL phi[] = {30, 30};
+    RSS(ref_inflate_compact_rail(&n, x, yz, phi), "compact");
     REIS(1, n, "unique");
   }
   { /* compact 2 different */
     REF_INT n = 2;
     REF_DBL x[] = {0, 1};
     REF_DBL yz[] = {10, 20, 11, 21};
-    RSS(ref_inflate_compact_rail(&n, x, yz), "compact");
+    REF_DBL phi[] = {30, 31};
+    RSS(ref_inflate_compact_rail(&n, x, yz, phi), "compact");
     REIS(2, n, "unique");
   }
 
