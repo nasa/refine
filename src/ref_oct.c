@@ -58,6 +58,9 @@ REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   for (i = 0; i < 8; i++) {
     REIS(REF_EMPTY, ref_oct->children[i + 8 * node], "child not empty");
   }
+  if (ref_oct->n + 8 > ref_oct->max) {
+    THROW("out of children");
+  }
   for (i = 0; i < 8; i++) {
     ref_oct->children[i + 8 * node] = ref_oct->n;
     (ref_oct->n)++;
