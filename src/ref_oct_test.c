@@ -48,6 +48,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "search oct");
   }
 
+  { /* split root */
+    REF_OCT ref_oct;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split oct");
+    RSS(ref_oct_free(ref_oct), "search oct");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

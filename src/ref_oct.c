@@ -53,6 +53,18 @@ REF_FCN REF_STATUS ref_oct_free(REF_OCT ref_oct) {
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
+  REF_INT i;
+  for (i = 0; i < 8; i++) {
+    REIS(REF_EMPTY, ref_oct->children[i + 8 * node], "child not empty");
+  }
+  for (i = 0; i < 8; i++) {
+    ref_oct->children[i + 8 * node] = ref_oct->n;
+    (ref_oct->n)++;
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
   FILE *f;
   const char *zonetype = "febrick";

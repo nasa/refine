@@ -38,6 +38,8 @@ REF_FCN REF_STATUS ref_oct_create(REF_OCT *ref_oct);
 
 REF_FCN REF_STATUS ref_oct_free(REF_OCT ref_oct);
 
+REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node);
+
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename);
 
 END_C_DECLORATION
