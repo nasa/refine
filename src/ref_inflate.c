@@ -667,7 +667,7 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
     }
 
     each_ref_dict_key_index(faceids, i) {
-      REF_DBL phi, phi0, phi1;
+      REF_DBL phi0, phi1;
       REF_DBL ymax;
 
       RSS(ref_mpi_allconcat(ref_mpi, 4, rail_n[i], rail_xyzp[i], &n, &source,
@@ -684,10 +684,11 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       phi0 = REF_DBL_MAX;
       phi1 = -REF_DBL_MAX;
       for (node = 0; node < rail_n[i]; node++) {
-        phi = atan2(rail_xyzp[i][2 + 4 * node] - origin[2],
-                    rail_orient[i] * rail_xyzp[i][1 + 4 * node] - origin[1]);
-        phi0 = MIN(phi0, phi);
-        phi1 = MAX(phi1, phi);
+        rail_xyzp[i][3 + 4 * node] =
+            atan2(rail_xyzp[i][2 + 4 * node] - origin[2],
+                  rail_orient[i] * rail_xyzp[i][1 + 4 * node] - origin[1]);
+        phi0 = MIN(phi0, rail_xyzp[i][3 + 4 * node]);
+        phi1 = MAX(phi1, rail_xyzp[i][3 + 4 * node]);
       }
       rail_phi0[i] = phi0;
       rail_phi1[i] = phi1;
@@ -697,16 +698,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       ref_malloc(rail_yz0[i], 2 * rail_n[i], REF_DBL);
       ref_malloc(rail_yz1[i], 2 * rail_n[i], REF_DBL);
       for (node = 0; node < rail_n[i]; node++) {
-        phi = atan2(rail_xyzp[i][2 + 4 * node] - origin[2],
-                    rail_orient[i] * rail_xyzp[i][1 + 4 * node] - origin[1]);
-        /* exclude points in middle of face */
-        if (ref_math_divisible((phi - rail_phi0[i]),
-                               (rail_phi1[i] - rail_phi0[i]))) {
-          REF_DBL t_phi = (phi - rail_phi0[i]) / (rail_phi1[i] - rail_phi0[i]);
-          REF_DBL t_tol = 0.05;
-          if (t_tol < t_phi && t_phi < (1.0 - t_tol)) continue;
-        }
-        if (ABS(phi - rail_phi0[i]) < ABS(phi - rail_phi1[i])) {
+        if (ABS(rail_xyzp[i][3 + 4 * node] - phi0) <
+            ABS(rail_xyzp[i][3 + 4 * node] - phi1)) {
           rail_x0[i][rail_n0[i]] = rail_xyzp[i][0 + 4 * node];
           rail_yz0[i][0 + 2 * rail_n0[i]] = rail_xyzp[i][1 + 4 * node];
           rail_yz0[i][1 + 2 * rail_n0[i]] = rail_xyzp[i][2 + 4 * node];
