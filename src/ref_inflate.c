@@ -529,6 +529,29 @@ REF_FCN static REF_STATUS ref_inflate_interpolate_rail(REF_INT n, REF_DBL *x,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_inflate_rail_node(REF_GRID ref_grid,
+                                                REF_DICT faceids, REF_INT node,
+                                                REF_BOOL *in_rail,
+                                                REF_INT *ind) {
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_INT max_id = 4, n_id = 0, ids[4], i, nactive;
+  *in_rail = REF_FALSE;
+  *ind = REF_EMPTY;
+  RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
+  nactive = 0;
+  for (i = 0; i < n_id; i++) {
+    if (ref_dict_has_key(faceids, ids[i])) {
+      RSS(ref_dict_location(faceids, ids[i], ind), "faceid loc");
+      nactive++;
+    }
+  }
+  RAS(nactive > 0, "no tris active");
+  RAS(nactive < 3, "three or more tri actve");
+  *in_rail = (nactive > 1);
+  if (*in_rail) *ind = REF_EMPTY;
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,
@@ -595,11 +618,13 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
         REF_INT dict_index;
         RSS(ref_dict_location(faceids, nodes[3], &dict_index), "loc");
         for (tri_node = 0; tri_node < 3; tri_node++) {
-          REF_INT max_id = 4, n_id = 0, ids[4];
           node = nodes[tri_node];
           if (ref_node_owned(ref_node, node)) {
-            RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
-            if (n_id > 1 || !ref_cell_node_empty(qua, node)) {
+            REF_INT ind;
+            REF_BOOL in_rail;
+            RSS(ref_inflate_rail_node(ref_grid, faceids, node, &in_rail, &ind),
+                "in rail");
+            if (in_rail) {
               if (rail_n[dict_index] >= rail_max) THROW("out of rail_max");
 
               normal[0] = 0.0;
@@ -778,17 +803,11 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
         ref_node_xyz(ref_node, 2, new_node) =
             thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
         if (on_rails) {
-          REF_INT max_id = 4, n_id = 0, ids[4];
-          REF_INT ind, jface;
-          RSS(ref_cell_id_list_around(tri, node, max_id, &n_id, ids), "ids");
-          ind = REF_EMPTY;
-          for (jface = 0; jface < n_id; jface++) {
-            if (ref_dict_has_key(faceids, ids[jface])) {
-              RSS(ref_dict_location(faceids, ids[jface], &ind), "faceid loc");
-              break;
-            }
-          }
-          if (REF_EMPTY != ind) {
+          REF_INT ind;
+          REF_BOOL in_rail;
+          RSS(ref_inflate_rail_node(ref_grid, faceids, node, &in_rail, &ind),
+              "in rail");
+          if (!in_rail) {
             REF_DBL yz0[2], yz1[2];
             REF_DBL t0, t1, phi;
             REF_DBL t_tol = 0.05;
