@@ -940,7 +940,10 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
       RSS(ref_inflate_pri_min_dot(ref_node, new_nodes, &min_dot), "md");
       if (min_dot <= 0.0) {
-        printf("min_dot %f\n", min_dot);
+        printf("min_dot %f near %f %f %f\n", min_dot,
+               ref_node_xyz(ref_node, 0, nodes[0]),
+               ref_node_xyz(ref_node, 1, nodes[0]),
+               ref_node_xyz(ref_node, 2, nodes[0]));
         problem_detected = REF_TRUE;
       }
 
