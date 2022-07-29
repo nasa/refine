@@ -119,19 +119,6 @@ int main(int argc, char *argv[]) {
   last_face_arg = argc;
 
   pos = REF_EMPTY;
-  RXS(ref_args_find(argc, argv, "--debug", &pos), REF_NOT_FOUND,
-      "debug search");
-  if (REF_EMPTY != pos) {
-    debug = REF_TRUE;
-    if (ref_mpi_once(ref_mpi)) printf(" --debug %d\n", (int)debug);
-  }
-  if (debug) {
-    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
-        "movie on");
-    ref_gather_blocking_frame(ref_grid, "core");
-  }
-
-  pos = REF_EMPTY;
   RXS(ref_args_find(argc, argv, "--rails", &pos), REF_NOT_FOUND,
       "debug search");
   if (REF_EMPTY != pos) {
@@ -239,6 +226,19 @@ int main(int argc, char *argv[]) {
     RSS(ref_inflate_read_usm3d_mapbc(faceids, mapbc_file_name, family_name,
                                      bc_type),
         "faceids from mapbc");
+  }
+
+  pos = REF_EMPTY;
+  RXS(ref_args_find(argc, argv, "--debug", &pos), REF_NOT_FOUND,
+      "debug search");
+  if (REF_EMPTY != pos) {
+    debug = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf(" --debug %d\n", (int)debug);
+  }
+  if (debug) {
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "movie on");
+    ref_gather_blocking_frame(ref_grid, "core");
   }
 
   if (ref_mpi_once(ref_mpi)) printf("faceids\n");
