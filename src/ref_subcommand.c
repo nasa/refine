@@ -281,6 +281,7 @@ static void translate_help(const char *name) {
   printf("  options:\n");
   printf("   --scale <scale> scales vertex locations about origin.\n");
   printf("   --shift <dx> <dy> <dz> shift vertex locations.\n");
+  printf("   --rotatey <deg> rotate vertex locations about (0,0,0).\n");
   printf("   --surface extracts surface elements (deletes volume).\n");
   printf("   --enrich2 promotes elements to Q2.\n");
   printf("   --shard converts mixed-elments to simplicies.\n");
@@ -4141,6 +4142,34 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, node) += dx;
       ref_node_xyz(ref_node, 1, node) += dy;
       ref_node_xyz(ref_node, 2, node) += dz;
+    }
+  }
+
+  RXS(ref_args_find(argc, argv, "--rotatey", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    char *endptr;
+    REF_DBL degree, rad;
+    REF_NODE ref_node = ref_grid_node(ref_grid);
+    REF_INT node;
+    if (pos + 1 >= argc) {
+      if (ref_mpi_once(ref_mpi)) printf("--rotatey missing degrees\n");
+      goto shutdown;
+    }
+    pos++;
+    degree = strtod(argv[pos], &endptr);
+    RAS(argv[pos] != endptr, "parse degree");
+    rad = ref_math_in_radians(degree);
+    if (ref_mpi_once(ref_mpi))
+      printf("--rotatex %f degree %f radian\n", degree, rad);
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL x, y, z;
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      z = ref_node_xyz(ref_node, 2, node);
+      ref_node_xyz(ref_node, 0, node) = x * cos(rad) - z * sin(rad);
+      ref_node_xyz(ref_node, 1, node) = y;
+      ref_node_xyz(ref_node, 2, node) = x * sin(rad) + z * cos(rad);
     }
   }
 
