@@ -88,10 +88,10 @@ int main(int argc, char *argv[]) {
     REF_DBL xmin, xmax, ymin, ymax, zmin, zmax;
     REF_INT xdim, ydim, zdim, xdim0;
     REIS(13, argc,
-         "required args: --brick grid.ext "
+         "required args: --plate grid.ext "
          "xmin xmax ymin ymax zmin xmax xdim ydim zdim xdim0");
     REIS(1, pos,
-         "required args: --brick grid.ext "
+         "required args: --plate grid.ext "
          "xmin xmax ymin ymax zmin zmax xdim ydim zdim xdim0");
     xmin = atof(argv[3]);
     xmax = atof(argv[4]);
