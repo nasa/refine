@@ -57,7 +57,8 @@ REF_FCN REF_STATUS ref_fixture_hex_brick_grid(REF_GRID *ref_grid,
                                               REF_MPI ref_mpi);
 REF_FCN REF_STATUS ref_fixture_hex_brick_args_grid(
     REF_GRID *ref_grid, REF_MPI ref_mpi, REF_DBL x0, REF_DBL x1, REF_DBL y0,
-    REF_DBL y1, REF_DBL z0, REF_DBL z1, REF_INT l, REF_INT m, REF_INT n);
+    REF_DBL y1, REF_DBL z0, REF_DBL z1, REF_INT l, REF_INT m, REF_INT n,
+    REF_INT l0);
 
 REF_FCN REF_STATUS ref_fixture_tet_brick_grid(REF_GRID *ref_grid,
                                               REF_MPI ref_mpi);

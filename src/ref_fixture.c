@@ -1259,13 +1259,14 @@ REF_FCN REF_STATUS ref_fixture_hex_brick_grid(REF_GRID *ref_grid_ptr,
   REF_DBL z1 = 1.0;
 
   RSS(ref_fixture_hex_brick_args_grid(ref_grid_ptr, ref_mpi, x0, x1, y0, y1, z0,
-                                      z1, l, m, n),
+                                      z1, l, m, n, 0),
       "args");
   return REF_SUCCESS;
 }
 REF_FCN REF_STATUS ref_fixture_hex_brick_args_grid(
     REF_GRID *ref_grid_ptr, REF_MPI ref_mpi, REF_DBL x0, REF_DBL x1, REF_DBL y0,
-    REF_DBL y1, REF_DBL z0, REF_DBL z1, REF_INT l, REF_INT m, REF_INT n) {
+    REF_DBL y1, REF_DBL z0, REF_DBL z1, REF_INT l, REF_INT m, REF_INT n,
+    REF_INT l0) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT global, node, hex[8], cell;
@@ -1273,6 +1274,9 @@ REF_FCN REF_STATUS ref_fixture_hex_brick_args_grid(
 
   REF_INT i, j, k;
   REF_DBL dx, dy, dz;
+
+  l0 = MAX(0, l0);
+  l0 = MIN(l0, l - 1);
 
   dx = (x1 - x0) / ((REF_DBL)(l - 1));
   dy = (y1 - y0) / ((REF_DBL)(m - 1));
@@ -1364,10 +1368,22 @@ REF_FCN REF_STATUS ref_fixture_hex_brick_args_grid(
       RSS(ref_cell_add(ref_grid_qua(ref_grid), quad, &cell), "qua");
     }
 
+  quad[4] = 7;
+  k = 1;
+  for (j = 1; j < m; j++)
+    for (i = 1; i < l0 + 1; i++) {
+      ijk2hex(i, j, k, l, m, n, hex);
+      quad[0] = hex[0];
+      quad[1] = hex[1];
+      quad[2] = hex[2];
+      quad[3] = hex[3];
+      RSS(ref_cell_add(ref_grid_qua(ref_grid), quad, &cell), "qua");
+    }
+
   quad[4] = 5;
   k = 1;
   for (j = 1; j < m; j++)
-    for (i = 1; i < l; i++) {
+    for (i = l0 + 1; i < l; i++) {
       ijk2hex(i, j, k, l, m, n, hex);
       quad[0] = hex[0];
       quad[1] = hex[1];
