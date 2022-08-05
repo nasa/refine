@@ -1577,7 +1577,6 @@ REF_FCN REF_STATUS ref_fixture_pri_brick_args_grid(
       quad[1] = hex[4];
       quad[2] = hex[7];
       quad[3] = hex[6];
-      RSS(ref_cell_add(ref_grid_qua(ref_grid), quad, &cell), "qua");
       tri[0] = quad[1];
       tri[1] = quad[3];
       tri[2] = quad[0];
