@@ -12,6 +12,7 @@ bcmap = Hash.new(-999)
 bcmap[6662] =   1 # symmetry_y
 bcmap[5026] =   2 # extrapolate
 bcmap[5000] =   3 # farfield_riem
+bcmap[5050] =   3 # farfield_roe
 bcmap[4000] =   4 # viscous_solid
 bcmap[3000] =   5 # tangency
 
