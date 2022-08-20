@@ -12,7 +12,7 @@ occ_path="${module_path}/ESP/120/OpenCASCADE"
 
 mpi_path="/nasa/hpe/mpt/2.25_rhel79"
 
-gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
+gcc_flags="-g -O2 -Wall -Wextra -Werror -Wunused -Wuninitialized"
 
 mkdir -p strict
 ( cd strict && \
