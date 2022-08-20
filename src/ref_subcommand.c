@@ -1698,6 +1698,7 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
+    printf("inflation method %s\n", inflate_method);
     printf("number of layers %d\n", nlayers);
     printf("first thickness %f\n", first_thickness);
     printf("total thickness %f\n", total_thickness);
