@@ -1789,7 +1789,7 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   if (ref_dict_n(faceids) <= 0) {
     if (ref_mpi_once(ref_mpi)) {
-      printf("no faces to inflate, use --fun3d-mapbc or --usm3d-mapbc");
+      printf("no faces to inflate, use --fun3d-mapbc or --usm3d-mapbc\n");
     }
     goto shutdown;
   }
