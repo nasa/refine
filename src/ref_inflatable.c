@@ -281,7 +281,7 @@ int main(int argc, char *argv[]) {
     xshift = thickness / tan(mach_angle_rad);
     if (extrude_radially) {
       RSS(ref_inflate_radially(ref_grid, faceids, origin, thickness,
-                               mach_angle_rad, alpha_rad, on_rails),
+                               mach_angle_rad, alpha_rad, on_rails, debug),
           "inflate");
     } else {
       RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
