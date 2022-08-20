@@ -130,8 +130,8 @@ static void collar_help(const char *name) {
       "nlayers first_thickness total_thickness mach\n",
       name);
   printf("  where method is:\n");
-  printf("    <n>ormal extrusion normal to polygonal prism\n");
-  printf("    <i>nterpolated extrusion parallel to face in circumference\n");
+  printf("    <n>ormal extrusion normal to polygonal prism face\n");
+  printf("    <f>lat extrusion of interpolated face edges\n");
   printf("    <r>adial extrusion from origin (not guarenteed)\n");
   printf("  --usm3d-mapbc usm3d_format.mapbc family_name bc_type\n");
   printf("  --fun3d-mapbc fun3d_format.mapbc (requires 'inflate' family)\n");
@@ -1657,7 +1657,7 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *input_filename = NULL;
   char *inflate_arg = NULL;
   char inflate_normal[] = "normal";
-  char inflate_interpolated[] = "interpolate";
+  char inflate_flat[] = "flat";
   char inflate_radial[] = "radial";
   char *inflate_method = NULL;
   REF_GRID ref_grid = NULL;
@@ -1698,8 +1698,8 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   inflate_method = NULL;
   if (strncmp(inflate_arg, "n", 1) == 0) {
     inflate_method = inflate_normal;
-  } else if (strncmp(inflate_arg, "i", 1) == 0) {
-    inflate_method = inflate_interpolated;
+  } else if (strncmp(inflate_arg, "f", 1) == 0) {
+    inflate_method = inflate_flat;
     extrude_radially = REF_TRUE;
     on_rails = REF_TRUE;
   } else if (strncmp(inflate_arg, "r", 1) == 0) {

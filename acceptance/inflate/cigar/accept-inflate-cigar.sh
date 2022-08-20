@@ -22,7 +22,7 @@ ${src}/ref adapt cigar-vol.meshb \
       -x cigar.meshb \
       -x cigar.plt
 
-${src}/ref collar interpolated  \
+${src}/ref collar flat  \
     cigar.meshb \
     10 \
     0.1 \
