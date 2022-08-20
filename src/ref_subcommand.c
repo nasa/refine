@@ -133,7 +133,7 @@ static void collar_help(const char *name) {
   printf("    <n>ormal extrusion normal to polygonal prism\n");
   printf("    <i>nterpolated extrusion parallel to face in circumference\n");
   printf("    <r>adial extrusion from origin (not guarenteed)\n");
-  printf("  --mapbc usm3d_format.mapbc family_name bc_type\n");
+  printf("  --usm3d-mapbc usm3d_format.mapbc family_name bc_type\n");
   printf("  --fun3d-mapbc fun3d_format.mapbc (requires 'inflate' family)\n");
   printf("  --rotate angle_in_degrees (applied before inflation)\n");
   printf("  --origin ox oy oz (default is 0 0 zmid)\n");
@@ -1667,32 +1667,27 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (argc < 7) goto shutdown;
   input_filename = argv[2];
 
-  ref_mpi_stopwatch_start(ref_mpi);
-
   nlayers = atoi(argv[3]);
   first_thickness = atof(argv[4]);
   total_thickness = atof(argv[5]);
   mach = atof(argv[6]);
 
-  if (ref_mpi_once(ref_mpi)) {
-    printf("layers %d\n", nlayers);
-    printf("first thickness %f\n", first_thickness);
-    printf("total thickness %f\n", total_thickness);
-    printf("mach %f\n", mach);
-  }
   RAS(nlayers > 0 && first_thickness > 0.0 && total_thickness > 0.0 &&
           mach > 1.0,
-      "inputs must be positive and supersonic");
+      "thicknesses must be positive and Mach supersonic");
 
   mach_angle_rad = asin(1 / mach);
   RSS(ref_inflate_rate(nlayers, first_thickness, total_thickness, &rate),
       "compute rate");
 
   if (ref_mpi_once(ref_mpi)) {
+    printf("number of layers %d\n", nlayers);
+    printf("first thickness %f\n", first_thickness);
+    printf("total thickness %f\n", total_thickness);
+    printf("layer growth rate %f\n", rate);
+    printf("mach %f\n", mach);
     printf("mach angle %f rad %f deg\n", mach_angle_rad,
            ref_math_in_degrees(mach_angle_rad));
-    printf("total thickness %f\n", total_thickness);
-    printf("rate %f\n", rate);
   }
 
   RSS(ref_dict_create(&faceids), "create");
@@ -1707,13 +1702,16 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_phys_read_mapbc_token(faceids, mapbc, "inflate"),
           "unable to read fun3d formatted mapbc");
     }
-    RSS(ref_dict_bcast(faceids, ref_mpi), "bcast");
   }
 
+  RSS(ref_dict_bcast(faceids, ref_mpi), "bcast");
   if (ref_mpi_once(ref_mpi)) {
     printf("inflating %d faces\n", ref_dict_n(faceids));
   }
-  RAS(ref_dict_n(faceids) > 0, "no faces to inflate, use --fun3d-mapbc");
+  RAS(ref_dict_n(faceids) > 0,
+      "no faces to inflate, use --fun3d-mapbc or --usm3d-mapbc");
+
+  ref_mpi_stopwatch_start(ref_mpi);
 
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", input_filename);
