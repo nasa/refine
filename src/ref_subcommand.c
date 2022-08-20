@@ -1698,11 +1698,11 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   inflate_method = NULL;
   if (strncmp(inflate_arg, "n", 1) == 0) {
     inflate_method = inflate_normal;
-  } else if (strncmp(argv[1], "i", 1) == 0) {
+  } else if (strncmp(inflate_arg, "i", 1) == 0) {
     inflate_method = inflate_interpolated;
     extrude_radially = REF_TRUE;
     on_rails = REF_TRUE;
-  } else if (strncmp(argv[1], "r", 1) == 0) {
+  } else if (strncmp(inflate_arg, "r", 1) == 0) {
     inflate_method = inflate_radial;
     extrude_radially = REF_TRUE;
   }
