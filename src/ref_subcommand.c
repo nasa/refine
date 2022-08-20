@@ -1820,7 +1820,22 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
+  RXS(ref_args_find(argc, argv, "--origin", &pos), REF_NOT_FOUND,
+      "origin search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 3) THROW("--origin requires three values");
+    origin[0] = atof(argv[pos + 1]);
+    origin[1] = atof(argv[pos + 2]);
+    origin[2] = atof(argv[pos + 3]);
+    if (ref_mpi_once(ref_mpi))
+      printf(" --origin %f %f %f from argument\n", origin[0], origin[1],
+             origin[2]);
+  } else {
+    RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
+    if (ref_mpi_once(ref_mpi))
+      printf(" --origin %f %f %f inferred from z-midpoint\n", origin[0],
+             origin[1], origin[2]);
+  }
 
   total = 0.0;
   for (layer = 0; layer < nlayers; layer++) {
