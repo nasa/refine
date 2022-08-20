@@ -1654,7 +1654,12 @@ shutdown:
 }
 
 static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
-  char *input_filename;
+  char *input_filename = NULL;
+  char *inflate_arg = NULL;
+  char inflate_normal[] = "normal";
+  char inflate_interpolated[] = "interpolate";
+  char inflate_radial[] = "radial";
+  char *inflate_method = NULL;
   REF_GRID ref_grid = NULL;
   REF_INT nlayers, layer;
   REF_DBL first_thickness, total_thickness, mach, mach_angle_rad;
@@ -1664,18 +1669,40 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT pos, opt;
   REF_DBL origin[3];
 
-  if (argc < 7) goto shutdown;
-  input_filename = argv[2];
+  if (argc < 8) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("not enough required arguments\n");
+    }
+    goto shutdown;
+  }
+  inflate_arg = argv[2];
+  input_filename = argv[3];
+  nlayers = atoi(argv[4]);
+  first_thickness = atof(argv[5]);
+  total_thickness = atof(argv[6]);
+  mach = atof(argv[7]);
 
-  nlayers = atoi(argv[3]);
-  first_thickness = atof(argv[4]);
-  total_thickness = atof(argv[5]);
-  mach = atof(argv[6]);
+  inflate_method = NULL;
+  if (strncmp(inflate_arg, "n", 1) == 0) {
+    inflate_method = inflate_normal;
+  } else if (strncmp(argv[1], "i", 1) == 0) {
+    inflate_method = inflate_interpolated;
+  } else if (strncmp(argv[1], "r", 1) == 0) {
+    inflate_method = inflate_radial;
+  }
+  if (NULL == inflate_method) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("unable to parse inflate method >%s<\n", inflate_arg);
+    }
+    goto shutdown;
+  }
 
-  RAS(nlayers > 0 && first_thickness > 0.0 && total_thickness > 0.0 &&
-          mach > 1.0,
-      "thicknesses must be positive and Mach supersonic");
-
+  if (nlayers <= 0 || first_thickness <= 0.0 || total_thickness <= 0.0 ||
+      mach <= 1.0) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("thicknesses must be positive and Mach supersonic");
+    }
+  }
   mach_angle_rad = asin(1 / mach);
   RSS(ref_inflate_rate(nlayers, first_thickness, total_thickness, &rate),
       "compute rate");
@@ -1771,6 +1798,7 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) collar_help(argv[0]);
+  RSS(ref_grid_free(ref_grid), "grid");
   return REF_FAILURE;
 }
 

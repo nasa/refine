@@ -14,7 +14,7 @@ serveCSM -batch poly.csm
 
 ${src}/ref bootstrap poly.egads
 
-${src}/ref collar  \
+${src}/ref collar normal \
     poly-vol.meshb \
     10 \
     0.1 \
