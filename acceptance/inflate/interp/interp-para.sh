@@ -16,32 +16,28 @@ serveCSM -batch poly.csm
 
 mpiexec -np ${np} ${src}/refmpifull bootstrap poly.egads
 
-rm -rf inflated.b8.ugrid
-${src}/ref_inflatable  \
+mpiexec -np ${np} ${src}/refmpi collar normal \
     poly-vol.meshb \
     10 \
     0.1 \
     2.0 \
     1.68 \
-    2 3 4 5 6 7 8 9
-
-${src}/ref translate inflated.b8.ugrid surf.meshb
+    --fun3d-mapbc poly-vol.mapbc \
+    -x surf.meshb
 
 mpiexec -np ${np} ${src}/refmpi \
       adapt poly-vol.meshb \
       -x poly-curve.meshb \
       -f poly-curve-prop.tec
 
-rm -rf inflated.b8.ugrid
-${src}/ref_inflatable  \
+mpiexec -np ${np} ${src}/refmpi collar normal \
     poly-curve.meshb \
     10 \
     0.1 \
     2.0 \
     1.68 \
-    2 3 4 5 6 7 8 9
-
-${src}/ref translate inflated.b8.ugrid curve.meshb
+    --fun3d-mapbc poly-vol.mapbc \
+    -x curve.meshb
 
 ${src}/ref_acceptance -u u5 surf.meshb surf.solb
 
