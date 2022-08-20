@@ -1669,21 +1669,6 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_mpi_stopwatch_start(ref_mpi);
 
-  if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("part %s\n", input_filename);
-    RSS(ref_part_by_extension(&ref_grid, ref_mpi, input_filename), "part");
-    ref_mpi_stopwatch_stop(ref_mpi, "core part");
-    RSS(ref_migrate_to_balance(ref_grid), "balance");
-    ref_mpi_stopwatch_stop(ref_mpi, "balance core");
-  } else {
-    if (ref_mpi_once(ref_mpi)) printf("import %s\n", input_filename);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, input_filename), "import");
-    ref_mpi_stopwatch_stop(ref_mpi, "core import");
-  }
-  if (ref_mpi_once(ref_mpi))
-    printf("  read " REF_GLOB_FMT " vertices\n",
-           ref_node_n_global(ref_grid_node(ref_grid)));
-
   nlayers = atoi(argv[3]);
   first_thickness = atof(argv[4]);
   total_thickness = atof(argv[5]);
@@ -1729,6 +1714,21 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("inflating %d faces\n", ref_dict_n(faceids));
   }
   RAS(ref_dict_n(faceids) > 0, "no faces to inflate, use --fun3d-mapbc");
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", input_filename);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, input_filename), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "core part");
+    RSS(ref_migrate_to_balance(ref_grid), "balance");
+    ref_mpi_stopwatch_stop(ref_mpi, "balance core");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", input_filename);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, input_filename), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "core import");
+  }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
 
   RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
 
