@@ -1697,10 +1697,20 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     goto shutdown;
   }
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("number of layers %d\n", nlayers);
+    printf("first thickness %f\n", first_thickness);
+    printf("total thickness %f\n", total_thickness);
+    printf("mach %f\n", mach);
+  }
+
   if (nlayers <= 0 || first_thickness <= 0.0 || total_thickness <= 0.0 ||
       mach <= 1.0) {
     if (ref_mpi_once(ref_mpi)) {
-      printf("thicknesses must be positive and Mach supersonic");
+      printf(
+          "number of layers and thicknesses must be positive and "
+          "Mach supersonic\n");
+      goto shutdown;
     }
   }
   mach_angle_rad = asin(1 / mach);
@@ -1708,11 +1718,7 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
       "compute rate");
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("number of layers %d\n", nlayers);
-    printf("first thickness %f\n", first_thickness);
-    printf("total thickness %f\n", total_thickness);
     printf("layer growth rate %f\n", rate);
-    printf("mach %f\n", mach);
     printf("mach angle %f rad %f deg\n", mach_angle_rad,
            ref_math_in_degrees(mach_angle_rad));
   }
