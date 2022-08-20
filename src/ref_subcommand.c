@@ -1786,6 +1786,8 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "core part");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
     ref_mpi_stopwatch_stop(ref_mpi, "balance core");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_mpi, "pack core");
   } else {
     if (ref_mpi_once(ref_mpi)) printf("import %s\n", input_filename);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, input_filename), "import");
