@@ -329,7 +329,6 @@ REF_FCN REF_STATUS ref_iso_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                                            REF_DBL *distance) {
   REF_GRID iso_grid;
   REF_SEARCH ref_search = NULL;
-  ;
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cand[REF_CELL_MAX_SIZE_PER];
   REF_DBL center[3], radius, dist;
