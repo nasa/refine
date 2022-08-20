@@ -1672,6 +1672,7 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_BOOL debug = REF_FALSE;
   REF_BOOL extrude_radially = REF_FALSE;
   REF_BOOL on_rails = REF_FALSE;
+  REF_BOOL default_export_filename = REF_TRUE;
 
   pos = REF_EMPTY;
   RXS(ref_args_find(argc, argv, "--debug", &pos), REF_NOT_FOUND,
@@ -1896,22 +1897,32 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   /* export via -x grid.ext and -f final-surf.tec and -q final-vol.plt */
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
+      default_export_filename = REF_FALSE;
       if (ref_mpi_para(ref_mpi)) {
         if (ref_mpi_once(ref_mpi))
           printf("gather " REF_GLOB_FMT " nodes to %s\n",
                  ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
         RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather");
       } else {
         if (ref_mpi_once(ref_mpi))
           printf("export " REF_GLOB_FMT " nodes to %s\n",
                  ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
         RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "export");
       }
     }
   }
 
-  RSS(ref_dict_free(faceids), "free");
+  if (default_export_filename) {
+    if (ref_mpi_once(ref_mpi))
+      printf("gather " REF_GLOB_FMT " nodes to %s\n",
+             ref_node_n_global(ref_grid_node(ref_grid)), "inflated.b8.ugrid");
+    RSS(ref_gather_by_extension(ref_grid, "inflated.b8.ugrid"), "gather");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather");
+  }
 
+  RSS(ref_dict_free(faceids), "free");
   RSS(ref_grid_free(ref_grid), "grid");
 
   return REF_SUCCESS;
