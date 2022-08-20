@@ -1665,11 +1665,13 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", input_filename);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, input_filename), "part");
-    ref_mpi_stopwatch_stop(ref_mpi, "donor part");
+    ref_mpi_stopwatch_stop(ref_mpi, "core part");
+    RSS(ref_migrate_to_balance(ref_grid), "balance");
+    ref_mpi_stopwatch_stop(ref_mpi, "balance core");
   } else {
     if (ref_mpi_once(ref_mpi)) printf("import %s\n", input_filename);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, input_filename), "import");
-    ref_mpi_stopwatch_stop(ref_mpi, "donor import");
+    ref_mpi_stopwatch_stop(ref_mpi, "core import");
   }
   if (ref_mpi_once(ref_mpi))
     printf("  read " REF_GLOB_FMT " vertices\n",
