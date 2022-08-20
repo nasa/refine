@@ -169,10 +169,6 @@ endif
 noinst_PROGRAMS =
 TESTS =
 
-noinst_PROGRAMS += ref_inflatable
-ref_inflatable_SOURCES = ref_inflatable.c
-ref_inflatable_LDADD = $(default_ldadd)
-
 noinst_PROGRAMS += ref_acceptance
 ref_acceptance_SOURCES = ref_acceptance.c
 ref_acceptance_LDADD = $(default_ldadd)
