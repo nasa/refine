@@ -1797,6 +1797,29 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("  read " REF_GLOB_FMT " vertices\n",
            ref_node_n_global(ref_grid_node(ref_grid)));
 
+  RXS(ref_args_find(argc, argv, "--rotate", &pos), REF_NOT_FOUND,
+      "rotate search");
+  if (REF_EMPTY != pos) {
+    REF_DBL rotate_deg, rotate_rad;
+    REF_NODE ref_node = ref_grid_node(ref_grid);
+    REF_INT node;
+    REF_DBL x, z;
+    if (pos >= argc - 1) THROW("--rotate requires a value");
+    rotate_deg = atof(argv[pos + 1]);
+    rotate_rad = ref_math_in_radians(rotate_deg);
+    if (ref_mpi_once(ref_mpi))
+      printf(" --rotate %f deg (%f rad)\n", rotate_deg, rotate_rad);
+
+    each_ref_node_valid_node(ref_node, node) {
+      x = ref_node_xyz(ref_node, 0, node);
+      z = ref_node_xyz(ref_node, 2, node);
+      ref_node_xyz(ref_node, 0, node) =
+          x * cos(rotate_rad) - z * sin(rotate_rad);
+      ref_node_xyz(ref_node, 2, node) =
+          x * sin(rotate_rad) + z * cos(rotate_rad);
+    }
+  }
+
   RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
 
   total = 0.0;
