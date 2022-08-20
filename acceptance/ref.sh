@@ -688,7 +688,7 @@ wait
 LOG=${root_dir}/log.accept-inflate-mapbc-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/mapbc-para
-( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./inflate-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 wait
