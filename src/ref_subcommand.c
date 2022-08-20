@@ -134,7 +134,7 @@ static void collar_help(const char *name) {
   printf("    <i>nterpolated extrusion flat to face in circumference\n");
   printf("    <r>adial extrusion from origin (not guarenteed)\n");
   printf("  --mapbc usm3d_format.mapbc family_name bc_type\n");
-  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  --fun3d-mapbc fun3d_format.mapbc (requires 'inflate' family)\n");
   printf("  --rotate angle_in_degrees (applied before inflation)\n");
   printf("  --origin ox oy oz (default is 0 0 zmid)\n");
   printf("  -x output_mesh.extension\n");
