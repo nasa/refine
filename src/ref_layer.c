@@ -816,12 +816,11 @@ static REF_FCN REF_STATUS ref_layer_seed_tet(REF_GRID ref_grid, REF_INT node0,
   REF_INT item, cell;
   REF_INT best_cell;
   REF_DBL best_vol;
-  *tet = REF_EMPTY;
-  best_cell = REF_EMPTY;
-  best_vol = -REF_DBL_MAX;
   REF_INT cell_face, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL vol, subtetvol;
   *tet = REF_EMPTY;
+  best_cell = REF_EMPTY;
+  best_vol = -REF_DBL_MAX;
   each_ref_cell_having_node(ref_cell, node0, item, cell) {
     each_ref_cell_cell_face(ref_cell, cell_face) {
       if (node0 == ref_cell_f2n(ref_cell, 0, cell_face, cell) ||
