@@ -2,6 +2,6 @@
 1 5000 inflow
 2 5000 outflow
 3 6662 ysymm
-4 5000 out-y+
-5 5000 out-z-
-6 5000 out-z+
+4 5000 inflate
+5 5000 inflate
+6 5000 inflate

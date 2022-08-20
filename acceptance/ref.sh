@@ -576,7 +576,7 @@ trap - EXIT
 LOG=${root_dir}/log.accept-inflate-radial
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/radial
-( ./inflate.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./inflate.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-inflate-mapbc
@@ -672,7 +672,7 @@ wait
 LOG=${root_dir}/log.accept-inflate-radial-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/radial
-( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./inflate-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 # 4 procs
