@@ -671,7 +671,7 @@ wait
 # 8 procs
 LOG=${root_dir}/log.accept-inflate-radial-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/radial
+cd ${source_dir}/acceptance/inflate/radial-para
 ( ./inflate-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
