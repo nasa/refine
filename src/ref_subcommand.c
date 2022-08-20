@@ -131,7 +131,7 @@ static void collar_help(const char *name) {
       name);
   printf("  where method is:\n");
   printf("    <n>ormal extrusion normal to polygonal prism\n");
-  printf("    <i>nterpolated extrusion flat to face in circumference\n");
+  printf("    <i>nterpolated extrusion parallel to face in circumference\n");
   printf("    <r>adial extrusion from origin (not guarenteed)\n");
   printf("  --mapbc usm3d_format.mapbc family_name bc_type\n");
   printf("  --fun3d-mapbc fun3d_format.mapbc (requires 'inflate' family)\n");
