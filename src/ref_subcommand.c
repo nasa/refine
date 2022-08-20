@@ -1727,13 +1727,42 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
       "arg search");
-  if (REF_EMPTY != pos && pos < argc - 1) {
+  if (REF_EMPTY != pos) {
     const char *mapbc;
+    if (pos >= argc - 1) {
+      if (ref_mpi_once(ref_mpi)) {
+        printf("--fun3d-mapbc requires a filename\n");
+      }
+      goto shutdown;
+    }
     mapbc = argv[pos + 1];
     if (ref_mpi_once(ref_mpi)) {
       printf("reading fun3d bc map %s\n", mapbc);
       RSS(ref_phys_read_mapbc_token(faceids, mapbc, "inflate"),
           "unable to read fun3d formatted mapbc");
+    }
+  }
+
+  RXS(ref_args_find(argc, argv, "--usm3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    const char *mapbc;
+    const char *family_name;
+    REF_INT bc_type;
+    if (pos >= argc - 3) {
+      if (ref_mpi_once(ref_mpi)) {
+        printf("--usm3d-mapbc requires a filename, family, and bc type\n");
+      }
+      goto shutdown;
+    }
+    mapbc = argv[pos + 1];
+    family_name = argv[pos + 2];
+    bc_type = atoi(argv[pos + 3]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading usm3d bc map %s family %s bc %d\n", mapbc, family_name,
+             bc_type);
+      RSS(ref_inflate_read_usm3d_mapbc(faceids, mapbc, family_name, bc_type),
+          "faceids from mapbc");
     }
   }
 
