@@ -1663,12 +1663,15 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_GRID ref_grid = NULL;
   REF_INT nlayers, layer;
   REF_DBL first_thickness, total_thickness, mach, mach_angle_rad;
+  REF_DBL alpha_rad = 0.0;
   REF_DBL thickness, total, xshift;
   REF_DBL rate;
   REF_DICT faceids;
   REF_INT pos, opt;
   REF_DBL origin[3];
   REF_BOOL debug = REF_FALSE;
+  REF_BOOL extrude_radially = REF_FALSE;
+  REF_BOOL on_rails = REF_FALSE;
 
   pos = REF_EMPTY;
   RXS(ref_args_find(argc, argv, "--debug", &pos), REF_NOT_FOUND,
@@ -1696,8 +1699,11 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     inflate_method = inflate_normal;
   } else if (strncmp(argv[1], "i", 1) == 0) {
     inflate_method = inflate_interpolated;
+    extrude_radially = REF_TRUE;
+    on_rails = REF_TRUE;
   } else if (strncmp(argv[1], "r", 1) == 0) {
     inflate_method = inflate_radial;
+    extrude_radially = REF_TRUE;
   }
   if (NULL == inflate_method) {
     if (ref_mpi_once(ref_mpi)) {
@@ -1857,8 +1863,15 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     thickness = first_thickness * pow(rate, layer);
     total = total + thickness;
     xshift = thickness / tan(mach_angle_rad);
-    RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
-        "inflate");
+
+    if (extrude_radially) {
+      RSS(ref_inflate_radially(ref_grid, faceids, origin, thickness,
+                               mach_angle_rad, alpha_rad, on_rails),
+          "inflate");
+    } else {
+      RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
+          "inflate");
+    }
 
     if (ref_mpi_once(ref_mpi))
       printf("layer%5d of%5d thickness %10.3e total %10.3e " REF_GLOB_FMT
@@ -1868,6 +1881,17 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "inflate");
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("inflated %d faces\n", ref_dict_n(faceids));
+    printf("mach %f mach angle %f rad %f deg\n", mach, mach_angle_rad,
+           ref_math_in_degrees(mach_angle_rad));
+    printf("first thickness %f\n", first_thickness);
+    printf("total thickness %f\n", total_thickness);
+    printf("rate %f\n", rate);
+    printf("layers %d\n", nlayers);
+    printf("inflate method %s\n", inflate_method);
+  }
 
   /* export via -x grid.ext and -f final-surf.tec and -q final-vol.plt */
   for (opt = 0; opt < argc - 1; opt++) {
