@@ -579,12 +579,6 @@ cd ${source_dir}/acceptance/inflate/interp
 ( ./interp.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-inflate-normal
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/normal
-( ./inflate.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
 LOG=${root_dir}/log.accept-inflate-radial
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/radial
@@ -663,13 +657,6 @@ cd ${source_dir}/acceptance/hemisphere/uniform-para
 trap - EXIT
 
 wait
-
-# 8 procs
-LOG=${root_dir}/log.accept-inflate-normal-para
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/normal
-( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
 
 # 2 procs
 LOG=${root_dir}/log.accept-inflate-interp-para
