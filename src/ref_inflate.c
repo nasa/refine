@@ -587,7 +587,8 @@ REF_FCN static REF_STATUS ref_inflate_rail_node(REF_GRID ref_grid,
 REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                         REF_DBL *origin, REF_DBL thickness,
                                         REF_DBL mach_angle_rad,
-                                        REF_DBL alpha_rad, REF_BOOL on_rails) {
+                                        REF_DBL alpha_rad, REF_BOOL on_rails,
+                                        REF_BOOL debug) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -623,7 +624,6 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   REF_DBL **rail_x1 = NULL;
   REF_DBL **rail_yz1 = NULL;
 
-  REF_BOOL debug = REF_TRUE;
   REF_BOOL verbose = REF_FALSE;
 
   if (on_rails) {

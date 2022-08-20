@@ -126,11 +126,18 @@ static void adapt_help(const char *name) {
 }
 static void collar_help(const char *name) {
   printf(
-      "usage: \n %s collar input_mesh.extension "
+      "usage: \n %s collar method core_mesh.ext "
       "nlayers first_thickness total_thickness mach\n",
       name);
-  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
-  printf("  -x  output_mesh.extension\n");
+  printf("  where method is:\n");
+  printf("    <n>ormal extrusion normal to polygonal prism face\n");
+  printf("    <f>lat extrusion of interpolated face edges\n");
+  printf("    <r>adial extrusion from origin (not guarenteed)\n");
+  printf("  --usm3d-mapbc usm3d_format.mapbc family_name bc_type\n");
+  printf("  --fun3d-mapbc fun3d_format.mapbc (requires 'inflate' family)\n");
+  printf("  --rotate angle_in_degrees (applied before inflation)\n");
+  printf("  --origin ox oy oz (default is 0 0 zmid)\n");
+  printf("  -x output_mesh.extension\n");
   printf("\n");
 }
 static void bootstrap_help(const char *name) {
@@ -1647,89 +1654,225 @@ shutdown:
 }
 
 static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
-  char *input_filename;
+  char *input_filename = NULL;
+  char *inflate_arg = NULL;
+  char inflate_normal[] = "normal";
+  char inflate_flat[] = "flat";
+  char inflate_radial[] = "radial";
+  char *inflate_method = NULL;
   REF_GRID ref_grid = NULL;
   REF_INT nlayers, layer;
   REF_DBL first_thickness, total_thickness, mach, mach_angle_rad;
+  REF_DBL alpha_rad = 0.0;
   REF_DBL thickness, total, xshift;
   REF_DBL rate;
   REF_DICT faceids;
   REF_INT pos, opt;
   REF_DBL origin[3];
+  REF_BOOL debug = REF_FALSE;
+  REF_BOOL extrude_radially = REF_FALSE;
+  REF_BOOL on_rails = REF_FALSE;
+  REF_BOOL default_export_filename = REF_TRUE;
 
-  if (argc < 7) goto shutdown;
-  input_filename = argv[2];
-
-  ref_mpi_stopwatch_start(ref_mpi);
-
-  if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("part %s\n", input_filename);
-    RSS(ref_part_by_extension(&ref_grid, ref_mpi, input_filename), "part");
-    ref_mpi_stopwatch_stop(ref_mpi, "donor part");
-  } else {
-    if (ref_mpi_once(ref_mpi)) printf("import %s\n", input_filename);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, input_filename), "import");
-    ref_mpi_stopwatch_stop(ref_mpi, "donor import");
+  pos = REF_EMPTY;
+  RXS(ref_args_find(argc, argv, "--debug", &pos), REF_NOT_FOUND,
+      "debug search");
+  if (REF_EMPTY != pos) {
+    debug = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf(" --debug %d\n", (int)debug);
   }
-  if (ref_mpi_once(ref_mpi))
-    printf("  read " REF_GLOB_FMT " vertices\n",
-           ref_node_n_global(ref_grid_node(ref_grid)));
 
-  nlayers = atoi(argv[3]);
-  first_thickness = atof(argv[4]);
-  total_thickness = atof(argv[5]);
-  mach = atof(argv[6]);
+  if (argc < 8) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("not enough required arguments\n");
+    }
+    goto shutdown;
+  }
+  inflate_arg = argv[2];
+  input_filename = argv[3];
+  nlayers = atoi(argv[4]);
+  first_thickness = atof(argv[5]);
+  total_thickness = atof(argv[6]);
+  mach = atof(argv[7]);
+
+  inflate_method = NULL;
+  if (strncmp(inflate_arg, "n", 1) == 0) {
+    inflate_method = inflate_normal;
+  } else if (strncmp(inflate_arg, "f", 1) == 0) {
+    inflate_method = inflate_flat;
+    extrude_radially = REF_TRUE;
+    on_rails = REF_TRUE;
+  } else if (strncmp(inflate_arg, "r", 1) == 0) {
+    inflate_method = inflate_radial;
+    extrude_radially = REF_TRUE;
+  }
+  if (NULL == inflate_method) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("unable to parse inflate method >%s<\n", inflate_arg);
+    }
+    goto shutdown;
+  }
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("layers %d\n", nlayers);
+    printf("inflation method %s\n", inflate_method);
+    printf("number of layers %d\n", nlayers);
     printf("first thickness %f\n", first_thickness);
     printf("total thickness %f\n", total_thickness);
     printf("mach %f\n", mach);
   }
-  RAS(nlayers > 0 && first_thickness > 0.0 && total_thickness > 0.0 &&
-          mach > 1.0,
-      "inputs must be positive and supersonic");
 
+  if (nlayers <= 0 || first_thickness <= 0.0 || total_thickness <= 0.0 ||
+      mach <= 1.0) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf(
+          "number of layers and thicknesses must be positive and "
+          "Mach supersonic\n");
+    }
+    goto shutdown;
+  }
   mach_angle_rad = asin(1 / mach);
   RSS(ref_inflate_rate(nlayers, first_thickness, total_thickness, &rate),
       "compute rate");
 
   if (ref_mpi_once(ref_mpi)) {
+    printf("layer growth rate %f\n", rate);
     printf("mach angle %f rad %f deg\n", mach_angle_rad,
            ref_math_in_degrees(mach_angle_rad));
-    printf("total thickness %f\n", total_thickness);
-    printf("rate %f\n", rate);
   }
 
   RSS(ref_dict_create(&faceids), "create");
 
   RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
       "arg search");
-  if (REF_EMPTY != pos && pos < argc - 1) {
+  if (REF_EMPTY != pos) {
     const char *mapbc;
+    if (pos >= argc - 1) {
+      if (ref_mpi_once(ref_mpi)) {
+        printf("--fun3d-mapbc requires a filename\n");
+      }
+      goto shutdown;
+    }
     mapbc = argv[pos + 1];
     if (ref_mpi_once(ref_mpi)) {
       printf("reading fun3d bc map %s\n", mapbc);
       RSS(ref_phys_read_mapbc_token(faceids, mapbc, "inflate"),
           "unable to read fun3d formatted mapbc");
     }
-    RSS(ref_dict_bcast(faceids, ref_mpi), "bcast");
   }
 
+  RXS(ref_args_find(argc, argv, "--usm3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    const char *mapbc;
+    const char *family_name;
+    REF_INT bc_type;
+    if (pos >= argc - 3) {
+      if (ref_mpi_once(ref_mpi)) {
+        printf("--usm3d-mapbc requires a filename, family, and bc type\n");
+      }
+      goto shutdown;
+    }
+    mapbc = argv[pos + 1];
+    family_name = argv[pos + 2];
+    bc_type = atoi(argv[pos + 3]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading usm3d bc map %s family %s bc %d\n", mapbc, family_name,
+             bc_type);
+      RSS(ref_inflate_read_usm3d_mapbc(faceids, mapbc, family_name, bc_type),
+          "faceids from mapbc");
+    }
+  }
+
+  RSS(ref_dict_bcast(faceids, ref_mpi), "bcast");
   if (ref_mpi_once(ref_mpi)) {
     printf("inflating %d faces\n", ref_dict_n(faceids));
   }
-  RAS(ref_dict_n(faceids) > 0, "no faces to inflate, use --fun3d-mapbc");
+  if (ref_dict_n(faceids) <= 0) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("no faces to inflate, use --fun3d-mapbc or --usm3d-mapbc\n");
+    }
+    goto shutdown;
+  }
 
-  RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", input_filename);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, input_filename), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "core part");
+    RSS(ref_migrate_to_balance(ref_grid), "balance");
+    ref_mpi_stopwatch_stop(ref_mpi, "balance core");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_mpi, "pack core");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", input_filename);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, input_filename), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "core import");
+  }
+  if (ref_mpi_once(ref_mpi))
+    printf("  read " REF_GLOB_FMT " vertices\n",
+           ref_node_n_global(ref_grid_node(ref_grid)));
+
+  RXS(ref_args_find(argc, argv, "--rotate", &pos), REF_NOT_FOUND,
+      "rotate search");
+  if (REF_EMPTY != pos) {
+    REF_DBL rotate_deg, rotate_rad;
+    REF_NODE ref_node = ref_grid_node(ref_grid);
+    REF_INT node;
+    REF_DBL x, z;
+    if (pos >= argc - 1) THROW("--rotate requires a value");
+    rotate_deg = atof(argv[pos + 1]);
+    rotate_rad = ref_math_in_radians(rotate_deg);
+    if (ref_mpi_once(ref_mpi))
+      printf(" --rotate %f deg (%f rad)\n", rotate_deg, rotate_rad);
+
+    each_ref_node_valid_node(ref_node, node) {
+      x = ref_node_xyz(ref_node, 0, node);
+      z = ref_node_xyz(ref_node, 2, node);
+      ref_node_xyz(ref_node, 0, node) =
+          x * cos(rotate_rad) - z * sin(rotate_rad);
+      ref_node_xyz(ref_node, 2, node) =
+          x * sin(rotate_rad) + z * cos(rotate_rad);
+    }
+  }
+
+  RXS(ref_args_find(argc, argv, "--origin", &pos), REF_NOT_FOUND,
+      "origin search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 3) THROW("--origin requires three values");
+    origin[0] = atof(argv[pos + 1]);
+    origin[1] = atof(argv[pos + 2]);
+    origin[2] = atof(argv[pos + 3]);
+    if (ref_mpi_once(ref_mpi))
+      printf(" --origin %f %f %f from argument\n", origin[0], origin[1],
+             origin[2]);
+  } else {
+    RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
+    if (ref_mpi_once(ref_mpi))
+      printf(" --origin %f %f %f inferred from z-midpoint\n", origin[0],
+             origin[1], origin[2]);
+  }
+
+  if (debug) {
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "movie on");
+    ref_gather_blocking_frame(ref_grid, "core");
+  }
 
   total = 0.0;
   for (layer = 0; layer < nlayers; layer++) {
     thickness = first_thickness * pow(rate, layer);
     total = total + thickness;
     xshift = thickness / tan(mach_angle_rad);
-    RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
-        "inflate");
+
+    if (extrude_radially) {
+      RSS(ref_inflate_radially(ref_grid, faceids, origin, thickness,
+                               mach_angle_rad, alpha_rad, on_rails, debug),
+          "inflate");
+    } else {
+      RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
+          "inflate");
+    }
 
     if (ref_mpi_once(ref_mpi))
       printf("layer%5d of%5d thickness %10.3e total %10.3e " REF_GLOB_FMT
@@ -1740,30 +1883,52 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "inflate");
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("inflated %d faces\n", ref_dict_n(faceids));
+    printf("mach %f mach angle %f rad %f deg\n", mach, mach_angle_rad,
+           ref_math_in_degrees(mach_angle_rad));
+    printf("first thickness %f\n", first_thickness);
+    printf("total thickness %f\n", total_thickness);
+    printf("rate %f\n", rate);
+    printf("layers %d\n", nlayers);
+    printf("inflate method %s\n", inflate_method);
+  }
+
   /* export via -x grid.ext and -f final-surf.tec and -q final-vol.plt */
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
+      default_export_filename = REF_FALSE;
       if (ref_mpi_para(ref_mpi)) {
         if (ref_mpi_once(ref_mpi))
           printf("gather " REF_GLOB_FMT " nodes to %s\n",
                  ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
         RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather");
       } else {
         if (ref_mpi_once(ref_mpi))
           printf("export " REF_GLOB_FMT " nodes to %s\n",
                  ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
         RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "export");
       }
     }
   }
 
-  RSS(ref_dict_free(faceids), "free");
+  if (default_export_filename) {
+    if (ref_mpi_once(ref_mpi))
+      printf("gather " REF_GLOB_FMT " nodes to %s\n",
+             ref_node_n_global(ref_grid_node(ref_grid)), "inflated.b8.ugrid");
+    RSS(ref_gather_by_extension(ref_grid, "inflated.b8.ugrid"), "gather");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather");
+  }
 
+  RSS(ref_dict_free(faceids), "free");
   RSS(ref_grid_free(ref_grid), "grid");
 
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) collar_help(argv[0]);
+  RSS(ref_grid_free(ref_grid), "grid");
   return REF_FAILURE;
 }
 

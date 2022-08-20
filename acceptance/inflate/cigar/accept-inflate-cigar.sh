@@ -22,13 +22,14 @@ ${src}/ref adapt cigar-vol.meshb \
       -x cigar.meshb \
       -x cigar.plt
 
-${src}/ref_inflatable  \
+${src}/ref collar flat  \
     cigar.meshb \
-    -10 \
+    10 \
     0.1 \
     5.0 \
     1.4 \
-    --mapbc cigar-usm3d.mapbc cigar 3 \
+    --usm3d-mapbc cigar-usm3d.mapbc cigar 3 \
     --origin 0 0 0.5 \
-    --rails
+    -x cigar-inflated.meshb \
+    -x cigar-inflated.plt
 

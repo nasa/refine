@@ -567,28 +567,16 @@ cd ${source_dir}/acceptance/inflate/collar
 ( ./inflate.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-inflate-poly
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/poly
-( ./inflate.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
 LOG=${root_dir}/log.accept-inflate-interp
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/interp
 ( ./interp.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-inflate-normal
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/normal
-( ./inflate.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
 LOG=${root_dir}/log.accept-inflate-radial
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/radial
-( ./inflate.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./inflate.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-inflate-mapbc
@@ -664,17 +652,10 @@ trap - EXIT
 
 wait
 
-# 8 procs
-LOG=${root_dir}/log.accept-inflate-normal-para
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/normal
-( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
 # 2 procs
 LOG=${root_dir}/log.accept-inflate-interp-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/interp
+cd ${source_dir}/acceptance/inflate/interp-para
 ( ./interp-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
@@ -690,8 +671,8 @@ wait
 # 8 procs
 LOG=${root_dir}/log.accept-inflate-radial-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/radial
-( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/inflate/radial-para
+( ./inflate-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 # 4 procs
@@ -706,8 +687,8 @@ wait
 # 8 procs
 LOG=${root_dir}/log.accept-inflate-mapbc-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/mapbc
-( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/inflate/mapbc-para
+( ./inflate-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 wait
