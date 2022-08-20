@@ -1710,8 +1710,8 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf(
           "number of layers and thicknesses must be positive and "
           "Mach supersonic\n");
-      goto shutdown;
     }
+    goto shutdown;
   }
   mach_angle_rad = asin(1 / mach);
   RSS(ref_inflate_rate(nlayers, first_thickness, total_thickness, &rate),
