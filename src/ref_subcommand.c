@@ -1668,6 +1668,15 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DICT faceids;
   REF_INT pos, opt;
   REF_DBL origin[3];
+  REF_BOOL debug = REF_FALSE;
+
+  pos = REF_EMPTY;
+  RXS(ref_args_find(argc, argv, "--debug", &pos), REF_NOT_FOUND,
+      "debug search");
+  if (REF_EMPTY != pos) {
+    debug = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf(" --debug %d\n", (int)debug);
+  }
 
   if (argc < 8) {
     if (ref_mpi_once(ref_mpi)) {
@@ -1835,6 +1844,12 @@ static REF_STATUS collar(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf(" --origin %f %f %f inferred from z-midpoint\n", origin[0],
              origin[1], origin[2]);
+  }
+
+  if (debug) {
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "movie on");
+    ref_gather_blocking_frame(ref_grid, "core");
   }
 
   total = 0.0;
