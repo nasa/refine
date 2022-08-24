@@ -396,7 +396,7 @@ int main(int argc, char *argv[]) {
     if (twod_brick_wound_correctly) {
       REF_GRID tet_grid;
       RSS(ref_grid_deep_copy(&tet_grid, ref_grid), "deep copy");
-      RSS(ref_shard_prism_into_tet(tet_grid, 0, REF_EMPTY), "shard to tet");
+      RSS(ref_shard_prism_into_tet(tet_grid, 0, NULL), "shard to tet");
       RSS(ref_validation_all(ref_grid), "pri val");
       RSS(ref_grid_free(tet_grid), "cleanup");
     }
@@ -416,7 +416,7 @@ int main(int argc, char *argv[]) {
     if (twod_brick_wound_correctly) {
       REF_GRID tet_grid;
       RSS(ref_grid_deep_copy(&tet_grid, ref_grid), "deep copy");
-      RSS(ref_shard_prism_into_tet(tet_grid, 0, REF_EMPTY), "shard to tet");
+      RSS(ref_shard_prism_into_tet(tet_grid, 0, NULL), "shard to tet");
       RSS(ref_validation_all(ref_grid), "pri val");
       RSS(ref_grid_free(tet_grid), "cleanup");
     }

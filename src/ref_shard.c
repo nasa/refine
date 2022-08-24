@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_dict.h"
 #include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_mpi.h"
@@ -913,7 +914,7 @@ REF_FCN static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node,
 
 REF_FCN REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid,
                                             REF_INT keeping_n_layers,
-                                            REF_INT of_faceid) {
+                                            REF_DICT of_faceid) {
   REF_INT cell, tri_mark;
 
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
@@ -937,29 +938,29 @@ REF_FCN REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid,
   ref_malloc_init(mark_copy, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
   /* mark nodes on prism tris */
-  if (0 < keeping_n_layers)
+  if (0 < keeping_n_layers && NULL != of_faceid)
     each_ref_cell_valid_cell_with_nodes(pri, cell, orig) {
       tri_nodes[0] = orig[0];
       tri_nodes[1] = orig[1];
       tri_nodes[2] = orig[2];
       RXS(ref_cell_with(tri, tri_nodes, &tri_mark), REF_NOT_FOUND, "with");
-      if (REF_EMPTY != tri_mark &&
-          (of_faceid == REF_EMPTY ||
-           of_faceid == ref_cell_c2n(tri, 3, tri_mark))) {
-        mark[tri_nodes[0]] = 0;
-        mark[tri_nodes[1]] = 0;
-        mark[tri_nodes[2]] = 0;
+      if (REF_EMPTY != tri_mark) {
+        if (ref_dict_has_key(of_faceid, ref_cell_c2n(tri, 3, tri_mark))) {
+          mark[tri_nodes[0]] = 0;
+          mark[tri_nodes[1]] = 0;
+          mark[tri_nodes[2]] = 0;
+        }
       }
       tri_nodes[0] = orig[3];
       tri_nodes[1] = orig[5];
       tri_nodes[2] = orig[4];
       RXS(ref_cell_with(tri, tri_nodes, &tri_mark), REF_NOT_FOUND, "with");
-      if (REF_EMPTY != tri_mark &&
-          (of_faceid == REF_EMPTY ||
-           of_faceid == ref_cell_c2n(tri, 3, tri_mark))) {
-        mark[tri_nodes[0]] = 0;
-        mark[tri_nodes[1]] = 0;
-        mark[tri_nodes[2]] = 0;
+      if (REF_EMPTY != tri_mark) {
+        if (ref_dict_has_key(of_faceid, ref_cell_c2n(tri, 3, tri_mark))) {
+          mark[tri_nodes[0]] = 0;
+          mark[tri_nodes[1]] = 0;
+          mark[tri_nodes[2]] = 0;
+        }
       }
     }
   RSS(ref_node_ghost_int(ref_node, mark, 1), "update ghost mark");
