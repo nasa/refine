@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
-  if (3 == argc) {
+  if (1 < argc) {
     REF_GRID ref_grid;
     char file[] = "ref_shard_test.b8.ugrid";
     if (ref_mpi_para(ref_mpi)) {
@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_cell_ncell(ref_grid_hex(ref_grid), ref_grid_node(ref_grid), &nhex),
         "nhex");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "nhex");
-    if (0 < nhex) {
+    if (0 < nhex && 2 < argc) {
       REF_SHARD ref_shard;
       REF_CELL ref_cell;
       REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -132,14 +132,28 @@ int main(int argc, char *argv[]) {
       printf("relaxed faces %d hexes %d\n", face_marks, hex_marks);
       RSS(ref_shard_split(ref_shard), "split hex to prism");
       RSS(ref_shard_free(ref_shard), "free");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split hex");
       RSS(ref_gather_scalar_surf_tec(ref_grid, 0, NULL, NULL,
                                      "ref_shard_test_surf.tec"),
           "gather surf tec");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "surf");
     } else {
-      RSS(ref_shard_prism_into_tet(ref_grid, atoi(argv[2]), REF_EMPTY), "shrd");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shard");
+      REF_INT nlayer = 0;
+      REF_INT pos;
+      REF_DICT of_faceid;
+      if (argc > 2) nlayer = atoi(argv[2]);
+      if (ref_mpi_once(ref_mpi)) printf("keeping %d layers of prism\n", nlayer);
+      RSS(ref_dict_create(&of_faceid), "create dict");
+
+      for (pos = 3; pos < argc; pos++) {
+        REF_INT faceid;
+        faceid = atoi(argv[pos]);
+        RSS(ref_dict_store(of_faceid, faceid, REF_EMPTY), "store");
+        if (ref_mpi_once(ref_mpi)) printf("adjecent to faceid %d\n", faceid);
+      }
+      RSS(ref_shard_prism_into_tet(ref_grid, nlayer, of_faceid), "shard prism");
+      RSS(ref_dict_free(of_faceid), "free dict");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shard pri");
     }
     if (ref_mpi_para(ref_grid_mpi(ref_grid))) {
       RSS(ref_gather_by_extension(ref_grid, file), "export");
@@ -324,7 +338,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_shard_prism_into_tet(ref_grid, 0, 0), "shard prism");
+    RSS(ref_shard_prism_into_tet(ref_grid, 0, NULL), "shard prism");
 
     REIS(0, ref_cell_n(ref_grid_pri(ref_grid)), "no more pri");
     REIS(3, ref_cell_n(ref_grid_tet(ref_grid)), "into 3 tets");
@@ -336,10 +350,14 @@ int main(int argc, char *argv[]) {
 
     REF_GRID ref_grid;
     REF_INT cell, nodes[] = {0, 1, 2, 15};
+    REF_DICT of_faceid;
     RSS(ref_fixture_pri_stack_grid(&ref_grid, ref_mpi), "set up");
     RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add one tri");
 
-    RSS(ref_shard_prism_into_tet(ref_grid, 2, 15), "shard prism");
+    RSS(ref_dict_create(&of_faceid), "create dict");
+    RSS(ref_dict_store(of_faceid, 15, REF_EMPTY), "store");
+    RSS(ref_shard_prism_into_tet(ref_grid, 2, of_faceid), "shard prism");
+    RSS(ref_dict_free(of_faceid), "free dict");
 
     REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "no more pri");
     REIS(3, ref_cell_n(ref_grid_tet(ref_grid)), "into 3 tets");
@@ -356,7 +374,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_pyr_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_shard_prism_into_tet(ref_grid, 0, 0), "shard prism");
+    RSS(ref_shard_prism_into_tet(ref_grid, 0, NULL), "shard prism");
 
     REIS(0, ref_cell_n(ref_grid_pyr(ref_grid)), "no more pri");
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)), "into 3 tets");

@@ -27,6 +27,7 @@ typedef struct REF_SHARD_STRUCT REF_SHARD_STRUCT;
 typedef REF_SHARD_STRUCT *REF_SHARD;
 END_C_DECLORATION
 
+#include "ref_dict.h"
 #include "ref_face.h"
 #include "ref_grid.h"
 
@@ -63,7 +64,7 @@ REF_FCN REF_STATUS ref_shard_split(REF_SHARD ref_shard);
 
 REF_FCN REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid,
                                             REF_INT keeping_n_layers,
-                                            REF_INT of_faceid);
+                                            REF_DICT of_faceid);
 
 REF_FCN REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell);
 REF_FCN REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell);
