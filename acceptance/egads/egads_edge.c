@@ -3,8 +3,8 @@
 gcc  -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized \
 -I${HOME}/local/pkgs/ESP121/EngSketchPad/include -o egads_edge \
 egads_edge.c -Wl,-rpath,${HOME}/local/pkgs/ESP121/EngSketchPad/lib \
--L${HOME}/local/pkgs/EGADS/trunk/lib -legads -lm \
-&& ./egads_normal
+-L${HOME}/local/pkgs/ESP121/EngSketchPad/lib -legads -lm \
+&& ./egads_edge
 
 */
 
@@ -81,7 +81,7 @@ int main(void) {
     for (i = 0; i < 9; i++) {
       printf("%d %f\n", i, eval[i]);
     }
-    EG_free(faces);
+    EG_free(edges);
   }
 
   is_equal(EGADS_SUCCESS, EG_close(context), "EG close");
