@@ -19,7 +19,7 @@ gcc9flags='-g -O2 -Werror -pedantic-errors -Wall -Wextra -Wunused -Wuninitialize
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/zoltan-3.83-5uh3ojfi7bp5ge7aavovf6lldduugwep"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
 egads_svn_path="/Users/mpark/local/pkgs/EGADS"
-egads_path="/Users/mpark/local/pkgs/ESPbeta-2022-02-02"
+egads_path="/Users/mpark/local/pkgs/EngSketchPad"
 opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE"
 meshlink_path="/Users/mpark/local/pkgs/MeshLink"
 
@@ -35,7 +35,7 @@ mkdir -p egads
     --with-mpi=${mpi_path} \
     --with-metis=${metis_path} \
     --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_svn_path} \
+    --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS="${clangflags}" \
     ) \
@@ -47,7 +47,7 @@ mkdir -p parmetis
     --prefix=`pwd` \
     --with-metis=${metis_path} \
     --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_svn_path} \
+    --with-EGADS=${egads_path} \
     --enable-lite \
     CFLAGS="-DHAVE_MPI ${gcc9flags}" \
     CC=mpicc \
@@ -61,7 +61,7 @@ mkdir -p clang
     --with-mpi=${mpi_path} \
     --with-metis=${metis_path} \
     --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_svn_path} \
+    --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS="${clangflags} -fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=enum -fsanitize=vptr -fsanitize=integer-divide-by-zero -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fsanitize=nonnull-attribute -fsanitize=nullability-arg -fsanitize=nullability-assign -fsanitize=returns-nonnull-attribute -fsanitize=null -fsanitize=object-size -fsanitize=shift -fsanitize=signed-integer-overflow -fsanitize=unreachable -fsanitize=vla-bound" \
     CC=clang \
