@@ -16,6 +16,10 @@ bcmap[5050] =   3 # farfield_roe
 bcmap[4000] =   4 # viscous_solid
 bcmap[3000] =   5 # tangency
 
+bcmap[101] = 101
+bcmap[102] = 102
+bcmap[103] = 103
+
 bcmap[5051] = 101 # back_pressure
 bcmap[5052] = 101 # mach outflow
 bcmap[7011] = 102 # total pressure
