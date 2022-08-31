@@ -435,7 +435,7 @@ boundary elements right hand normal point into element, see f2n
                          |                .|     \
                          |                 | .    \
                          |                 |    .  \
-                        m8    (mid)m14    m6       inode4 (above)
+                        m8    (mid)m13    m6       inode4 (above)
                          |                 |      . /
                          |                 |   .   /
                          |                 |.     /

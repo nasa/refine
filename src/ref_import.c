@@ -1735,25 +1735,52 @@ REF_FCN REF_STATUS ref_import_examine_header(const char *filename) {
         printf(" vertex\n");
         break;
       case 5:
-        printf(" edge\n");
+        printf(" edge P1\n");
+        break;
+      case 25:
+        printf(" edge P2\n");
+        break;
+      case 92:
+        printf(" edge P3\n");
         break;
       case 6:
-        printf(" triangle\n");
+        printf(" triangle P1\n");
+        break;
+      case 24:
+        printf(" triangle P2\n");
+        break;
+      case 90:
+        printf(" triangle P3\n");
         break;
       case 7:
-        printf(" quad\n");
+        printf(" quad P1\n");
+        break;
+      case 27:
+        printf(" quad P2\n");
         break;
       case 8:
-        printf(" tetrahedra\n");
-        break;
-      case 9:
-        printf(" prism\n");
-        break;
-      case 10:
-        printf(" hex\n");
+        printf(" tetrahedra P1\n");
         break;
       case 49:
-        printf(" pyramid\n");
+        printf(" pyramid P1\n");
+        break;
+      case 9:
+        printf(" prism P1\n");
+        break;
+      case 10:
+        printf(" hex P1\n");
+        break;
+      case 30:
+        printf(" tetrahedra P2\n");
+        break;
+      case 87:
+        printf(" pyramid P2\n");
+        break;
+      case 86:
+        printf(" prism P2\n");
+        break;
+      case 33:
+        printf(" hex P2\n");
         break;
       case 40:
         printf(" geom node assoc\n");
