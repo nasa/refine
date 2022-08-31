@@ -32,14 +32,18 @@ typedef enum REF_CELL_TYPES { /*  0 */ REF_CELL_EDG,
                               /*  4 */ REF_CELL_TR2,
                               /*  5 */ REF_CELL_TR3,
                               /*  6 */ REF_CELL_QUA,
-                              /*  7 */ REF_CELL_TET,
-                              /*  8 */ REF_CELL_PYR,
-                              /*  9 */ REF_CELL_PRI,
-                              /* 10 */ REF_CELL_HEX,
-                              /* 11 */ REF_CELL_TE2 } REF_CELL_TYPE;
-#define REF_CELL_N_TYPE (12)
-#define REF_CELL_MAX_SIZE_PER (11)
-#define REF_CELL_MAX_NODE_PER (10)
+                              /*  7 */ REF_CELL_QU2,
+                              /*  8 */ REF_CELL_TET,
+                              /*  9 */ REF_CELL_PYR,
+                              /* 10 */ REF_CELL_PRI,
+                              /* 11 */ REF_CELL_HEX,
+                              /* 12 */ REF_CELL_TE2,
+                              /* 13 */ REF_CELL_PY2,
+                              /* 14 */ REF_CELL_PR2,
+                              /* 15 */ REF_CELL_HE2 } REF_CELL_TYPE;
+#define REF_CELL_N_TYPE (16)
+#define REF_CELL_MAX_SIZE_PER (27)
+#define REF_CELL_MAX_NODE_PER (27)
 #define REF_CELL_MAX_FACE_PER (6)
 END_C_DECLORATION
 
@@ -399,6 +403,18 @@ boundary elements right hand normal point into element, see f2n
                          /                 \
                       inode0--m3----m4---inode1
 
+                       inode3-----m6-----inode2
+                         |                 |
+                         |                 |
+                         |                 |
+                         |                 |
+                        m7       m8       m5
+                         |                 |
+                         |                 |
+                         |                 |
+                         |                 |
+                       inode0-----m4-----inode1
+
                               inode3-----m9------inode2
                                  / \              . /
                                 /   \          .   /
@@ -411,4 +427,66 @@ boundary elements right hand normal point into element, see f2n
                          /.                \/
                       inode0-----m4------inode1
 
+                     inode3------m7----inode2
+                         |    .            | \
+                         |       .         |  \
+                         |          .      |   \
+                         |           m12   |   m11
+                         |                .|     \
+                         |                 | .    \
+                         |                 |    .  \
+                        m8    (mid)m14    m6       inode4 (above)
+                         |                 |      . /
+                         |                 |   .   /
+                         |                 |.     /
+                         |               . |     /
+                         |            .    |   m10
+                         |        m9       |   /
+                         |      .          |  /
+                         |   .             | /
+                         |.                |/
+                       inode0-----m5-----inode1
+
+                                                  inode5
+                                                  . /|
+                                               .   / |
+                                            .     /  |
+                                         .       /   |
+                                      .         /    |
+                                  m14         m13   m11
+                                .             /      |
+                             .               /       |
+                          .                 /   m16  |
+                       inode3----m12-----inode4    inode2
+                         |           m17   |      . /
+                         |                 |   .   /
+                         |                 |.     /
+                         |               . |     /
+                        m9       m15  .   m10  m7
+                         |        m8       |   /
+                         |      .          |  /
+                         |   .             | /
+                         |.                |/
+                       inode0----m6------inode1
+
+                               inode7-----m18-----inode6
+                                 /.                /|
+                                / .               / |
+                               /  .              /  |
+                              /   .             /   |
+                             /   m15       m23 /   m14
+                           m19    .   m25    m17    |
+                           /      .          /      |
+                          /       .         /       |
+                       inode4------m16---inode5 m22 |
+                         |  m24 inode3.....|m10..inode2
+                         |       .         |       /
+                         |      .    c26   |      /
+                         |     .           |     /
+                         |   m11       m20 |   m9
+                        m12  .    m21     m13  /
+                         |  .              |  /
+                         | .               | /
+                         |.                |/
+                       inode0-----m8-----inode1
 */

@@ -39,13 +39,17 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
     case REF_CELL_TR2:
     case REF_CELL_TR3:
     case REF_CELL_QUA:
+    case REF_CELL_QU2:
       ref_cell_last_node_is_an_id(ref_cell) = REF_TRUE;
       break;
     case REF_CELL_TET:
-    case REF_CELL_TE2:
     case REF_CELL_PYR:
     case REF_CELL_PRI:
     case REF_CELL_HEX:
+    case REF_CELL_TE2:
+    case REF_CELL_PY2:
+    case REF_CELL_PR2:
+    case REF_CELL_HE2:
       ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
       break;
     default:
@@ -74,6 +78,9 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
     case REF_CELL_QUA:
       ref_cell_node_per(ref_cell) = 4;
       break;
+    case REF_CELL_QU2:
+      ref_cell_node_per(ref_cell) = 9;
+      break;
     case REF_CELL_TET:
       ref_cell_node_per(ref_cell) = 4;
       break;
@@ -88,6 +95,15 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       break;
     case REF_CELL_TE2:
       ref_cell_node_per(ref_cell) = 10;
+      break;
+    case REF_CELL_PY2:
+      ref_cell_node_per(ref_cell) = 14;
+      break;
+    case REF_CELL_PR2:
+      ref_cell_node_per(ref_cell) = 18;
+      break;
+    case REF_CELL_HE2:
+      ref_cell_node_per(ref_cell) = 27;
       break;
     default:
       return REF_IMPLEMENT;
@@ -108,6 +124,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_edge_per(ref_cell) = 3;
       break;
     case REF_CELL_QUA:
+    case REF_CELL_QU2:
       ref_cell_edge_per(ref_cell) = 4;
       break;
     case REF_CELL_TET:
@@ -115,12 +132,15 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_edge_per(ref_cell) = 6;
       break;
     case REF_CELL_PYR:
+    case REF_CELL_PY2:
       ref_cell_edge_per(ref_cell) = 8;
       break;
     case REF_CELL_PRI:
+    case REF_CELL_PR2:
       ref_cell_edge_per(ref_cell) = 9;
       break;
     case REF_CELL_HEX:
+    case REF_CELL_HE2:
       ref_cell_edge_per(ref_cell) = 12;
       break;
     default:
@@ -150,6 +170,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_e2n_gen(ref_cell, 1, 2) = 0;
       break;
     case REF_CELL_QUA:
+    case REF_CELL_QU2:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 1;
@@ -175,6 +196,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_e2n_gen(ref_cell, 1, 5) = 3;
       break;
     case REF_CELL_PYR:
+    case REF_CELL_PY2:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 0;
@@ -193,6 +215,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_e2n_gen(ref_cell, 1, 7) = 4;
       break;
     case REF_CELL_PRI:
+    case REF_CELL_PR2:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 0;
@@ -213,6 +236,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_e2n_gen(ref_cell, 1, 8) = 5;
       break;
     case REF_CELL_HEX:
+    case REF_CELL_HE2:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 0;
@@ -254,6 +278,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_face_per(ref_cell) = 1;
       break;
     case REF_CELL_QUA:
+    case REF_CELL_QU2:
       ref_cell_face_per(ref_cell) = 1;
       break;
     case REF_CELL_TET:
@@ -261,12 +286,15 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_face_per(ref_cell) = 4;
       break;
     case REF_CELL_PYR:
+    case REF_CELL_PY2:
       ref_cell_face_per(ref_cell) = 5;
       break;
     case REF_CELL_PRI:
+    case REF_CELL_PR2:
       ref_cell_face_per(ref_cell) = 5;
       break;
     case REF_CELL_HEX:
+    case REF_CELL_HE2:
       ref_cell_face_per(ref_cell) = 6;
       break;
     default:
@@ -291,6 +319,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_f2n_gen(ref_cell, 3, 0) = 0;
       break;
     case REF_CELL_QUA:
+    case REF_CELL_QU2:
       ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
@@ -316,6 +345,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
       break;
     case REF_CELL_PYR:
+    case REF_CELL_PY2:
       ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
@@ -338,6 +368,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_f2n_gen(ref_cell, 3, 4) = 1;
       break;
     case REF_CELL_PRI:
+    case REF_CELL_PR2:
       ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
       ref_cell_f2n_gen(ref_cell, 2, 0) = 4;
@@ -364,6 +395,7 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
       ref_cell_f2n_gen(ref_cell, 3, 4) = ref_cell_f2n_gen(ref_cell, 0, 4);
       break;
     case REF_CELL_HEX:
+    case REF_CELL_HE2:
       ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_f2n_gen(ref_cell, 1, 0) = 4;
       ref_cell_f2n_gen(ref_cell, 2, 0) = 5;
@@ -564,6 +596,9 @@ REF_FCN REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
     case REF_CELL_QUA:
       *keyword = 7;
       break;
+    case REF_CELL_QU2:
+      *keyword = 27;
+      break;
     case REF_CELL_TET:
       *keyword = 8;
       break;
@@ -578,6 +613,15 @@ REF_FCN REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
       break;
     case REF_CELL_TE2:
       *keyword = 30;
+      break;
+    case REF_CELL_PY2:
+      *keyword = 87;
+      break;
+    case REF_CELL_PR2:
+      *keyword = 86;
+      break;
+    case REF_CELL_HE2:
+      *keyword = 33;
       break;
     default:
       return REF_IMPLEMENT;
@@ -1551,6 +1595,11 @@ REF_FCN REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
         shape[cell_node] = 0.0;
       }
       return REF_IMPLEMENT;
+    case REF_CELL_QU2:
+      for (cell_node = 0; cell_node < 9; cell_node++) {
+        shape[cell_node] = 0.0;
+      }
+      return REF_IMPLEMENT;
     case REF_CELL_PYR:
       for (cell_node = 0; cell_node < 5; cell_node++) {
         shape[cell_node] = 0.0;
@@ -1568,6 +1617,21 @@ REF_FCN REF_STATUS ref_cell_shape(REF_CELL_TYPE cell_type, REF_DBL *bary,
       return REF_IMPLEMENT;
     case REF_CELL_TE2:
       for (cell_node = 0; cell_node < 10; cell_node++) {
+        shape[cell_node] = 0.0;
+      }
+      return REF_IMPLEMENT;
+    case REF_CELL_PY2:
+      for (cell_node = 0; cell_node < 14; cell_node++) {
+        shape[cell_node] = 0.0;
+      }
+      return REF_IMPLEMENT;
+    case REF_CELL_PR2:
+      for (cell_node = 0; cell_node < 18; cell_node++) {
+        shape[cell_node] = 0.0;
+      }
+      return REF_IMPLEMENT;
+    case REF_CELL_HE2:
+      for (cell_node = 0; cell_node < 27; cell_node++) {
         shape[cell_node] = 0.0;
       }
       return REF_IMPLEMENT;
