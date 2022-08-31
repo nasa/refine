@@ -1279,6 +1279,7 @@ REF_FCN static REF_STATUS ref_export_su2(REF_GRID ref_grid,
           case REF_CELL_QUA:
             fprintf(file, "9");
             break;
+          case REF_CELL_QU2:
           case REF_CELL_EDG:
           case REF_CELL_ED2:
           case REF_CELL_ED3:
@@ -1289,6 +1290,9 @@ REF_FCN static REF_STATUS ref_export_su2(REF_GRID ref_grid,
           case REF_CELL_PRI:
           case REF_CELL_HEX:
           case REF_CELL_TE2:
+          case REF_CELL_PY2:
+          case REF_CELL_PR2:
+          case REF_CELL_HE2:
             RSS(REF_IMPLEMENT, "2D SU2 element");
             break;
         }
@@ -1329,7 +1333,11 @@ REF_FCN static REF_STATUS ref_export_su2(REF_GRID ref_grid,
           case REF_CELL_TR2:
           case REF_CELL_TR3:
           case REF_CELL_QUA:
+          case REF_CELL_QU2:
           case REF_CELL_TE2:
+          case REF_CELL_PY2:
+          case REF_CELL_PR2:
+          case REF_CELL_HE2:
             RSS(REF_IMPLEMENT, "3D SU2 element");
             break;
         }
@@ -2243,7 +2251,10 @@ REF_FCN static REF_STATUS ref_export_msh(REF_GRID ref_grid,
         case REF_CELL_HEX:
           type = 5;
           break;
-        default:
+        case REF_CELL_QU2:
+        case REF_CELL_PY2:
+        case REF_CELL_PR2:
+        case REF_CELL_HE2:
           return REF_IMPLEMENT;
       }
       fprintf(f, "%d %d %d %d\n", nbloc, 1, type, ref_cell_n(ref_cell));
