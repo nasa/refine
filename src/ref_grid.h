@@ -95,11 +95,15 @@ REF_FCN REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_tr2(ref_grid) ref_grid_cell(ref_grid, REF_CELL_TR2)
 #define ref_grid_tr3(ref_grid) ref_grid_cell(ref_grid, REF_CELL_TR3)
 #define ref_grid_qua(ref_grid) ref_grid_cell(ref_grid, REF_CELL_QUA)
+#define ref_grid_qu2(ref_grid) ref_grid_cell(ref_grid, REF_CELL_QU2)
 #define ref_grid_tet(ref_grid) ref_grid_cell(ref_grid, REF_CELL_TET)
 #define ref_grid_pyr(ref_grid) ref_grid_cell(ref_grid, REF_CELL_PYR)
 #define ref_grid_pri(ref_grid) ref_grid_cell(ref_grid, REF_CELL_PRI)
 #define ref_grid_hex(ref_grid) ref_grid_cell(ref_grid, REF_CELL_HEX)
 #define ref_grid_te2(ref_grid) ref_grid_cell(ref_grid, REF_CELL_TE2)
+#define ref_grid_py2(ref_grid) ref_grid_cell(ref_grid, REF_CELL_PY2)
+#define ref_grid_pr2(ref_grid) ref_grid_cell(ref_grid, REF_CELL_PR2)
+#define ref_grid_he2(ref_grid) ref_grid_cell(ref_grid, REF_CELL_HE2)
 
 #define ref_grid_geom(ref_grid) ((ref_grid)->geom)
 #define ref_grid_gather(ref_grid) ((ref_grid)->gather)
@@ -127,11 +131,11 @@ REF_FCN REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_surf(ref_grid) ((ref_grid)->surf)
 
 #define each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell)     \
-  for ((group) = 7, (ref_cell) = ref_grid_cell(ref_grid, group); \
-       (group) <= 11; (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
+  for ((group) = 8, (ref_cell) = ref_grid_cell(ref_grid, group); \
+       (group) <= 15; (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
 #define each_ref_grid_2d_ref_cell(ref_grid, group, ref_cell)                   \
-  for ((group) = 3, (ref_cell) = ref_grid_cell(ref_grid, group); (group) <= 6; \
+  for ((group) = 3, (ref_cell) = ref_grid_cell(ref_grid, group); (group) <= 7; \
        (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
 #define each_ref_grid_1d_ref_cell(ref_grid, group, ref_cell)                   \
@@ -140,7 +144,7 @@ REF_FCN REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 
 #define each_ref_grid_2d_3d_ref_cell(ref_grid, group, ref_cell)  \
   for ((group) = 3, (ref_cell) = ref_grid_cell(ref_grid, group); \
-       (group) <= 11; (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
+       (group) <= 15; (group)++, (ref_cell) = ref_grid_cell(ref_grid, group))
 
 #define each_ref_grid_all_ref_cell(ref_grid, group, ref_cell)    \
   for ((group) = 0, (ref_cell) = ref_grid_cell(ref_grid, group); \
