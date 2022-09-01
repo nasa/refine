@@ -784,7 +784,7 @@ REF_FCN REF_STATUS ref_grid_orient_twod(REF_GRID ref_grid) {
     if (!valid) {
       each_ref_cell_cell_node(ref_cell, cell_node) {
         ref_cell_c2n(ref_cell, cell_node, cell) =
-            nodes[ref_cell_node_per(ref_cell) - cell_node];
+            nodes[ref_cell_node_per(ref_cell) - 1 - cell_node];
       }
     }
   }
@@ -795,7 +795,7 @@ REF_FCN REF_STATUS ref_grid_orient_twod(REF_GRID ref_grid) {
     if (!valid) {
       each_ref_cell_cell_node(ref_cell, cell_node) {
         ref_cell_c2n(ref_cell, cell_node, cell) =
-            nodes[ref_cell_node_per(ref_cell) - cell_node];
+            nodes[ref_cell_node_per(ref_cell) - 1 - cell_node];
       }
     }
   }
