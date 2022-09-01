@@ -4354,17 +4354,23 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  RXS(ref_args_find(argc, argv, "--enrich2", &pos), REF_NOT_FOUND,
-      "arg search");
+  RXS(ref_args_find(argc, argv, "--orient", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
-    if (ref_mpi_once(ref_mpi)) printf("  --enrich2\n");
-    RSS(ref_geom_enrich2(ref_grid), "enrich to q2");
+    if (ref_mpi_once(ref_mpi)) printf("  --orient twod in place\n");
+    RSS(ref_grid_orient_twod(ref_grid), "orient twod");
   }
 
   RXS(ref_args_find(argc, argv, "--shard", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     if (ref_mpi_once(ref_mpi)) printf("  --shard in place\n");
     RSS(ref_shard_in_place(ref_grid), "shard to simplex");
+  }
+
+  RXS(ref_args_find(argc, argv, "--enrich2", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) printf("  --enrich2\n");
+    RSS(ref_geom_enrich2(ref_grid), "enrich to q2");
   }
 
   RXS(ref_args_find(argc, argv, "--extrude", &pos), REF_NOT_FOUND,

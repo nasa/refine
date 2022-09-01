@@ -201,6 +201,8 @@ REF_FCN REF_STATUS ref_grid_compact_surf_id_nodes(REF_GRID ref_grid,
 
 REF_FCN REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid);
 
+REF_FCN REF_STATUS ref_grid_orient_twod(REF_GRID ref_grid);
+
 REF_FCN REF_STATUS ref_grid_node_list_around(REF_GRID ref_grid, REF_INT node,
                                              REF_INT max_node, REF_INT *nnode,
                                              REF_INT *node_list);
