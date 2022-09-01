@@ -1186,7 +1186,13 @@ REF_FCN REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes) {
       node1 = qua_nodes[0];
     }
   }
-  RUS(REF_EMPTY, node0, "node0 not found");
+  RUB(REF_EMPTY, node0, "node0 not found", {
+    printf("nodes %d %d %d ntri %d nqua %d node0 %d node1 %d\n", nodes[0],
+           nodes[1], nodes[2], ntri, nqua, node0, node1);
+    if (nqua > 0)
+      printf("qua %d %d %d %d %d\n", qua_nodes[0], qua_nodes[1], qua_nodes[2],
+             qua_nodes[3], qua_nodes[4]);
+  });
   RUS(REF_EMPTY, node1, "node1 not found");
   /* same direction as triangle or quad side */
   nodes[0] = node0;
