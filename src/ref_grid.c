@@ -771,6 +771,45 @@ REF_FCN REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_grid_orient_twod(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL valid;
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+    if (!valid) {
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        ref_cell_c2n(ref_cell, cell_node, cell) =
+            nodes[ref_cell_node_per(ref_cell) - cell_node];
+      }
+    }
+  }
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    /* uses tri formed from first three nodes of quad for orientation */
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+    if (!valid) {
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        ref_cell_c2n(ref_cell, cell_node, cell) =
+            nodes[ref_cell_node_per(ref_cell) - cell_node];
+      }
+    }
+  }
+  /* orient edge after tri and quad sorted to use them as reference */
+  ref_cell = ref_grid_edg(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_grid_orient_edg(ref_grid, nodes), "orient_edge");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      ref_cell_c2n(ref_cell, cell_node, cell) = nodes[cell_node];
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_update_tet_guess(REF_CELL ref_cell, REF_INT node0,
                                                REF_INT node1, REF_INT node2,
                                                REF_INT *guess) {
