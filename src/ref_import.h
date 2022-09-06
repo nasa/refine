@@ -39,6 +39,10 @@ REF_FCN REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version,
                                          REF_BOOL *available,
                                          REF_FILEPOS *next_position);
 
+REF_FCN REF_STATUS ref_import_meshb_contents(const char *filename,
+                                             REF_BOOL *has_association,
+                                             REF_BOOL *has_geometry_model);
+
 REF_FCN REF_STATUS ref_import_examine_header(const char *filename);
 
 END_C_DECLORATION

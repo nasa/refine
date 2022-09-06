@@ -1433,6 +1433,23 @@ REF_FCN static REF_STATUS ref_import_meshb_size(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_import_meshb_contents(const char *filename,
+                                             REF_BOOL *has_association,
+                                             REF_BOOL *has_geometry_model) {
+  REF_INT version;
+  REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
+  REF_INT node_keyword = 40;
+  REF_INT edge_keyword = 41;
+  REF_INT face_keyword = 42;
+  REF_INT cad_data_keyword = 126; /* GmfByteFlow */
+  RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
+  *has_association = ((REF_FILEPOS)REF_EMPTY != key_pos[node_keyword]) ||
+                     ((REF_FILEPOS)REF_EMPTY != key_pos[edge_keyword]) ||
+                     ((REF_FILEPOS)REF_EMPTY != key_pos[face_keyword]);
+  *has_geometry_model = ((REF_FILEPOS)REF_EMPTY != key_pos[cad_data_keyword]);
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr,
                                            REF_MPI ref_mpi,
                                            const char *filename) {
