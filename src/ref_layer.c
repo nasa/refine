@@ -1206,6 +1206,9 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           REF_EMPTY != off_node[nodes[2]]) {
         each_ref_cell_cell_edge(ref_cell, cell_edge) {
           quad[0] = REF_EMPTY;
+          quad[1] = REF_EMPTY;
+          quad[2] = REF_EMPTY;
+          quad[3] = REF_EMPTY;
           RSS(ref_cell_has_side(
                   ref_grid_tet(ref_grid),
                   ref_cell_e2n(ref_cell, 0, cell_edge, cell),
