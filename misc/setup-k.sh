@@ -8,16 +8,14 @@ module_path="/u/shared/fun3d/fun3d_users/modules"
 parmetis_path="${module_path}/ParMETIS-64/4.0.3-mpt-2.23-intel_2018.3.222"
 gcc_parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.23-gcc_6.2.0"
 egads_path="${module_path}/ESP/121/EngSketchPad"
-egads_svn_path="/u/mpark/local/pkgs/EGADS/trunk"
+egads_svn_path="${HOME}/local/pkgs/EGADS/trunk"
 occ_path="${module_path}/ESP/121/OpenCASCADE"
-meshlink_path="/u/mpark/local/pkgs/MeshLink"
+meshlink_path="${HOME}/local/pkgs/MeshLink"
 
 mpi_path="/opt/hpe/hpc/mpt/mpt-2.23"
 
 export openmpi_path="/usr/local/pkgs-modules/openmpi_2.1.1_intel_2017"
-
 export openmpi_parmetis_path="${module_path}/ParMETIS/4.0.3-openmpi-2.1.1-intel_2017.2.174"
-
 
 gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
 icc_flags="-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv"

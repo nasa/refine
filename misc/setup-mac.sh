@@ -14,19 +14,18 @@ clangflags='-g -O2  -Werror -Wall -Wextra -Wpedantic -Weverything -Wno-unused-ma
 # -Wno-poison-system-directories '/usr/local/include'
 #    is unsafe for cross-compilation and I'm not cross-compiling
 
-gcc9flags='-g -O2 -Werror -pedantic-errors -Wall -Wextra -Wunused -Wuninitialized -Wconversion'
+gcc12flags='-g -O2 -Werror -pedantic-errors -Wall -Wextra -Wunused -Wuninitialized -Wconversion'
 
-zoltan_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/zoltan-3.83-5uh3ojfi7bp5ge7aavovf6lldduugwep"
-egads_path="/Users/mpark/local/pkgs/EngSketchPad"
-egads_svn_path="/Users/mpark/local/pkgs/EGADS"
-egads_path="/Users/mpark/local/pkgs/EngSketchPad"
-opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE"
-meshlink_path="/Users/mpark/local/pkgs/MeshLink"
+santflags="-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=enum -fsanitize=vptr -fsanitize=integer-divide-by-zero -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fsanitize=nonnull-attribute -fsanitize=nullability-arg -fsanitize=nullability-assign -fsanitize=returns-nonnull-attribute -fsanitize=null -fsanitize=object-size -fsanitize=shift -fsanitize=signed-integer-overflow -fsanitize=unreachable -fsanitize=vla-bound"
 
-# production spack packages
-parmetis_path="/Users/mpark/local/pkgs/parmetis-4.0.3"
-metis_path="/Users/mpark/local/pkgs/parmetis-4.0.3/metis"
-mpi_path="/Users/mpark/homebrew"
+egads_path="${HOME}/local/pkgs/EngSketchPad"
+egads_svn_path="${HOME}/local/pkgs/EGADS"
+opencascade_path="${HOME}/local/pkgs/OpenCASCADE"
+meshlink_path="${HOME}/local/pkgs/MeshLink"
+
+parmetis_path="${HOME}/local/pkgs/parmetis-4.0.3-gcc-12-mpich"
+metis_path="${HOME}/local/pkgs/parmetis-4.0.3-gcc-12-mpich"
+mpi_path="${HOME}/local/pkgs/mpich-4.0.2/gcc-12-install"
 
 mkdir -p egads
 ( cd egads && \
@@ -37,7 +36,7 @@ mkdir -p egads
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    CFLAGS="${clangflags}" \
+    CFLAGS="${gcc12flags}" \
     ) \
     || exit
 
@@ -49,7 +48,7 @@ mkdir -p parmetis
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
-    CFLAGS="-DHAVE_MPI ${gcc9flags}" \
+    CFLAGS="-DHAVE_MPI ${gcc12flags}" \
     CC=mpicc \
     ) \
     || exit
@@ -58,16 +57,12 @@ mkdir -p clang
 ( cd clang && \
     ../configure \
     --prefix=`pwd` \
-    --with-mpi=${mpi_path} \
-    --with-metis=${metis_path} \
-    --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    CFLAGS="${clangflags} -fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=enum -fsanitize=vptr -fsanitize=integer-divide-by-zero -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fsanitize=nonnull-attribute -fsanitize=nullability-arg -fsanitize=nullability-assign -fsanitize=returns-nonnull-attribute -fsanitize=null -fsanitize=object-size -fsanitize=shift -fsanitize=signed-integer-overflow -fsanitize=unreachable -fsanitize=vla-bound" \
+    CFLAGS="${clangflags} -fsanitize=address" \
     CC=clang \
     ) \
     || exit
-
 
 mkdir -p all
 ( cd all && \
