@@ -516,8 +516,10 @@ REF_FCN REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   MPI_Request *request;
+  MPI_Status *status;
   REF_INT tag, part, offset, nreq;
   ref_malloc(request, 2 * ref_mpi_n(ref_mpi), MPI_Request);
+  ref_malloc(status, 2 * ref_mpi_n(ref_mpi), MPI_Status);
   ref_type_mpi_type(type, datatype);
 
   if (ref_mpi_n(ref_mpi) * ref_mpi_n(ref_mpi) > ref_mpi_max_tag(ref_mpi)) {
@@ -584,8 +586,9 @@ REF_FCN REF_STATUS ref_mpi_alltoallv_native(REF_MPI ref_mpi, void *send,
     offset += n * send_size[part];
   }
 
-  if (0 < nreq) MPI_Waitall(nreq, request, MPI_STATUSES_IGNORE);
+  if (0 < nreq) MPI_Waitall(nreq, request, status);
 
+  ref_free(status);
   ref_free(request);
   return REF_SUCCESS;
 #else
