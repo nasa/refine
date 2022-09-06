@@ -25,7 +25,7 @@ meshlink_path="${HOME}/local/pkgs/MeshLink"
 
 parmetis_path="${HOME}/local/pkgs/parmetis-4.0.3-gcc-12-mpich"
 metis_path="${HOME}/local/pkgs/parmetis-4.0.3-gcc-12-mpich"
-mpi_path="${HOME}/local/pkgs/mpich-4.0.2/gcc-12-install/bin/mpiexec"
+mpi_path="${HOME}/local/pkgs/mpich-4.0.2/gcc-12-install"
 
 mkdir -p egads
 ( cd egads && \
