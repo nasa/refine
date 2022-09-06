@@ -16,6 +16,8 @@ clangflags='-g -O2  -Werror -Wall -Wextra -Wpedantic -Weverything -Wno-unused-ma
 
 gcc12flags='-g -O2 -Werror -pedantic-errors -Wall -Wextra -Wunused -Wuninitialized -Wconversion'
 
+santflags="-fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=enum -fsanitize=vptr -fsanitize=integer-divide-by-zero -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fsanitize=nonnull-attribute -fsanitize=nullability-arg -fsanitize=nullability-assign -fsanitize=returns-nonnull-attribute -fsanitize=null -fsanitize=object-size -fsanitize=shift -fsanitize=signed-integer-overflow -fsanitize=unreachable -fsanitize=vla-bound"
+
 egads_path="${HOME}/local/pkgs/EngSketchPad"
 egads_svn_path="${HOME}/local/pkgs/EGADS"
 opencascade_path="${HOME}/local/pkgs/OpenCASCADE"
@@ -34,7 +36,7 @@ mkdir -p egads
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    CFLAGS="${clangflags}" \
+    CFLAGS="${gcc12flags}" \
     ) \
     || exit
 
@@ -46,7 +48,7 @@ mkdir -p parmetis
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
-    CFLAGS="-DHAVE_MPI ${gcc9flags}" \
+    CFLAGS="-DHAVE_MPI ${gcc12flags}" \
     CC=mpicc \
     ) \
     || exit
@@ -57,7 +59,7 @@ mkdir -p clang
     --prefix=`pwd` \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    CFLAGS="${clangflags} -fsanitize=address -fsanitize=alignment -fsanitize=bounds -fsanitize=enum -fsanitize=vptr -fsanitize=integer-divide-by-zero -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fsanitize=nonnull-attribute -fsanitize=nullability-arg -fsanitize=nullability-assign -fsanitize=returns-nonnull-attribute -fsanitize=null -fsanitize=object-size -fsanitize=shift -fsanitize=signed-integer-overflow -fsanitize=unreachable -fsanitize=vla-bound" \
+    CFLAGS="${clangflags} -fsanitize=address" \
     CC=clang \
     ) \
     || exit
