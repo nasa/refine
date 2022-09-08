@@ -132,6 +132,34 @@ REF_FCN REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
   REF_BOOL metric_recognized = REF_FALSE;
 
   each_ref_node_valid_node(ref_node, node) {
+    if (strcmp(version, "larsson1") == 0) {
+      REF_DBL c1 = 200.0;
+      REF_DBL c2 = 200.0;
+      REF_DBL m11;
+      REF_DBL m22;
+      metric_recognized = REF_TRUE;
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      m11 =
+          400.0 + c1 * sin(2.0 * ref_math_pi * x) * sin(2.0 * ref_math_pi * y);
+      m22 =
+          400.0 - c2 * sin(2.0 * ref_math_pi * x) * sin(2.0 * ref_math_pi * y);
+      RSS(ref_node_metric_form(ref_node, node, m11, 0, 0, m22, 0, 1.0),
+          "set node met");
+      continue;
+    }
+    if (strcmp(version, "larsson2") == 0) {
+      REF_DBL m11;
+      REF_DBL m22;
+      metric_recognized = REF_TRUE;
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      m11 = pow(0.05 + 0.05 * y, -2);
+      m22 = pow(0.04 + 0.12 * y, -2);
+      RSS(ref_node_metric_form(ref_node, node, m11, 0, 0, m22, 0, 1.0),
+          "set node met");
+      continue;
+    }
     if (strcmp(version, "iso01") == 0) {
       metric_recognized = REF_TRUE;
       h = 0.1;
