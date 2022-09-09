@@ -160,6 +160,8 @@ REF_FCN static REF_STATUS ref_oct_contains_node(REF_OCT ref_oct, REF_DBL *xyz,
     return REF_SUCCESS;
   }
   if (ref_oct->children[8 * current] == REF_EMPTY) {
+    REF_INT i;
+    for (i = 0; i < 6; i++) node_bbox[i] = bbox[i];
     *node = current;
     return REF_SUCCESS;
   }
