@@ -93,6 +93,21 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_split(ref_oct, 0), "split oct");
     RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
     REIS(1, node, "expects first child");
+    xyz[0] = 0.9;
+    xyz[1] = 0.1;
+    xyz[2] = 0.1;
+    RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
+    REIS(2, node, "expects last child");
+    xyz[0] = 0.1;
+    xyz[1] = 0.9;
+    xyz[2] = 0.1;
+    RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
+    REIS(4, node, "expects last child");
+    xyz[0] = 0.9;
+    xyz[1] = 0.9;
+    xyz[2] = 0.9;
+    RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
+    REIS(7, node, "expects last child");
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
