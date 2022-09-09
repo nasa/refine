@@ -19,6 +19,7 @@
 
 #include "ref_oct.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -70,6 +71,19 @@ int main(int argc, char *argv[]) {
     parent_bbox[5] = 1.0;
     RSS(ref_oct_child_bbox(parent_bbox, child_index, child_bbox), "bbox");
     RWDS(0.0, child_bbox[0], tol, "not zero");
+  }
+
+  { /* bbox diag */
+    REF_DBL bbox[6];
+    REF_DBL diag, tol = -1.0;
+    bbox[0] = 0.0;
+    bbox[1] = 0.5;
+    bbox[2] = 0.5;
+    bbox[3] = 1.0;
+    bbox[4] = 0.2;
+    bbox[5] = 0.7;
+    RSS(ref_oct_bbox_diag(bbox, &diag), "bbox diag");
+    RWDS(sqrt(0.75), diag, tol, "wrong size");
   }
 
   { /* contains root */

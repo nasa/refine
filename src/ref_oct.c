@@ -127,6 +127,12 @@ REF_FCN REF_STATUS ref_oct_child_bbox(REF_DBL *bbox, REF_INT child_index,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_bbox_diag(REF_DBL *bbox, REF_DBL *diag) {
+  *diag = sqrt(pow(bbox[1] - bbox[0], 2) + pow(bbox[3] - bbox[2], 2) +
+               pow(bbox[5] - bbox[4], 2));
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   REF_INT i;
   for (i = 0; i < 8; i++) {
