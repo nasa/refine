@@ -45,7 +45,7 @@ REF_FCN REF_STATUS ref_oct_bbox_diag(REF_DBL *bbox, REF_DBL *diag);
 REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node);
 
 REF_FCN REF_STATUS ref_oct_contains(REF_OCT ref_oct, REF_DBL *xyz,
-                                    REF_INT *node);
+                                    REF_INT *node, REF_DBL *bbox);
 
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename);
 
