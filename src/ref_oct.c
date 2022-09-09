@@ -142,17 +142,38 @@ REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_oct_contains_node(REF_OCT ref_oct, REF_DBL *xyz,
+                                                REF_DBL *bbox, REF_INT current,
+                                                REF_INT *node) {
+  REF_INT child_index;
+  *node = REF_EMPTY;
+  if (xyz[0] < bbox[0] || bbox[1] < xyz[0] || xyz[1] < bbox[2] ||
+      bbox[3] < xyz[1] || xyz[2] < bbox[4] || bbox[5] < xyz[2]) {
+    *node = REF_EMPTY;
+    return REF_SUCCESS;
+  }
+  if (ref_oct->children[8 * current] == REF_EMPTY) {
+    *node = current;
+    return REF_SUCCESS;
+  }
+  for (child_index = 0; child_index < 8; child_index++) {
+    REF_INT child_node;
+    REF_DBL box[6];
+    RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
+    RSS(ref_oct_contains_node(ref_oct, xyz, box,
+                              ref_oct->children[child_index + 8 * current],
+                              &child_node),
+        "recurse");
+    if (child_node != REF_EMPTY) {
+      *node = child_node;
+      return REF_SUCCESS;
+    }
+  }
+  return REF_SUCCESS;
+}
 REF_FCN REF_STATUS ref_oct_contains(REF_OCT ref_oct, REF_DBL *xyz,
                                     REF_INT *node) {
-  REF_INT candidate;
-  REF_DBL *bbox;
-  *node = REF_EMPTY;
-  candidate = 0;
-  bbox = ref_oct->bbox;
-  if (bbox[0] <= xyz[0] && xyz[0] <= bbox[1] && bbox[2] <= xyz[1] &&
-      xyz[1] <= bbox[3] && bbox[4] <= xyz[2] && xyz[2] <= bbox[5]) {
-    *node = candidate;
-  }
+  RSS(ref_oct_contains_node(ref_oct, xyz, ref_oct->bbox, 0, node), "wrapper");
   return REF_SUCCESS;
 }
 

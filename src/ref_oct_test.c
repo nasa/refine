@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, child_bbox[0], tol, "not zero");
   }
 
-  { /* split root */
+  { /* contains root */
     REF_OCT ref_oct;
     REF_DBL xyz[] = {0.1, 0.1, 0.1};
     REF_INT node;
@@ -81,7 +81,18 @@ int main(int argc, char *argv[]) {
     REIS(0, node, "expects root");
     xyz[0] = 100.0;
     RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
-    REIS(REF_EMPTY, node, "expects root");
+    REIS(REF_EMPTY, node, "expects empty outside root");
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
+  { /* contains child */
+    REF_OCT ref_oct;
+    REF_DBL xyz[] = {0.1, 0.1, 0.1};
+    REF_INT node;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split oct");
+    RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
+    REIS(1, node, "expects first child");
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
