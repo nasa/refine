@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_create(&ref_oct), "make oct");
     xyz[0] = 0.3;
     xyz[1] = 0.4;
-    xyz[2] = 0.5;
+    xyz[2] = 0.49;
     h = 0.01;
     RSS(ref_oct_split_at(ref_oct, xyz, h), "split xyz h");
     RSS(ref_oct_tec(ref_oct, argv[pos + 1]), "tec");
