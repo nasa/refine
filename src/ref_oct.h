@@ -38,6 +38,9 @@ REF_FCN REF_STATUS ref_oct_create(REF_OCT *ref_oct);
 
 REF_FCN REF_STATUS ref_oct_free(REF_OCT ref_oct);
 
+REF_FCN REF_STATUS ref_oct_child_bbox(REF_DBL *parent_bbox, REF_INT child_index,
+                                      REF_DBL *child_bbox);
+
 REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node);
 
 REF_FCN REF_STATUS ref_oct_contains(REF_OCT ref_oct, REF_DBL *xyz,

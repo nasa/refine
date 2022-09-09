@@ -58,6 +58,20 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
+  { /* child's bbox */
+    REF_DBL parent_bbox[6], child_bbox[6];
+    REF_INT child_index = 0;
+    REF_DBL tol = -1.0;
+    parent_bbox[0] = 0.0;
+    parent_bbox[1] = 1.0;
+    parent_bbox[2] = 0.0;
+    parent_bbox[3] = 1.0;
+    parent_bbox[4] = 0.0;
+    parent_bbox[5] = 1.0;
+    RSS(ref_oct_child_bbox(parent_bbox, child_index, child_bbox), "bbox");
+    RWDS(0.0, child_bbox[0], tol, "not zero");
+  }
+
   { /* split root */
     REF_OCT ref_oct;
     REF_DBL xyz[] = {0.1, 0.1, 0.1};

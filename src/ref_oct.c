@@ -53,6 +53,80 @@ REF_FCN REF_STATUS ref_oct_free(REF_OCT ref_oct) {
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_child_bbox(REF_DBL *bbox, REF_INT child_index,
+                                      REF_DBL *box) {
+  switch (child_index) {
+    case 0:
+      box[0] = bbox[0];
+      box[1] = 0.5 * (bbox[0] + bbox[1]);
+      box[2] = bbox[2];
+      box[3] = 0.5 * (bbox[2] + bbox[3]);
+      box[4] = bbox[4];
+      box[5] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 1:
+      box[0] = 0.5 * (bbox[0] + bbox[1]);
+      box[1] = bbox[1];
+      box[2] = bbox[2];
+      box[3] = 0.5 * (bbox[2] + bbox[3]);
+      box[4] = bbox[4];
+      box[5] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 2:
+      box[0] = 0.5 * (bbox[0] + bbox[1]);
+      box[1] = bbox[1];
+      box[2] = 0.5 * (bbox[2] + bbox[3]);
+      box[3] = bbox[3];
+      box[4] = bbox[4];
+      box[5] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 3:
+      box[0] = bbox[0];
+      box[1] = 0.5 * (bbox[0] + bbox[1]);
+      box[2] = 0.5 * (bbox[2] + bbox[3]);
+      box[3] = bbox[3];
+      box[4] = bbox[4];
+      box[5] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 4:
+      box[0] = bbox[0];
+      box[1] = 0.5 * (bbox[0] + bbox[1]);
+      box[2] = bbox[2];
+      box[3] = 0.5 * (bbox[2] + bbox[3]);
+      box[4] = 0.5 * (bbox[4] + bbox[5]);
+      box[5] = bbox[5];
+      break;
+    case 5:
+      box[0] = 0.5 * (bbox[0] + bbox[1]);
+      box[1] = bbox[1];
+      box[2] = bbox[2];
+      box[3] = 0.5 * (bbox[2] + bbox[3]);
+      box[4] = 0.5 * (bbox[4] + bbox[5]);
+      box[5] = bbox[5];
+      break;
+    case 6:
+      box[0] = 0.5 * (bbox[0] + bbox[1]);
+      box[1] = bbox[1];
+      box[2] = 0.5 * (bbox[2] + bbox[3]);
+      box[3] = bbox[3];
+      box[4] = 0.5 * (bbox[4] + bbox[5]);
+      box[5] = bbox[5];
+      break;
+    case 7:
+      box[0] = bbox[0];
+      box[1] = 0.5 * (bbox[0] + bbox[1]);
+      box[2] = 0.5 * (bbox[2] + bbox[3]);
+      box[3] = bbox[3];
+      box[4] = 0.5 * (bbox[4] + bbox[5]);
+      box[5] = bbox[5];
+      break;
+    default:
+      THROW("not 2^3");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   REF_INT i;
   for (i = 0; i < 8; i++) {
