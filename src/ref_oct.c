@@ -148,6 +148,20 @@ REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_oct_split_at(REF_OCT ref_oct, REF_DBL *xyz, REF_DBL h) {
+  REF_INT node;
+  REF_DBL bbox[6], diag;
+  RSS(ref_oct_contains(ref_oct, xyz, &node, bbox), "contains oct");
+  RAS(node >= 0, "not found");
+  RSS(ref_oct_bbox_diag(bbox, &diag), "bbox diag");
+  printf(" %f %f \n", h, diag);
+  if (diag > h) {
+    RSS(ref_oct_split(ref_oct, node), "split");
+    RSS(ref_oct_split_at(ref_oct, xyz, h), "again");
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_contains_node(REF_OCT ref_oct, REF_DBL *xyz,
                                                 REF_DBL *bbox, REF_INT current,
                                                 REF_INT *node,
