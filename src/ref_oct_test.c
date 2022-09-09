@@ -65,6 +65,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
     REIS(0, node, "expects root");
+    xyz[0] = 100.0;
+    RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
+    REIS(REF_EMPTY, node, "expects root");
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
