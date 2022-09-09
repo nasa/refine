@@ -48,14 +48,24 @@ int main(int argc, char *argv[]) {
   { /* create */
     REF_OCT ref_oct;
     RSS(ref_oct_create(&ref_oct), "make oct");
-    RSS(ref_oct_free(ref_oct), "search oct");
+    RSS(ref_oct_free(ref_oct), "free oct");
   }
 
   { /* split root */
     REF_OCT ref_oct;
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split(ref_oct, 0), "split oct");
-    RSS(ref_oct_free(ref_oct), "search oct");
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
+  { /* split root */
+    REF_OCT ref_oct;
+    REF_DBL xyz[] = {0.1, 0.1, 0.1};
+    REF_INT node;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_contains(ref_oct, xyz, &node), "contains oct");
+    REIS(0, node, "expects root");
+    RSS(ref_oct_free(ref_oct), "free oct");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

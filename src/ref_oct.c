@@ -68,6 +68,20 @@ REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_contains(REF_OCT ref_oct, REF_DBL *xyz,
+                                    REF_INT *node) {
+  REF_INT candidate;
+  REF_DBL *bbox;
+  *node = REF_EMPTY;
+  candidate = 0;
+  bbox = ref_oct->bbox;
+  if (bbox[0] <= xyz[0] && xyz[0] <= bbox[1] && bbox[2] <= xyz[1] &&
+      xyz[1] <= bbox[3] && bbox[4] <= xyz[2] && xyz[2] <= bbox[5]) {
+    *node = candidate;
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
                                            REF_DBL *bbox, FILE *f) {
   REF_DBL box[6];
