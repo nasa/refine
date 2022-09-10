@@ -154,10 +154,7 @@ REF_STATUS ref_oct_split_at(REF_OCT ref_oct, REF_DBL *xyz, REF_DBL h) {
   RSS(ref_oct_contains(ref_oct, xyz, &node, bbox), "contains oct");
   RAS(node >= 0, "not found");
   RSS(ref_oct_bbox_diag(bbox, &diag), "bbox diag");
-  printf(" %f %f \n x %f %f y %f %f z %f %f\n", h, diag, bbox[0], bbox[1],
-         bbox[2], bbox[3], bbox[4], bbox[5]);
   if (diag > h) {
-    printf(" split %d \n", node);
     RSS(ref_oct_split(ref_oct, node), "split");
     RSS(ref_oct_split_at(ref_oct, xyz, h), "again");
   }
