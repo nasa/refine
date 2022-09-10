@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
         for (j = 0; j < 3; j++) {
           xyz[j] = 0;
           for (i = 0; i < 3; i++) {
-            xyz[j] += ref_node_xyz(ref_node, j, nodes[1]) / 3.0;
+            xyz[j] += ref_node_xyz(ref_node, j, nodes[i]) / 3.0;
           }
         }
         RSS(ref_oct_split_at(ref_oct, xyz, h), "split xyz h");
