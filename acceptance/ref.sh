@@ -597,7 +597,13 @@ cd ${source_dir}/acceptance/narrow-cyl/spalding
 ( ./accept-narrow-cyl-spalding.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-wait
+LOG=${root_dir}/log.accept-oct-s2s
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/oct/s2s
+( ./accept-oct-s2s.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+wwait
 
 # 2 procs
 LOG=${root_dir}/log.accept-2d-linear-para

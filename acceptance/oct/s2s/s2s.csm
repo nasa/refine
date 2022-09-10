@@ -1,0 +1,75 @@
+#
+#  Sketch 2 Solution based on NASA Worm font
+#  
+
+despmtr xspace   25    # spacing between letters
+despmtr connect1  1    # extend upper end of S to connect with next letter
+despmtr connect2  1    # extend upper end of 2 to connect with next letter
+
+skbeg 500  475  0
+ linseg 500  598  0
+ linseg 180  599  0 
+ cirarc   0  428  0 180 235 0
+ linseg 350  235  0
+ cirarc 403  183  0 350 130 0
+ linseg   0  130  0
+ linseg   0    0  0
+ linseg 350    0  0 
+ cirarc 529  183  0 350  362 0
+ linseg 181  366  0 
+ cirarc 128  418  0 182  472 0
+ linseg 500  475  0
+skend
+extrude 0 0 10
+store ess
+
+ifthen connect1 eq 1
+   restore ess
+   extract 1
+   extrude xspace*4 0 0
+   store onetwo
+endif
+
+restore ess
+rotatey 180 0 0
+translate 1060+xspace 0 10
+store two
+
+ifthen connect2 eq 1
+   restore two
+   extract 7
+   extrude xspace*2 0 0
+   store twothree
+   restore ess
+   restore onetwo
+   join
+   restore two
+   union
+   restore twothree
+   join
+else
+   restore two
+endif
+
+restore ess
+translate 1065+2*xspace 0 0   # include spacing before previous letter
+
+ifthen connect2 eq 1
+   union
+else
+	restore ess
+endif
+
+patbeg i @nbody
+ select body i
+ select face
+ attribute _color "0.875;0.234;0.19"
+ select edge
+ attribute _color "0.875;0.234;0.19"
+patend
+
+scale 1/2000
+translate 0.1 0.1 0.1
+
+dump s2s.egads
+
