@@ -39,7 +39,7 @@ REF_FCN REF_STATUS ref_oct_create(REF_OCT *ref_oct_ptr) {
   ref_oct->bbox[5] = 1.0;
 
   ref_oct->n = 1;
-  ref_oct->max = 1024;
+  ref_oct->max = 100 * 1024;
   ref_oct->children = NULL;
   ref_malloc_init(ref_oct->children, 8 * ref_oct->max, REF_INT, REF_EMPTY);
 
@@ -50,6 +50,86 @@ REF_FCN REF_STATUS ref_oct_free(REF_OCT ref_oct) {
   if (NULL == (void *)ref_oct) return REF_NULL;
   ref_free(ref_oct->children);
   ref_free(ref_oct);
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_oct_child_bbox(REF_DBL *bbox, REF_INT child_index,
+                                      REF_DBL *box) {
+  switch (child_index) {
+    case 0:
+      box[0] = bbox[0];
+      box[1] = 0.5 * (bbox[0] + bbox[1]);
+      box[2] = bbox[2];
+      box[3] = 0.5 * (bbox[2] + bbox[3]);
+      box[4] = bbox[4];
+      box[5] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 1:
+      box[0] = 0.5 * (bbox[0] + bbox[1]);
+      box[1] = bbox[1];
+      box[2] = bbox[2];
+      box[3] = 0.5 * (bbox[2] + bbox[3]);
+      box[4] = bbox[4];
+      box[5] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 2:
+      box[0] = 0.5 * (bbox[0] + bbox[1]);
+      box[1] = bbox[1];
+      box[2] = 0.5 * (bbox[2] + bbox[3]);
+      box[3] = bbox[3];
+      box[4] = bbox[4];
+      box[5] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 3:
+      box[0] = bbox[0];
+      box[1] = 0.5 * (bbox[0] + bbox[1]);
+      box[2] = 0.5 * (bbox[2] + bbox[3]);
+      box[3] = bbox[3];
+      box[4] = bbox[4];
+      box[5] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 4:
+      box[0] = bbox[0];
+      box[1] = 0.5 * (bbox[0] + bbox[1]);
+      box[2] = bbox[2];
+      box[3] = 0.5 * (bbox[2] + bbox[3]);
+      box[4] = 0.5 * (bbox[4] + bbox[5]);
+      box[5] = bbox[5];
+      break;
+    case 5:
+      box[0] = 0.5 * (bbox[0] + bbox[1]);
+      box[1] = bbox[1];
+      box[2] = bbox[2];
+      box[3] = 0.5 * (bbox[2] + bbox[3]);
+      box[4] = 0.5 * (bbox[4] + bbox[5]);
+      box[5] = bbox[5];
+      break;
+    case 6:
+      box[0] = 0.5 * (bbox[0] + bbox[1]);
+      box[1] = bbox[1];
+      box[2] = 0.5 * (bbox[2] + bbox[3]);
+      box[3] = bbox[3];
+      box[4] = 0.5 * (bbox[4] + bbox[5]);
+      box[5] = bbox[5];
+      break;
+    case 7:
+      box[0] = bbox[0];
+      box[1] = 0.5 * (bbox[0] + bbox[1]);
+      box[2] = 0.5 * (bbox[2] + bbox[3]);
+      box[3] = bbox[3];
+      box[4] = 0.5 * (bbox[4] + bbox[5]);
+      box[5] = bbox[5];
+      break;
+    default:
+      THROW("not 2^3");
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_oct_bbox_diag(REF_DBL *bbox, REF_DBL *diag) {
+  *diag = sqrt(pow(bbox[1] - bbox[0], 2) + pow(bbox[3] - bbox[2], 2) +
+               pow(bbox[5] - bbox[4], 2));
   return REF_SUCCESS;
 }
 
@@ -68,9 +148,60 @@ REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_oct_split_at(REF_OCT ref_oct, REF_DBL *xyz, REF_DBL h) {
+  REF_INT node;
+  REF_DBL bbox[6], diag;
+  RSS(ref_oct_contains(ref_oct, xyz, &node, bbox), "contains oct");
+  RAS(node >= 0, "not found");
+  RSS(ref_oct_bbox_diag(bbox, &diag), "bbox diag");
+  if (diag > h) {
+    RSS(ref_oct_split(ref_oct, node), "split");
+    RSS(ref_oct_split_at(ref_oct, xyz, h), "again");
+  }
+  return REF_SUCCESS;
+}
+
+REF_FCN static REF_STATUS ref_oct_contains_node(REF_OCT ref_oct, REF_DBL *xyz,
+                                                REF_DBL *bbox, REF_INT current,
+                                                REF_INT *node,
+                                                REF_DBL *node_bbox) {
+  REF_INT child_index;
+  *node = REF_EMPTY;
+  if (xyz[0] < bbox[0] || bbox[1] < xyz[0] || xyz[1] < bbox[2] ||
+      bbox[3] < xyz[1] || xyz[2] < bbox[4] || bbox[5] < xyz[2]) {
+    *node = REF_EMPTY;
+    return REF_SUCCESS;
+  }
+  if (ref_oct->children[8 * current] == REF_EMPTY) {
+    REF_INT i;
+    for (i = 0; i < 6; i++) node_bbox[i] = bbox[i];
+    *node = current;
+    return REF_SUCCESS;
+  }
+  for (child_index = 0; child_index < 8; child_index++) {
+    REF_DBL box[6];
+    RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
+    RSS(ref_oct_contains_node(ref_oct, xyz, box,
+                              ref_oct->children[child_index + 8 * current],
+                              node, node_bbox),
+        "recurse");
+    if (*node != REF_EMPTY) {
+      return REF_SUCCESS;
+    }
+  }
+  return REF_SUCCESS;
+}
+REF_FCN REF_STATUS ref_oct_contains(REF_OCT ref_oct, REF_DBL *xyz,
+                                    REF_INT *node, REF_DBL *bbox) {
+  RSS(ref_oct_contains_node(ref_oct, xyz, ref_oct->bbox, 0, node, bbox),
+      "wrapper");
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
                                            REF_DBL *bbox, FILE *f) {
   REF_DBL box[6];
+  REF_INT i;
 
   RAS(0 <= node && node < ref_oct->n, "out of range node");
   fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[4]);
@@ -82,85 +213,12 @@ REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
   fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[5]);
   fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[5]);
 
-  box[0] = bbox[0];
-  box[1] = 0.5 * (bbox[0] + bbox[1]);
-  box[2] = bbox[2];
-  box[3] = 0.5 * (bbox[2] + bbox[3]);
-  box[4] = bbox[4];
-  box[5] = 0.5 * (bbox[4] + bbox[5]);
-  if (REF_EMPTY != ref_oct->children[0 + 8 * node])
-    RSS(ref_oct_tec_node(ref_oct, ref_oct->children[0 + 8 * node], box, f),
-        "c 0");
-
-  box[0] = 0.5 * (bbox[0] + bbox[1]);
-  box[1] = bbox[1];
-  box[2] = bbox[2];
-  box[3] = 0.5 * (bbox[2] + bbox[3]);
-  box[4] = bbox[4];
-  box[5] = 0.5 * (bbox[4] + bbox[5]);
-  if (REF_EMPTY != ref_oct->children[1 + 8 * node])
-    RSS(ref_oct_tec_node(ref_oct, ref_oct->children[1 + 8 * node], box, f),
-        "c 1");
-
-  box[0] = 0.5 * (bbox[0] + bbox[1]);
-  box[1] = bbox[1];
-  box[2] = 0.5 * (bbox[2] + bbox[3]);
-  box[3] = bbox[3];
-  box[4] = bbox[4];
-  box[5] = 0.5 * (bbox[4] + bbox[5]);
-  if (REF_EMPTY != ref_oct->children[2 + 8 * node])
-    RSS(ref_oct_tec_node(ref_oct, ref_oct->children[2 + 8 * node], box, f),
-        "c 2");
-
-  box[0] = bbox[0];
-  box[1] = 0.5 * (bbox[0] + bbox[1]);
-  box[2] = 0.5 * (bbox[2] + bbox[3]);
-  box[3] = bbox[3];
-  box[4] = bbox[4];
-  box[5] = 0.5 * (bbox[4] + bbox[5]);
-  if (REF_EMPTY != ref_oct->children[3 + 8 * node])
-    RSS(ref_oct_tec_node(ref_oct, ref_oct->children[3 + 8 * node], box, f),
-        "c 3");
-
-  box[0] = bbox[0];
-  box[1] = 0.5 * (bbox[0] + bbox[1]);
-  box[2] = bbox[2];
-  box[3] = 0.5 * (bbox[2] + bbox[3]);
-  box[4] = 0.5 * (bbox[4] + bbox[5]);
-  box[5] = bbox[5];
-  if (REF_EMPTY != ref_oct->children[4 + 8 * node])
-    RSS(ref_oct_tec_node(ref_oct, ref_oct->children[4 + 8 * node], box, f),
-        "c 4");
-
-  box[0] = 0.5 * (bbox[0] + bbox[1]);
-  box[1] = bbox[1];
-  box[2] = bbox[2];
-  box[3] = 0.5 * (bbox[2] + bbox[3]);
-  box[4] = 0.5 * (bbox[4] + bbox[5]);
-  box[5] = bbox[5];
-  if (REF_EMPTY != ref_oct->children[5 + 8 * node])
-    RSS(ref_oct_tec_node(ref_oct, ref_oct->children[5 + 8 * node], box, f),
-        "c 5");
-
-  box[0] = 0.5 * (bbox[0] + bbox[1]);
-  box[1] = bbox[1];
-  box[2] = 0.5 * (bbox[2] + bbox[3]);
-  box[3] = bbox[3];
-  box[4] = 0.5 * (bbox[4] + bbox[5]);
-  box[5] = bbox[5];
-  if (REF_EMPTY != ref_oct->children[6 + 8 * node])
-    RSS(ref_oct_tec_node(ref_oct, ref_oct->children[6 + 8 * node], box, f),
-        "c 6");
-
-  box[0] = bbox[0];
-  box[1] = 0.5 * (bbox[0] + bbox[1]);
-  box[2] = 0.5 * (bbox[2] + bbox[3]);
-  box[3] = bbox[3];
-  box[4] = 0.5 * (bbox[4] + bbox[5]);
-  box[5] = bbox[5];
-  if (REF_EMPTY != ref_oct->children[7 + 8 * node])
-    RSS(ref_oct_tec_node(ref_oct, ref_oct->children[7 + 8 * node], box, f),
-        "c 7");
+  for (i = 0; i < 8; i++) {
+    RSS(ref_oct_child_bbox(bbox, i, box), "bbox");
+    if (REF_EMPTY != ref_oct->children[i + 8 * node])
+      RSS(ref_oct_tec_node(ref_oct, ref_oct->children[i + 8 * node], box, f),
+          "recurse");
+  }
 
   return REF_SUCCESS;
 }
