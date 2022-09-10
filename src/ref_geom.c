@@ -953,8 +953,9 @@ REF_FCN static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_FCN static REF_STATUS ref_geom_add_constrain_inside_midnode(
-    REF_GRID ref_grid, REF_INT *nodes, REF_INT new_node) {
+REF_FCN REF_STATUS ref_geom_add_constrain_inside_midnode(REF_GRID ref_grid,
+                                                         REF_INT *nodes,
+                                                         REF_INT new_node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT type, id;
@@ -1335,11 +1336,10 @@ REF_FCN REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_FCN static REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid,
-                                                         REF_INT node0,
-                                                         REF_INT node1,
-                                                         REF_DBL node1_weight,
-                                                         REF_INT new_node) {
+REF_FCN REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid,
+                                                  REF_INT node0, REF_INT node1,
+                                                  REF_DBL node1_weight,
+                                                  REF_INT new_node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;

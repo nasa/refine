@@ -25,6 +25,7 @@
 
 #include "ref_adj.h"
 #include "ref_cell.h"
+#include "ref_geom.h"
 #include "ref_malloc.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
@@ -2534,42 +2535,31 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;
-  REF_INT *edge_node, edge;
-  REF_INT *tri_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *edge_node, edge, node;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_GLOB global;
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
   ref_malloc_init(edge_node, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
   each_ref_edge(ref_edge, edge) {
     RSS(ref_node_next_global(ref_node, &global), "next global");
-    RSS(ref_node_add(ref_node, global, &(edge_node[edge])), "edge node");
-    ref_node_xyz(ref_node, 0, edge_node[edge]) =
-        0.5 * (ref_node_xyz(ref_node, 0, ref_edge_e2n(ref_edge, 0, edge)) +
-               ref_node_xyz(ref_node, 0, ref_edge_e2n(ref_edge, 1, edge)));
-    ref_node_xyz(ref_node, 1, edge_node[edge]) =
-        0.5 * (ref_node_xyz(ref_node, 1, ref_edge_e2n(ref_edge, 0, edge)) +
-               ref_node_xyz(ref_node, 1, ref_edge_e2n(ref_edge, 1, edge)));
-    ref_node_xyz(ref_node, 2, edge_node[edge]) =
-        0.5 * (ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge, 0, edge)) +
-               ref_node_xyz(ref_node, 2, ref_edge_e2n(ref_edge, 1, edge)));
+    RSS(ref_node_add(ref_node, global, &node), "edge node");
+    edge_node[edge] = node;
+    RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
+                                  ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
+        "new reals");
+    RSS(ref_geom_add_constrain_midnode(
+            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+            ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
+        "new geom");
   }
-  ref_malloc_init(tri_node, ref_cell_n(ref_cell), REF_INT, REF_EMPTY);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_next_global(ref_node, &global), "next global");
-    RSS(ref_node_add(ref_node, global, &(tri_node[cell])), "tri node");
-    ref_node_xyz(ref_node, 0, edge_node[edge]) =
-        (1.0 / 3.0) * (ref_node_xyz(ref_node, 0, nodes[0]) +
-                       ref_node_xyz(ref_node, 0, nodes[1]) +
-                       ref_node_xyz(ref_node, 0, nodes[2]));
-    ref_node_xyz(ref_node, 1, edge_node[edge]) =
-        (1.0 / 3.0) * (ref_node_xyz(ref_node, 1, nodes[0]) +
-                       ref_node_xyz(ref_node, 1, nodes[1]) +
-                       ref_node_xyz(ref_node, 1, nodes[2]));
-    ref_node_xyz(ref_node, 2, edge_node[edge]) =
-        (1.0 / 3.0) * (ref_node_xyz(ref_node, 2, nodes[0]) +
-                       ref_node_xyz(ref_node, 2, nodes[1]) +
-                       ref_node_xyz(ref_node, 2, nodes[2]));
+    RSS(ref_node_add(ref_node, global, &node), "tri node");
+    RSS(ref_node_interpolate_face(ref_node, nodes[0], nodes[1], nodes[2], node),
+        "new node");
+    RSS(ref_geom_add_constrain_inside_midnode(ref_grid, nodes, node),
+        "new node");
   }
-  ref_free(tri_node);
   ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
   return REF_SUCCESS;

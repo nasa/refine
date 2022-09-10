@@ -241,6 +241,13 @@ REF_FCN REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0,
 REF_FCN REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
                                             REF_INT node1,
                                             REF_BOOL *needs_support);
+REF_FCN REF_STATUS ref_geom_add_constrain_midnode(REF_GRID ref_grid,
+                                                  REF_INT node0, REF_INT node1,
+                                                  REF_DBL node1_weight,
+                                                  REF_INT new_node);
+REF_FCN REF_STATUS ref_geom_add_constrain_inside_midnode(REF_GRID ref_grid,
+                                                         REF_INT *nodes,
+                                                         REF_INT new_node);
 
 REF_FCN REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
                                                 REF_DBL *uv_min,
