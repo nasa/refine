@@ -93,8 +93,8 @@ int main(int argc, char *argv[]) {
           }
         }
         RSS(ref_oct_split_at(ref_oct, xyz, h), "split xyz h");
-        RSS(ref_grid_free(ref_grid), "free grid");
       }
+      RSS(ref_grid_free(ref_grid), "free grid");
     }
     RSS(ref_oct_tec(ref_oct, argv[pos + 2]), "tec");
     RSS(ref_oct_free(ref_oct), "search oct");
