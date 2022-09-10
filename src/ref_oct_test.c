@@ -93,6 +93,7 @@ int main(int argc, char *argv[]) {
           }
         }
         RSS(ref_oct_split_at(ref_oct, xyz, h), "split xyz h");
+        RSS(ref_grid_free(ref_grid), "free grid");
       }
     }
     RSS(ref_oct_tec(ref_oct, argv[pos + 2]), "tec");
@@ -196,6 +197,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_oct_contains(ref_oct, xyz, &node, bbox), "contains oct");
     REIS(17, node, "expects third level");
+    RSS(ref_oct_free(ref_oct), "free oct");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
