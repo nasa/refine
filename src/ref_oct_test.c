@@ -96,6 +96,8 @@ int main(int argc, char *argv[]) {
       }
       RSS(ref_grid_free(ref_grid), "free grid");
     }
+    printf("writing %d vox to %s from %s\n", ref_oct->n, argv[pos + 2],
+           argv[pos + 1]);
     RSS(ref_oct_tec(ref_oct, argv[pos + 2]), "tec");
     RSS(ref_oct_free(ref_oct), "search oct");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
