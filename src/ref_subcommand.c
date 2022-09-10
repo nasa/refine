@@ -47,6 +47,7 @@
 #include "ref_shard.h"
 #include "ref_sort.h"
 #include "ref_split.h"
+#include "ref_subdiv.h"
 #include "ref_validation.h"
 
 #ifdef HAVE_CONFIG_H
@@ -4364,6 +4365,13 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos) {
     if (ref_mpi_once(ref_mpi)) printf("  --shard in place\n");
     RSS(ref_shard_in_place(ref_grid), "shard to simplex");
+  }
+
+  RXS(ref_args_find(argc, argv, "--blockhead", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) printf("  --blockhead in place\n");
+    RSS(ref_subdiv_to_hex(ref_grid), "shard to simplex");
   }
 
   RXS(ref_args_find(argc, argv, "--enrich2", &pos), REF_NOT_FOUND,
