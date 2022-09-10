@@ -603,7 +603,7 @@ cd ${source_dir}/acceptance/oct/s2s
 ( ./accept-oct-s2s.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-wwait
+wait
 
 # 2 procs
 LOG=${root_dir}/log.accept-2d-linear-para
