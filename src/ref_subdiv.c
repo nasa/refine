@@ -2533,10 +2533,11 @@ REF_FCN REF_STATUS ref_subdiv_test_impossible_marks(REF_SUBDIV ref_subdiv) {
 
 REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;
-  REF_INT *edge_node, edge, node;
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *edge_node, edge, node, new_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], quad[REF_CELL_MAX_SIZE_PER];
   REF_GLOB global;
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
   ref_malloc_init(edge_node, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
@@ -2547,18 +2548,44 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
     RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
                                   ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
         "new reals");
-    RSS(ref_geom_add_constrain_midnode(
-            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-            ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
-        "new geom");
+    if (ref_geom_model_loaded(ref_geom))
+      RSS(ref_geom_add_constrain_midnode(
+              ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+              ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
+          "new geom");
   }
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &node), "tri node");
     RSS(ref_node_interpolate_face(ref_node, nodes[0], nodes[1], nodes[2], node),
         "new node");
-    RSS(ref_geom_add_constrain_inside_midnode(ref_grid, nodes, node),
-        "new node");
+    if (ref_geom_model_loaded(ref_geom))
+      RSS(ref_geom_add_constrain_inside_midnode(ref_grid, nodes, node),
+          "new node");
+    quad[ref_cell_id_index(ref_grid_qua(ref_grid))] =
+        nodes[ref_cell_id_index(ref_grid_tri(ref_grid))];
+    quad[0] = nodes[0];
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge after");
+    quad[1] = edge_node[edge];
+    quad[2] = node;
+    RSS(ref_edge_with(ref_edge, nodes[2], nodes[0], &edge), "find edge before");
+    quad[3] = edge_node[edge];
+    RSS(ref_cell_add(ref_grid_qua(ref_grid), quad, &new_cell), "add");
+    quad[0] = nodes[1];
+    RSS(ref_edge_with(ref_edge, nodes[1], nodes[2], &edge), "find edge after");
+    quad[1] = edge_node[edge];
+    quad[2] = node;
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge before");
+    quad[3] = edge_node[edge];
+    RSS(ref_cell_add(ref_grid_qua(ref_grid), quad, &new_cell), "add");
+    quad[0] = nodes[2];
+    RSS(ref_edge_with(ref_edge, nodes[2], nodes[0], &edge), "find edge after");
+    quad[1] = edge_node[edge];
+    quad[2] = node;
+    RSS(ref_edge_with(ref_edge, nodes[1], nodes[2], &edge), "find edge before");
+    quad[3] = edge_node[edge];
+    RSS(ref_cell_add(ref_grid_qua(ref_grid), quad, &new_cell), "add");
+    RSS(ref_cell_remove(ref_cell, cell), "remove tri");
   }
   ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
