@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_split(ref_oct, 1), "split first child");
     RSS(ref_oct_split(ref_oct, 9), "split second gen");
     RSS(ref_oct_tec(ref_oct, argv[pos + 1]), "tec");
-    RSS(ref_oct_free(ref_oct), "search oct");
+    RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
@@ -142,6 +142,21 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_contains(ref_oct, xyz, &node, bbox), "contains oct");
     REIS(7, node, "expects last child");
     RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
+  {
+    REF_OCT ref_oct;
+    REF_DBL xyz[] = {0.01, 0.01, 0.01};
+    REF_DBL bbox[6];
+    REF_INT node;
+
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_split(ref_oct, 1), "split first child");
+    RSS(ref_oct_split(ref_oct, 9), "split second gen");
+
+    RSS(ref_oct_contains(ref_oct, xyz, &node, bbox), "contains oct");
+    REIS(17, node, "expects third level");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
