@@ -2537,8 +2537,11 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;
   REF_INT *edge_node, edge, node, new_cell;
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], quad[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT quad[REF_CELL_MAX_SIZE_PER], bar[REF_CELL_MAX_SIZE_PER];
   REF_GLOB global;
+  REF_CELL edg_cell;
+
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
   ref_malloc_init(edge_node, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
   each_ref_edge(ref_edge, edge) {
@@ -2587,6 +2590,22 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
     RSS(ref_cell_add(ref_grid_qua(ref_grid), quad, &new_cell), "add");
     RSS(ref_cell_remove(ref_cell, cell), "remove tri");
   }
+
+  ref_cell = ref_grid_edg(ref_grid);
+  RSS(ref_cell_create(&edg_cell, REF_CELL_EDG), "new edges");
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    bar[ref_cell_id_index(ref_grid_edg(ref_grid))] =
+        nodes[ref_cell_id_index(ref_grid_edg(ref_grid))];
+    bar[0] = nodes[0];
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge), "find edge");
+    bar[1] = edge_node[edge];
+    RSS(ref_cell_add(edg_cell, bar, &new_cell), "add");
+    bar[0] = edge_node[edge];
+    bar[1] = nodes[1];
+    RSS(ref_cell_add(edg_cell, bar, &new_cell), "add");
+  }
+  RSS(ref_cell_free(ref_grid_edg(ref_grid)), "free old edge");
+  ref_grid_edg(ref_grid) = edg_cell;
   ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
   return REF_SUCCESS;
