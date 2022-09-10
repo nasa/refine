@@ -86,6 +86,8 @@ REF_FCN REF_STATUS ref_subdiv_mark_verify(REF_SUBDIV ref_subdiv);
 
 REF_FCN REF_STATUS ref_subdiv_test_impossible_marks(REF_SUBDIV ref_subdiv);
 
+REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid);
+
 END_C_DECLORATION
 
 #endif /* REF_SUBDIV_H */

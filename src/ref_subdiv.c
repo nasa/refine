@@ -2529,3 +2529,14 @@ REF_FCN REF_STATUS ref_subdiv_test_impossible_marks(REF_SUBDIV ref_subdiv) {
 
   return REF_SUCCESS;
 }
+
+REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
+  /*
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  */
+  REF_EDGE ref_edge;
+  RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
+  RSS(ref_edge_free(ref_edge), "free edge");
+  return REF_SUCCESS;
+}
