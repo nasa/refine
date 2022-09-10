@@ -179,17 +179,13 @@ REF_FCN static REF_STATUS ref_oct_contains_node(REF_OCT ref_oct, REF_DBL *xyz,
     return REF_SUCCESS;
   }
   for (child_index = 0; child_index < 8; child_index++) {
-    REF_INT child_node;
     REF_DBL box[6];
     RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
     RSS(ref_oct_contains_node(ref_oct, xyz, box,
                               ref_oct->children[child_index + 8 * current],
-                              &child_node, node_bbox),
+                              node, node_bbox),
         "recurse");
-    if (child_node != REF_EMPTY) {
-      REF_INT i;
-      for (i = 0; i < 6; i++) node_bbox[i] = box[i];
-      *node = child_node;
+    if (*node != REF_EMPTY) {
       return REF_SUCCESS;
     }
   }
