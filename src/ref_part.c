@@ -2076,6 +2076,7 @@ REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   size_t end_of_string;
   REF_BOOL sol_format, found_keyword;
   REF_INT nnode, ntype, type;
+  REF_INT ldim, i;
   REF_INT status;
   char line[1024];
   REF_BOOL solb_format = REF_FALSE;
@@ -2131,9 +2132,27 @@ REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
           REIS(1, fscanf(file, "%d", &nnode), "read nnode");
           REIS(ref_node_n_global(ref_node), nnode,
                "wrong vertex number in .sol");
-          REIS(2, fscanf(file, "%d %d", &ntype, &type), "read header");
-          REIS(1, ntype, "expected one type in .sol");
-          REIS(3, type, "expected type GmfSymMat in .sol");
+          REIS(1, fscanf(file, "%d", &ntype), "read number of types");
+          ldim = 0;
+          for (i = 0; i < ntype; i++) {
+            REIS(1, fscanf(file, "%d", &type), "read number of types");
+            RAB(1 <= type && type <= 3,
+                "only types 1 (scalar) or 3 (tensor)) supported",
+                { printf(" %d type\n", type); });
+            if (1 == type) ldim += 1;
+            if (3 == type) {
+              if (2 == dim) {
+                ldim += 3;
+              } else {
+                ldim += 6;
+              }
+            }
+          }
+          if (2 == dim) {
+            REIS(3, ldim, "2D expects 3 terms of 2x2 metric");
+          } else {
+            REIS(6, ldim, "3D expects 6 terms of 3x3 metric");
+          }
           RAS(0 <= fscanf(file, "%*[^1234567890-+.]"), "skip blank line");
           found_keyword = REF_TRUE;
           break;
