@@ -1817,7 +1817,7 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
   REF_INT section_size;
   REF_INT node, local;
   REF_BOOL available;
-  REF_INT version, dim, ntype, type;
+  REF_INT version, dim, ntype, type, ldim, i;
   REF_GLOB global;
   REF_LONG nnode;
 
@@ -1840,9 +1840,26 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
     RAS(available, "SolAtVertices missing");
     RSS(ref_part_meshb_long(file, version, &nnode), "nnode");
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
-    REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
-    REIS(1, ntype, "number of solutions");
-    REIS(3, type, "metric solution type");
+    ldim = 0;
+    for (i = 0; i < ntype; i++) {
+      REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
+      RAB(1 <= type && type <= 3,
+          "only types 1 (scalar) or 3 (tensor)) supported",
+          { printf(" %d type\n", type); });
+      if (1 == type) ldim += 1;
+      if (3 == type) {
+        if (2 == dim) {
+          ldim += 3;
+        } else {
+          ldim += 6;
+        }
+      }
+    }
+    if (2 == dim) {
+      REIS(3, ldim, "2D expects 3 terms of 2x2 metric");
+    } else {
+      REIS(6, ldim, "3D expects 6 terms of 3x3 metric");
+    }
   }
   RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &version, 1, REF_INT_TYPE),
       "bcast version");
@@ -1850,6 +1867,8 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
       "bcast dim");
   RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_GLOB_TYPE),
       "bcast nnode");
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &ldim, 1, REF_GLOB_TYPE),
+      "bcast ldim");
 
   if ((nnode != ref_node_n_global(ref_node)) &&
       (nnode / 2 != ref_node_n_global(ref_node))) {
@@ -1870,7 +1889,7 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
     section_size = MIN(chunk, (REF_INT)(nnode - nnode_read));
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       for (node = 0; node < section_size; node++) {
-        if (3 == dim) {
+        if (6 == ldim) {
           REIS(1, fread(&(metric[0 + 6 * node]), sizeof(REF_DBL), 1, file),
                "m11");
           REIS(1, fread(&(metric[1 + 6 * node]), sizeof(REF_DBL), 1, file),
@@ -1884,7 +1903,7 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
                "m32");
           REIS(1, fread(&(metric[5 + 6 * node]), sizeof(REF_DBL), 1, file),
                "m33");
-        } else {
+        } else if (3 == ldim) {
           REIS(1, fread(&(metric[0 + 6 * node]), sizeof(REF_DBL), 1, file),
                "m11");
           REIS(1, fread(&(metric[1 + 6 * node]), sizeof(REF_DBL), 1, file),
@@ -1894,6 +1913,8 @@ REF_FCN static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
           metric[2 + 6 * node] = 0.0; /* m13 */
           metric[4 + 6 * node] = 0.0; /* m23 */
           metric[5 + 6 * node] = 1.0; /* m33 */
+        } else {
+          THROW("not a 2D or 3D ldim");
         }
       }
       RSS(ref_mpi_bcast(ref_node_mpi(ref_node), metric, 6 * chunk,
@@ -2055,6 +2076,7 @@ REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   size_t end_of_string;
   REF_BOOL sol_format, found_keyword;
   REF_INT nnode, ntype, type;
+  REF_INT ldim, i;
   REF_INT status;
   char line[1024];
   REF_BOOL solb_format = REF_FALSE;
@@ -2110,9 +2132,27 @@ REF_FCN REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
           REIS(1, fscanf(file, "%d", &nnode), "read nnode");
           REIS(ref_node_n_global(ref_node), nnode,
                "wrong vertex number in .sol");
-          REIS(2, fscanf(file, "%d %d", &ntype, &type), "read header");
-          REIS(1, ntype, "expected one type in .sol");
-          REIS(3, type, "expected type GmfSymMat in .sol");
+          REIS(1, fscanf(file, "%d", &ntype), "read number of types");
+          ldim = 0;
+          for (i = 0; i < ntype; i++) {
+            REIS(1, fscanf(file, "%d", &type), "read number of types");
+            RAB(1 <= type && type <= 3,
+                "only types 1 (scalar) or 3 (tensor)) supported",
+                { printf(" %d type\n", type); });
+            if (1 == type) ldim += 1;
+            if (3 == type) {
+              if (2 == dim) {
+                ldim += 3;
+              } else {
+                ldim += 6;
+              }
+            }
+          }
+          if (2 == dim) {
+            REIS(3, ldim, "2D expects 3 terms of 2x2 metric");
+          } else {
+            REIS(6, ldim, "3D expects 6 terms of 3x3 metric");
+          }
           RAS(0 <= fscanf(file, "%*[^1234567890-+.]"), "skip blank line");
           found_keyword = REF_TRUE;
           break;
