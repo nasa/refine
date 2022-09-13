@@ -25,6 +25,8 @@
 
 #include "ref_adj.h"
 #include "ref_cell.h"
+#include "ref_edge.h"
+#include "ref_face.h"
 #include "ref_geom.h"
 #include "ref_malloc.h"
 #include "ref_metric.h"
@@ -2536,6 +2538,7 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;
+  REF_FACE ref_face;
   REF_INT *edge_node, edge, node, new_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT quad[REF_CELL_MAX_SIZE_PER], bar[REF_CELL_MAX_SIZE_PER];
@@ -2543,6 +2546,7 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   REF_CELL edg_cell;
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
+  RSS(ref_face_create(&ref_face, ref_grid), "create face");
   ref_malloc_init(edge_node, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
   each_ref_edge(ref_edge, edge) {
     RSS(ref_node_next_global(ref_node, &global), "next global");
@@ -2607,6 +2611,7 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   RSS(ref_cell_free(ref_grid_edg(ref_grid)), "free old edge");
   ref_grid_edg(ref_grid) = edg_cell;
   ref_free(edge_node);
+  RSS(ref_face_free(ref_face), "free face");
   RSS(ref_edge_free(ref_edge), "free edge");
 
   RSS(ref_node_synchronize_globals(ref_node), "sync globals");
