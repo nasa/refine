@@ -2587,8 +2587,10 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    REF_INT tet_face_nodes[4], cell_face;
-    /*REF_INT hex[REF_CELL_MAX_SIZE_PER];*/
+    REF_INT tet_face_nodes[4], tet_edge_nodes[6];
+    REF_INT cell_face, cell_edge, cell_node;
+    REF_INT hex[REF_CELL_MAX_SIZE_PER];
+
     each_ref_cell_cell_face(ref_cell, cell_face) {
       /* repeat first node to mark tri */
       for (i = 0; i < 4; i++)
@@ -2600,6 +2602,65 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
       RUS(REF_EMPTY, face, "tet face not found");
       tet_face_nodes[cell_face] = face_node[face];
     }
+
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      RSS(ref_edge_with(ref_edge, ref_cell_e2n(ref_cell, 0, cell_edge, cell),
+                        ref_cell_e2n(ref_cell, 1, cell_edge, cell), &edge),
+          "find edge");
+      RUS(REF_EMPTY, edge, "tet edge not found");
+      tet_edge_nodes[cell_edge] = edge_node[edge];
+    }
+
+    RSS(ref_node_next_global(ref_node, &global), "next global");
+    RSS(ref_node_add(ref_node, global, &node), "edge node");
+    for (i = 0; i < 3; i++) {
+      ref_node_xyz(ref_node, i, node) = 0.0;
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        ref_node_xyz(ref_node, i, node) +=
+            0.25 * ref_node_xyz(ref_node, i, nodes[cell_node]);
+      }
+    }
+
+    hex[0] = nodes[0];
+    hex[1] = tet_edge_nodes[0];
+    hex[2] = tet_face_nodes[3];
+    hex[3] = tet_edge_nodes[1];
+    hex[4] = tet_edge_nodes[2];
+    hex[5] = tet_face_nodes[2];
+    hex[6] = node;
+    hex[7] = tet_face_nodes[1];
+    RSS(ref_cell_add(ref_grid_hex(ref_grid), hex, &new_cell), "add");
+
+    hex[0] = nodes[1];
+    hex[1] = tet_edge_nodes[3];
+    hex[2] = tet_face_nodes[3];
+    hex[3] = tet_edge_nodes[0];
+    hex[4] = tet_edge_nodes[4];
+    hex[5] = tet_face_nodes[0];
+    hex[6] = node;
+    hex[7] = tet_face_nodes[2];
+    RSS(ref_cell_add(ref_grid_hex(ref_grid), hex, &new_cell), "add");
+
+    hex[0] = nodes[2];
+    hex[1] = tet_edge_nodes[1];
+    hex[2] = tet_face_nodes[3];
+    hex[3] = tet_edge_nodes[3];
+    hex[4] = tet_edge_nodes[5];
+    hex[5] = tet_face_nodes[1];
+    hex[6] = node;
+    hex[7] = tet_face_nodes[0];
+    RSS(ref_cell_add(ref_grid_hex(ref_grid), hex, &new_cell), "add");
+
+    hex[0] = nodes[3];
+    hex[1] = tet_edge_nodes[4];
+    hex[2] = tet_face_nodes[2];
+    hex[3] = tet_edge_nodes[2];
+    hex[4] = tet_edge_nodes[5];
+    hex[5] = tet_face_nodes[0];
+    hex[6] = node;
+    hex[7] = tet_face_nodes[1];
+    RSS(ref_cell_add(ref_grid_hex(ref_grid), hex, &new_cell), "add");
+
     RSS(ref_cell_remove(ref_cell, cell), "remove tet");
   }
 
