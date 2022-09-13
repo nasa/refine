@@ -603,6 +603,18 @@ cd ${source_dir}/acceptance/oct/s2s
 ( ./accept-oct-s2s.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-tohex-diamond
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/tohex/diamond
+( ./accept-tohex-diamond.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+LOG=${root_dir}/log.accept-tohex-diaprism
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/tohex/diaprism
+( ./accept-tohex-diaprism.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 wait
 
 # 2 procs
