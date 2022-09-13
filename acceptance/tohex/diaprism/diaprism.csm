@@ -1,0 +1,80 @@
+# diamond.csm written by ocsmSave (v1.18)
+
+# Constant, Design, and Output Parameters:
+despmtr   xout0      -3.00000
+despmtr   xout1       9.00000
+despmtr   yout0      -3.00000
+despmtr   yout1       3.00000
+despmtr   len       0.50000
+
+# Global Attributes:
+
+# Branches:
+skbeg     xout0   yout0   0   0
+   skvar     xy   -3.000000;-3.000000;0.000000;6.000000;-3.000000;0.000000;6.000000;3.000000;0.000000;-3.000000;3.000000;0.000000;
+   skcon     X   1   -1  xout0
+   skcon     Y   1   -1  yout0
+   skcon     H   1   2  0
+   skcon     V   2   3  0
+   skcon     H   3   4  0
+   skcon     V   4   1  0
+   skcon     X   3   -1  xout1
+   skcon     Y   3   -1  yout1
+   linseg    ::x[2]   ::y[2]   ::z[2]
+   linseg    ::x[3]   ::y[3]   ::z[3]
+   linseg    ::x[4]   ::y[4]   ::z[4]
+   linseg    ::x[1]   ::y[1]   ::z[1]
+skend     0
+
+select edge
+attribute bc_name $5000_farfield
+
+skbeg     -len   0   0   0
+   skvar     xy   -0.500000;0.000000;0.000000;0.000000;-0.500000;0.000000;0.500000;0.000000;0.000000;0.000000;0.500000;0.000000;
+   skcon     X   1   -1  -len
+   skcon     Y   1   -1  0
+   skcon     X   2   -1  0
+   skcon     X   4   -1  0
+   skcon     Y   3   -1  0
+   skcon     Y   4   -1  len
+   skcon     Y   2   -1  -len
+   skcon     X   3   -1  len
+   linseg    ::x[2]   ::y[2]   ::z[2]
+   linseg    ::x[3]   ::y[3]   ::z[3]
+   linseg    ::x[4]   ::y[4]   ::z[4]
+   linseg    ::x[1]   ::y[1]   ::z[1]
+skend     0
+
+select edge
+attribute bc_name $4000_wall
+
+subtract
+
+rotatex 90 0 0
+extrude 0 1 0
+
+select face 1
+attribute bc_name $5000_farfield
+select face 2
+attribute bc_name $5000_farfield
+select face 3
+attribute bc_name $5000_farfield
+select face 4
+attribute bc_name $5000_farfield
+
+select face 5
+attribute bc_name $4000_wall
+select face 6
+attribute bc_name $4000_wall
+select face 7
+attribute bc_name $4000_wall
+select face 8
+attribute bc_name $4000_wall
+
+select face 9
+attribute bc_name $6662_ysym0
+select face 10
+attribute bc_name $6662_ysym1
+
+dump diaprism.egads
+
