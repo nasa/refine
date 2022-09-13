@@ -2536,11 +2536,11 @@ REF_FCN REF_STATUS ref_subdiv_test_impossible_marks(REF_SUBDIV ref_subdiv) {
 REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_CELL ref_cell;
   REF_EDGE ref_edge;
   REF_FACE ref_face;
-  REF_INT *edge_node, edge, node, new_cell;
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *edge_node, *face_node, face, edge, node, new_cell, i;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], face_nodes[4];
   REF_INT quad[REF_CELL_MAX_SIZE_PER], bar[REF_CELL_MAX_SIZE_PER];
   REF_GLOB global;
   REF_CELL edg_cell;
@@ -2548,6 +2548,8 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
   RSS(ref_face_create(&ref_face, ref_grid), "create face");
   ref_malloc_init(edge_node, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
+  ref_malloc_init(face_node, ref_face_n(ref_face), REF_INT, REF_EMPTY);
+
   each_ref_edge(ref_edge, edge) {
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &node), "edge node");
@@ -2561,14 +2563,38 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
               ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
           "new geom");
   }
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_face(ref_face, face) {
     RSS(ref_node_next_global(ref_node, &global), "next global");
-    RSS(ref_node_add(ref_node, global, &node), "tri node");
+    RSS(ref_node_add(ref_node, global, &node), "face node");
+    face_node[face] = node;
+
+    for (i = 0; i < 3; i++) {
+      nodes[i] = ref_face_f2n(ref_face, i, face);
+    }
+    nodes[3] = REF_EMPTY;
+    RSS(ref_cell_with(ref_cell, nodes, &cell), "find tri");
+    if (REF_EMPTY != cell) nodes[3] = ref_cell_c2n(ref_cell, 3, cell);
+
     RSS(ref_node_interpolate_face(ref_node, nodes[0], nodes[1], nodes[2], node),
-        "new node");
-    if (ref_geom_model_loaded(ref_geom))
+        "interp new face node");
+    if (ref_geom_model_loaded(ref_geom) && REF_EMPTY != nodes[3]) {
       RSS(ref_geom_add_constrain_inside_midnode(ref_grid, nodes, node),
-          "new node");
+          "geom constrain new face node");
+    }
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    for (i = 0; i < 3; i++) face_nodes[i] = nodes[i];
+    face_nodes[3] = face_nodes[0]; /* repeat first node to mark tri */
+    RSB(ref_face_with(ref_face, face_nodes, &face), "find face", {
+      printf("%d tri %d %d %d  %d\n", cell, nodes[0], nodes[1], nodes[2],
+             nodes[3]);
+    });
+    RUS(REF_EMPTY, face, "tri face not found");
+    node = face_node[face];
     quad[ref_cell_id_index(ref_grid_qua(ref_grid))] =
         nodes[ref_cell_id_index(ref_grid_tri(ref_grid))];
     quad[0] = nodes[0];
@@ -2610,6 +2636,8 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   }
   RSS(ref_cell_free(ref_grid_edg(ref_grid)), "free old edge");
   ref_grid_edg(ref_grid) = edg_cell;
+
+  ref_free(face_node);
   ref_free(edge_node);
   RSS(ref_face_free(ref_face), "free face");
   RSS(ref_edge_free(ref_edge), "free edge");
