@@ -148,6 +148,54 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--eigs", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *hessian, *eigs, diag[12];
+    REF_INT ldim, node, dir;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_KEXACT;
+    if (ref_mpi_once(ref_mpi))
+      printf("%s number of processors %d\n", argv[0], ref_mpi_n(ref_mpi));
+    REIS(5, argc, "required args: --eigs grid.ext scalar.solb eigs.plt");
+    REIS(1, pos, "required args: --eigs grid.ext scalar.solb eigs.plt");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[pos + 1]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[pos + 1]),
+        "unable to load grid in position 1");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[pos + 2]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[pos + 2]),
+        "unable to load function in position 2");
+    ref_malloc(eigs, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct hessian\n");
+    RSS(ref_recon_hessian(ref_grid, scalar, hessian, reconstruction), "hess");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_matrix_diag_m(&(hessian[6 * node]), diag), "diag");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_matrix_descending_eig_twod(diag), "2D ascend");
+      } else {
+        RSS(ref_matrix_descending_eig(diag), "3D ascend");
+      }
+      for (dir = 0; dir < 3; dir++) {
+        eigs[dir + 3 * node] = diag[dir];
+      }
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", argv[pos + 3]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, 3, eigs, NULL, argv[pos + 3]),
+        "export eigs");
+
+    ref_free(hessian);
+    ref_free(scalar);
+    ref_free(eigs);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   if (argc == 3) {
     REF_GRID ref_grid;
     REF_DBL *function, *derivatives, *scalar, *grad;
