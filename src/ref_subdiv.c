@@ -2608,5 +2608,8 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
   ref_grid_edg(ref_grid) = edg_cell;
   ref_free(edge_node);
   RSS(ref_edge_free(ref_edge), "free edge");
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync globals");
+
   return REF_SUCCESS;
 }
