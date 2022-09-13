@@ -2574,7 +2574,7 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
       nodes[i] = ref_face_f2n(ref_face, i, face);
     }
     nodes[3] = REF_EMPTY;
-    RSS(ref_cell_with(ref_cell, nodes, &cell), "find tri");
+    RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND, "find tri");
     if (REF_EMPTY != cell) nodes[3] = ref_cell_c2n(ref_cell, 3, cell);
 
     RSS(ref_node_interpolate_face(ref_node, nodes[0], nodes[1], nodes[2], node),
@@ -2583,6 +2583,24 @@ REF_FCN REF_STATUS ref_subdiv_to_hex(REF_GRID ref_grid) {
       RSS(ref_geom_add_constrain_inside_midnode(ref_grid, nodes, node),
           "geom constrain new face node");
     }
+  }
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    REF_INT tet_face_nodes[4], cell_face;
+    /*REF_INT hex[REF_CELL_MAX_SIZE_PER];*/
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      /* repeat first node to mark tri */
+      for (i = 0; i < 4; i++)
+        face_nodes[i] = ref_cell_f2n(ref_cell, i, cell_face, cell);
+      RSB(ref_face_with(ref_face, face_nodes, &face), "find face", {
+        printf("%d tri %d %d %d  %d\n", cell, nodes[0], nodes[1], nodes[2],
+               nodes[3]);
+      });
+      RUS(REF_EMPTY, face, "tet face not found");
+      tet_face_nodes[cell_face] = face_node[face];
+    }
+    RSS(ref_cell_remove(ref_cell, cell), "remove tet");
   }
 
   ref_cell = ref_grid_tri(ref_grid);
