@@ -148,6 +148,74 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--eigs", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *hessian, *eigs, diag[12];
+    REF_DBL det, exponent;
+    REF_INT p_norm, dimension;
+    REF_INT ldim, node, dir;
+    REF_INT nout = 5;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_KEXACT;
+    if (ref_mpi_once(ref_mpi))
+      printf("%s number of processors %d\n", argv[0], ref_mpi_n(ref_mpi));
+    REIS(5, argc, "required args: --eigs grid.ext scalar.solb eigs.plt");
+    REIS(1, pos, "required args: --eigs grid.ext scalar.solb eigs.plt");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[pos + 1]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[pos + 1]),
+        "unable to load grid in position 1");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[pos + 2]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[pos + 2]),
+        "unable to load function in position 2");
+    ref_malloc(eigs, nout * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    p_norm = 2;
+    dimension = 3;
+    if (ref_grid_twod(ref_grid)) {
+      dimension = 2;
+    }
+    exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
+
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct hessian\n");
+    RSS(ref_recon_hessian(ref_grid, scalar, hessian, reconstruction), "hess");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_matrix_diag_m(&(hessian[6 * node]), diag), "diag");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_matrix_descending_eig_twod(diag), "2D ascend");
+      } else {
+        RSS(ref_matrix_descending_eig(diag), "3D ascend");
+      }
+      for (dir = 0; dir < 3; dir++) {
+        eigs[dir + nout * node] = diag[dir];
+      }
+      if (ref_grid_twod(ref_grid)) {
+        hessian[2 + 6 * node] = 0.0;
+        hessian[4 + 6 * node] = 0.0;
+        hessian[5 + 6 * node] = 1.0;
+      }
+      RSS(ref_matrix_det_m(&(hessian[6 * node]), &det),
+          "det_m local hess scale");
+      eigs[3 + nout * node] = det;
+      eigs[4 + nout * node] = pow(det, exponent);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("gather %d to %s\n", nout, argv[pos + 3]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, nout, eigs, NULL,
+                                       argv[pos + 3]),
+        "export eigs");
+
+    ref_free(hessian);
+    ref_free(scalar);
+    ref_free(eigs);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   if (argc == 3) {
     REF_GRID ref_grid;
     REF_DBL *function, *derivatives, *scalar, *grad;
