@@ -14,9 +14,9 @@ field="-u sin50xy"
 
 ${src}/ref_fixture_test --prism prism.lb8.ugrid \
 		 0 1 0 1 0 1 \
-		 5 5 5 0
+		 11 11 11 0
 
-${src}/ref_shard_test prism.lb8.ugrid 2 5
+${src}/ref_shard_test prism.lb8.ugrid 1 5
 
 ${src}/ref translate ref_shard_test.b8.ugrid mixed01.lb8.ugrid
 
@@ -24,7 +24,7 @@ ${src}/ref_acceptance ${field} mixed01.lb8.ugrid \
       mixed01.solb
 
 ${src}/ref multiscale mixed01.lb8.ugrid mixed01.solb \
-	  100 mixed01-metric.solb
+	  500 mixed01-metric.solb
 
 ${src}/ref adapt mixed01.lb8.ugrid \
       --metric mixed01-metric.solb \
