@@ -693,8 +693,10 @@ static REF_STATUS adapt(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
           printf("EBody Effective Body loaded\n");
         ref_mpi_stopwatch_stop(ref_mpi, "load egads");
       } else {
-        if (ref_mpi_once(ref_mpi))
+        if (ref_mpi_once(ref_mpi)) {
           printf("warning: no geometry loaded, assuming planar faces.\n");
+        }
+        curvature_metric = REF_FALSE;
       }
     }
   }
