@@ -1203,6 +1203,85 @@ REF_FCN static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr,
   return REF_IMPLEMENT;
 }
 
+REF_FCN static REF_STATUS ref_import_tetgen_node(REF_GRID *ref_grid_ptr,
+                                                 REF_MPI ref_mpi,
+                                                 const char *filename) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  FILE *file;
+  char project[1000], othername[1024];
+  REF_INT nnode, ndim, attr, mark, node, item, new_node;
+  REF_INT ntri, new_cell, cell, id, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL xyz[3];
+  size_t end_of_string;
+  end_of_string = MIN(1023, strlen(filename));
+
+  REIS(0, strncmp(&filename[end_of_string - 5], ".node", 5),
+       "filename does not end in .node");
+
+  RAS(end_of_string < 1024, "filename too long for temp string");
+  memcpy(project, filename, end_of_string - 5);
+  project[end_of_string - 5] = '\0';
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
+  ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  REIS(1, fscanf(file, "%d", &nnode), "node header nnode");
+  REIS(1, fscanf(file, "%d", &ndim), "node header ndim");
+  REIS(3, ndim, "not 3D");
+  REIS(1, fscanf(file, "%d", &attr), "node header attr");
+  REIS(0, attr, "nodes have attribute 3D");
+  REIS(1, fscanf(file, "%d", &mark), "node header mark");
+  REIS(0, mark, "nodes have mark");
+
+  for (node = nnode; node < nnode; node++) {
+    REIS(1, fscanf(file, "%d", &item), "node item");
+    REIS(node, item, "file node index");
+    RSS(ref_node_add(ref_node, node, &new_node), "add node");
+    RES(node, new_node, "node index");
+    RES(1, fscanf(file, "%lf", &(xyz[0])), "x");
+    RES(1, fscanf(file, "%lf", &(xyz[1])), "y");
+    RES(1, fscanf(file, "%lf", &(xyz[2])), "z");
+    ref_node_xyz(ref_node, 0, new_node) = xyz[0];
+    ref_node_xyz(ref_node, 1, new_node) = xyz[1];
+    ref_node_xyz(ref_node, 2, new_node) = xyz[2];
+  }
+  fclose(file);
+
+  RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
+
+  snprintf(othername, 1019, "%s.face", project);
+  file = fopen(othername, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", othername);
+  RNS(file, "unable to open file");
+  REIS(1, fscanf(file, "%d", &ntri), "face header ntri");
+  REIS(1, fscanf(file, "%d", &mark), "face header mark");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  for (cell = 0; cell < ntri; cell++) {
+    REIS(1, fscanf(file, "%d", &item), "read tri item");
+    REIS(cell, item, "tri index");
+    for (node = 0; node < 3; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "tri");
+    id = 0;
+    if (1 == mark) REIS(1, fscanf(file, "%d", &id), "tri mark id");
+    nodes[3] = id;
+    printf("cell %d: %d %d %d %d\n", cell, nodes[0], nodes[1], nodes[2],
+           nodes[3]);
+    RSS(ref_cell_add(ref_cell, nodes, &new_cell), "tri face for tri");
+  }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_import_i_like_cfd_grid(REF_GRID *ref_grid_ptr,
                                                      REF_MPI ref_mpi,
                                                      const char *filename) {
@@ -1663,6 +1742,9 @@ REF_FCN REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr,
     RSS(ref_import_su2(ref_grid_ptr, ref_mpi, filename), "su2 failed");
   } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
     RSS(ref_import_msh(ref_grid_ptr, ref_mpi, filename), "msh failed");
+  } else if (strcmp(&filename[end_of_string - 5], ".node") == 0) {
+    RSS(ref_import_tetgen_node(ref_grid_ptr, ref_mpi, filename),
+        "tetgen node failed");
   } else if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
     RSS(ref_import_meshb(ref_grid_ptr, ref_mpi, filename), "meshb failed");
   } else if (strcmp(&filename[end_of_string - 5], ".grid") == 0) {
