@@ -1240,7 +1240,7 @@ REF_FCN static REF_STATUS ref_import_tetgen_node(REF_GRID *ref_grid_ptr,
   REIS(1, fscanf(file, "%d", &mark), "node header mark");
   REIS(0, mark, "nodes have mark");
 
-  for (node = nnode; node < nnode; node++) {
+  for (node = 0; node < nnode; node++) {
     REIS(1, fscanf(file, "%d", &item), "node item");
     REIS(node, item, "file node index");
     RSS(ref_node_add(ref_node, node, &new_node), "add node");
