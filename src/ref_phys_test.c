@@ -212,6 +212,7 @@ int main(int argc, char *argv[]) {
   REF_INT timing_pos = REF_EMPTY;
   REF_INT minspac_pos = REF_EMPTY;
   REF_INT yplus_pos = REF_EMPTY;
+  REF_INT geometric_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -238,6 +239,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--minspac", &minspac_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--yplus", &yplus_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--geometric", &geometric_pos), REF_NOT_FOUND,
       "arg search");
 
   if (yplus_pos != REF_EMPTY) {
@@ -819,6 +822,55 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[5]),
         "export uplus");
     ref_mpi_stopwatch_stop(ref_mpi, "write uplus");
+
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (geometric_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar, h_wall, rate;
+    REF_INT ldim, node;
+    ref_mpi_stopwatch_start(ref_mpi);
+    REIS(1, geometric_pos,
+         "required args: --geometric grid.meshb dist.solb [h_wall] [rate] "
+         "geometric-scalar.solb");
+    if (7 > argc) {
+      printf(
+          "required args: --geometric grid.meshb dist.solb [h_wall] [rate] "
+          "geometric-scalar.solb");
+      return REF_FAILURE;
+    }
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, argv[3]),
+        "unable to load distance in position 3");
+    REIS(1, ldim, "expected one distance");
+    ref_mpi_stopwatch_stop(ref_mpi, "read distance");
+
+    h_wall = atof(argv[4]);
+    rate = atof(argv[5]);
+
+    if (ref_mpi_once(ref_mpi)) printf("h_wall of %f\n", h_wall);
+    if (ref_mpi_once(ref_mpi)) printf("rate of %f\n", rate);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = pow(rate, -2.0 * scalar[node] / h_wall) /
+                     (4.0 * log(rate) * log(rate));
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute scalar");
+
+    if (ref_mpi_once(ref_mpi)) printf("writing scalar %s\n", argv[5]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[6]),
+        "export uplus");
+    ref_mpi_stopwatch_stop(ref_mpi, "write scalar");
 
     ref_free(scalar);
 
