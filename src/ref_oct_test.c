@@ -202,6 +202,33 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
+  {
+    REF_DBL bbox0[6], bbox1[6];
+    REF_BOOL overlap;
+    bbox0[0] = 0.0;
+    bbox0[1] = 1.0;
+    bbox0[2] = 0.0;
+    bbox0[3] = 1.0;
+    bbox0[4] = 0.0;
+    bbox0[5] = 1.0;
+    bbox1[0] = 0.1;
+    bbox1[1] = 0.2;
+    bbox1[2] = 0.1;
+    bbox1[3] = 0.2;
+    bbox1[4] = 0.1;
+    bbox1[5] = 0.2;
+    RSS(ref_oct_bbox_overlap(bbox0, bbox1, &overlap), "overlap");
+    REIS(REF_TRUE, overlap, "expect overlap");
+    bbox1[0] = 1.1;
+    bbox1[1] = 1.2;
+    bbox1[2] = 0.1;
+    bbox1[3] = 0.2;
+    bbox1[4] = 0.1;
+    bbox1[5] = 0.2;
+    RSS(ref_oct_bbox_overlap(bbox0, bbox1, &overlap), "overlap");
+    REIS(REF_FALSE, overlap, "did expect overlap");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

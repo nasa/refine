@@ -223,6 +223,16 @@ REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_bbox_overlap(REF_DBL *bbox0, REF_DBL *bbox1,
+                                        REF_BOOL *overlap) {
+  *overlap = REF_FALSE;
+  if (bbox0[1] < bbox1[0] || bbox1[1] < bbox0[0]) return REF_SUCCESS;
+  if (bbox0[3] < bbox1[2] || bbox1[3] < bbox0[2]) return REF_SUCCESS;
+  if (bbox0[5] < bbox1[4] || bbox1[5] < bbox0[4]) return REF_SUCCESS;
+  *overlap = REF_TRUE;
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
   FILE *f;
   REF_INT i;
