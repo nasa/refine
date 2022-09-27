@@ -261,6 +261,26 @@ int main(int argc, char *argv[]) {
     REIS(REF_FALSE, overlap, "did expect overlap");
   }
 
+  {
+    REF_DBL bbox0[6], bbox1[6];
+    REF_DBL factor;
+    REF_DBL tol = -1.0;
+    bbox0[0] = 0.0;
+    bbox0[1] = 1.0;
+    bbox0[2] = 0.0;
+    bbox0[3] = 2.0;
+    bbox0[4] = 0.0;
+    bbox0[5] = 4.0;
+    factor = 1.1;
+    RSS(ref_oct_bbox_scale(bbox0, factor, bbox1), "scale");
+    RWDS(-0.05, bbox1[0], tol, "xmin");
+    RWDS(1.05, bbox1[1], tol, "xmax");
+    RWDS(-0.1, bbox1[2], tol, "ymin");
+    RWDS(2.1, bbox1[3], tol, "ymax");
+    RWDS(-0.2, bbox1[4], tol, "zmin");
+    RWDS(4.2, bbox1[5], tol, "zmax");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

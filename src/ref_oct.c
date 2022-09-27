@@ -265,6 +265,17 @@ REF_FCN REF_STATUS ref_oct_bbox_overlap(REF_DBL *bbox0, REF_DBL *bbox1,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_bbox_scale(REF_DBL *bbox0, REF_DBL factor,
+                                      REF_DBL *bbox1) {
+  bbox1[0] = bbox0[0] - 0.5 * (factor - 1.0) * (bbox0[1] - bbox0[0]);
+  bbox1[1] = bbox0[1] + 0.5 * (factor - 1.0) * (bbox0[1] - bbox0[0]);
+  bbox1[2] = bbox0[2] - 0.5 * (factor - 1.0) * (bbox0[3] - bbox0[2]);
+  bbox1[3] = bbox0[3] + 0.5 * (factor - 1.0) * (bbox0[3] - bbox0[2]);
+  bbox1[4] = bbox0[4] - 0.5 * (factor - 1.0) * (bbox0[5] - bbox0[4]);
+  bbox1[5] = bbox0[5] + 0.5 * (factor - 1.0) * (bbox0[5] - bbox0[4]);
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
   FILE *f;
   REF_INT i;
