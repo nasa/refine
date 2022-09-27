@@ -199,7 +199,7 @@ REF_FCN static REF_STATUS ref_oct_gradation_node(REF_OCT ref_oct, REF_INT node,
     REF_DBL tool[6], factor = 1.1, diag, h;
     RSS(ref_oct_bbox_scale(bbox, factor, tool), "scale");
     RSS(ref_oct_bbox_diag(bbox, &diag), "scale");
-    h = factor * diag;
+    h = factor * 2.0 * diag;
     RSS(ref_oct_split_touching(ref_oct, tool, h), "split region");
   } else {
     REF_INT child_index;
