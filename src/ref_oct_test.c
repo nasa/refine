@@ -177,6 +177,16 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
+  {
+    REF_OCT ref_oct;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_split(ref_oct, 1), "split first child");
+    RSS(ref_oct_split(ref_oct, 14), "split second gen");
+    RSS(ref_oct_gradation(ref_oct), "gradation");
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
   { /* contains root */
     REF_OCT ref_oct;
     REF_DBL xyz[] = {0.1, 0.1, 0.1};

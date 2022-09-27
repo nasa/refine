@@ -193,6 +193,40 @@ REF_FCN REF_STATUS ref_oct_split_touching(REF_OCT ref_oct, REF_DBL *bbox,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_oct_gradation_node(REF_OCT ref_oct, REF_INT node,
+                                                 REF_DBL *bbox) {
+  if (ref_oct->children[8 * node] == REF_EMPTY) {
+    REF_DBL tool[6], factor = 1.1, diag, h;
+    RSS(ref_oct_bbox_scale(bbox, factor, tool), "scale");
+    RSS(ref_oct_bbox_diag(bbox, &diag), "scale");
+    h = factor * diag;
+    RSS(ref_oct_split_touching(ref_oct, tool, h), "split region");
+  } else {
+    REF_INT child_index;
+    for (child_index = 0; child_index < 8; child_index++) {
+      REF_DBL box[6];
+      RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
+      RSS(ref_oct_gradation_node(
+              ref_oct, ref_oct->children[child_index + 8 * node], box),
+          "recurse");
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_oct_gradation(REF_OCT ref_oct) {
+  REF_INT n, last_n;
+  last_n = REF_EMPTY;
+  n = ref_oct_n(ref_oct);
+  while (n != last_n) {
+    printf("ncell %d\n", n);
+    RSS(ref_oct_gradation_node(ref_oct, 0, ref_oct->bbox), "descend");
+    last_n = n;
+    n = ref_oct_n(ref_oct);
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_contains_node(REF_OCT ref_oct, REF_DBL *xyz,
                                                 REF_DBL *bbox, REF_INT current,
                                                 REF_INT *node,
