@@ -111,13 +111,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
-  { /* split root */
-    REF_OCT ref_oct;
-    RSS(ref_oct_create(&ref_oct), "make oct");
-    RSS(ref_oct_split(ref_oct, 0), "split oct");
-    RSS(ref_oct_free(ref_oct), "free oct");
-  }
-
   { /* child's bbox */
     REF_DBL parent_bbox[6], child_bbox[6];
     REF_INT child_index = 0;
@@ -143,6 +136,13 @@ int main(int argc, char *argv[]) {
     bbox[5] = 0.7;
     RSS(ref_oct_bbox_diag(bbox, &diag), "bbox diag");
     RWDS(sqrt(0.75), diag, tol, "wrong size");
+  }
+
+  { /* split root */
+    REF_OCT ref_oct;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split oct");
+    RSS(ref_oct_free(ref_oct), "free oct");
   }
 
   { /* contains root */
