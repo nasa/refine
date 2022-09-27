@@ -169,7 +169,7 @@ REF_FCN static REF_STATUS ref_oct_split_touching_node(
   RSS(ref_oct_bbox_overlap(my_bbox, bbox, &overlap), "overlap");
   if (!overlap) return REF_SUCCESS;
   if (ref_oct->children[8 * node] == REF_EMPTY) {
-    RSS(ref_oct_bbox_diag(bbox, &diag), "bbox diag");
+    RSS(ref_oct_bbox_diag(my_bbox, &diag), "bbox diag");
     if (diag > h) {
       RSS(ref_oct_split(ref_oct, node), "split");
     } else {

@@ -34,6 +34,8 @@ struct REF_OCT_STRUCT {
   REF_INT *children;
 };
 
+#define ref_oct_n(ref_oct) ((ref_oct)->n)
+
 REF_FCN REF_STATUS ref_oct_create(REF_OCT *ref_oct);
 
 REF_FCN REF_STATUS ref_oct_free(REF_OCT ref_oct);

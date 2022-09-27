@@ -145,6 +145,22 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
+  { /* one refinment, matching bbox */
+    REF_OCT ref_oct;
+    REF_DBL bbox[6], h;
+    bbox[0] = 0.0;
+    bbox[1] = 1.0;
+    bbox[2] = 0.0;
+    bbox[3] = 1.0;
+    bbox[4] = 0.0;
+    bbox[5] = 1.0;
+    h = 0.9 * sqrt(3.0);
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split_touching(ref_oct, bbox, h), "split main");
+    REIS(9, ref_oct_n(ref_oct), "expect one refinement, match")
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
   { /* contains root */
     REF_OCT ref_oct;
     REF_DBL xyz[] = {0.1, 0.1, 0.1};
