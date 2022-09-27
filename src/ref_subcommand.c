@@ -2736,7 +2736,8 @@ static REF_STATUS hrles_fixed_point_metric(
     REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
     const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
     REF_DBL gradation, REF_DBL complexity, REF_DICT ref_dict_bcs, REF_INT ldim,
-    REF_DBL *field, REF_DBL mach, REF_DBL reynolds_number) {
+    REF_DBL *field, REF_DBL mach, REF_DBL reynolds_number,
+    REF_DBL aspect_ratio) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *hess, *scalar;
@@ -2835,11 +2836,13 @@ static REF_STATUS hrles_fixed_point_metric(
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
     REF_DBL blend_clip;
     REF_DBL thresh = 0.5;
+    REF_DBL aspect_ratio_target = 1.0;
     /* blend: 0-RANS 1-LES */
     /* when blend is less than thresh, keep RANS */
+    if (aspect_ratio > 0.999) aspect_ratio_target = aspect_ratio;
     blend_clip = MAX(0.0, (blend[node] - thresh) / (1.0 - thresh));
-    if (ref_math_divisible(1.0, blend_clip)) {
-      aspect_ratio_field[node] = 1.0 / blend_clip;
+    if (ref_math_divisible(aspect_ratio_target, blend_clip)) {
+      aspect_ratio_field[node] = aspect_ratio_target / blend_clip;
     } else {
       aspect_ratio_field[node] = 1.0e15; /* unlimited */
     }
@@ -3528,11 +3531,11 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
             "--hrles <Mach> <Reynolds nubmer> missing argument");
         mach = atof(argv[pos + 1]);
         reynolds_number = atof(argv[pos + 2]);
-        RSS(hrles_fixed_point_metric(metric, ref_grid, first_timestep,
-                                     last_timestep, timestep_increment,
-                                     in_project, solb_middle, reconstruction, p,
-                                     gradation, complexity, ref_dict_bcs, ldim,
-                                     initial_field, mach, reynolds_number),
+        RSS(hrles_fixed_point_metric(
+                metric, ref_grid, first_timestep, last_timestep,
+                timestep_increment, in_project, solb_middle, reconstruction, p,
+                gradation, complexity, ref_dict_bcs, ldim, initial_field, mach,
+                reynolds_number, aspect_ratio),
             "hrles fixed point");
       } else {
         RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
