@@ -2279,6 +2279,64 @@ REF_FCN static REF_STATUS ref_export_msh(REF_GRID ref_grid,
           nodes[9] = nodes[8];
           nodes[8] = n9;
         }
+        if (REF_CELL_TRI == ref_cell_type(ref_cell)) { /* outward normal */
+          REF_INT n0, n1, n2;
+          n0 = nodes[0];
+          n1 = nodes[1];
+          n2 = nodes[2];
+          nodes[0] = n2;
+          nodes[1] = n1;
+          nodes[2] = n0;
+        }
+        if (REF_CELL_TR2 == ref_cell_type(ref_cell)) { /* outward normal */
+          REF_INT n0, n1, n2, n3, n4, n5;
+          n0 = nodes[0];
+          n1 = nodes[1];
+          n2 = nodes[2];
+          n3 = nodes[3];
+          n4 = nodes[4];
+          n5 = nodes[5];
+          nodes[0] = n2;
+          nodes[1] = n1;
+          nodes[2] = n0;
+          nodes[3] = n4;
+          nodes[4] = n3;
+          nodes[5] = n5;
+        }
+        if (REF_CELL_TR2 == ref_cell_type(ref_cell)) { /* outward normal */
+          REF_INT n0, n1, n2, n3, n4, n5, n6, n7, n8, n9;
+          n0 = nodes[0];
+          n1 = nodes[1];
+          n2 = nodes[2];
+          n3 = nodes[3];
+          n4 = nodes[4];
+          n5 = nodes[5];
+          n6 = nodes[6];
+          n7 = nodes[7];
+          n8 = nodes[8];
+          n9 = nodes[9];
+          nodes[0] = n2;
+          nodes[1] = n1;
+          nodes[2] = n0;
+          nodes[3] = n6;
+          nodes[4] = n5;
+          nodes[5] = n3;
+          nodes[6] = n4;
+          nodes[7] = n8;
+          nodes[8] = n7;
+          nodes[9] = n9;
+        }
+        if (REF_CELL_QUA == ref_cell_type(ref_cell)) { /* outward normal */
+          REF_INT n0, n1, n2, n3;
+          n0 = nodes[0];
+          n1 = nodes[1];
+          n2 = nodes[2];
+          n3 = nodes[3];
+          nodes[0] = n3;
+          nodes[1] = n2;
+          nodes[2] = n1;
+          nodes[3] = n0;
+        }
         if (ref_cell_last_node_is_an_id(ref_cell)) {
           fprintf(f, "%d", nodes[ref_cell_id_index(ref_cell)]);
         } else {
