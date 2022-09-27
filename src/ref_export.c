@@ -2766,7 +2766,7 @@ REF_FCN REF_STATUS ref_export_by_extension(REF_GRID ref_grid,
     RSS(ref_export_bamg_msh(ref_grid, filename), "bamg msh export failed");
   } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
     RSS(ref_export_msh(ref_grid, filename), "msh export failed");
-  } else if (strcmp(&filename[end_of_string - 4], ".msh2") == 0) {
+  } else if (strcmp(&filename[end_of_string - 5], ".msh2") == 0) {
     RSS(ref_export_msh2(ref_grid, filename), "msh2 export failed");
   } else if (strcmp(&filename[end_of_string - 4], ".tri") == 0) {
     RSS(ref_export_tri(ref_grid, filename), "tri export failed");
