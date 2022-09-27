@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--surf", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY && pos + 2 < argc) {
     REF_OCT ref_oct;
+    char orig[1024];
 
     RSS(ref_oct_create(&ref_oct), "make oct");
     {
@@ -96,6 +97,10 @@ int main(int argc, char *argv[]) {
       }
       RSS(ref_grid_free(ref_grid), "free grid");
     }
+    snprintf(orig, 1024, "%s-raw.tec", argv[pos + 2]);
+    printf("writing %d vox to %s from %s\n", ref_oct->n, orig, argv[pos + 1]);
+    RSS(ref_oct_tec(ref_oct, orig), "tec");
+    RSS(ref_oct_gradation(ref_oct), "grad");
     printf("writing %d vox to %s from %s\n", ref_oct->n, argv[pos + 2],
            argv[pos + 1]);
     RSS(ref_oct_tec(ref_oct, argv[pos + 2]), "tec");
