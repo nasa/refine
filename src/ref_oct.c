@@ -161,6 +161,38 @@ REF_STATUS ref_oct_split_at(REF_OCT ref_oct, REF_DBL *xyz, REF_DBL h) {
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_oct_split_touching_node(
+    REF_OCT ref_oct, REF_INT node, REF_DBL *my_bbox, REF_DBL *bbox, REF_DBL h) {
+  REF_BOOL overlap;
+  REF_DBL diag;
+  REF_INT child_index;
+  RSS(ref_oct_bbox_overlap(my_bbox, bbox, &overlap), "overlap");
+  if (!overlap) return REF_SUCCESS;
+  if (ref_oct->children[8 * node] == REF_EMPTY) {
+    RSS(ref_oct_bbox_diag(bbox, &diag), "bbox diag");
+    if (diag > h) {
+      RSS(ref_oct_split(ref_oct, node), "split");
+    } else {
+      return REF_SUCCESS;
+    }
+  }
+  for (child_index = 0; child_index < 8; child_index++) {
+    REF_DBL box[6];
+    RSS(ref_oct_child_bbox(my_bbox, child_index, box), "bbox");
+    RSS(ref_oct_split_touching_node(
+            ref_oct, ref_oct->children[child_index + 8 * node], box, bbox, h),
+        "recurse");
+  }
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_oct_split_touching(REF_OCT ref_oct, REF_DBL *bbox,
+                                          REF_DBL h) {
+  RSS(ref_oct_split_touching_node(ref_oct, 0, ref_oct->bbox, bbox, h),
+      "descend");
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_contains_node(REF_OCT ref_oct, REF_DBL *xyz,
                                                 REF_DBL *bbox, REF_INT current,
                                                 REF_INT *node,
