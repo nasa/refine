@@ -27,6 +27,8 @@ typedef struct REF_OCT_STRUCT REF_OCT_STRUCT;
 typedef REF_OCT_STRUCT *REF_OCT;
 END_C_DECLORATION
 
+#include "ref_node.h"
+
 BEGIN_C_DECLORATION
 struct REF_OCT_STRUCT {
   REF_DBL bbox[6];
@@ -60,7 +62,7 @@ REF_FCN REF_STATUS ref_oct_split_at(REF_OCT ref_oct, REF_DBL *xyz, REF_DBL h);
 REF_FCN REF_STATUS ref_oct_split_touching(REF_OCT ref_oct, REF_DBL *bbox,
                                           REF_DBL h);
 REF_FCN REF_STATUS ref_oct_gradation(REF_OCT ref_oct);
-REF_FCN REF_STATUS ref_oct_unique_nodes(REF_OCT ref_oct);
+REF_FCN REF_STATUS ref_oct_unique_nodes(REF_OCT ref_oct, REF_NODE ref_node);
 REF_FCN REF_STATUS ref_oct_set_node_at(REF_OCT ref_oct, REF_INT insert_node,
                                        REF_DBL *xyz);
 

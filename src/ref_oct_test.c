@@ -196,20 +196,30 @@ int main(int argc, char *argv[]) {
   }
 
   { /* root unique nodes */
+    REF_NODE ref_node;
     REF_OCT ref_oct;
+    RSS(ref_node_create(&ref_node, ref_mpi), "make node");
     RSS(ref_oct_create(&ref_oct), "make oct");
-    RSS(ref_oct_unique_nodes(ref_oct), "make nodes");
+    RSS(ref_oct_unique_nodes(ref_oct, ref_node), "make nodes");
     REIS(8, ref_oct_nnode(ref_oct), "expects 8 node hex");
+    REIS(8, ref_node_n(ref_node), "ref_node n");
+    REIS(8, ref_node_n_global(ref_node), "ref_node global n");
     RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_node_free(ref_node), "free node");
   }
 
   { /* one split unique nodes */
+    REF_NODE ref_node;
     REF_OCT ref_oct;
+    RSS(ref_node_create(&ref_node, ref_mpi), "make node");
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split(ref_oct, 0), "split root");
-    RSS(ref_oct_unique_nodes(ref_oct), "make nodes");
+    RSS(ref_oct_unique_nodes(ref_oct, ref_node), "make nodes");
     REIS(27, ref_oct_nnode(ref_oct), "expects 8 node hex");
+    REIS(27, ref_node_n(ref_node), "ref_node n");
+    REIS(27, ref_node_n_global(ref_node), "ref_node global n");
     RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_node_free(ref_node), "free node");
   }
 
   { /* contains root */
