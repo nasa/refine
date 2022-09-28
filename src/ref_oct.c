@@ -218,11 +218,12 @@ REF_FCN static REF_STATUS ref_oct_gradation_node(REF_OCT ref_oct, REF_INT node,
 }
 
 REF_FCN REF_STATUS ref_oct_gradation(REF_OCT ref_oct) {
-  REF_INT n, last_n;
+  REF_INT n, last_n, nleaf;
   last_n = REF_EMPTY;
   n = ref_oct_n(ref_oct);
   while (n != last_n) {
-    printf("ncell %d\n", n);
+    RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
+    printf("ncell %d nleaf %d\n", n, nleaf);
     RSS(ref_oct_gradation_node(ref_oct, 0, ref_oct->bbox), "descend");
     last_n = n;
     n = ref_oct_n(ref_oct);
@@ -339,11 +340,11 @@ REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_FCN REF_STATUS ref_oct_n_leaf(REF_OCT ref_oct, REF_INT *n_leaf) {
+REF_FCN REF_STATUS ref_oct_nleaf(REF_OCT ref_oct, REF_INT *nleaf) {
   REF_INT i;
-  *n_leaf = 0;
+  *nleaf = 0;
   for (i = 0; i < ref_oct_n(ref_oct); i++) {
-    if (ref_oct_leaf_node(ref_oct, i)) (*n_leaf)++;
+    if (ref_oct_leaf_node(ref_oct, i)) (*nleaf)++;
   }
   return REF_SUCCESS;
 }
