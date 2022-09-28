@@ -242,9 +242,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split(ref_oct, 0), "split root");
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
-    /* ref_export_by_extension(ref_grid,"test.tec");
     REIS(8, ref_cell_n(ref_grid_hex(ref_grid)), "hex");
-    REIS(24, ref_cell_n(ref_grid_qua(ref_grid)), "qua"); */
+    REIS(24, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
   }

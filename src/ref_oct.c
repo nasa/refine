@@ -687,7 +687,7 @@ REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
       REF_DBL box[6];
       RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
       RSS(ref_oct_export_node(ref_oct,
-                              ref_oct_child(ref_oct, child_index, node), bbox,
+                              ref_oct_child(ref_oct, child_index, node), box,
                               ref_grid),
           "recurse");
     }
