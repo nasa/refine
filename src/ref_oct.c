@@ -280,7 +280,7 @@ REF_FCN static REF_STATUS ref_oct_set_node_at_node(REF_OCT ref_oct,
     REF_INT corner;
     REF_DBL h;
     RSS(ref_oct_bbox_diag(bbox, &h), "diag");
-    for (corner = 0; corner < 8; corner++) {
+    for (corner = 0; corner < 27; corner++) {
       REF_DBL my_xyz[3], dist;
       RSS(ref_oct_bbox_corner(bbox, corner, my_xyz), "corner xyz");
       dist = sqrt(pow(xyz[0] - my_xyz[0], 2) + pow(xyz[1] - my_xyz[1], 2) +
@@ -391,8 +391,111 @@ REF_FCN REF_STATUS ref_oct_bbox_corner(REF_DBL *bbox, REF_INT corner,
       xyz[1] = bbox[3];
       xyz[2] = bbox[5];
       break;
+
+    case 8:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = bbox[2];
+      xyz[2] = bbox[4];
+      break;
+    case 9:
+      xyz[0] = bbox[1];
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = bbox[4];
+      break;
+    case 10:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = bbox[3];
+      xyz[2] = bbox[4];
+      break;
+    case 11:
+      xyz[0] = bbox[0];
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = bbox[4];
+      break;
+
+    case 12:
+      xyz[0] = bbox[0];
+      xyz[1] = bbox[2];
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 13:
+      xyz[0] = bbox[1];
+      xyz[1] = bbox[2];
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 14:
+      xyz[0] = bbox[1];
+      xyz[1] = bbox[3];
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 15:
+      xyz[0] = bbox[0];
+      xyz[1] = bbox[3];
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+
+    case 16:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = bbox[2];
+      xyz[2] = bbox[5];
+      break;
+    case 17:
+      xyz[0] = bbox[1];
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = bbox[5];
+      break;
+    case 18:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = bbox[3];
+      xyz[2] = bbox[5];
+      break;
+    case 19:
+      xyz[0] = bbox[0];
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = bbox[5];
+      break;
+
+    case 20:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = bbox[4];
+      break;
+
+    case 21:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = bbox[2];
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 22:
+      xyz[0] = bbox[1];
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 23:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = bbox[3];
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+    case 24:
+      xyz[0] = bbox[0];
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+
+    case 25:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = bbox[5];
+      break;
+
+    case 26:
+      xyz[0] = 0.5 * (bbox[0] + bbox[1]);
+      xyz[1] = 0.5 * (bbox[2] + bbox[3]);
+      xyz[2] = 0.5 * (bbox[4] + bbox[5]);
+      break;
+
     default:
-      THROW("not 2^3");
+      THROW("not Q2 index");
   }
   return REF_SUCCESS;
 }
