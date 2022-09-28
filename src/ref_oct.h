@@ -45,7 +45,7 @@ struct REF_OCT_STRUCT {
 #define ref_oct_leaf_node(ref_oct, tree_node) \
   (REF_EMPTY == ref_oct_child(ref_oct, 0, tree_node))
 #define ref_oct_c2n(ref_oct, corner, tree_node) \
-  ((ref_oct)->children[(corner) + 27 * (tree_node)])
+  ((ref_oct)->nodes[(corner) + 27 * (tree_node)])
 
 REF_FCN REF_STATUS ref_oct_create(REF_OCT *ref_oct);
 
