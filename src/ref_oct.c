@@ -223,7 +223,8 @@ REF_FCN REF_STATUS ref_oct_gradation(REF_OCT ref_oct) {
   n = ref_oct_n(ref_oct);
   while (n != last_n) {
     RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
-    printf("ncell %d nleaf %d\n", n, nleaf);
+    printf("ncell %d nleaf %d %5.1f %%\n", n, nleaf,
+           ((REF_DBL)nleaf / (REF_DBL)n) * 100.0);
     RSS(ref_oct_gradation_node(ref_oct, 0, ref_oct->bbox), "descend");
     last_n = n;
     n = ref_oct_n(ref_oct);
