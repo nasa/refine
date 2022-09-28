@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
   if (pos != REF_EMPTY && pos + 1 < argc) {
     REF_GRID ref_grid;
     REF_OCT ref_oct;
-    REF_DBL h = 0.25;
+    REF_DBL h = 0.05;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split_touching(ref_oct, ref_oct->bbox, h), "split");

@@ -145,7 +145,20 @@ REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
     REIS(REF_EMPTY, ref_oct_child(ref_oct, i, node), "child not empty");
   }
   if (ref_oct_n(ref_oct) + 8 > ref_oct_max(ref_oct)) {
-    THROW("out of children, implememnt realloc");
+    REF_INT orig, chunk;
+    REF_INT max_limit = REF_INT_MAX / 27;
+    orig = ref_oct_max(ref_oct);
+    /* geometric growth for efficiency */
+    chunk = (REF_INT)(1.5 * (REF_DBL)orig);
+    RAS(max_limit - orig > 0, "chunk limit at max");
+    chunk = MIN(chunk, max_limit - orig);
+    ref_oct_max(ref_oct) = orig + chunk;
+    ref_realloc(ref_oct->children, 8 * ref_oct->max, REF_INT);
+    ref_realloc(ref_oct->nodes, 27 * ref_oct->max, REF_INT);
+    for (i = 8 * orig; i < 8 * ref_oct_max(ref_oct); i++)
+      ref_oct->children[i] = REF_EMPTY;
+    for (i = 27 * orig; i < 27 * ref_oct_max(ref_oct); i++)
+      ref_oct->nodes[i] = REF_EMPTY;
   }
   for (i = 0; i < 8; i++) {
     ref_oct_child(ref_oct, i, node) = ref_oct_n(ref_oct);
