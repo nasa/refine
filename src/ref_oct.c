@@ -275,20 +275,22 @@ REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
   REF_INT i;
 
   RAS(0 <= node && node < ref_oct->n, "out of range node");
-  fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[4]);
-  fprintf(f, "%f %f %f\n", bbox[1], bbox[2], bbox[4]);
-  fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[4]);
-  fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[4]);
-  fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[5]);
-  fprintf(f, "%f %f %f\n", bbox[1], bbox[2], bbox[5]);
-  fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[5]);
-  fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[5]);
-
-  for (i = 0; i < 8; i++) {
-    RSS(ref_oct_child_bbox(bbox, i, box), "bbox");
-    if (ref_oct_internal_node(ref_oct, node))
-      RSS(ref_oct_tec_node(ref_oct, ref_oct_child(ref_oct, i, node), box, f),
-          "recurse");
+  if (ref_oct_leaf_node(ref_oct, node)) {
+    fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[4]);
+    fprintf(f, "%f %f %f\n", bbox[1], bbox[2], bbox[4]);
+    fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[4]);
+    fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[4]);
+    fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[5]);
+    fprintf(f, "%f %f %f\n", bbox[1], bbox[2], bbox[5]);
+    fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[5]);
+    fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[5]);
+  } else {
+    for (i = 0; i < 8; i++) {
+      RSS(ref_oct_child_bbox(bbox, i, box), "bbox");
+      if (ref_oct_internal_node(ref_oct, node))
+        RSS(ref_oct_tec_node(ref_oct, ref_oct_child(ref_oct, i, node), box, f),
+            "recurse");
+    }
   }
 
   return REF_SUCCESS;
@@ -317,23 +319,25 @@ REF_FCN REF_STATUS ref_oct_bbox_scale(REF_DBL *bbox0, REF_DBL factor,
 
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
   FILE *f;
-  REF_INT i;
+  REF_INT i, nleaf;
   const char *zonetype = "febrick";
   f = fopen(filename, "w");
   if (NULL == (void *)f) printf("unable to open %s\n", filename);
   RNS(f, "unable to open file");
 
+  RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
+
   fprintf(f, "title=\"tecplot refine octree\"\n");
   fprintf(f, "variables = \"x\" \"y\" \"z\"\n");
 
-  fprintf(f,
-          "zone t=\"octree\", nodes=%d, elements=%d, datapacking=%s, "
-          "zonetype=%s\n",
-          8 * ref_oct->n, ref_oct->n, "point", zonetype);
+  fprintf(
+      f,
+      "zone t=\"octree\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+      8 * nleaf, nleaf, "point", zonetype);
 
   RSS(ref_oct_tec_node(ref_oct, 0, ref_oct->bbox, f), "draw root box");
 
-  for (i = 0; i < ref_oct_n(ref_oct); i++) {
+  for (i = 0; i < nleaf; i++) {
     fprintf(f, "%d %d %d %d %d %d %d %d\n", 1 + 8 * i, 2 + 8 * i, 3 + 8 * i,
             4 + 8 * i, 5 + 8 * i, 6 + 8 * i, 7 + 8 * i, 8 + 8 * i);
   }
