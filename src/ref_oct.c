@@ -596,9 +596,17 @@ REF_FCN REF_STATUS ref_oct_nleaf(REF_OCT ref_oct, REF_INT *nleaf) {
 REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
                                               REF_DBL *bbox,
                                               REF_GRID ref_grid) {
+  REF_INT i;
   if (ref_oct_leaf_node(ref_oct, node)) {
+    for (i = 0; i < 8; i++)
+      RAS(REF_EMPTY != ref_oct_c2n(ref_oct, i, node), "expects to be set");
+    for (i = 8; i < 27; i++)
+      REIS(REF_EMPTY, ref_oct_c2n(ref_oct, i, node), "implement 2-1");
   } else {
     REF_INT child_index;
+    for (i = 0; i < 27; i++)
+      REIS(REF_EMPTY, ref_oct_c2n(ref_oct, i, node),
+           "interor node with grid node");
     for (child_index = 0; child_index < 8; child_index++) {
       REF_DBL box[6];
       RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");

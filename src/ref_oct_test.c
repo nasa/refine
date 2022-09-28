@@ -222,6 +222,27 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free node");
   }
 
+  { /* root export ref_grid */
+    REF_GRID ref_grid;
+    REF_OCT ref_oct;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  { /* one export ref_grid */
+    REF_GRID ref_grid;
+    REF_OCT ref_oct;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   { /* contains root */
     REF_OCT ref_oct;
     REF_DBL xyz[] = {0.1, 0.1, 0.1};
