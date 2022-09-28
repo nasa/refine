@@ -331,10 +331,19 @@ REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename) {
 
   RSS(ref_oct_tec_node(ref_oct, 0, ref_oct->bbox, f), "draw root box");
 
-  for (i = 0; i < ref_oct->n; i++) {
+  for (i = 0; i < ref_oct_n(ref_oct); i++) {
     fprintf(f, "%d %d %d %d %d %d %d %d\n", 1 + 8 * i, 2 + 8 * i, 3 + 8 * i,
             4 + 8 * i, 5 + 8 * i, 6 + 8 * i, 7 + 8 * i, 8 + 8 * i);
   }
   fclose(f);
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_oct_n_leaf(REF_OCT ref_oct, REF_INT *n_leaf) {
+  REF_INT i;
+  *n_leaf = 0;
+  for (i = 0; i < ref_oct_n(ref_oct); i++) {
+    if (ref_oct_leaf_node(ref_oct, i)) (*n_leaf)++;
+  }
   return REF_SUCCESS;
 }

@@ -67,6 +67,8 @@ REF_FCN REF_STATUS ref_oct_bbox_scale(REF_DBL *bbox0, REF_DBL factor,
 
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename);
 
+REF_FCN REF_STATUS ref_oct_n_leaf(REF_OCT ref_oct, REF_INT *n_leaf);
+
 END_C_DECLORATION
 
 #endif /* REF_OCT_H */
