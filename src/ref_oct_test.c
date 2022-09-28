@@ -228,6 +228,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    REIS(1, ref_cell_n(ref_grid_hex(ref_grid)), "hex");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
   }
@@ -239,6 +240,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split(ref_oct, 0), "split root");
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    REIS(8, ref_cell_n(ref_grid_hex(ref_grid)), "hex");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
   }

@@ -598,10 +598,13 @@ REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
                                               REF_GRID ref_grid) {
   REF_INT i;
   if (ref_oct_leaf_node(ref_oct, node)) {
+    REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
     for (i = 0; i < 8; i++)
       RAS(REF_EMPTY != ref_oct_c2n(ref_oct, i, node), "expects to be set");
     for (i = 8; i < 27; i++)
       REIS(REF_EMPTY, ref_oct_c2n(ref_oct, i, node), "implement 2-1");
+    for (i = 0; i < 8; i++) nodes[i] = ref_oct_c2n(ref_oct, i, node);
+    RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &new_cell), "add hex");
   } else {
     REF_INT child_index;
     for (i = 0; i < 27; i++)
