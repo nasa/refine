@@ -61,6 +61,8 @@ REF_FCN REF_STATUS ref_oct_split_touching(REF_OCT ref_oct, REF_DBL *bbox,
                                           REF_DBL h);
 REF_FCN REF_STATUS ref_oct_gradation(REF_OCT ref_oct);
 REF_FCN REF_STATUS ref_oct_unique_nodes(REF_OCT ref_oct);
+REF_FCN REF_STATUS ref_oct_set_node_at(REF_OCT ref_oct, REF_INT insert_node,
+                                       REF_DBL *xyz);
 
 REF_FCN REF_STATUS ref_oct_contains(REF_OCT ref_oct, REF_DBL *xyz,
                                     REF_INT *node, REF_DBL *bbox);

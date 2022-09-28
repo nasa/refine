@@ -242,16 +242,16 @@ REF_FCN static REF_STATUS ref_oct_unique_nodes_node(REF_OCT ref_oct,
     REF_INT corner;
     for (corner = 0; corner < 8; corner++) {
       REF_DBL xyz[3];
-      REF_INT node;
+      REF_INT insert_node;
       RSS(ref_oct_bbox_corner(bbox, corner, xyz), "corner xyz");
-      node = REF_EMPTY;
+      insert_node = REF_EMPTY;
       if (REF_EMPTY == ref_oct_c2n(ref_oct, corner, node)) {
-        node = ref_oct_nnode(ref_oct);
+        insert_node = ref_oct_nnode(ref_oct);
         ref_oct_nnode(ref_oct)++;
       } else {
-        node = ref_oct_c2n(ref_oct, corner, node);
+        insert_node = ref_oct_c2n(ref_oct, corner, node);
       }
-      /* insert node into tree */
+      RSS(ref_oct_set_node_at(ref_oct, insert_node, xyz), "set node");
     }
   } else {
     REF_INT child_index;
@@ -269,6 +269,44 @@ REF_FCN static REF_STATUS ref_oct_unique_nodes_node(REF_OCT ref_oct,
 REF_FCN REF_STATUS ref_oct_unique_nodes(REF_OCT ref_oct) {
   REIS(0, ref_oct_nnode(ref_oct), "expected zero nodes");
   RSS(ref_oct_unique_nodes_node(ref_oct, 0, ref_oct->bbox), "descend");
+  return REF_SUCCESS;
+}
+
+REF_FCN static REF_STATUS ref_oct_set_node_at_node(REF_OCT ref_oct,
+                                                   REF_INT node, REF_DBL *bbox,
+                                                   REF_INT insert_node,
+                                                   REF_DBL *xyz) {
+  if (ref_oct_leaf_node(ref_oct, node)) {
+    REF_INT corner;
+    REF_DBL h;
+    RSS(ref_oct_bbox_diag(bbox, &h), "diag");
+    for (corner = 0; corner < 8; corner++) {
+      REF_DBL my_xyz[3], dist;
+      RSS(ref_oct_bbox_corner(bbox, corner, my_xyz), "corner xyz");
+      dist = sqrt(pow(xyz[0] - my_xyz[0], 2) + pow(xyz[1] - my_xyz[1], 2) +
+                  pow(xyz[2] - my_xyz[2], 2));
+      if (dist < 0.1 * h) {
+        ref_oct_c2n(ref_oct, corner, node) = insert_node;
+      }
+    }
+  } else {
+    REF_INT child_index;
+    for (child_index = 0; child_index < 8; child_index++) {
+      REF_DBL box[6];
+      RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
+      RSS(ref_oct_set_node_at_node(ref_oct,
+                                   ref_oct_child(ref_oct, child_index, node),
+                                   box, insert_node, xyz),
+          "recurse");
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_oct_set_node_at(REF_OCT ref_oct, REF_INT insert_node,
+                                       REF_DBL *xyz) {
+  RSS(ref_oct_set_node_at_node(ref_oct, 0, ref_oct->bbox, insert_node, xyz),
+      "descend");
   return REF_SUCCESS;
 }
 
