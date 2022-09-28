@@ -35,6 +35,13 @@ struct REF_OCT_STRUCT {
 };
 
 #define ref_oct_n(ref_oct) ((ref_oct)->n)
+#define ref_oct_max(ref_oct) ((ref_oct)->max)
+#define ref_oct_child(ref_oct, corner, tree_node) \
+  ((ref_oct)->children[(corner) + 8 * (tree_node)])
+#define ref_oct_internal_node(ref_oct, tree_node) \
+  (REF_EMPTY != ref_oct_child(ref_oct, 0, tree_node))
+#define ref_oct_leaf_node(ref_oct, tree_node) \
+  (REF_EMPTY == ref_oct_child(ref_oct, 0, tree_node))
 
 REF_FCN REF_STATUS ref_oct_create(REF_OCT *ref_oct);
 

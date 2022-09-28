@@ -135,15 +135,18 @@ REF_FCN REF_STATUS ref_oct_bbox_diag(REF_DBL *bbox, REF_DBL *diag) {
 
 REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   REF_INT i;
+  RAS(node >= 0, "node negative");
+  RAS(node < ref_oct_n(ref_oct), "node larger than n");
+  RAS(node < ref_oct_max(ref_oct), "node larger than max");
   for (i = 0; i < 8; i++) {
-    REIS(REF_EMPTY, ref_oct->children[i + 8 * node], "child not empty");
+    REIS(REF_EMPTY, ref_oct_child(ref_oct, i, node), "child not empty");
   }
-  if (ref_oct->n + 8 > ref_oct->max) {
-    THROW("out of children");
+  if (ref_oct_n(ref_oct) + 8 > ref_oct_max(ref_oct)) {
+    THROW("out of children, implememnt realloc");
   }
   for (i = 0; i < 8; i++) {
-    ref_oct->children[i + 8 * node] = ref_oct->n;
-    (ref_oct->n)++;
+    ref_oct_child(ref_oct, i, node) = ref_oct_n(ref_oct);
+    (ref_oct_n(ref_oct))++;
   }
   return REF_SUCCESS;
 }
@@ -168,7 +171,7 @@ REF_FCN static REF_STATUS ref_oct_split_touching_node(
   REF_INT child_index;
   RSS(ref_oct_bbox_overlap(my_bbox, bbox, &overlap), "overlap");
   if (!overlap) return REF_SUCCESS;
-  if (ref_oct->children[8 * node] == REF_EMPTY) {
+  if (ref_oct_leaf_node(ref_oct, node)) {
     RSS(ref_oct_bbox_diag(my_bbox, &diag), "bbox diag");
     if (diag > h) {
       RSS(ref_oct_split(ref_oct, node), "split");
@@ -195,7 +198,7 @@ REF_FCN REF_STATUS ref_oct_split_touching(REF_OCT ref_oct, REF_DBL *bbox,
 
 REF_FCN static REF_STATUS ref_oct_gradation_node(REF_OCT ref_oct, REF_INT node,
                                                  REF_DBL *bbox) {
-  if (ref_oct->children[8 * node] == REF_EMPTY) {
+  if (ref_oct_leaf_node(ref_oct, node)) {
     REF_DBL tool[6], factor = 1.1, diag, h;
     RSS(ref_oct_bbox_scale(bbox, factor, tool), "scale");
     RSS(ref_oct_bbox_diag(bbox, &diag), "scale");
@@ -238,7 +241,7 @@ REF_FCN static REF_STATUS ref_oct_contains_node(REF_OCT ref_oct, REF_DBL *xyz,
     *node = REF_EMPTY;
     return REF_SUCCESS;
   }
-  if (ref_oct->children[8 * current] == REF_EMPTY) {
+  if (ref_oct_leaf_node(ref_oct, current)) {
     REF_INT i;
     for (i = 0; i < 6; i++) node_bbox[i] = bbox[i];
     *node = current;
@@ -281,8 +284,8 @@ REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
 
   for (i = 0; i < 8; i++) {
     RSS(ref_oct_child_bbox(bbox, i, box), "bbox");
-    if (REF_EMPTY != ref_oct->children[i + 8 * node])
-      RSS(ref_oct_tec_node(ref_oct, ref_oct->children[i + 8 * node], box, f),
+    if (ref_oct_internal_node(ref_oct, node))
+      RSS(ref_oct_tec_node(ref_oct, ref_oct_child(ref_oct, i, node), box, f),
           "recurse");
   }
 
