@@ -195,11 +195,20 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
-  {
+  { /* root unique nodes */
     REF_OCT ref_oct;
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_unique_nodes(ref_oct), "make nodes");
     REIS(8, ref_oct_nnode(ref_oct), "expects 8 node hex");
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
+  { /* one split unique nodes */
+    REF_OCT ref_oct;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_unique_nodes(ref_oct), "make nodes");
+    REIS(27, ref_oct_nnode(ref_oct), "expects 8 node hex");
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
