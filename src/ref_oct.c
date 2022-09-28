@@ -592,3 +592,28 @@ REF_FCN REF_STATUS ref_oct_nleaf(REF_OCT ref_oct, REF_INT *nleaf) {
   }
   return REF_SUCCESS;
 }
+
+REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
+                                              REF_DBL *bbox,
+                                              REF_GRID ref_grid) {
+  if (ref_oct_leaf_node(ref_oct, node)) {
+  } else {
+    REF_INT child_index;
+    for (child_index = 0; child_index < 8; child_index++) {
+      REF_DBL box[6];
+      RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
+      RSS(ref_oct_export_node(ref_oct,
+                              ref_oct_child(ref_oct, child_index, node), bbox,
+                              ref_grid),
+          "recurse");
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_oct_export(REF_OCT ref_oct, REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  RSS(ref_oct_unique_nodes(ref_oct, ref_node), "make nodes");
+  RSS(ref_oct_export_node(ref_oct, 0, ref_oct->bbox, ref_grid), "descend");
+  return REF_SUCCESS;
+}

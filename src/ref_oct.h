@@ -27,6 +27,7 @@ typedef struct REF_OCT_STRUCT REF_OCT_STRUCT;
 typedef REF_OCT_STRUCT *REF_OCT;
 END_C_DECLORATION
 
+#include "ref_grid.h"
 #include "ref_node.h"
 
 BEGIN_C_DECLORATION
@@ -79,6 +80,8 @@ REF_FCN REF_STATUS ref_oct_bbox_corner(REF_DBL *bbox, REF_INT corner,
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename);
 
 REF_FCN REF_STATUS ref_oct_nleaf(REF_OCT ref_oct, REF_INT *nleaf);
+
+REF_FCN REF_STATUS ref_oct_export(REF_OCT ref_oct, REF_GRID ref_grid);
 
 END_C_DECLORATION
 
