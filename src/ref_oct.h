@@ -37,6 +37,7 @@ struct REF_OCT_STRUCT {
 
 #define ref_oct_n(ref_oct) ((ref_oct)->n)
 #define ref_oct_max(ref_oct) ((ref_oct)->max)
+#define ref_oct_nnode(ref_oct) ((ref_oct)->nnode)
 #define ref_oct_child(ref_oct, corner, tree_node) \
   ((ref_oct)->children[(corner) + 8 * (tree_node)])
 #define ref_oct_internal_node(ref_oct, tree_node) \
@@ -57,6 +58,7 @@ REF_FCN REF_STATUS ref_oct_split_at(REF_OCT ref_oct, REF_DBL *xyz, REF_DBL h);
 REF_FCN REF_STATUS ref_oct_split_touching(REF_OCT ref_oct, REF_DBL *bbox,
                                           REF_DBL h);
 REF_FCN REF_STATUS ref_oct_gradation(REF_OCT ref_oct);
+REF_FCN REF_STATUS ref_oct_unique_nodes(REF_OCT ref_oct);
 
 REF_FCN REF_STATUS ref_oct_contains(REF_OCT ref_oct, REF_DBL *xyz,
                                     REF_INT *node, REF_DBL *bbox);

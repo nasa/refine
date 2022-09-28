@@ -213,7 +213,7 @@ REF_FCN static REF_STATUS ref_oct_gradation_node(REF_OCT ref_oct, REF_INT node,
       REF_DBL box[6];
       RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
       RSS(ref_oct_gradation_node(
-              ref_oct, ref_oct->children[child_index + 8 * node], box),
+              ref_oct, ref_oct_child(ref_oct, child_index, node), box),
           "recurse");
     }
   }
@@ -232,6 +232,29 @@ REF_FCN REF_STATUS ref_oct_gradation(REF_OCT ref_oct) {
     last_n = n;
     n = ref_oct_n(ref_oct);
   }
+  return REF_SUCCESS;
+}
+
+REF_FCN static REF_STATUS ref_oct_unique_nodes_node(REF_OCT ref_oct,
+                                                    REF_INT node,
+                                                    REF_DBL *bbox) {
+  if (ref_oct_leaf_node(ref_oct, node)) {
+  } else {
+    REF_INT child_index;
+    for (child_index = 0; child_index < 8; child_index++) {
+      REF_DBL box[6];
+      RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
+      RSS(ref_oct_unique_nodes_node(
+              ref_oct, ref_oct_child(ref_oct, child_index, node), box),
+          "recurse");
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_oct_unique_nodes(REF_OCT ref_oct) {
+  REIS(0, ref_oct_nnode(ref_oct), "expected zero nodes");
+  RSS(ref_oct_unique_nodes_node(ref_oct, 0, ref_oct->bbox), "descend");
   return REF_SUCCESS;
 }
 
