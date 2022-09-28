@@ -67,6 +67,8 @@ REF_FCN REF_STATUS ref_oct_bbox_overlap(REF_DBL *bbox0, REF_DBL *bbox1,
                                         REF_BOOL *overlap);
 REF_FCN REF_STATUS ref_oct_bbox_scale(REF_DBL *bbox0, REF_DBL factor,
                                       REF_DBL *bbox1);
+REF_FCN REF_STATUS ref_oct_bbox_corner(REF_DBL *bbox, REF_INT corner,
+                                       REF_DBL *xyz);
 
 REF_FCN REF_STATUS ref_oct_tec(REF_OCT ref_oct, const char *filename);
 

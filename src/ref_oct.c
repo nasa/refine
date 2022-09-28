@@ -295,6 +295,55 @@ REF_FCN REF_STATUS ref_oct_contains(REF_OCT ref_oct, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_bbox_corner(REF_DBL *bbox, REF_INT corner,
+                                       REF_DBL *xyz) {
+  switch (corner) {
+    case 0:
+      xyz[0] = bbox[0];
+      xyz[1] = bbox[2];
+      xyz[2] = bbox[4];
+      break;
+    case 1:
+      xyz[0] = bbox[1];
+      xyz[1] = bbox[2];
+      xyz[2] = bbox[4];
+      break;
+    case 2:
+      xyz[0] = bbox[1];
+      xyz[1] = bbox[3];
+      xyz[2] = bbox[4];
+      break;
+    case 3:
+      xyz[0] = bbox[0];
+      xyz[1] = bbox[3];
+      xyz[2] = bbox[4];
+      break;
+    case 4:
+      xyz[0] = bbox[0];
+      xyz[1] = bbox[2];
+      xyz[2] = bbox[5];
+      break;
+    case 5:
+      xyz[0] = bbox[1];
+      xyz[1] = bbox[2];
+      xyz[2] = bbox[5];
+      break;
+    case 6:
+      xyz[0] = bbox[1];
+      xyz[1] = bbox[3];
+      xyz[2] = bbox[5];
+      break;
+    case 7:
+      xyz[0] = bbox[0];
+      xyz[1] = bbox[3];
+      xyz[2] = bbox[5];
+      break;
+    default:
+      THROW("not 2^3");
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
                                            REF_DBL *bbox, FILE *f) {
   REF_DBL box[6];
@@ -302,14 +351,11 @@ REF_FCN static REF_STATUS ref_oct_tec_node(REF_OCT ref_oct, REF_INT node,
 
   RAS(0 <= node && node < ref_oct->n, "out of range node");
   if (ref_oct_leaf_node(ref_oct, node)) {
-    fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[4]);
-    fprintf(f, "%f %f %f\n", bbox[1], bbox[2], bbox[4]);
-    fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[4]);
-    fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[4]);
-    fprintf(f, "%f %f %f\n", bbox[0], bbox[2], bbox[5]);
-    fprintf(f, "%f %f %f\n", bbox[1], bbox[2], bbox[5]);
-    fprintf(f, "%f %f %f\n", bbox[1], bbox[3], bbox[5]);
-    fprintf(f, "%f %f %f\n", bbox[0], bbox[3], bbox[5]);
+    for (i = 0; i < 8; i++) {
+      REF_DBL xyz[3];
+      RSS(ref_oct_bbox_corner(bbox, i, xyz), "corner xyz");
+      fprintf(f, "%f %f %f\n", xyz[0], xyz[1], xyz[2]);
+    }
   } else {
     for (i = 0; i < 8; i++) {
       RSS(ref_oct_child_bbox(bbox, i, box), "bbox");
