@@ -598,13 +598,86 @@ REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
                                               REF_GRID ref_grid) {
   REF_INT i;
   if (ref_oct_leaf_node(ref_oct, node)) {
+    REF_CELL ref_cell;
     REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+    REF_DBL diag, tol = 0.1;
+    REF_INT cell_face, face_node;
     for (i = 0; i < 8; i++)
       RAS(REF_EMPTY != ref_oct_c2n(ref_oct, i, node), "expects to be set");
     for (i = 8; i < 27; i++)
       REIS(REF_EMPTY, ref_oct_c2n(ref_oct, i, node), "implement 2-1");
     for (i = 0; i < 8; i++) nodes[i] = ref_oct_c2n(ref_oct, i, node);
-    RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &new_cell), "add hex");
+    ref_cell = ref_grid_hex(ref_grid);
+    RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add hex");
+    ref_cell = ref_grid_qua(ref_grid);
+    RSS(ref_oct_bbox_diag(bbox, &diag), "diag");
+
+    cell_face = 0; /* ymin */
+    if (ABS(bbox[2] - ref_oct->bbox[2]) < tol * diag) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        nodes[face_node] =
+            ref_cell_f2n_gen(ref_grid_hex(ref_grid), face_node, cell_face);
+        nodes[face_node] = ref_oct_c2n(ref_oct, nodes[face_node], node);
+      }
+      nodes[ref_cell_id_index(ref_cell)] = 3;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add quad");
+    }
+
+    cell_face = 1; /* xmax */
+    if (ABS(bbox[1] - ref_oct->bbox[1]) < tol * diag) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        nodes[face_node] =
+            ref_cell_f2n_gen(ref_grid_hex(ref_grid), face_node, cell_face);
+        nodes[face_node] = ref_oct_c2n(ref_oct, nodes[face_node], node);
+      }
+      nodes[ref_cell_id_index(ref_cell)] = 2;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add quad");
+    }
+
+    cell_face = 2; /* ymax */
+    if (ABS(bbox[3] - ref_oct->bbox[3]) < tol * diag) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        nodes[face_node] =
+            ref_cell_f2n_gen(ref_grid_hex(ref_grid), face_node, cell_face);
+        nodes[face_node] = ref_oct_c2n(ref_oct, nodes[face_node], node);
+      }
+      nodes[ref_cell_id_index(ref_cell)] = 4;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add quad");
+    }
+
+    cell_face = 3; /* xmin */
+    if (ABS(bbox[0] - ref_oct->bbox[0]) < tol * diag) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        nodes[face_node] =
+            ref_cell_f2n_gen(ref_grid_hex(ref_grid), face_node, cell_face);
+        nodes[face_node] = ref_oct_c2n(ref_oct, nodes[face_node], node);
+      }
+      nodes[ref_cell_id_index(ref_cell)] = 1;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add quad");
+    }
+
+    cell_face = 4; /* zmin */
+    if (ABS(bbox[4] - ref_oct->bbox[4]) < tol * diag) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        nodes[face_node] =
+            ref_cell_f2n_gen(ref_grid_hex(ref_grid), face_node, cell_face);
+        nodes[face_node] = ref_oct_c2n(ref_oct, nodes[face_node], node);
+      }
+      nodes[ref_cell_id_index(ref_cell)] = 5;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add quad");
+    }
+
+    cell_face = 5; /* zmax */
+    if (ABS(bbox[5] - ref_oct->bbox[5]) < tol * diag) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        nodes[face_node] =
+            ref_cell_f2n_gen(ref_grid_hex(ref_grid), face_node, cell_face);
+        nodes[face_node] = ref_oct_c2n(ref_oct, nodes[face_node], node);
+      }
+      nodes[ref_cell_id_index(ref_cell)] = 6;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add quad");
+    }
+
   } else {
     REF_INT child_index;
     for (i = 0; i < 27; i++)
