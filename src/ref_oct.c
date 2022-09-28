@@ -239,6 +239,20 @@ REF_FCN static REF_STATUS ref_oct_unique_nodes_node(REF_OCT ref_oct,
                                                     REF_INT node,
                                                     REF_DBL *bbox) {
   if (ref_oct_leaf_node(ref_oct, node)) {
+    REF_INT corner;
+    for (corner = 0; corner < 8; corner++) {
+      REF_DBL xyz[3];
+      REF_INT node;
+      RSS(ref_oct_bbox_corner(bbox, corner, xyz), "corner xyz");
+      node = REF_EMPTY;
+      if (REF_EMPTY == ref_oct_c2n(ref_oct, corner, node)) {
+        node = ref_oct_nnode(ref_oct);
+        ref_oct_nnode(ref_oct)++;
+      } else {
+        node = ref_oct_c2n(ref_oct, corner, node);
+      }
+      /* insert node into tree */
+    }
   } else {
     REF_INT child_index;
     for (child_index = 0; child_index < 8; child_index++) {
