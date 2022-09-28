@@ -195,6 +195,14 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
+  {
+    REF_OCT ref_oct;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_unique_nodes(ref_oct), "make nodes");
+    REIS(8, ref_oct_nnode(ref_oct), "expects 8 node hex");
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
   { /* contains root */
     REF_OCT ref_oct;
     REF_DBL xyz[] = {0.1, 0.1, 0.1};

@@ -294,6 +294,7 @@ REF_FCN static REF_STATUS ref_oct_set_node_at_node(REF_OCT ref_oct,
     for (child_index = 0; child_index < 8; child_index++) {
       REF_DBL box[6];
       RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
+      RUS(node, ref_oct_child(ref_oct, child_index, node), "same");
       RSS(ref_oct_set_node_at_node(ref_oct,
                                    ref_oct_child(ref_oct, child_index, node),
                                    box, insert_node, xyz),
