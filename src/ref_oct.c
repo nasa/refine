@@ -254,10 +254,9 @@ REF_FCN static REF_STATUS ref_oct_unique_nodes_node(REF_OCT ref_oct,
         ref_node_xyz(ref_node, 0, new_node) = xyz[0];
         ref_node_xyz(ref_node, 1, new_node) = xyz[1];
         ref_node_xyz(ref_node, 2, new_node) = xyz[2];
-      } else {
-        insert_node = ref_oct_c2n(ref_oct, corner, node);
+        RSS(ref_oct_set_node_at(ref_oct, insert_node, xyz), "set node");
       }
-      RSS(ref_oct_set_node_at(ref_oct, insert_node, xyz), "set node");
+      RUS(REF_EMPTY, ref_oct_c2n(ref_oct, corner, node), "self not set");
     }
   } else {
     REF_INT child_index;
