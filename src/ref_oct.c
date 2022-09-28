@@ -286,22 +286,22 @@ REF_FCN static REF_STATUS ref_oct_set_node_at_node(REF_OCT ref_oct,
                                                    REF_INT node, REF_DBL *bbox,
                                                    REF_INT insert_node,
                                                    REF_DBL *xyz) {
+  REF_DBL fuzz[6], point[6], expand = 1.01;
+  REF_BOOL overlap;
+
+  point[0] = xyz[0];
+  point[1] = xyz[0];
+  point[2] = xyz[1];
+  point[3] = xyz[1];
+  point[4] = xyz[2];
+  point[5] = xyz[2];
+  RSS(ref_oct_bbox_scale(bbox, expand, fuzz), "scale bbox");
+  RSS(ref_oct_bbox_overlap(point, fuzz, &overlap), "overlap");
+  if (!overlap) return REF_SUCCESS;
+
   if (ref_oct_leaf_node(ref_oct, node)) {
     REF_INT corner;
     REF_DBL h;
-    REF_DBL fuzz[6], point[6], expand = 1.01;
-    REF_BOOL overlap;
-
-    point[0] = xyz[0];
-    point[1] = xyz[0];
-    point[2] = xyz[1];
-    point[3] = xyz[1];
-    point[4] = xyz[2];
-    point[5] = xyz[2];
-    RSS(ref_oct_bbox_scale(bbox, expand, fuzz), "scale bbox");
-    RSS(ref_oct_bbox_overlap(point, fuzz, &overlap), "overlap");
-    if (!overlap) return REF_SUCCESS;
-
     RSS(ref_oct_bbox_diag(bbox, &h), "diag");
     for (corner = 0; corner < 27; corner++) {
       REF_DBL my_xyz[3], dist, tol = 0.1;
