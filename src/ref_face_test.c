@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
     node0 = 4;
     node1 = 3;
     RSS(ref_face_spanning(ref_face, node0, node1, &face), "span");
-    REIS(3, face, "wrong face");
+    REIS(0, face, "wrong face");
 
     node0 = 0;
     node1 = 2;

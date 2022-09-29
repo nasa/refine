@@ -668,27 +668,27 @@ int main(int argc, char *argv[]) {
 
     edge = 0;
     RSS(ref_cell_gen_edge_face(ref_cell, edge, &face0, &face1), "edge face");
-    REIS(0, face0, "face0");
+    REIS(2, face0, "face0");
     REIS(4, face1, "face1");
 
     edge = 1;
     RSS(ref_cell_gen_edge_face(ref_cell, edge, &face0, &face1), "edge face");
-    REIS(3, face0, "face0");
+    REIS(0, face0, "face0");
     REIS(4, face1, "face1");
 
     edge = 2;
     RSS(ref_cell_gen_edge_face(ref_cell, edge, &face0, &face1), "edge face");
     REIS(0, face0, "face0");
-    REIS(3, face1, "face1");
+    REIS(2, face1, "face1");
 
     edge = 6;
     RSS(ref_cell_gen_edge_face(ref_cell, edge, &face0, &face1), "edge face");
     REIS(1, face0, "face0");
-    REIS(2, face1, "face1");
+    REIS(3, face1, "face1");
 
     edge = 11;
     RSS(ref_cell_gen_edge_face(ref_cell, edge, &face0, &face1), "edge face");
-    REIS(2, face0, "face0");
+    REIS(3, face0, "face0");
     REIS(5, face1, "face1");
 
     RSS(ref_cell_free(ref_cell), "cleanup");

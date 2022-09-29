@@ -397,24 +397,24 @@ REF_FCN static REF_STATUS ref_cell_initialize(REF_CELL ref_cell,
     case REF_CELL_HEX:
     case REF_CELL_HE2:
       ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-      ref_cell_f2n_gen(ref_cell, 1, 0) = 4;
-      ref_cell_f2n_gen(ref_cell, 2, 0) = 5;
-      ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 7;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 4;
 
       ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
       ref_cell_f2n_gen(ref_cell, 1, 1) = 5;
       ref_cell_f2n_gen(ref_cell, 2, 1) = 6;
       ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
 
-      ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
-      ref_cell_f2n_gen(ref_cell, 1, 2) = 6;
-      ref_cell_f2n_gen(ref_cell, 2, 2) = 7;
-      ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 5;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = 1;
 
-      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-      ref_cell_f2n_gen(ref_cell, 1, 3) = 3;
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 2;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 6;
       ref_cell_f2n_gen(ref_cell, 2, 3) = 7;
-      ref_cell_f2n_gen(ref_cell, 3, 3) = 4;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = 3;
 
       ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
       ref_cell_f2n_gen(ref_cell, 1, 4) = 1;
