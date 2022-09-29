@@ -25,6 +25,7 @@
 
 #include "ref_args.h"
 #include "ref_cell.h"
+#include "ref_export.h"
 #include "ref_grid.h"
 #include "ref_import.h"
 #include "ref_mpi.h"
@@ -50,6 +51,23 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--box", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY && pos + 1 < argc) {
+    REF_GRID ref_grid;
+    REF_OCT ref_oct;
+    REF_DBL h = 0.05;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split_touching(ref_oct, ref_oct->bbox, h), "split");
+    RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    RSS(ref_export_by_extension(ref_grid, argv[pos + 1]), "export");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_grid_free(ref_grid), "free grid");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--point", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY && pos + 1 < argc) {
     REF_OCT ref_oct;
@@ -70,6 +88,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--surf", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY && pos + 2 < argc) {
     REF_OCT ref_oct;
+    char orig[1024];
+    REF_INT nleaf;
 
     RSS(ref_oct_create(&ref_oct), "make oct");
     {
@@ -96,7 +116,13 @@ int main(int argc, char *argv[]) {
       }
       RSS(ref_grid_free(ref_grid), "free grid");
     }
-    printf("writing %d vox to %s from %s\n", ref_oct->n, argv[pos + 2],
+    snprintf(orig, 1024, "%s-raw.tec", argv[pos + 2]);
+    RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
+    printf("writing %d vox to %s from %s\n", nleaf, orig, argv[pos + 1]);
+    RSS(ref_oct_tec(ref_oct, orig), "tec");
+    RSS(ref_oct_gradation(ref_oct), "grad");
+    RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
+    printf("writing %d vox to %s from %s\n", nleaf, argv[pos + 2],
            argv[pos + 1]);
     RSS(ref_oct_tec(ref_oct, argv[pos + 2]), "tec");
     RSS(ref_oct_free(ref_oct), "search oct");
@@ -108,13 +134,6 @@ int main(int argc, char *argv[]) {
   { /* create */
     REF_OCT ref_oct;
     RSS(ref_oct_create(&ref_oct), "make oct");
-    RSS(ref_oct_free(ref_oct), "free oct");
-  }
-
-  { /* split root */
-    REF_OCT ref_oct;
-    RSS(ref_oct_create(&ref_oct), "make oct");
-    RSS(ref_oct_split(ref_oct, 0), "split oct");
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
@@ -143,6 +162,121 @@ int main(int argc, char *argv[]) {
     bbox[5] = 0.7;
     RSS(ref_oct_bbox_diag(bbox, &diag), "bbox diag");
     RWDS(sqrt(0.75), diag, tol, "wrong size");
+  }
+
+  { /* split root */
+    REF_OCT ref_oct;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split oct");
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
+  { /* one refinment, matching bbox */
+    REF_OCT ref_oct;
+    REF_DBL bbox[6], h;
+    bbox[0] = 0.0;
+    bbox[1] = 1.0;
+    bbox[2] = 0.0;
+    bbox[3] = 1.0;
+    bbox[4] = 0.0;
+    bbox[5] = 1.0;
+    h = 0.9 * sqrt(3.0);
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split_touching(ref_oct, bbox, h), "split main");
+    REIS(9, ref_oct_n(ref_oct), "expect one refinement, match")
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
+  { /* two refinment, matching corner bbox */
+    REF_OCT ref_oct;
+    REF_DBL bbox[6], h;
+    bbox[0] = 0.0;
+    bbox[1] = 0.2;
+    bbox[2] = 0.0;
+    bbox[3] = 0.2;
+    bbox[4] = 0.0;
+    bbox[5] = 0.2;
+    h = 0.45 * sqrt(3.0);
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split_touching(ref_oct, bbox, h), "split main");
+    REIS(17, ref_oct_n(ref_oct), "expect one refinement, match")
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
+  { /* gradation of spot refinement */
+    REF_OCT ref_oct;
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_split(ref_oct, 1), "split first child");
+    RSS(ref_oct_split(ref_oct, 14), "split second gen");
+    RSS(ref_oct_gradation(ref_oct), "gradation");
+    RSS(ref_oct_free(ref_oct), "free oct");
+  }
+
+  { /* root unique nodes */
+    REF_NODE ref_node;
+    REF_OCT ref_oct;
+    RSS(ref_node_create(&ref_node, ref_mpi), "make node");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_unique_nodes(ref_oct, ref_node), "make nodes");
+    REIS(8, ref_oct_nnode(ref_oct), "expects 8 node hex");
+    REIS(8, ref_node_n(ref_node), "ref_node n");
+    REIS(8, ref_node_n_global(ref_node), "ref_node global n");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_node_free(ref_node), "free node");
+  }
+
+  { /* one split unique nodes */
+    REF_NODE ref_node;
+    REF_OCT ref_oct;
+    RSS(ref_node_create(&ref_node, ref_mpi), "make node");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_unique_nodes(ref_oct, ref_node), "make nodes");
+    REIS(27, ref_oct_nnode(ref_oct), "expects 8 node hex");
+    REIS(27, ref_node_n(ref_node), "ref_node n");
+    REIS(27, ref_node_n_global(ref_node), "ref_node global n");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_node_free(ref_node), "free node");
+  }
+
+  { /* root export ref_grid */
+    REF_GRID ref_grid;
+    REF_OCT ref_oct;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    REIS(1, ref_cell_n(ref_grid_hex(ref_grid)), "hex");
+    REIS(6, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  { /* one export ref_grid */
+    REF_GRID ref_grid;
+    REF_OCT ref_oct;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    REIS(8, ref_cell_n(ref_grid_hex(ref_grid)), "hex");
+    REIS(24, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  RXS(ref_args_find(argc, argv, "--2-1", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) { /* spot export ref_grid */
+    REF_GRID ref_grid;
+    REF_OCT ref_oct;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_split(ref_oct, 1), "split first");
+    ref_oct_tec(ref_oct, "test.tec");
+    RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_grid_free(ref_grid), "free grid");
   }
 
   { /* contains root */
@@ -196,7 +330,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_split(ref_oct, 0), "split root");
     RSS(ref_oct_split(ref_oct, 1), "split first child");
     RSS(ref_oct_split(ref_oct, 9), "split second gen");
-
     RSS(ref_oct_contains(ref_oct, xyz, &node, bbox), "contains oct");
     REIS(17, node, "expects third level");
     RSS(ref_oct_free(ref_oct), "free oct");
@@ -227,6 +360,26 @@ int main(int argc, char *argv[]) {
     bbox1[5] = 0.2;
     RSS(ref_oct_bbox_overlap(bbox0, bbox1, &overlap), "overlap");
     REIS(REF_FALSE, overlap, "did expect overlap");
+  }
+
+  {
+    REF_DBL bbox0[6], bbox1[6];
+    REF_DBL factor;
+    REF_DBL tol = -1.0;
+    bbox0[0] = 0.0;
+    bbox0[1] = 1.0;
+    bbox0[2] = 0.0;
+    bbox0[3] = 2.0;
+    bbox0[4] = 0.0;
+    bbox0[5] = 4.0;
+    factor = 1.1;
+    RSS(ref_oct_bbox_scale(bbox0, factor, bbox1), "scale");
+    RWDS(-0.05, bbox1[0], tol, "xmin");
+    RWDS(1.05, bbox1[1], tol, "xmax");
+    RWDS(-0.1, bbox1[2], tol, "ymin");
+    RWDS(2.1, bbox1[3], tol, "ymax");
+    RWDS(-0.2, bbox1[4], tol, "zmin");
+    RWDS(4.2, bbox1[5], tol, "zmax");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

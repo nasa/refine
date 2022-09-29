@@ -208,9 +208,9 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_shard_mark_to_split(ref_shard, 1, 6), "mark face for 1-6");
 
-    RES(0, ref_shard_mark(ref_shard, 3), "no yet");
+    REIS(0, ref_shard_mark(ref_shard, 0), "no yet");
     RSS(ref_shard_mark_relax(ref_shard), "relax");
-    RES(2, ref_shard_mark(ref_shard, 3), "yet");
+    REIS(2, ref_shard_mark(ref_shard, 0), "yet");
 
     RSS(tear_down(ref_shard), "tear down");
   }
@@ -250,8 +250,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard, 0, 0), "mark edge 0");
 
-    RES(2, ref_shard_mark(ref_shard, 1), "face 1");
-    RES(2, ref_shard_mark(ref_shard, 3), "face 3");
+    REIS(2, ref_shard_mark(ref_shard, 0), "face 0");
+    REIS(2, ref_shard_mark(ref_shard, 1), "face 1");
 
     RSS(tear_down(ref_shard), "tear down");
   }
@@ -262,8 +262,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard, 0, 11), "mark edge 11");
 
-    RES(2, ref_shard_mark(ref_shard, 1), "face 1");
-    RES(2, ref_shard_mark(ref_shard, 3), "face 3");
+    REIS(2, ref_shard_mark(ref_shard, 0), "face 0");
+    REIS(2, ref_shard_mark(ref_shard, 1), "face 1");
 
     RSS(tear_down(ref_shard), "tear down");
   }
@@ -274,8 +274,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard, 0, 5), "mark edge 5");
 
-    RES(3, ref_shard_mark(ref_shard, 1), "face 1");
-    RES(3, ref_shard_mark(ref_shard, 3), "face 3");
+    REIS(3, ref_shard_mark(ref_shard, 0), "face 0");
+    REIS(3, ref_shard_mark(ref_shard, 1), "face 1");
 
     RSS(tear_down(ref_shard), "tear down");
   }
@@ -286,8 +286,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard, 0, 8), "mark edge 8");
 
-    RES(3, ref_shard_mark(ref_shard, 1), "face 1");
-    RES(3, ref_shard_mark(ref_shard, 3), "face 3");
+    REIS(3, ref_shard_mark(ref_shard, 0), "face 0");
+    REIS(3, ref_shard_mark(ref_shard, 1), "face 1");
 
     RSS(tear_down(ref_shard), "tear down");
   }

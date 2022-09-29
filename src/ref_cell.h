@@ -358,17 +358,17 @@ boundary elements right hand normal point into element, see f2n
                                 / .               / |
                                /  .              /  |
                               /   .             /   |
-                             9    .           10    6
-                            /     7           /     |
+                             9    .   f5      10    |
+                            /     7     f3    /     6
                            /      .          /      |
                           /       .         /       |
-                       inode4-8----------inode5     |
+                       inode4-------8----inode5     |
                          |      inode3.....|...5..inode2
-                         |       .         |       /
+                         |  f0   .         |  f1   /
                          |      .          |      /
                          |     .           |     /
-                         2    1            4    3
-                         |   .             |   /
+                         |    1      f4    |    3
+                         2   .    f2       4   /
                          |  .              |  /
                          | .               | /
                          |.                |/
