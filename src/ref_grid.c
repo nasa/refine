@@ -1111,14 +1111,14 @@ REF_FCN REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid,
     for (plane = 0; plane < n_planes - 1; plane++) {
       offset0 = (0 + plane) * ref_node_n(twod_node);
       offset1 = (1 + plane) * ref_node_n(twod_node);
-      new_nodes[0] = nodes[0] + offset1;
-      new_nodes[1] = nodes[1] + offset1;
-      new_nodes[2] = nodes[2] + offset1;
-      new_nodes[3] = nodes[3] + offset1;
-      new_nodes[4] = nodes[0] + offset0;
-      new_nodes[5] = nodes[1] + offset0;
-      new_nodes[6] = nodes[2] + offset0;
-      new_nodes[7] = nodes[3] + offset0;
+      new_nodes[0] = nodes[0] + offset0;
+      new_nodes[1] = nodes[1] + offset0;
+      new_nodes[2] = nodes[2] + offset0;
+      new_nodes[3] = nodes[3] + offset0;
+      new_nodes[4] = nodes[0] + offset1;
+      new_nodes[5] = nodes[1] + offset1;
+      new_nodes[6] = nodes[2] + offset1;
+      new_nodes[7] = nodes[3] + offset1;
       RSS(ref_cell_add(ref_grid_hex(ref_grid), new_nodes, &new_cell),
           "boundary");
     }
