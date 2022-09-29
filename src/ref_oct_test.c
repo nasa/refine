@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_free(ref_oct), "free oct");
   }
 
-  {
+  { /* gradation of spot refinement */
     REF_OCT ref_oct;
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split(ref_oct, 0), "split root");
@@ -261,6 +261,20 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
     REIS(8, ref_cell_n(ref_grid_hex(ref_grid)), "hex");
     REIS(24, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  RXS(ref_args_find(argc, argv, "--2-1", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) { /* spot export ref_grid */
+    REF_GRID ref_grid;
+    REF_OCT ref_oct;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split(ref_oct, 0), "split root");
+    RSS(ref_oct_split(ref_oct, 1), "split first");
+    ref_oct_tec(ref_oct, "test.tec");
+    RSS(ref_oct_export(ref_oct, ref_grid), "export");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
   }
