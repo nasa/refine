@@ -136,6 +136,27 @@ REF_FCN REF_STATUS ref_oct_bbox_diag(REF_DBL *bbox, REF_DBL *diag) {
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_tattle(REF_OCT ref_oct, REF_INT node) {
+  printf("corners %d %d %d %d  %d %d %d %d\n", ref_oct_c2n(ref_oct, 0, node),
+         ref_oct_c2n(ref_oct, 1, node), ref_oct_c2n(ref_oct, 2, node),
+         ref_oct_c2n(ref_oct, 3, node), ref_oct_c2n(ref_oct, 4, node),
+         ref_oct_c2n(ref_oct, 5, node), ref_oct_c2n(ref_oct, 6, node),
+         ref_oct_c2n(ref_oct, 7, node));
+  printf("edges %d %d %d %d  %d %d %d %d  %d %d %d %d\n",
+         ref_oct_c2n(ref_oct, 8, node), ref_oct_c2n(ref_oct, 9, node),
+         ref_oct_c2n(ref_oct, 10, node), ref_oct_c2n(ref_oct, 11, node),
+         ref_oct_c2n(ref_oct, 12, node), ref_oct_c2n(ref_oct, 13, node),
+         ref_oct_c2n(ref_oct, 14, node), ref_oct_c2n(ref_oct, 15, node),
+         ref_oct_c2n(ref_oct, 16, node), ref_oct_c2n(ref_oct, 17, node),
+         ref_oct_c2n(ref_oct, 18, node), ref_oct_c2n(ref_oct, 19, node));
+  printf("faces %d  %d %d %d %d  %d center %d\n",
+         ref_oct_c2n(ref_oct, 20, node), ref_oct_c2n(ref_oct, 21, node),
+         ref_oct_c2n(ref_oct, 22, node), ref_oct_c2n(ref_oct, 23, node),
+         ref_oct_c2n(ref_oct, 24, node), ref_oct_c2n(ref_oct, 25, node),
+         ref_oct_c2n(ref_oct, 26, node));
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node) {
   REF_INT i;
   RAS(node >= 0, "node negative");
@@ -630,7 +651,8 @@ REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
     for (i = 0; i < 8; i++)
       RAS(REF_EMPTY != ref_oct_c2n(ref_oct, i, node), "expects to be set");
     for (i = 8; i < 27; i++)
-      REIS(REF_EMPTY, ref_oct_c2n(ref_oct, i, node), "implement 2-1");
+      REIB(REF_EMPTY, ref_oct_c2n(ref_oct, i, node), "implement 2-1",
+           { ref_oct_tattle(ref_oct, node); });
     for (i = 0; i < 8; i++) nodes[i] = ref_oct_c2n(ref_oct, i, node);
     ref_cell = ref_grid_hex(ref_grid);
     RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add hex");

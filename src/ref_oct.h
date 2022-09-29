@@ -58,6 +58,7 @@ REF_FCN REF_STATUS ref_oct_child_bbox(REF_DBL *parent_bbox, REF_INT child_index,
                                       REF_DBL *child_bbox);
 REF_FCN REF_STATUS ref_oct_bbox_diag(REF_DBL *bbox, REF_DBL *diag);
 
+REF_FCN REF_STATUS ref_oct_tattle(REF_OCT ref_oct, REF_INT node);
 REF_FCN REF_STATUS ref_oct_split(REF_OCT ref_oct, REF_INT node);
 REF_FCN REF_STATUS ref_oct_split_at(REF_OCT ref_oct, REF_DBL *xyz, REF_DBL h);
 REF_FCN REF_STATUS ref_oct_split_touching(REF_OCT ref_oct, REF_DBL *bbox,
