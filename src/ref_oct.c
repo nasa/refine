@@ -810,39 +810,46 @@ REF_FCN REF_STATUS ref_oct_he2_qu2(REF_INT cell_face, REF_INT *qu2) {
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_oct_export_whole(REF_OCT ref_oct, REF_INT node,
+                                               REF_DBL *bbox,
+                                               REF_GRID ref_grid) {
+  REF_CELL ref_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+  REF_DBL diag, tol = 0.1;
+  REF_INT cell_face, face_node;
+  REF_INT i;
+  for (i = 0; i < 8; i++)
+    RAS(REF_EMPTY != ref_oct_c2n(ref_oct, i, node), "expects to be set");
+  for (i = 8; i < 27; i++)
+    REIB(REF_EMPTY, ref_oct_c2n(ref_oct, i, node), "implement 2-1",
+         { ref_oct_tattle(ref_oct, node); });
+  for (i = 0; i < 8; i++) nodes[i] = ref_oct_c2n(ref_oct, i, node);
+  ref_cell = ref_grid_hex(ref_grid);
+  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add hex");
+  ref_cell = ref_grid_qua(ref_grid);
+  RSS(ref_oct_bbox_diag(bbox, &diag), "diag");
+
+  for (cell_face = 0; cell_face < 6; cell_face++) {
+    if (ABS(bbox[cell_face] - ref_oct->bbox[cell_face]) < tol * diag) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        nodes[face_node] =
+            ref_cell_f2n_gen(ref_grid_hex(ref_grid), face_node, cell_face);
+        nodes[face_node] = ref_oct_c2n(ref_oct, nodes[face_node], node);
+      }
+      nodes[ref_cell_id_index(ref_cell)] = cell_face + 1;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add quad");
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
                                               REF_DBL *bbox,
                                               REF_GRID ref_grid) {
-  REF_INT i;
   if (ref_oct_leaf_node(ref_oct, node)) {
-    REF_CELL ref_cell;
-    REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
-    REF_DBL diag, tol = 0.1;
-    REF_INT cell_face, face_node;
-    for (i = 0; i < 8; i++)
-      RAS(REF_EMPTY != ref_oct_c2n(ref_oct, i, node), "expects to be set");
-    for (i = 8; i < 27; i++)
-      REIB(REF_EMPTY, ref_oct_c2n(ref_oct, i, node), "implement 2-1",
-           { ref_oct_tattle(ref_oct, node); });
-    for (i = 0; i < 8; i++) nodes[i] = ref_oct_c2n(ref_oct, i, node);
-    ref_cell = ref_grid_hex(ref_grid);
-    RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add hex");
-    ref_cell = ref_grid_qua(ref_grid);
-    RSS(ref_oct_bbox_diag(bbox, &diag), "diag");
-
-    for (cell_face = 0; cell_face < 6; cell_face++) {
-      if (ABS(bbox[cell_face] - ref_oct->bbox[cell_face]) < tol * diag) {
-        for (face_node = 0; face_node < 4; face_node++) {
-          nodes[face_node] =
-              ref_cell_f2n_gen(ref_grid_hex(ref_grid), face_node, cell_face);
-          nodes[face_node] = ref_oct_c2n(ref_oct, nodes[face_node], node);
-        }
-        nodes[ref_cell_id_index(ref_cell)] = cell_face + 1;
-        RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add quad");
-      }
-    }
-
+    RSS(ref_oct_export_whole(ref_oct, node, bbox, ref_grid), "whole");
   } else {
+    REF_INT i;
     REF_INT child_index;
     for (i = 0; i < 27; i++)
       REIS(REF_EMPTY, ref_oct_c2n(ref_oct, i, node),
