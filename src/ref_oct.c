@@ -843,6 +843,20 @@ REF_FCN static REF_STATUS ref_oct_export_whole(REF_OCT ref_oct, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_oct_export_prism(REF_OCT ref_oct, REF_INT node,
+                                               REF_GRID ref_grid,
+                                               REF_INT *qua_nodes) {
+  REF_CELL ref_cell = ref_grid_pyr(ref_grid);
+  REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+  pri_nodes[0] = ref_oct_c2n(ref_oct, qua_nodes[0], node);
+  pri_nodes[1] = ref_oct_c2n(ref_oct, qua_nodes[3], node);
+  pri_nodes[2] = ref_oct_c2n(ref_oct, 26, node);
+  pri_nodes[3] = ref_oct_c2n(ref_oct, qua_nodes[1], node);
+  pri_nodes[4] = ref_oct_c2n(ref_oct, qua_nodes[2], node);
+  RSS(ref_cell_add(ref_cell, pri_nodes, &new_cell), "add whole face pyr");
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_export_steiner(REF_OCT ref_oct, REF_INT node,
                                                  REF_GRID ref_grid) {
   REF_INT cell_face;
@@ -852,17 +866,20 @@ REF_FCN static REF_STATUS ref_oct_export_steiner(REF_OCT ref_oct, REF_INT node,
 
   for (cell_face = 0; cell_face < 6; cell_face++) {
     REF_INT face_nodes[9];
+    REF_BOOL whole_face;
+    REF_BOOL four_quads;
     RSS(ref_oct_he2_qu2(cell_face, face_nodes), "qu2");
-    /* whole face */
-    if (REF_EMPTY == ref_oct_c2n(ref_oct, face_nodes[8], node)) {
-      REF_CELL ref_cell = ref_grid_pyr(ref_grid);
-      REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
-      nodes[0] = ref_oct_c2n(ref_oct, face_nodes[0], node);
-      nodes[1] = ref_oct_c2n(ref_oct, face_nodes[3], node);
-      nodes[2] = ref_oct_c2n(ref_oct, 26, node);
-      nodes[3] = ref_oct_c2n(ref_oct, face_nodes[1], node);
-      nodes[4] = ref_oct_c2n(ref_oct, face_nodes[2], node);
-      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add whole face pyr");
+    whole_face = (REF_EMPTY == ref_oct_c2n(ref_oct, face_nodes[8], node));
+    if (whole_face) {
+      RSS(ref_oct_export_prism(ref_oct, node, ref_grid, face_nodes),
+          "whole quad");
+    }
+    four_quads = REF_TRUE;
+    for (i = 0; i < 9; i++)
+      four_quads = four_quads &&
+                   (REF_EMPTY != ref_oct_c2n(ref_oct, face_nodes[i], node));
+    if (four_quads) {
+      printf("four\n");
     }
   }
   return REF_SUCCESS;
