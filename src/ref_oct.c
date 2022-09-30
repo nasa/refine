@@ -853,7 +853,24 @@ REF_FCN static REF_STATUS ref_oct_export_prism(REF_OCT ref_oct, REF_INT node,
   pri_nodes[2] = ref_oct_c2n(ref_oct, 26, node);
   pri_nodes[3] = ref_oct_c2n(ref_oct, qua_nodes[1], node);
   pri_nodes[4] = ref_oct_c2n(ref_oct, qua_nodes[2], node);
-  RSS(ref_cell_add(ref_cell, pri_nodes, &new_cell), "add whole face pyr");
+  RSS(ref_cell_add(ref_cell, pri_nodes, &new_cell), "add quad pyr");
+  return REF_SUCCESS;
+}
+
+REF_FCN static REF_STATUS ref_oct_export_tet(REF_OCT ref_oct, REF_INT node,
+                                             REF_GRID ref_grid,
+                                             REF_INT *tri_nodes) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+  tet_nodes[0] = ref_oct_c2n(ref_oct, tri_nodes[0], node);
+  tet_nodes[1] = ref_oct_c2n(ref_oct, tri_nodes[1], node);
+  tet_nodes[2] = ref_oct_c2n(ref_oct, tri_nodes[2], node);
+  tet_nodes[3] = ref_oct_c2n(ref_oct, 26, node);
+  RSB(ref_cell_add(ref_cell, tet_nodes, &new_cell), "add tri tet", {
+    printf("tri %d %d %d tet %d %d %d %d\n", tri_nodes[0], tri_nodes[1],
+           tri_nodes[2], tet_nodes[0], tet_nodes[1], tet_nodes[2],
+           tet_nodes[3]);
+  });
   return REF_SUCCESS;
 }
 
@@ -873,13 +890,62 @@ REF_FCN static REF_STATUS ref_oct_export_steiner(REF_OCT ref_oct, REF_INT node,
     if (whole_face) {
       RSS(ref_oct_export_prism(ref_oct, node, ref_grid, face_nodes),
           "whole quad");
+      continue;
     }
     four_quads = REF_TRUE;
     for (i = 0; i < 9; i++)
       four_quads = four_quads &&
                    (REF_EMPTY != ref_oct_c2n(ref_oct, face_nodes[i], node));
     if (four_quads) {
-      printf("four\n");
+      REF_INT quad_nodes[4];
+      quad_nodes[0] = face_nodes[0];
+      quad_nodes[1] = face_nodes[4];
+      quad_nodes[2] = face_nodes[8];
+      quad_nodes[3] = face_nodes[7];
+      RSS(ref_oct_export_prism(ref_oct, node, ref_grid, quad_nodes), "qua 0/4");
+      quad_nodes[0] = face_nodes[1];
+      quad_nodes[1] = face_nodes[5];
+      quad_nodes[2] = face_nodes[8];
+      quad_nodes[3] = face_nodes[4];
+      RSS(ref_oct_export_prism(ref_oct, node, ref_grid, quad_nodes), "qua 1/4");
+      quad_nodes[0] = face_nodes[2];
+      quad_nodes[1] = face_nodes[6];
+      quad_nodes[2] = face_nodes[8];
+      quad_nodes[3] = face_nodes[5];
+      RSS(ref_oct_export_prism(ref_oct, node, ref_grid, quad_nodes), "qua 2/4");
+      quad_nodes[0] = face_nodes[3];
+      quad_nodes[1] = face_nodes[7];
+      quad_nodes[2] = face_nodes[8];
+      quad_nodes[3] = face_nodes[6];
+      RSS(ref_oct_export_prism(ref_oct, node, ref_grid, quad_nodes), "qua 3/4");
+      continue;
+    }
+    {
+      REF_INT tri_nodes[3];
+      REF_INT cell_edge;
+      for (cell_edge = 0; cell_edge < 4; cell_edge++) {
+        REF_INT n0, mid, n1;
+        n0 = cell_edge;
+        mid = cell_edge + 4;
+        n1 = cell_edge + 1;
+        if (n1 > 3) n1 -= 4;
+        if (REF_EMPTY == ref_oct_c2n(ref_oct, face_nodes[mid], node)) {
+          tri_nodes[0] = face_nodes[n0];
+          tri_nodes[1] = face_nodes[n1];
+          tri_nodes[2] = face_nodes[8];
+          RSS(ref_oct_export_tet(ref_oct, node, ref_grid, tri_nodes), "tri 01");
+        } else {
+          tri_nodes[0] = face_nodes[n0];
+          tri_nodes[1] = face_nodes[mid];
+          tri_nodes[2] = face_nodes[8];
+          RSS(ref_oct_export_tet(ref_oct, node, ref_grid, tri_nodes), "tri 0m");
+          tri_nodes[0] = face_nodes[mid];
+          tri_nodes[1] = face_nodes[n1];
+          tri_nodes[2] = face_nodes[8];
+          RSS(ref_oct_export_tet(ref_oct, node, ref_grid, tri_nodes), "tri m1");
+        }
+      }
+      continue;
     }
   }
   return REF_SUCCESS;
