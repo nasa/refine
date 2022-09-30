@@ -652,6 +652,7 @@ REF_FCN REF_STATUS ref_oct_he2_qu2(REF_INT cell_face, REF_INT *qu2) {
       qu2[6] = 19;
       qu2[7] = 12;
       qu2[8] = 24;
+      break;
     case 1:
       qu2[0] = 1;
       qu2[1] = 5;
@@ -662,6 +663,7 @@ REF_FCN REF_STATUS ref_oct_he2_qu2(REF_INT cell_face, REF_INT *qu2) {
       qu2[6] = 14;
       qu2[7] = 9;
       qu2[8] = 22;
+      break;
     case 2:
       qu2[0] = 0;
       qu2[1] = 4;
@@ -672,6 +674,7 @@ REF_FCN REF_STATUS ref_oct_he2_qu2(REF_INT cell_face, REF_INT *qu2) {
       qu2[6] = 13;
       qu2[7] = 8;
       qu2[8] = 21;
+      break;
     case 3:
       qu2[0] = 2;
       qu2[1] = 6;
@@ -682,6 +685,7 @@ REF_FCN REF_STATUS ref_oct_he2_qu2(REF_INT cell_face, REF_INT *qu2) {
       qu2[6] = 15;
       qu2[7] = 10;
       qu2[8] = 23;
+      break;
     case 4:
       qu2[0] = 0;
       qu2[1] = 1;
@@ -692,6 +696,7 @@ REF_FCN REF_STATUS ref_oct_he2_qu2(REF_INT cell_face, REF_INT *qu2) {
       qu2[6] = 10;
       qu2[7] = 11;
       qu2[8] = 20;
+      break;
     case 5:
       qu2[0] = 4;
       qu2[1] = 7;
@@ -702,6 +707,7 @@ REF_FCN REF_STATUS ref_oct_he2_qu2(REF_INT cell_face, REF_INT *qu2) {
       qu2[6] = 17;
       qu2[7] = 16;
       qu2[8] = 25;
+      break;
     default:
       THROW("not 0-5 cell_face");
   }
