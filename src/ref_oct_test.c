@@ -276,6 +276,7 @@ int main(int argc, char *argv[]) {
     ref_oct_tec(ref_oct, "test-oct.tec");
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
     ref_export_by_extension(ref_grid, "test-mesh.tec");
+    ref_export_by_extension(ref_grid, "test-mesh.lb8.ugrid");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
   }
