@@ -273,8 +273,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split(ref_oct, 0), "split root");
     RSS(ref_oct_split(ref_oct, 1), "split first");
-    ref_oct_tec(ref_oct, "test.tec");
+    ref_oct_tec(ref_oct, "test-oct.tec");
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    ref_export_by_extension(ref_grid, "test-mesh.tec");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
   }
