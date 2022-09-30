@@ -313,8 +313,6 @@ REF_FCN static REF_STATUS ref_oct_unique_face_nodes_node(REF_OCT ref_oct,
   if (ref_oct_leaf_node(ref_oct, node)) {
     REF_INT cell_face;
     for (cell_face = 0; cell_face < 6; cell_face++) {
-      REF_DBL xyz[3], cxyz[3];
-      REF_INT insert_node, i, j;
       REF_INT nodes[9];
       REF_BOOL has_edge;
       RSS(ref_oct_he2_qu2(cell_face, nodes), "he2qu2");
@@ -323,6 +321,8 @@ REF_FCN static REF_STATUS ref_oct_unique_face_nodes_node(REF_OCT ref_oct,
                  REF_EMPTY != ref_oct_c2n(ref_oct, nodes[6], node) ||
                  REF_EMPTY != ref_oct_c2n(ref_oct, nodes[7], node);
       if (has_edge && REF_EMPTY == ref_oct_c2n(ref_oct, nodes[8], node)) {
+        REF_DBL xyz[3], cxyz[3];
+        REF_INT insert_node, i, j;
         REF_INT new_node;
         insert_node = ref_oct_nnode(ref_oct);
         ref_oct_nnode(ref_oct)++;
