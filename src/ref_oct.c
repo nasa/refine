@@ -389,7 +389,7 @@ REF_FCN static REF_STATUS ref_oct_unique_center_nodes_node(REF_OCT ref_oct,
     for (child_index = 0; child_index < 8; child_index++) {
       REF_DBL box[6];
       RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
-      RSS(ref_oct_unique_face_nodes_node(
+      RSS(ref_oct_unique_center_nodes_node(
               ref_oct, ref_oct_child(ref_oct, child_index, node), box,
               ref_node),
           "recurse");
