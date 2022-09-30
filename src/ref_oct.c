@@ -276,16 +276,15 @@ REF_FCN static REF_STATUS ref_oct_unique_corner_nodes_node(REF_OCT ref_oct,
   if (ref_oct_leaf_node(ref_oct, node)) {
     REF_INT corner;
     for (corner = 0; corner < 8; corner++) {
-      REF_DBL xyz[3];
-      REF_INT insert_node;
-      RSS(ref_oct_bbox_corner(bbox, corner, xyz), "corner xyz");
-      insert_node = REF_EMPTY;
       if (REF_EMPTY == ref_oct_c2n(ref_oct, corner, node)) {
         REF_INT new_node;
+        REF_DBL xyz[3];
+        REF_INT insert_node;
         insert_node = ref_oct_nnode(ref_oct);
         ref_oct_nnode(ref_oct)++;
         RSS(ref_node_add(ref_node, insert_node, &new_node), "add node");
         REIS(insert_node, new_node, "expects to match");
+        RSS(ref_oct_bbox_corner(bbox, corner, xyz), "corner xyz");
         ref_node_xyz(ref_node, 0, new_node) = xyz[0];
         ref_node_xyz(ref_node, 1, new_node) = xyz[1];
         ref_node_xyz(ref_node, 2, new_node) = xyz[2];
