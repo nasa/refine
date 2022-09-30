@@ -843,11 +843,40 @@ REF_FCN static REF_STATUS ref_oct_export_whole(REF_OCT ref_oct, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_oct_export_steiner(REF_OCT ref_oct, REF_INT node,
+                                                 REF_GRID ref_grid) {
+  REF_INT cell_face;
+  REF_INT i;
+  for (i = 0; i < 8; i++)
+    RAS(REF_EMPTY != ref_oct_c2n(ref_oct, i, node), "expects to be set");
+
+  for (cell_face = 0; cell_face < 6; cell_face++) {
+    REF_INT face_nodes[9];
+    RSS(ref_oct_he2_qu2(cell_face, face_nodes), "qu2");
+    /* whole face */
+    if (REF_EMPTY == ref_oct_c2n(ref_oct, face_nodes[8], node)) {
+      REF_CELL ref_cell = ref_grid_pyr(ref_grid);
+      REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+      nodes[0] = ref_oct_c2n(ref_oct, face_nodes[0], node);
+      nodes[1] = ref_oct_c2n(ref_oct, face_nodes[3], node);
+      nodes[2] = ref_oct_c2n(ref_oct, 26, node);
+      nodes[3] = ref_oct_c2n(ref_oct, face_nodes[1], node);
+      nodes[4] = ref_oct_c2n(ref_oct, face_nodes[2], node);
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add whole face pyr");
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
                                               REF_DBL *bbox,
                                               REF_GRID ref_grid) {
   if (ref_oct_leaf_node(ref_oct, node)) {
-    RSS(ref_oct_export_whole(ref_oct, node, bbox, ref_grid), "whole");
+    if (REF_EMPTY == ref_oct_c2n(ref_oct, 26, node)) {
+      RSS(ref_oct_export_whole(ref_oct, node, bbox, ref_grid), "whole");
+    } else {
+      RSS(ref_oct_export_steiner(ref_oct, node, ref_grid), "whole");
+    }
   } else {
     REF_INT i;
     REF_INT child_index;
