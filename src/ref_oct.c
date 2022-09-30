@@ -307,10 +307,60 @@ REF_FCN static REF_STATUS ref_oct_unique_corner_nodes_node(REF_OCT ref_oct,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_oct_unique_face_nodes_node(REF_OCT ref_oct,
+                                                         REF_INT node,
+                                                         REF_DBL *bbox,
+                                                         REF_NODE ref_node) {
+  if (ref_oct_leaf_node(ref_oct, node)) {
+    REF_INT cell_face;
+    for (cell_face = 0; cell_face < 6; cell_face++) {
+      REF_DBL xyz[3], cxyz[3];
+      REF_INT insert_node, i, j;
+      REF_INT nodes[9];
+      REF_BOOL has_edge;
+      RSS(ref_oct_he2_qu2(cell_face, nodes), "he2qu2");
+      has_edge = REF_EMPTY != ref_oct_c2n(ref_oct, nodes[4], node) ||
+                 REF_EMPTY != ref_oct_c2n(ref_oct, nodes[5], node) ||
+                 REF_EMPTY != ref_oct_c2n(ref_oct, nodes[6], node) ||
+                 REF_EMPTY != ref_oct_c2n(ref_oct, nodes[7], node);
+      if (has_edge && REF_EMPTY == ref_oct_c2n(ref_oct, nodes[8], node)) {
+        REF_INT new_node;
+        insert_node = ref_oct_nnode(ref_oct);
+        ref_oct_nnode(ref_oct)++;
+        RSS(ref_node_add(ref_node, insert_node, &new_node), "add node");
+        REIS(insert_node, new_node, "expects to match");
+        for (i = 0; i < 3; i++) xyz[i] = 0.0;
+        for (j = 0; j < 4; j++) {
+          RSS(ref_oct_bbox_corner(bbox, nodes[0], cxyz), "corner xyz");
+          for (i = 0; i < 3; i++) xyz[i] += 0.25 * cxyz[i];
+        }
+        ref_node_xyz(ref_node, 0, new_node) = xyz[0];
+        ref_node_xyz(ref_node, 1, new_node) = xyz[1];
+        ref_node_xyz(ref_node, 2, new_node) = xyz[2];
+        RSS(ref_oct_set_node_at(ref_oct, insert_node, xyz), "set node");
+        RUS(REF_EMPTY, ref_oct_c2n(ref_oct, nodes[8], node), "self not set");
+      }
+    }
+  } else {
+    REF_INT child_index;
+    for (child_index = 0; child_index < 8; child_index++) {
+      REF_DBL box[6];
+      RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
+      RSS(ref_oct_unique_face_nodes_node(
+              ref_oct, ref_oct_child(ref_oct, child_index, node), box,
+              ref_node),
+          "recurse");
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_oct_unique_nodes(REF_OCT ref_oct, REF_NODE ref_node) {
   REIS(0, ref_oct_nnode(ref_oct), "expected zero oct nodes");
   REIS(0, ref_node_n(ref_node), "expected zero grid nodes");
   RSS(ref_oct_unique_corner_nodes_node(ref_oct, 0, ref_oct->bbox, ref_node),
+      "descend");
+  RSS(ref_oct_unique_face_nodes_node(ref_oct, 0, ref_oct->bbox, ref_node),
       "descend");
   RSS(ref_node_initialize_n_global(ref_node, ref_oct_nnode(ref_oct)),
       "init glob");
