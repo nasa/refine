@@ -359,13 +359,13 @@ REF_FCN static REF_STATUS ref_oct_unique_center_nodes_node(REF_OCT ref_oct,
                                                            REF_DBL *bbox,
                                                            REF_NODE ref_node) {
   if (ref_oct_leaf_node(ref_oct, node)) {
-    REF_BOOL has_edge;
-    REF_INT edge_node;
-    has_edge = REF_FALSE;
-    for (edge_node = 8; edge_node < 20; edge_node++)
-      has_edge =
-          has_edge || (REF_EMPTY != ref_oct_c2n(ref_oct, edge_node, node));
-    if (has_edge) {
+    REF_BOOL has_face;
+    REF_INT face_node;
+    has_face = REF_FALSE;
+    for (face_node = 20; face_node < 26; face_node++)
+      has_face =
+          has_face || (REF_EMPTY != ref_oct_c2n(ref_oct, face_node, node));
+    if (has_face) {
       REF_DBL xyz[3], cxyz[3];
       REF_INT insert_node, i, j;
       REF_INT new_node;
