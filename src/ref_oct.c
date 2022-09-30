@@ -330,7 +330,7 @@ REF_FCN static REF_STATUS ref_oct_unique_face_nodes_node(REF_OCT ref_oct,
         REIS(insert_node, new_node, "expects to match");
         for (i = 0; i < 3; i++) xyz[i] = 0.0;
         for (j = 0; j < 4; j++) {
-          RSS(ref_oct_bbox_corner(bbox, nodes[0], cxyz), "corner xyz");
+          RSS(ref_oct_bbox_corner(bbox, nodes[j], cxyz), "corner xyz");
           for (i = 0; i < 3; i++) xyz[i] += 0.25 * cxyz[i];
         }
         ref_node_xyz(ref_node, 0, new_node) = xyz[0];
