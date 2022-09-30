@@ -639,6 +639,75 @@ REF_FCN REF_STATUS ref_oct_nleaf(REF_OCT ref_oct, REF_INT *nleaf) {
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_oct_he2_qu2(REF_INT cell_face, REF_INT *qu2) {
+  switch (cell_face) {
+    case 0:
+      qu2[0] = 0;
+      qu2[1] = 3;
+      qu2[2] = 7;
+      qu2[3] = 4;
+      qu2[4] = 11;
+      qu2[5] = 15;
+      qu2[6] = 19;
+      qu2[7] = 12;
+      qu2[8] = 24;
+    case 1:
+      qu2[0] = 1;
+      qu2[1] = 5;
+      qu2[2] = 6;
+      qu2[3] = 2;
+      qu2[4] = 13;
+      qu2[5] = 17;
+      qu2[6] = 14;
+      qu2[7] = 9;
+      qu2[8] = 22;
+    case 2:
+      qu2[0] = 0;
+      qu2[1] = 4;
+      qu2[2] = 5;
+      qu2[3] = 1;
+      qu2[4] = 12;
+      qu2[5] = 16;
+      qu2[6] = 13;
+      qu2[7] = 8;
+      qu2[8] = 21;
+    case 3:
+      qu2[0] = 2;
+      qu2[1] = 6;
+      qu2[2] = 7;
+      qu2[3] = 3;
+      qu2[4] = 14;
+      qu2[5] = 18;
+      qu2[6] = 15;
+      qu2[7] = 10;
+      qu2[8] = 23;
+    case 4:
+      qu2[0] = 0;
+      qu2[1] = 1;
+      qu2[2] = 2;
+      qu2[3] = 3;
+      qu2[4] = 8;
+      qu2[5] = 9;
+      qu2[6] = 10;
+      qu2[7] = 11;
+      qu2[8] = 20;
+    case 5:
+      qu2[0] = 4;
+      qu2[1] = 7;
+      qu2[2] = 6;
+      qu2[3] = 5;
+      qu2[4] = 19;
+      qu2[5] = 18;
+      qu2[6] = 17;
+      qu2[7] = 16;
+      qu2[8] = 25;
+    default:
+      THROW("not 0-5 cell_face");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_FCN static REF_STATUS ref_oct_export_node(REF_OCT ref_oct, REF_INT node,
                                               REF_DBL *bbox,
                                               REF_GRID ref_grid) {
