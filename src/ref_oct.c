@@ -269,9 +269,10 @@ REF_FCN REF_STATUS ref_oct_gradation(REF_OCT ref_oct) {
   return REF_SUCCESS;
 }
 
-REF_FCN static REF_STATUS ref_oct_unique_nodes_node(REF_OCT ref_oct,
-                                                    REF_INT node, REF_DBL *bbox,
-                                                    REF_NODE ref_node) {
+REF_FCN static REF_STATUS ref_oct_unique_corner_nodes_node(REF_OCT ref_oct,
+                                                           REF_INT node,
+                                                           REF_DBL *bbox,
+                                                           REF_NODE ref_node) {
   if (ref_oct_leaf_node(ref_oct, node)) {
     REF_INT corner;
     for (corner = 0; corner < 8; corner++) {
@@ -297,9 +298,9 @@ REF_FCN static REF_STATUS ref_oct_unique_nodes_node(REF_OCT ref_oct,
     for (child_index = 0; child_index < 8; child_index++) {
       REF_DBL box[6];
       RSS(ref_oct_child_bbox(bbox, child_index, box), "bbox");
-      RSS(ref_oct_unique_nodes_node(ref_oct,
-                                    ref_oct_child(ref_oct, child_index, node),
-                                    box, ref_node),
+      RSS(ref_oct_unique_corner_nodes_node(
+              ref_oct, ref_oct_child(ref_oct, child_index, node), box,
+              ref_node),
           "recurse");
     }
   }
@@ -309,7 +310,7 @@ REF_FCN static REF_STATUS ref_oct_unique_nodes_node(REF_OCT ref_oct,
 REF_FCN REF_STATUS ref_oct_unique_nodes(REF_OCT ref_oct, REF_NODE ref_node) {
   REIS(0, ref_oct_nnode(ref_oct), "expected zero oct nodes");
   REIS(0, ref_node_n(ref_node), "expected zero grid nodes");
-  RSS(ref_oct_unique_nodes_node(ref_oct, 0, ref_oct->bbox, ref_node),
+  RSS(ref_oct_unique_corner_nodes_node(ref_oct, 0, ref_oct->bbox, ref_node),
       "descend");
   RSS(ref_node_initialize_n_global(ref_node, ref_oct_nnode(ref_oct)),
       "init glob");
