@@ -265,7 +265,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  RXS(ref_args_find(argc, argv, "--2-1", &pos), REF_NOT_FOUND, "arg search");
   { /* spot export ref_grid */
     REF_GRID ref_grid;
     REF_OCT ref_oct;
@@ -273,11 +272,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split(ref_oct, 0), "split root");
     RSS(ref_oct_split(ref_oct, 1), "split first");
-    if (REF_EMPTY != pos) ref_oct_tec(ref_oct, "test-oct.tec");
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
-    if (REF_EMPTY != pos) ref_export_by_extension(ref_grid, "test-mesh.tec");
-    if (REF_EMPTY != pos)
-      ref_export_by_extension(ref_grid, "test-mesh.lb8.ugrid");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
   }
