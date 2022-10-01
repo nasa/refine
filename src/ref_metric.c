@@ -1819,38 +1819,112 @@ REF_FCN REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1,
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_metric_sub_tet_complexity(
+    REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3, REF_INT *nodes,
+    REF_DBL *metric, REF_DBL *complexity, REF_NODE ref_node) {
+  REF_DBL volume, det;
+  REF_INT cell_node;
+  REF_INT tet_nodes[4];
+  tet_nodes[0] = nodes[n0];
+  tet_nodes[1] = nodes[n1];
+  tet_nodes[2] = nodes[n2];
+  tet_nodes[3] = nodes[n3];
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &volume), "vol");
+  for (cell_node = 0; cell_node < 4; cell_node++) {
+    if (ref_node_owned(ref_node, tet_nodes[cell_node])) {
+      RSS(ref_matrix_det_m(&(metric[6 * tet_nodes[cell_node]]), &det), "det");
+      if (det > 0.0) {
+        (*complexity) += sqrt(det) * volume / 4.0;
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                          REF_DBL *complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL volume, det;
-  REF_BOOL have_tet;
-  REF_LONG ntet;
+  REF_BOOL have_vol_cells;
+  REF_LONG ntet, npyr, npri, nhex;
+  *complexity = 0.0;
   RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "count");
-  have_tet = (0 < ntet);
-  if (have_tet) {
+  RSS(ref_cell_ncell(ref_grid_pyr(ref_grid), ref_node, &npyr), "count");
+  RSS(ref_cell_ncell(ref_grid_pri(ref_grid), ref_node, &npri), "count");
+  RSS(ref_cell_ncell(ref_grid_hex(ref_grid), ref_node, &nhex), "count");
+  have_vol_cells = (0 < ntet + npyr + npri + nhex);
+  if (have_vol_cells) {
     ref_cell = ref_grid_tet(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tet_complexity(0, 1, 2, 3, nodes, metric, complexity,
+                                        ref_node),
+          "tet sub_tet");
+    }
+
+    ref_cell = ref_grid_pyr(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tet_complexity(0, 4, 1, 2, nodes, metric, complexity,
+                                        ref_node),
+          "pyr sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 3, 4, 2, nodes, metric, complexity,
+                                        ref_node),
+          "pyr sub_tet");
+    }
+
+    ref_cell = ref_grid_pri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tet_complexity(0, 4, 5, 3, nodes, metric, complexity,
+                                        ref_node),
+          "pri sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 1, 5, 4, nodes, metric, complexity,
+                                        ref_node),
+          "pri sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 1, 2, 5, nodes, metric, complexity,
+                                        ref_node),
+          "pri sub_tet");
+    }
+
+    ref_cell = ref_grid_hex(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tet_complexity(0, 5, 7, 4, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 1, 7, 5, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(1, 6, 7, 5, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 7, 2, 3, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 7, 1, 2, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(1, 7, 6, 2, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+    }
   } else {
     ref_cell = ref_grid_tri(ref_grid);
-  }
-  *complexity = 0.0;
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    if (have_tet) {
-      RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
-    } else {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
-    }
-    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
-      if (ref_node_owned(ref_node, nodes[cell_node])) {
-        RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
-        if (det > 0.0) {
-          (*complexity) +=
-              sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
+      for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell);
+           cell_node++) {
+        if (ref_node_owned(ref_node, nodes[cell_node])) {
+          RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
+          if (det > 0.0) {
+            (*complexity) +=
+                sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
+          }
         }
       }
     }
   }
+
   RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), complexity, 1, REF_DBL_TYPE),
       "dbl sum");
 

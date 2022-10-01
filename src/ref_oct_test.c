@@ -28,8 +28,10 @@
 #include "ref_export.h"
 #include "ref_grid.h"
 #include "ref_import.h"
+#include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
+#include "ref_part.h"
 
 int main(int argc, char *argv[]) {
   REF_INT pos;
@@ -52,15 +54,16 @@ int main(int argc, char *argv[]) {
   }
 
   RXS(ref_args_find(argc, argv, "--box", &pos), REF_NOT_FOUND, "arg search");
-  if (pos != REF_EMPTY && pos + 1 < argc) {
+  if (pos != REF_EMPTY && pos + 2 < argc) {
     REF_GRID ref_grid;
     REF_OCT ref_oct;
-    REF_DBL h = 0.05;
+    REF_DBL h;
+    h = atof(argv[pos + 1]);
     RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split_touching(ref_oct, ref_oct->bbox, h), "split");
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
-    RSS(ref_export_by_extension(ref_grid, argv[pos + 1]), "export");
+    RSS(ref_export_by_extension(ref_grid, argv[pos + 2]), "export");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
@@ -125,6 +128,60 @@ int main(int argc, char *argv[]) {
     printf("writing %d vox to %s from %s\n", nleaf, argv[pos + 2],
            argv[pos + 1]);
     RSS(ref_oct_tec(ref_oct, argv[pos + 2]), "tec");
+    RSS(ref_oct_free(ref_oct), "search oct");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "--adapt", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY && pos + 3 < argc) {
+    REF_OCT ref_oct;
+    char tec[1024];
+    REF_INT nleaf;
+
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    {
+      REF_GRID ref_grid;
+      REF_NODE ref_node;
+      REF_INT node;
+
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[pos + 1]), "import");
+      ref_node = ref_grid_node(ref_grid);
+      RSS(ref_part_metric(ref_grid_node(ref_grid), argv[pos + 2]),
+          "unable to load parent metric in position pos + 2");
+      each_ref_node_valid_node(ref_node, node) {
+        REF_DBL m[6], d[12], h;
+        RSS(ref_node_metric_get(ref_node, node, m), "get");
+        RSS(ref_matrix_diag_m(m, d), "decomp");
+        if (ref_grid_twod(ref_grid)) {
+          RSS(ref_matrix_descending_eig_twod(d), "2D ascend");
+        } else {
+          RSS(ref_matrix_descending_eig(d), "3D ascend");
+        }
+        h = 1.0 / sqrt(ref_matrix_eig(d, 0));
+        RSS(ref_oct_split_at(ref_oct, ref_node_xyz_ptr(ref_node, node), h),
+            "split xyz h");
+      }
+      RSS(ref_grid_free(ref_grid), "free grid");
+    }
+    snprintf(tec, 1024, "%s-raw.tec", argv[pos + 3]);
+    RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
+    printf("writing %d vox to %s from %s\n", nleaf, tec, argv[pos + 3]);
+    RSS(ref_oct_tec(ref_oct, tec), "tec");
+    RSS(ref_oct_gradation(ref_oct), "grad");
+    snprintf(tec, 1024, "%s-grad.tec", argv[pos + 3]);
+    RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
+    printf("writing %d vox to %s from %s\n", nleaf, tec, argv[pos + 3]);
+    RSS(ref_oct_tec(ref_oct, tec), "tec");
+    printf("writing %d vox to %s\n", nleaf, argv[pos + 3]);
+    {
+      REF_GRID ref_grid;
+      RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+      RSS(ref_oct_export(ref_oct, ref_grid), "export");
+      RSS(ref_export_by_extension(ref_grid, argv[pos + 3]), "export");
+      RSS(ref_grid_free(ref_grid), "free grid");
+    }
     RSS(ref_oct_free(ref_oct), "search oct");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
@@ -265,15 +322,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  RXS(ref_args_find(argc, argv, "--2-1", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos) { /* spot export ref_grid */
+  { /* spot export ref_grid */
     REF_GRID ref_grid;
     REF_OCT ref_oct;
     RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
     RSS(ref_oct_create(&ref_oct), "make oct");
     RSS(ref_oct_split(ref_oct, 0), "split root");
     RSS(ref_oct_split(ref_oct, 1), "split first");
-    ref_oct_tec(ref_oct, "test.tec");
     RSS(ref_oct_export(ref_oct, ref_grid), "export");
     RSS(ref_oct_free(ref_oct), "free oct");
     RSS(ref_grid_free(ref_grid), "free grid");
