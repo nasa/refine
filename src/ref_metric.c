@@ -1863,6 +1863,51 @@ REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                         ref_node),
           "tet sub_tet");
     }
+
+    ref_cell = ref_grid_pyr(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tet_complexity(0, 4, 1, 2, nodes, metric, complexity,
+                                        ref_node),
+          "pyr sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 3, 4, 2, nodes, metric, complexity,
+                                        ref_node),
+          "pyr sub_tet");
+    }
+
+    ref_cell = ref_grid_pri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tet_complexity(0, 4, 5, 3, nodes, metric, complexity,
+                                        ref_node),
+          "pri sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 1, 5, 4, nodes, metric, complexity,
+                                        ref_node),
+          "pri sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 1, 2, 5, nodes, metric, complexity,
+                                        ref_node),
+          "pri sub_tet");
+    }
+
+    ref_cell = ref_grid_hex(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tet_complexity(0, 5, 7, 4, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 1, 7, 5, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(1, 6, 7, 5, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 7, 2, 3, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(0, 7, 1, 2, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+      RSS(ref_metric_sub_tet_complexity(1, 7, 6, 2, nodes, metric, complexity,
+                                        ref_node),
+          "hex sub_tet");
+    }
   } else {
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
