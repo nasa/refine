@@ -1819,16 +1819,20 @@ REF_FCN REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1,
   return REF_SUCCESS;
 }
 
-REF_FCN static REF_STATUS ref_metric_sub_tet_complexity(REF_INT *nodes,
-                                                        REF_DBL *metric,
-                                                        REF_DBL *complexity,
-                                                        REF_NODE ref_node) {
+REF_FCN static REF_STATUS ref_metric_sub_tet_complexity(
+    REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3, REF_INT *nodes,
+    REF_DBL *metric, REF_DBL *complexity, REF_NODE ref_node) {
   REF_DBL volume, det;
   REF_INT cell_node;
-  RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
+  REF_INT tet_nodes[4];
+  tet_nodes[0] = nodes[n0];
+  tet_nodes[1] = nodes[n1];
+  tet_nodes[2] = nodes[n2];
+  tet_nodes[3] = nodes[n3];
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &volume), "vol");
   for (cell_node = 0; cell_node < 4; cell_node++) {
-    if (ref_node_owned(ref_node, nodes[cell_node])) {
-      RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
+    if (ref_node_owned(ref_node, tet_nodes[cell_node])) {
+      RSS(ref_matrix_det_m(&(metric[6 * tet_nodes[cell_node]]), &det), "det");
       if (det > 0.0) {
         (*complexity) += sqrt(det) * volume / 4.0;
       }
@@ -1855,7 +1859,8 @@ REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
   if (have_vol_cells) {
     ref_cell = ref_grid_tet(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_metric_sub_tet_complexity(nodes, metric, complexity, ref_node),
+      RSS(ref_metric_sub_tet_complexity(0, 1, 2, 3, nodes, metric, complexity,
+                                        ref_node),
           "tet sub_tet");
     }
   } else {
