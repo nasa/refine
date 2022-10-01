@@ -938,7 +938,7 @@ REF_FCN static REF_STATUS ref_oct_export_steiner(REF_OCT ref_oct, REF_INT node,
       quad_nodes[3] = face_nodes[7];
       RSS(ref_oct_export_prism(ref_oct, node, ref_grid, quad_nodes), "qua 0/4");
       if (on_boundary)
-        RSS(ref_oct_export_qua(ref_oct, node, ref_grid, face_nodes,
+        RSS(ref_oct_export_qua(ref_oct, node, ref_grid, quad_nodes,
                                cell_face + 1),
             "whole quad boundary qua");
       quad_nodes[0] = face_nodes[1];
@@ -947,7 +947,7 @@ REF_FCN static REF_STATUS ref_oct_export_steiner(REF_OCT ref_oct, REF_INT node,
       quad_nodes[3] = face_nodes[4];
       RSS(ref_oct_export_prism(ref_oct, node, ref_grid, quad_nodes), "qua 1/4");
       if (on_boundary)
-        RSS(ref_oct_export_qua(ref_oct, node, ref_grid, face_nodes,
+        RSS(ref_oct_export_qua(ref_oct, node, ref_grid, quad_nodes,
                                cell_face + 1),
             "whole quad boundary qua");
       quad_nodes[0] = face_nodes[2];
@@ -956,7 +956,7 @@ REF_FCN static REF_STATUS ref_oct_export_steiner(REF_OCT ref_oct, REF_INT node,
       quad_nodes[3] = face_nodes[5];
       RSS(ref_oct_export_prism(ref_oct, node, ref_grid, quad_nodes), "qua 2/4");
       if (on_boundary)
-        RSS(ref_oct_export_qua(ref_oct, node, ref_grid, face_nodes,
+        RSS(ref_oct_export_qua(ref_oct, node, ref_grid, quad_nodes,
                                cell_face + 1),
             "whole quad boundary qua");
       quad_nodes[0] = face_nodes[3];
@@ -965,7 +965,7 @@ REF_FCN static REF_STATUS ref_oct_export_steiner(REF_OCT ref_oct, REF_INT node,
       quad_nodes[3] = face_nodes[6];
       RSS(ref_oct_export_prism(ref_oct, node, ref_grid, quad_nodes), "qua 3/4");
       if (on_boundary)
-        RSS(ref_oct_export_qua(ref_oct, node, ref_grid, face_nodes,
+        RSS(ref_oct_export_qua(ref_oct, node, ref_grid, quad_nodes,
                                cell_face + 1),
             "whole quad boundary qua");
       continue;
