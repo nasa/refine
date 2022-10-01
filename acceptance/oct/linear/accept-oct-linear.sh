@@ -23,7 +23,7 @@ function adapt_cycle {
     ${src}/ref_acceptance ${output}.meshb ${output}-metric.solb ${hmin}
 }
 
-${src}/ref_oct_test --box cycle00.meshb
+${src}/ref_oct_test --box 0.05 cycle00.meshb
 
 adapt_cycle cycle00 cycle01
 adapt_cycle cycle01 cycle02
