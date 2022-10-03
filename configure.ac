@@ -51,12 +51,10 @@ then
   then
     if test $(echo $with_mpiinc | grep /)
     then
-      mpi_include="$with_mpiinc"
+      mpi_include="-I$with_mpiinc"
     else
-      mpi_include="$with_mpi/$with_mpiinc"
+      mpi_include="-I$with_mpi/$with_mpiinc"
     fi
-  else
-    mpi_include="."
   fi
   AC_SUBST([mpi_include])
 
@@ -91,7 +89,7 @@ then
     tokens=($($MPICC -show))
     for i in $[{tokens[*]}]
     do
-      mpi_ldadd="$mpi_ldadd $(AS_ECHO([$i]) | grep -- -l 2> /dev/null)"
+      mpi_ldadd="$mpi_ldadd $(AS_ECHO([$i]) | grep -E -- '-l|-L' 2> /dev/null)"
     done
 
   else
