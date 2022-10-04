@@ -35,38 +35,65 @@ AC_ARG_WITH(mpi,
         [[  --with-mpi[=ARG]        Path to MPI library installation [ARG=no]]],
         [with_mpi="$withval"],      [with_mpi="no"] )
 AC_ARG_WITH(mpicc,
-        [[  --with-mpicc[=ARG]      MPI C compiler wrapper absolute path [with_mpi/bin/mpicc]]],
-        [with_mpicc="$withval"],    [with_mpicc="with_mpi/bin/mpicc"] )
+        [[  --with-mpicc[=ARG]      MPI C compiler wrapper absolute path [mpicc]]],
+        [with_mpicc="$withval"],    [with_mpicc="mpicc"] )
+AC_ARG_WITH(mpibin,
+        [[  --with-mpibin[=ARG]     MPI bin directory [bin]]],
+        [with_mpibin="$withval"],   [with_mpibin="bin"] )
 AC_ARG_WITH(mpiinc,
-        [[  --with-mpiinc[=ARG]     MPI include absolute path for mpif.h [with_mpi/include]]],
-        [with_mpiinc="$withval"],   [with_mpiinc="with_mpi/include"] )
+        [[  --with-mpiinc[=ARG]     MPI include directory for mpi.h [include]]],
+        [with_mpiinc="$withval"],   [with_mpiinc="include"] )
+AC_DEFINE_UNQUOTED([MPI_PATH],["$with_mpi"],[MPI installation])
 if test "$with_mpi" != 'no'
 then
   AC_MSG_NOTICE([checking MPI installation])
   if test "$with_mpiinc" != 'no'
   then
-    if test "$with_mpiinc" = 'with_mpi/include'
+    if test $(echo $with_mpiinc | grep /)
     then
-      mpi_include="-I${with_mpi}/include"
+      mpi_include="-I$with_mpiinc"
     else
-      mpi_include="-I${with_mpiinc}"
+      mpi_include="-I$with_mpi/$with_mpiinc"
     fi
-  else
-    mpi_include=""
   fi
   AC_SUBST([mpi_include])
 
+  if test "$with_mpibin" != 'no'
+  then
+    if test $(echo $with_mpibin | grep /)
+    then
+      MPIBIN="$with_mpibin"
+    else
+      MPIBIN="$with_mpi/$with_mpibin"
+    fi
+  fi
+
   if test "$with_mpicc" != 'no'
   then
-    if test "$with_mpicc" = 'with_mpi/bin/mpicc'
+    AC_MSG_NOTICE([checking mpi C compiler wrapper...])
+    if test $(echo $with_mpicc | grep /)
     then
-      MPICC="${with_mpi}/bin/mpicc"
+      MPICC="$with_mpicc"
     else
-      MPICC="${with_mpicc}"
+      MPICC="$MPIBIN/$with_mpicc"
     fi
-    mpi_ldadd="-L${with_mpi}/lib -lmpi"
+    AC_MSG_RESULT([  $MPICC])
+    if eval "test -e $MPICC"
+    then
+      CC=$MPICC
+    else
+      AC_MSG_ERROR([MPI C compiler wrapper does not exist])
+    fi
+
+    mpi_ldadd=''
+    tokens=($($MPICC -show))
+    for i in $[{tokens[*]}]
+    do
+      mpi_ldadd="$mpi_ldadd $(AS_ECHO([$i]) | grep -E -- '-l|-L' 2> /dev/null)"
+    done
+
   else
-    MPICC="${CC}"
+    # when wrapper is missing (i.e. sgi mpt) link with -lmpi
     mpi_ldadd="-L${with_mpi}/lib -lmpi"
   fi
   AC_SUBST([MPICC])
@@ -74,6 +101,7 @@ then
 
   AM_CONDITIONAL(BUILD_MPI,true)
 else
+  AC_MSG_WARN([MPI library installation not found, use --with-mpi])
   AM_CONDITIONAL(BUILD_MPI,false)
 fi
 
