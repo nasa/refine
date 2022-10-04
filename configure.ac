@@ -94,13 +94,14 @@ then
 
   else
     # when wrapper is missing (i.e. sgi mpt) link with -lmpi
-    mpi_ldadd=-lmpi
+    mpi_ldadd="-L${with_mpi}/lib -lmpi"
   fi
   AC_SUBST([MPICC])
   AC_SUBST([mpi_ldadd])
 
   AM_CONDITIONAL(BUILD_MPI,true)
 else
+  AC_MSG_WARN([MPI library installation not found, use --with-mpi])
   AM_CONDITIONAL(BUILD_MPI,false)
 fi
 
