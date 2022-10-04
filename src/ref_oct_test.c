@@ -81,7 +81,6 @@ int main(int argc, char *argv[]) {
     h = atof(argv[pos + 1]);
     RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
     RSS(ref_oct_create(&ref_oct), "make oct");
-    RSS(ref_oct_split_touching(ref_oct, ref_oct->bbox, 0.5), "split");
     RSS(ref_oct_split_touching(ref_oct, bbox, h), "split");
     RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
     printf("raw %d vox\n", nleaf);
