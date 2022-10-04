@@ -71,6 +71,32 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--wmles", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY && pos + 2 < argc) {
+    REF_GRID ref_grid;
+    REF_OCT ref_oct;
+    REF_DBL h;
+    REF_DBL bbox[]={0.0,1.0,0.0,1.0,0,0.03};
+    REF_INT nleaf;
+    h = atof(argv[pos + 1]);
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
+    RSS(ref_oct_create(&ref_oct), "make oct");
+    RSS(ref_oct_split_touching(ref_oct, ref_oct->bbox, 0.5), "split");
+    RSS(ref_oct_split_touching(ref_oct, bbox, h), "split");
+    RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
+    printf("raw %d vox\n", nleaf);
+    RSS(ref_oct_gradation(ref_oct), "grad");
+    RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
+    printf("grad %d vox\n", nleaf);
+    RSS(ref_oct_export(ref_oct, ref_grid), "export");
+    RSS(ref_export_by_extension(ref_grid, argv[pos + 2]), "export");
+    RSS(ref_oct_free(ref_oct), "free oct");
+    RSS(ref_grid_free(ref_grid), "free grid");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--point", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY && pos + 1 < argc) {
     REF_OCT ref_oct;
