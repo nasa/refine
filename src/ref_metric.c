@@ -1936,6 +1936,18 @@ REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                         ref_node),
           "tri sub_tri");
     }
+
+    ref_cell = ref_grid_qua(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tri_complexity(0, 1, 2, nodes, metric, complexity,
+                                        ref_node),
+          "qua sub_tri");
+    }
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tri_complexity(0, 2, 3, nodes, metric, complexity,
+                                        ref_node),
+          "qua sub_tri");
+    }
   }
 
   RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), complexity, 1, REF_DBL_TYPE),
