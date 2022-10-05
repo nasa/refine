@@ -3935,12 +3935,12 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
       RSS(ref_recon_roundoff_limit(metric, ref_grid),
           "floor metric eigenvalues based on grid size and solution jitter");
+      RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+          "local scale lp norm");
       if (ref_mpi_once(ref_mpi))
         printf("limit --aspect-ratio to %f\n", aspect_ratio);
       RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
           "limit aspect ratio");
-      RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-          "local scale lp norm");
       RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                              complexity),
           "gradation at complexity");
