@@ -332,7 +332,17 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_INT node;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_DBL gradation = 10.0;
+  REF_INT norm_p = 4;
+  REF_DBL aspect_ratio = -1.0;
   REF_INT pos, opt;
+
+  RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    aspect_ratio = atof(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi))
+      printf("limit --aspect-ratio to %f\n", aspect_ratio);
+  }
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -349,24 +359,11 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
     yplus = distance[node] / spalding_yplus;
     RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
   }
-  RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
-  RSS(ref_recon_roundoff_limit(metric, ref_grid),
-      "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
-      "local lp=4 norm scaling");
-  RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos && pos < argc - 1) {
-    REF_DBL aspect_ratio = atof(argv[pos + 1]);
-    if (ref_mpi_once(ref_mpi))
-      printf("limit --aspect-ratio to %f\n", aspect_ratio);
-    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
-        "limit aspect ratio");
-  }
-  ref_mpi_stopwatch_stop(ref_mpi, "spalding metric");
-  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                         complexity),
-      "set complexity");
+
+  RSS(ref_metric_lp(metric, ref_grid, uplus, reconstruction, norm_p, gradation,
+                    aspect_ratio, complexity),
+      "lp norm");
+
   RSS(ref_metric_parse(metric, ref_grid, argc, argv), "parse metric");
   for (opt = 0; opt < argc - 4; opt++) {
     if (strcmp(argv[opt], "--faceid-spacing") == 0) {
@@ -2606,7 +2603,7 @@ static REF_STATUS fixed_point_metric(
     REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
     REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
     const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
-    REF_DBL gradation, REF_DBL complexity, REF_BOOL iles, REF_DBL aspect_ratio,
+    REF_DBL gradation, REF_DBL complexity, REF_DBL aspect_ratio,
     REF_BOOL strong_sensor_bc, REF_DBL strong_value, REF_DICT ref_dict_bcs) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_DBL *hess, *scalar;
@@ -2615,17 +2612,6 @@ static REF_STATUS fixed_point_metric(
   REF_DBL inv_total;
   REF_INT im, node;
   REF_INT fixed_point_ldim;
-
-  REF_DBL *min_scalar = NULL;
-  REF_DBL *max_scalar = NULL;
-  REF_BOOL first = REF_TRUE;
-
-  if (iles) {
-    ref_malloc_init(min_scalar, 1 * ref_node_max(ref_grid_node(ref_grid)),
-                    REF_DBL, 0);
-    ref_malloc_init(max_scalar, 1 * ref_node_max(ref_grid_node(ref_grid)),
-                    REF_DBL, 0);
-  }
 
   ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   total_timesteps = 0;
@@ -2644,20 +2630,6 @@ static REF_STATUS fixed_point_metric(
           "apply strong sensor bc");
     }
     RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
-    if (NULL != min_scalar && NULL != max_scalar) {
-      if (first) {
-        first = REF_FALSE;
-        each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-          min_scalar[node] = scalar[node];
-          max_scalar[node] = scalar[node];
-        }
-      } else {
-        each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-          min_scalar[node] = MIN(min_scalar[node], scalar[node]);
-          max_scalar[node] = MAX(max_scalar[node], scalar[node]);
-        }
-      }
-    }
     ref_free(scalar);
     total_timesteps++;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -2676,53 +2648,14 @@ static REF_STATUS fixed_point_metric(
       metric[im + 6 * node] *= inv_total;
     }
   }
+
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-      "local lp norm scaling");
+  RSS(ref_metric_local_scale(metric, ref_grid, p), "local lp norm scaling");
+  RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
+      "limit aspect ratio");
+  ref_mpi_stopwatch_stop(ref_mpi, "limit aspect ratio");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
-  if (NULL != min_scalar && NULL != max_scalar) {
-    REF_DBL threshold, local;
-    threshold = REF_DBL_MIN;
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      threshold = MAX(threshold, max_scalar[node]);
-    }
-    local = threshold;
-    RSS(ref_mpi_max(ref_mpi, &local, &threshold, REF_DBL_TYPE), "max thresh");
-    RSS(ref_mpi_bcast(ref_mpi, &threshold, 1, REF_DBL_TYPE), "thresh bcast");
-    if (ref_mpi_once(ref_mpi)) printf("iles threshold %f\n", threshold);
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL diag_system[12];
-      REF_DBL eiglimit = 1.0;
-      RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "diag");
-      if (ref_grid_twod(ref_grid)) {
-        RSS(ref_matrix_descending_eig_twod(diag_system), "2D ascend");
-        ref_matrix_eig(diag_system, 1) =
-            MAX(ref_matrix_eig(diag_system, 0) * eiglimit,
-                ref_matrix_eig(diag_system, 1));
-      } else {
-        RSS(ref_matrix_descending_eig(diag_system), "3D ascend");
-        ref_matrix_eig(diag_system, 1) =
-            MAX(ref_matrix_eig(diag_system, 0) * eiglimit,
-                ref_matrix_eig(diag_system, 1));
-        ref_matrix_eig(diag_system, 2) =
-            MAX(ref_matrix_eig(diag_system, 0) * eiglimit,
-                ref_matrix_eig(diag_system, 2));
-      }
-      RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "form m");
-    }
-  }
-  ref_free(min_scalar);
-  ref_free(max_scalar);
-
-  if (aspect_ratio > 0.0) {
-    if (ref_mpi_once(ref_mpi))
-      printf("limit --aspect-ratio to %f\n", aspect_ratio);
-    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
-        "limit aspect ratio");
-    ref_mpi_stopwatch_stop(ref_mpi, "limit aspect ratio");
-  }
-
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "gradation at complexity");
@@ -2827,8 +2760,7 @@ static REF_STATUS hrles_fixed_point_metric(
   }
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-      "local lp norm scaling");
+  RSS(ref_metric_local_scale(metric, ref_grid, p), "local lp norm scaling");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
 
   ref_malloc(aspect_ratio_field, ref_node_max(ref_grid_node(ref_grid)),
@@ -2992,8 +2924,7 @@ static REF_STATUS moving_fixed_point_metric(
   }
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-      "local lp norm scaling");
+  RSS(ref_metric_local_scale(metric, ref_grid, p), "local lp norm scaling");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
@@ -3421,8 +3352,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         "add nonlinear terms");
     RSS(ref_recon_roundoff_limit(metric, ref_grid),
         "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local scale lp norm");
+    RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
         "gradation at complexity");
@@ -3448,8 +3378,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_free(g);
     RSS(ref_recon_roundoff_limit(metric, ref_grid),
         "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local scale lp norm");
+    RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
         "gradation at complexity");
@@ -3462,7 +3391,6 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos + 3 < argc) {
     REF_DBL *g;
     REF_DBL mach, re, temperature;
-    REF_DBL cons_visc_aspect_ratio = 1.0e6;
     multiscale_metric = REF_FALSE;
     mach = atof(argv[pos + 1]);
     re = atof(argv[pos + 2]);
@@ -3487,9 +3415,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_free(g);
     RSS(ref_recon_roundoff_limit(metric, ref_grid),
         "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local scale lp norm");
-    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, cons_visc_aspect_ratio),
+    RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
+    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
         "limit AR");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
@@ -3517,11 +3444,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RXS(ref_args_find(argc, argv, "--deforming", &deforming_pos), REF_NOT_FOUND,
         "arg search");
     if (REF_EMPTY == deforming_pos) {
-      REF_BOOL iles = REF_FALSE;
       REF_BOOL hrles = REF_FALSE;
-      RXS(ref_args_find(argc, argv, "--iles", &pos), REF_NOT_FOUND,
-          "arg search");
-      if (REF_EMPTY != pos) iles = REF_TRUE;
       RXS(ref_args_find(argc, argv, "--hrles", &pos), REF_NOT_FOUND,
           "arg search");
       if (REF_EMPTY != pos) hrles = REF_TRUE;
@@ -3540,7 +3463,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       } else {
         RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
                                timestep_increment, in_project, solb_middle,
-                               reconstruction, p, gradation, complexity, iles,
+                               reconstruction, p, gradation, complexity,
                                aspect_ratio, strong_sensor_bc, strong_value,
                                ref_dict_bcs),
             "fixed point");
@@ -3603,8 +3526,8 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       } else {
         if (ref_mpi_once(ref_mpi))
           printf("reconstruct Hessian, compute metric\n");
-        RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                          gradation, complexity),
+        RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p,
+                          aspect_ratio, gradation, complexity),
             "lp norm");
         ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric");
         RSS(ref_subcommand_report_error(metric, ref_grid, scalar,
@@ -3871,6 +3794,25 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS hessian_multiscale(REF_MPI ref_mpi, REF_GRID ref_grid,
+                                     const char *in_scalar, REF_DBL *metric,
+                                     REF_INT p, REF_DBL gradation,
+                                     REF_DBL complexity) {
+  if (ref_mpi_once(ref_mpi)) printf("part hessian %s\n", in_scalar);
+  RSS(ref_part_metric(ref_grid_node(ref_grid), in_scalar), "part scalar");
+  ref_mpi_stopwatch_stop(ref_mpi, "part metric");
+  RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "get node");
+  RSS(ref_recon_abs_value_hessian(ref_grid, metric), "abs val");
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         complexity),
+      "gradation at complexity");
+  ref_mpi_stopwatch_stop(ref_mpi, "compute metric from hessian");
+  return REF_SUCCESS;
+}
+
 static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_metric;
   char *in_mesh;
@@ -3883,8 +3825,9 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation, complexity, current_complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_INT pos;
-  REF_BOOL buffer;
+  REF_INT hessian_pos, fixed_point_pos;
   REF_DBL aspect_ratio = -1.0;
+  REF_DICT ref_dict_bcs = NULL;
 
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
@@ -3916,11 +3859,10 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     gradation = atof(argv[pos + 1]);
   }
 
-  buffer = REF_FALSE;
-  RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos) {
-    buffer = REF_TRUE;
-  }
+  RXS(ref_args_find(argc, argv, "--hessian", &hessian_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--fixed-point", &fixed_point_pos),
+      REF_NOT_FOUND, "arg search");
 
   aspect_ratio = -1.0;
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
@@ -3934,12 +3876,39 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     aspect_ratio = atof(argv[pos + 1]);
   }
 
+  RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading fun3d bc map %s\n", mapbc);
+      RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+          "unable to read fun3d formatted mapbc");
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
+  }
+
+  RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *tags;
+    tags = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) {
+      printf("parsing viscous tags\n");
+      RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+          "unable to parse viscous tags");
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
+  }
+
   if (ref_mpi_once(ref_mpi)) {
     printf("complexity %f\n", complexity);
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
     printf("reconstruction %d\n", (int)reconstruction);
-    printf("buffer %d (zero is inactive)\n", buffer);
   }
   RAS(complexity > 1.0e-20, "complexity must be greater than zero");
 
@@ -3960,144 +3929,57 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
-  RXS(ref_args_find(argc, argv, "--hessian", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    if (ref_mpi_once(ref_mpi)) printf("part hessian %s\n", in_scalar);
-    RSS(ref_part_metric(ref_grid_node(ref_grid), in_scalar), "part scalar");
-    ref_mpi_stopwatch_stop(ref_mpi, "part metric");
-    RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "get node");
-    RSS(ref_recon_abs_value_hessian(ref_grid, metric), "abs val");
-    RSS(ref_recon_roundoff_limit(metric, ref_grid),
-        "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local scale lp norm");
-    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                           complexity),
-        "gradation at complexity");
-    ref_mpi_stopwatch_stop(ref_mpi, "compute metric from hessian");
-  } else {
-    RXS(ref_args_find(argc, argv, "--combine", &pos), REF_NOT_FOUND,
+  if (REF_EMPTY != fixed_point_pos) {
+    REF_INT first_timestep, last_timestep, timestep_increment;
+    const char *solb_middle;
+    const char in_project[] = "";
+    REF_BOOL strong_sensor_bc = REF_FALSE;
+    REF_DBL strong_value = 0.0;
+    solb_middle = argv[fixed_point_pos + 1];
+    first_timestep = atoi(argv[fixed_point_pos + 2]);
+    timestep_increment = atoi(argv[fixed_point_pos + 3]);
+    last_timestep = atoi(argv[fixed_point_pos + 4]);
+    RXS(ref_args_find(argc, argv, "--strong-sensor-bc", &pos), REF_NOT_FOUND,
         "arg search");
     if (REF_EMPTY != pos) {
-      char *in_scalar2;
-      REF_DBL *scalar1 = NULL;
-      REF_DBL *scalar2 = NULL;
-      REF_DBL *metric1 = NULL;
-      REF_DBL *metric2 = NULL;
-      REF_DBL s;
-      REF_INT i, node;
-
-      RAS(pos < argc - 2, "--combine arguments missing");
-      in_scalar2 = argv[pos + 1];
-      s = atof(argv[pos + 2]);
-      if (ref_mpi_once(ref_mpi)) {
-        printf("scalar ratio %f scalar2 ratio %f\n", 1.0 - s, s);
-      }
-
-      if (ref_mpi_once(ref_mpi) && (s < 0 || 1 < s)) {
-        printf("scalar 2 ratio expected between 0 and 1, is %e\n", s);
-      }
-      if (ref_mpi_once(ref_mpi)) printf("part scalar1 %s\n", in_scalar);
-      RSS(ref_part_scalar(ref_grid, &ldim, &scalar1, in_scalar),
-          "part scalar1");
-      REIS(1, ldim, "expected one ldim for scalar1");
-      ref_mpi_stopwatch_stop(ref_mpi, "part scalar2");
-      if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar2);
-      RSS(ref_part_scalar(ref_grid, &ldim, &scalar2, in_scalar2),
-          "part scalar2");
-      REIS(1, ldim, "expected one ldim for scalar2");
-      ref_mpi_stopwatch_stop(ref_mpi, "part scalar2");
-
-      ref_malloc(metric1, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-      ref_malloc(metric2, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-
-      RSS(ref_metric_lp(metric1, ref_grid, scalar1, NULL, reconstruction, p,
-                        gradation, complexity),
-          "lp norm");
-      ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric1");
-      RSS(ref_metric_lp(metric2, ref_grid, scalar2, NULL, reconstruction, p,
-                        gradation, complexity),
-          "lp norm");
-      ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric2");
-
-      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-        REF_DBL log_m1[6];
-        REF_DBL log_m2[6];
-        REF_DBL log_m[6];
-        RSS(ref_matrix_log_m(&(metric1[6 * node]), log_m1), "log");
-        RSS(ref_matrix_log_m(&(metric2[6 * node]), log_m2), "log");
-        for (i = 0; i < 6; i++)
-          log_m[i] = (1.0 - s) * log_m1[i] + s * log_m2[i];
-        RSS(ref_matrix_exp_m(log_m, &(metric[6 * node])), "exp");
-      }
-      ref_mpi_stopwatch_stop(ref_mpi, "log interpolate metric");
-
-      RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                             complexity),
-          "gradation at complexity");
-      ref_mpi_stopwatch_stop(ref_mpi, "metric gradation");
-
-      if (ref_mpi_once(ref_mpi)) printf("opt1: ");
-      RSS(ref_subcommand_report_error(metric1, ref_grid, scalar1,
-                                      reconstruction, complexity),
-          "report error");
-      if (ref_mpi_once(ref_mpi)) printf("opt2: ");
-      RSS(ref_subcommand_report_error(metric2, ref_grid, scalar2,
-                                      reconstruction, complexity),
-          "report error");
-      if (ref_mpi_once(ref_mpi)) printf("soln1: ");
-      RSS(ref_subcommand_report_error(metric, ref_grid, scalar1, reconstruction,
-                                      complexity),
-          "report error");
-      if (ref_mpi_once(ref_mpi)) printf("soln2: ");
-      RSS(ref_subcommand_report_error(metric, ref_grid, scalar2, reconstruction,
-                                      complexity),
-          "report error");
-      ref_free(scalar2);
-      ref_free(scalar1);
-      ref_free(metric2);
-      ref_free(metric1);
-    } else {
-      if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar);
-      RSS(ref_part_scalar(ref_grid, &ldim, &scalar, in_scalar), "part scalar");
-      REIS(1, ldim, "expected one scalar");
-      ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
-
-      if (aspect_ratio > 0.0) {
-        if (ref_mpi_once(ref_mpi))
-          printf("reconstruct Hessian, compute metric\n");
-        RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction),
-            "recon");
-        RSS(ref_recon_roundoff_limit(metric, ref_grid),
-            "floor metric eigenvalues based on grid size and solution jitter");
-        if (ref_mpi_once(ref_mpi))
-          printf("limit --aspect-ratio to %f\n", aspect_ratio);
-        RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
-            "limit aspect ratio");
-        RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-            "local scale lp norm");
-        RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                               complexity),
-            "gradation at complexity");
-
-        ref_mpi_stopwatch_stop(ref_mpi, "limit aspect ratio");
-      } else {
-        if (ref_mpi_once(ref_mpi))
-          printf("reconstruct Hessian, compute metric\n");
-        RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                          gradation, complexity),
-            "lp norm");
-      }
-      ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
-      RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
-                                      complexity),
-          "report error");
-      ref_free(scalar);
+      RAS(pos + 1 < argc, "--strong-sensor-bc <value>");
+      strong_sensor_bc = REF_TRUE;
+      strong_value = atof(argv[pos + 1]);
     }
+    if (ref_mpi_once(ref_mpi)) {
+      printf("--fixed-point\n");
+      printf("    %s%s solb project\n", in_project, solb_middle);
+      printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
+             timestep_increment, last_timestep);
+    }
+    RSS(fixed_point_metric(
+            metric, ref_grid, first_timestep, last_timestep, timestep_increment,
+            in_project, solb_middle, reconstruction, p, gradation, complexity,
+            aspect_ratio, strong_sensor_bc, strong_value, ref_dict_bcs),
+        "fixed point");
+  } else if (REF_EMPTY != hessian_pos) {
+    RSS(hessian_multiscale(ref_mpi, ref_grid, in_scalar, metric, p, gradation,
+                           complexity),
+        "hessian multiscale");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar);
+    RSS(ref_part_scalar(ref_grid, &ldim, &scalar, in_scalar), "part scalar");
+    REIS(1, ldim, "expected one scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
+                      aspect_ratio, complexity),
+        "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
+                                    complexity),
+        "report error");
+    ref_free(scalar);
   }
 
-  if (buffer) {
+  RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
     if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
     RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
         "buffer at complexity");
@@ -4134,6 +4016,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_metric(ref_grid, out_metric), "gather metric");
   ref_mpi_stopwatch_stop(ref_mpi, "gather metric");
 
+  RSS(ref_dict_free(ref_dict_bcs), "free");
   RSS(ref_grid_free(ref_grid), "free grid");
 
   return REF_SUCCESS;

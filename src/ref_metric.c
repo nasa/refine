@@ -1842,12 +1842,33 @@ REF_FCN static REF_STATUS ref_metric_sub_tet_complexity(
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_metric_sub_tri_complexity(
+    REF_INT n0, REF_INT n1, REF_INT n2, REF_INT *nodes, REF_DBL *metric,
+    REF_DBL *complexity, REF_NODE ref_node) {
+  REF_DBL volume, det;
+  REF_INT cell_node;
+  REF_INT tri_nodes[3];
+  tri_nodes[0] = nodes[n0];
+  tri_nodes[1] = nodes[n1];
+  tri_nodes[2] = nodes[n2];
+  RSS(ref_node_tri_area(ref_node, tri_nodes, &volume), "vol");
+  for (cell_node = 0; cell_node < 3; cell_node++) {
+    if (ref_node_owned(ref_node, tri_nodes[cell_node])) {
+      RSS(ref_matrix_det_m(&(metric[6 * tri_nodes[cell_node]]), &det), "det");
+      if (det > 0.0) {
+        (*complexity) += sqrt(det) * volume / 3.0;
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                          REF_DBL *complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL volume, det;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL have_vol_cells;
   REF_LONG ntet, npyr, npri, nhex;
   *complexity = 0.0;
@@ -1911,17 +1932,21 @@ REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
   } else {
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
-      for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell);
-           cell_node++) {
-        if (ref_node_owned(ref_node, nodes[cell_node])) {
-          RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
-          if (det > 0.0) {
-            (*complexity) +=
-                sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
-          }
-        }
-      }
+      RSS(ref_metric_sub_tri_complexity(0, 1, 2, nodes, metric, complexity,
+                                        ref_node),
+          "tri sub_tri");
+    }
+
+    ref_cell = ref_grid_qua(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tri_complexity(0, 1, 2, nodes, metric, complexity,
+                                        ref_node),
+          "qua sub_tri");
+    }
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_metric_sub_tri_complexity(0, 2, 3, nodes, metric, complexity,
+                                        ref_node),
+          "qua sub_tri");
     }
   }
 
@@ -1968,15 +1993,20 @@ REF_FCN REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric,
   REF_DBL diag_system[12];
   REF_DBL max_eig, limit_eig;
   REF_INT node;
+  REF_DBL aspect_ratio2;
+  if (aspect_ratio > 0.9999) {
+    aspect_ratio2 = aspect_ratio * aspect_ratio;
+  } else {
+    aspect_ratio2 = 1.0e6 * 1.0e6;
+  }
   if (ref_grid_twod(ref_grid)) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
       RSS(ref_matrix_descending_eig_twod(diag_system), "2D eig sort");
       max_eig = ref_matrix_eig(diag_system, 0);
       max_eig = MAX(ref_matrix_eig(diag_system, 1), max_eig);
-      RAS(ref_math_divisible(max_eig, (aspect_ratio * aspect_ratio)),
-          "AR div zero");
-      limit_eig = max_eig / (aspect_ratio * aspect_ratio);
+      RAS(ref_math_divisible(max_eig, aspect_ratio2), "AR div zero");
+      limit_eig = max_eig / aspect_ratio2;
       ref_matrix_eig(diag_system, 0) =
           MAX(ref_matrix_eig(diag_system, 0), limit_eig);
       ref_matrix_eig(diag_system, 1) =
@@ -1990,9 +2020,8 @@ REF_FCN REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric,
       max_eig = ref_matrix_eig(diag_system, 0);
       max_eig = MAX(ref_matrix_eig(diag_system, 1), max_eig);
       max_eig = MAX(ref_matrix_eig(diag_system, 2), max_eig);
-      RAS(ref_math_divisible(max_eig, (aspect_ratio * aspect_ratio)),
-          "AR div zero");
-      limit_eig = max_eig / (aspect_ratio * aspect_ratio);
+      RAS(ref_math_divisible(max_eig, aspect_ratio2), "AR div zero");
+      limit_eig = max_eig / aspect_ratio2;
       ref_matrix_eig(diag_system, 0) =
           MAX(ref_matrix_eig(diag_system, 0), limit_eig);
       ref_matrix_eig(diag_system, 1) =
@@ -2187,15 +2216,17 @@ REF_FCN REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric,
 }
 
 REF_FCN REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid,
-                                 REF_DBL *scalar, REF_DBL *weight,
+                                 REF_DBL *scalar,
                                  REF_RECON_RECONSTRUCTION reconstruction,
                                  REF_INT p_norm, REF_DBL gradation,
+                                 REF_DBL aspect_ratio,
                                  REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
+  RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
+      "aspect ratio");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
@@ -2211,8 +2242,7 @@ REF_FCN REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity_mixed(metric, ref_grid, gradation,
                                                target_complexity),
       "gradation at complexity");
@@ -2435,8 +2465,7 @@ REF_FCN REF_STATUS ref_metric_multigrad(REF_DBL *metric, REF_GRID ref_grid,
 
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
@@ -2505,8 +2534,7 @@ REF_FCN REF_STATUS ref_metric_moving_multiscale(
   ref_free(jac);
   ref_free(hess);
 
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "gradation at complexity");
@@ -2523,8 +2551,7 @@ REF_FCN REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_histogram(metric, ref_grid, "hess.tec"), "histogram");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
@@ -2532,8 +2559,8 @@ REF_FCN REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_FCN REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
-                                          REF_GRID ref_grid, REF_INT p_norm) {
+REF_FCN REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_GRID ref_grid,
+                                          REF_INT p_norm) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_INT dimension;
@@ -2566,16 +2593,6 @@ REF_FCN REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
       metric[2 + 6 * node] = 0.0;
       metric[4 + 6 * node] = 0.0;
       metric[5 + 6 * node] = 1.0;
-    }
-  }
-
-  /* weight in now length scale, convert to eigenvalue */
-  if (NULL != weight) {
-    each_ref_node_valid_node(ref_node, node) {
-      if (weight[node] > 0.0) {
-        for (i = 0; i < 6; i++)
-          metric[i + 6 * node] /= (weight[node] * weight[node]);
-      }
     }
   }
 
@@ -2637,8 +2654,7 @@ REF_FCN REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
 
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
 
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
