@@ -128,7 +128,7 @@ REF_FCN REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid,
                                  REF_DBL *scalar,
                                  REF_RECON_RECONSTRUCTION reconstruction,
                                  REF_INT p_norm, REF_DBL gradation,
-                                 REF_DBL complexity);
+                                 REF_DBL aspect_ratio, REF_DBL complexity);
 REF_FCN REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
                                        REF_DBL *scalar,
                                        REF_RECON_RECONSTRUCTION reconstruction,

@@ -292,6 +292,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *metric;
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
+    REF_DBL aspect_ratio = -1.0;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
     REIS(1, lp_pos,
@@ -341,7 +342,7 @@ int main(int argc, char *argv[]) {
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
-                      complexity),
+                      aspect_ratio, complexity),
         "lp norm");
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
     if (REF_EMPTY != buffer_pos) {
@@ -375,6 +376,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar1, *scalar2, *metric1, *metric2, *metric;
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity;
+    REF_DBL aspect_ratio = -1.0;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim, i, node;
     REF_DBL s;
@@ -427,11 +429,11 @@ int main(int argc, char *argv[]) {
     ref_malloc(metric2, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     RSS(ref_metric_lp(metric1, ref_grid, scalar1, reconstruction, p, gradation,
-                      complexity),
+                      aspect_ratio, complexity),
         "lp norm");
     ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric1");
     RSS(ref_metric_lp(metric2, ref_grid, scalar2, reconstruction, p, gradation,
-                      complexity),
+                      aspect_ratio, complexity),
         "lp norm");
     ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric2");
 
@@ -603,6 +605,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *field, *scalar, *metric, *output;
     REF_INT p;
     REF_DBL gradation, complexity;
+    REF_DBL aspect_ratio = -1.0;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim, node, var;
     REF_DBL h0, multiscale_system[12];
@@ -658,7 +661,7 @@ int main(int argc, char *argv[]) {
         scalar[node] = field[node + ldim * var];
       }
       RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
-                        complexity),
+                        aspect_ratio, complexity),
           "lp norm");
       ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
       if (REF_EMPTY != buffer_pos) {
@@ -968,6 +971,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *weight, *scalar, *metric, *implied;
     REF_INT p = 2;
     REF_DBL gradation, complexity;
+    REF_DBL aspect_ratio = -1.0;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
     REF_DBL h, h0, h_h0, scale, h_ms;
@@ -1015,7 +1019,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("multiscale metric\n");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
-                      complexity),
+                      aspect_ratio, complexity),
         "lp");
 
     if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
@@ -2953,7 +2957,7 @@ int main(int argc, char *argv[]) {
                      0.03 * pow(ref_node_xyz(ref_node, 2, node), 2);
     }
     RSS(ref_metric_lp(metric, ref_grid, scalar, REF_RECON_L2PROJECTION, 2, 1.5,
-                      1000.0),
+                      -1.0, 1000.0),
         "lp norm");
     ref_free(metric);
     ref_free(scalar);
@@ -2974,7 +2978,7 @@ int main(int argc, char *argv[]) {
       scalar[node] = 0.5;
     }
     RSS(ref_metric_lp(metric, ref_grid, scalar, REF_RECON_L2PROJECTION, 2, 1.5,
-                      1000.0),
+                      -1.0, 1000.0),
         "const metric");
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     RWDS(1000.0, current_complexity, -1.0, "complexity");

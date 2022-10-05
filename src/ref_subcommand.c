@@ -3535,7 +3535,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         if (ref_mpi_once(ref_mpi))
           printf("reconstruct Hessian, compute metric\n");
         RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p,
-                          gradation, complexity),
+                          aspect_ratio, gradation, complexity),
             "lp norm");
         ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric");
         RSS(ref_subcommand_report_error(metric, ref_grid, scalar,
@@ -3922,29 +3922,10 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     REIS(1, ldim, "expected one scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
-    if (aspect_ratio > 0.0) {
-      if (ref_mpi_once(ref_mpi))
-        printf("reconstruct Hessian, compute metric\n");
-      RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
-      RSS(ref_recon_roundoff_limit(metric, ref_grid),
-          "floor metric eigenvalues based on grid size and solution jitter");
-      RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
-      if (ref_mpi_once(ref_mpi))
-        printf("limit --aspect-ratio to %f\n", aspect_ratio);
-      RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
-          "limit aspect ratio");
-      RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                             complexity),
-          "gradation at complexity");
-
-      ref_mpi_stopwatch_stop(ref_mpi, "limit aspect ratio");
-    } else {
-      if (ref_mpi_once(ref_mpi))
-        printf("reconstruct Hessian, compute metric\n");
-      RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
-                        complexity),
-          "lp norm");
-    }
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
+                      aspect_ratio, complexity),
+        "lp norm");
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
     RSS(ref_subcommand_report_error(metric, ref_grid, scalar, reconstruction,
                                     complexity),

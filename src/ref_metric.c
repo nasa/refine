@@ -1993,15 +1993,20 @@ REF_FCN REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric,
   REF_DBL diag_system[12];
   REF_DBL max_eig, limit_eig;
   REF_INT node;
+  REF_DBL aspect_ratio2;
+  if (aspect_ratio > 0.9999) {
+    aspect_ratio2 = aspect_ratio * aspect_ratio;
+  } else {
+    aspect_ratio2 = 1.0e6 * 1.0e6;
+  }
   if (ref_grid_twod(ref_grid)) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
       RSS(ref_matrix_descending_eig_twod(diag_system), "2D eig sort");
       max_eig = ref_matrix_eig(diag_system, 0);
       max_eig = MAX(ref_matrix_eig(diag_system, 1), max_eig);
-      RAS(ref_math_divisible(max_eig, (aspect_ratio * aspect_ratio)),
-          "AR div zero");
-      limit_eig = max_eig / (aspect_ratio * aspect_ratio);
+      RAS(ref_math_divisible(max_eig, aspect_ratio2), "AR div zero");
+      limit_eig = max_eig / aspect_ratio2;
       ref_matrix_eig(diag_system, 0) =
           MAX(ref_matrix_eig(diag_system, 0), limit_eig);
       ref_matrix_eig(diag_system, 1) =
@@ -2015,9 +2020,8 @@ REF_FCN REF_STATUS ref_metric_limit_aspect_ratio(REF_DBL *metric,
       max_eig = ref_matrix_eig(diag_system, 0);
       max_eig = MAX(ref_matrix_eig(diag_system, 1), max_eig);
       max_eig = MAX(ref_matrix_eig(diag_system, 2), max_eig);
-      RAS(ref_math_divisible(max_eig, (aspect_ratio * aspect_ratio)),
-          "AR div zero");
-      limit_eig = max_eig / (aspect_ratio * aspect_ratio);
+      RAS(ref_math_divisible(max_eig, aspect_ratio2), "AR div zero");
+      limit_eig = max_eig / aspect_ratio2;
       ref_matrix_eig(diag_system, 0) =
           MAX(ref_matrix_eig(diag_system, 0), limit_eig);
       ref_matrix_eig(diag_system, 1) =
@@ -2215,11 +2219,14 @@ REF_FCN REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid,
                                  REF_DBL *scalar,
                                  REF_RECON_RECONSTRUCTION reconstruction,
                                  REF_INT p_norm, REF_DBL gradation,
+                                 REF_DBL aspect_ratio,
                                  REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
+  RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
+      "aspect ratio");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
