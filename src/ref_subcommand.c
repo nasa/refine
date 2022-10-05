@@ -3825,8 +3825,9 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation, complexity, current_complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_INT pos;
-  REF_BOOL buffer;
+  REF_INT hessian_pos, fixed_point_pos;
   REF_DBL aspect_ratio = -1.0;
+  REF_DICT ref_dict_bcs = NULL;
 
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
@@ -3858,11 +3859,10 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     gradation = atof(argv[pos + 1]);
   }
 
-  buffer = REF_FALSE;
-  RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos) {
-    buffer = REF_TRUE;
-  }
+  RXS(ref_args_find(argc, argv, "--hessian", &hessian_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--fixed-point", &fixed_point_pos),
+      REF_NOT_FOUND, "arg search");
 
   aspect_ratio = -1.0;
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
@@ -3876,12 +3876,39 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     aspect_ratio = atof(argv[pos + 1]);
   }
 
+  RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) {
+      printf("reading fun3d bc map %s\n", mapbc);
+      RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+          "unable to read fun3d formatted mapbc");
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
+  }
+
+  RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *tags;
+    tags = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) {
+      printf("parsing viscous tags\n");
+      RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+          "unable to parse viscous tags");
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
+    }
+    RSS(ref_dict_bcast(ref_dict_bcs, ref_mpi), "bcast");
+  }
+
   if (ref_mpi_once(ref_mpi)) {
     printf("complexity %f\n", complexity);
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
     printf("reconstruction %d\n", (int)reconstruction);
-    printf("buffer %d (zero is inactive)\n", buffer);
   }
   RAS(complexity > 1.0e-20, "complexity must be greater than zero");
 
@@ -3902,9 +3929,35 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
-  RXS(ref_args_find(argc, argv, "--hessian", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
+  if (REF_EMPTY != fixed_point_pos) {
+    REF_INT first_timestep, last_timestep, timestep_increment;
+    const char *solb_middle;
+    const char in_project[] = "";
+    REF_BOOL strong_sensor_bc = REF_FALSE;
+    REF_DBL strong_value = 0.0;
+    solb_middle = argv[fixed_point_pos + 1];
+    first_timestep = atoi(argv[fixed_point_pos + 2]);
+    timestep_increment = atoi(argv[fixed_point_pos + 3]);
+    last_timestep = atoi(argv[fixed_point_pos + 4]);
+    RXS(ref_args_find(argc, argv, "--strong-sensor-bc", &pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY != pos) {
+      RAS(pos + 1 < argc, "--strong-sensor-bc <value>");
+      strong_sensor_bc = REF_TRUE;
+      strong_value = atof(argv[pos + 1]);
+    }
+    if (ref_mpi_once(ref_mpi)) {
+      printf("--fixed-point\n");
+      printf("    %s%s solb project\n", in_project, solb_middle);
+      printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
+             timestep_increment, last_timestep);
+    }
+    RSS(fixed_point_metric(
+            metric, ref_grid, first_timestep, last_timestep, timestep_increment,
+            in_project, solb_middle, reconstruction, p, gradation, complexity,
+            aspect_ratio, strong_sensor_bc, strong_value, ref_dict_bcs),
+        "fixed point");
+  } else if (REF_EMPTY != hessian_pos) {
     RSS(hessian_multiscale(ref_mpi, ref_grid, in_scalar, metric, p, gradation,
                            complexity),
         "hessian multiscale");
@@ -3925,7 +3978,8 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_free(scalar);
   }
 
-  if (buffer) {
+  RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
     if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
     RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
         "buffer at complexity");
@@ -3962,6 +4016,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_metric(ref_grid, out_metric), "gather metric");
   ref_mpi_stopwatch_stop(ref_mpi, "gather metric");
 
+  RSS(ref_dict_free(ref_dict_bcs), "free");
   RSS(ref_grid_free(ref_grid), "free grid");
 
   return REF_SUCCESS;
