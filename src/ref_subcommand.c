@@ -339,7 +339,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    REF_DBL aspect_ratio = atof(argv[pos + 1]);
+    aspect_ratio = atof(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi))
       printf("limit --aspect-ratio to %f\n", aspect_ratio);
   }
