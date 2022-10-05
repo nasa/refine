@@ -1842,12 +1842,33 @@ REF_FCN static REF_STATUS ref_metric_sub_tet_complexity(
   return REF_SUCCESS;
 }
 
+REF_FCN static REF_STATUS ref_metric_sub_tri_complexity(
+    REF_INT n0, REF_INT n1, REF_INT n2, REF_INT *nodes, REF_DBL *metric,
+    REF_DBL *complexity, REF_NODE ref_node) {
+  REF_DBL volume, det;
+  REF_INT cell_node;
+  REF_INT tri_nodes[3];
+  tri_nodes[0] = nodes[n0];
+  tri_nodes[1] = nodes[n1];
+  tri_nodes[2] = nodes[n2];
+  RSS(ref_node_tri_area(ref_node, tri_nodes, &volume), "vol");
+  for (cell_node = 0; cell_node < 3; cell_node++) {
+    if (ref_node_owned(ref_node, tri_nodes[cell_node])) {
+      RSS(ref_matrix_det_m(&(metric[6 * tri_nodes[cell_node]]), &det), "det");
+      if (det > 0.0) {
+        (*complexity) += sqrt(det) * volume / 3.0;
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                          REF_DBL *complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL volume, det;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL have_vol_cells;
   REF_LONG ntet, npyr, npri, nhex;
   *complexity = 0.0;
@@ -1911,17 +1932,9 @@ REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
   } else {
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
-      for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell);
-           cell_node++) {
-        if (ref_node_owned(ref_node, nodes[cell_node])) {
-          RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
-          if (det > 0.0) {
-            (*complexity) +=
-                sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
-          }
-        }
-      }
+      RSS(ref_metric_sub_tri_complexity(0, 1, 2, nodes, metric, complexity,
+                                        ref_node),
+          "tri sub_tri");
     }
   }
 
