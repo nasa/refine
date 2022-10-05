@@ -3809,6 +3809,25 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS hessian_multiscale(REF_MPI ref_mpi, REF_GRID ref_grid,
+                                     const char *in_scalar, REF_DBL *metric,
+                                     REF_INT p, REF_DBL gradation,
+                                     REF_DBL complexity) {
+  if (ref_mpi_once(ref_mpi)) printf("part hessian %s\n", in_scalar);
+  RSS(ref_part_metric(ref_grid_node(ref_grid), in_scalar), "part scalar");
+  ref_mpi_stopwatch_stop(ref_mpi, "part metric");
+  RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "get node");
+  RSS(ref_recon_abs_value_hessian(ref_grid, metric), "abs val");
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p), "local scale lp norm");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         complexity),
+      "gradation at complexity");
+  ref_mpi_stopwatch_stop(ref_mpi, "compute metric from hessian");
+  return REF_SUCCESS;
+}
+
 static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_metric;
   char *in_mesh;
@@ -3901,19 +3920,9 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--hessian", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    if (ref_mpi_once(ref_mpi)) printf("part hessian %s\n", in_scalar);
-    RSS(ref_part_metric(ref_grid_node(ref_grid), in_scalar), "part scalar");
-    ref_mpi_stopwatch_stop(ref_mpi, "part metric");
-    RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "get node");
-    RSS(ref_recon_abs_value_hessian(ref_grid, metric), "abs val");
-    RSS(ref_recon_roundoff_limit(metric, ref_grid),
-        "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local scale lp norm");
-    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                           complexity),
-        "gradation at complexity");
-    ref_mpi_stopwatch_stop(ref_mpi, "compute metric from hessian");
+    RSS(hessian_multiscale(ref_mpi, ref_grid, in_scalar, metric, p, gradation,
+                           complexity),
+        "hessian multiscale");
   } else {
     RXS(ref_args_find(argc, argv, "--combine", &pos), REF_NOT_FOUND,
         "arg search");
