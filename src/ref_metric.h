@@ -94,9 +94,7 @@ REF_FCN REF_STATUS ref_metric_interpolation_error(REF_DBL *metric,
 REF_FCN REF_STATUS ref_metric_integrate_error(REF_GRID ref_grid,
                                               REF_DBL *interpolation_error,
                                               REF_DBL *total_error);
-REF_FCN REF_STATUS
-ref_metric_report_error(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
-                        REF_RECON_RECONSTRUCTION reconstruction);
+
 REF_FCN REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                          REF_DBL *complexity);
 REF_FCN REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
