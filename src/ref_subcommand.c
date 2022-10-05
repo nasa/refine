@@ -332,7 +332,17 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   REF_INT node;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_DBL gradation = 10.0;
+  REF_INT norm_p = 4;
+  REF_DBL aspect_ratio = -1.0;
   REF_INT pos, opt;
+
+  RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    REF_DBL aspect_ratio = atof(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi))
+      printf("limit --aspect-ratio to %f\n", aspect_ratio);
+  }
 
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -349,23 +359,11 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
     yplus = distance[node] / spalding_yplus;
     RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
   }
-  RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
-  RSS(ref_recon_roundoff_limit(metric, ref_grid),
-      "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, ref_grid, 4), "local lp=4 norm scaling");
-  RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos && pos < argc - 1) {
-    REF_DBL aspect_ratio = atof(argv[pos + 1]);
-    if (ref_mpi_once(ref_mpi))
-      printf("limit --aspect-ratio to %f\n", aspect_ratio);
-    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
-        "limit aspect ratio");
-  }
-  ref_mpi_stopwatch_stop(ref_mpi, "spalding metric");
-  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                         complexity),
-      "set complexity");
+
+  RSS(ref_metric_lp(metric, ref_grid, uplus, reconstruction, norm_p, gradation,
+                    aspect_ratio, complexity),
+      "lp norm");
+
   RSS(ref_metric_parse(metric, ref_grid, argc, argv), "parse metric");
   for (opt = 0; opt < argc - 4; opt++) {
     if (strcmp(argv[opt], "--faceid-spacing") == 0) {
@@ -3393,7 +3391,6 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos + 3 < argc) {
     REF_DBL *g;
     REF_DBL mach, re, temperature;
-    REF_DBL cons_visc_aspect_ratio = 1.0e6;
     multiscale_metric = REF_FALSE;
     mach = atof(argv[pos + 1]);
     re = atof(argv[pos + 2]);
@@ -3419,7 +3416,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RSS(ref_recon_roundoff_limit(metric, ref_grid),
         "floor metric eigenvalues based on grid size and solution jitter");
     RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
-    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, cons_visc_aspect_ratio),
+    RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
         "limit AR");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
