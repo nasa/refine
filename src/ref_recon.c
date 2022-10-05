@@ -1265,7 +1265,11 @@ REF_FCN REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
         "element with zero edge length or missing element");
     eig_floor = (4 * round_off_jitter) / (radius[node] * radius[node]);
 
-    RSS(ref_matrix_diag_m(&(recon[6 * node]), diag_system), "eigen decomp");
+    RSB(ref_matrix_diag_m(&(recon[6 * node]), diag_system), "eigen decomp", {
+      ref_matrix_show_m(&(recon[6 * node]));
+      ref_node_location(ref_node, node);
+      printf("eig_floor %e radius %e\n", eig_floor, radius[node]);
+    });
     ref_matrix_eig(diag_system, 0) =
         MAX(ref_matrix_eig(diag_system, 0), eig_floor);
     ref_matrix_eig(diag_system, 1) =
