@@ -352,8 +352,7 @@ static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
   RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
-      "local lp=4 norm scaling");
+  RSS(ref_metric_local_scale(metric, ref_grid, 4), "local lp=4 norm scaling");
   RXS(ref_args_find(argc, argv, "--aspect-ratio", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
@@ -2653,8 +2652,7 @@ static REF_STATUS fixed_point_metric(
   }
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-      "local lp norm scaling");
+  RSS(ref_metric_local_scale(metric, ref_grid, p), "local lp norm scaling");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
 
   if (aspect_ratio > 0.0) {
@@ -2769,8 +2767,7 @@ static REF_STATUS hrles_fixed_point_metric(
   }
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-      "local lp norm scaling");
+  RSS(ref_metric_local_scale(metric, ref_grid, p), "local lp norm scaling");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
 
   ref_malloc(aspect_ratio_field, ref_node_max(ref_grid_node(ref_grid)),
@@ -2934,8 +2931,7 @@ static REF_STATUS moving_fixed_point_metric(
   }
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-      "local lp norm scaling");
+  RSS(ref_metric_local_scale(metric, ref_grid, p), "local lp norm scaling");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
@@ -3363,8 +3359,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         "add nonlinear terms");
     RSS(ref_recon_roundoff_limit(metric, ref_grid),
         "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local scale lp norm");
+    RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
         "gradation at complexity");
@@ -3390,8 +3385,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_free(g);
     RSS(ref_recon_roundoff_limit(metric, ref_grid),
         "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local scale lp norm");
+    RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
         "gradation at complexity");
@@ -3429,8 +3423,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_free(g);
     RSS(ref_recon_roundoff_limit(metric, ref_grid),
         "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local scale lp norm");
+    RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
     RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, cons_visc_aspect_ratio),
         "limit AR");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
@@ -3541,7 +3534,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       } else {
         if (ref_mpi_once(ref_mpi))
           printf("reconstruct Hessian, compute metric\n");
-        RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+        RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p,
                           gradation, complexity),
             "lp norm");
         ref_mpi_stopwatch_stop(ref_mpi, "multiscale metric");
@@ -3820,7 +3813,7 @@ static REF_STATUS hessian_multiscale(REF_MPI ref_mpi, REF_GRID ref_grid,
   RSS(ref_recon_abs_value_hessian(ref_grid, metric), "abs val");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p), "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "gradation at complexity");
@@ -3935,8 +3928,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
       RSS(ref_recon_roundoff_limit(metric, ref_grid),
           "floor metric eigenvalues based on grid size and solution jitter");
-      RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-          "local scale lp norm");
+      RSS(ref_metric_local_scale(metric, ref_grid, p), "local scale lp norm");
       if (ref_mpi_once(ref_mpi))
         printf("limit --aspect-ratio to %f\n", aspect_ratio);
       RSS(ref_metric_limit_aspect_ratio(metric, ref_grid, aspect_ratio),
@@ -3949,8 +3941,8 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     } else {
       if (ref_mpi_once(ref_mpi))
         printf("reconstruct Hessian, compute metric\n");
-      RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                        gradation, complexity),
+      RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
+                        complexity),
           "lp norm");
     }
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");

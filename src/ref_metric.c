@@ -2187,15 +2187,14 @@ REF_FCN REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric,
 }
 
 REF_FCN REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid,
-                                 REF_DBL *scalar, REF_DBL *weight,
+                                 REF_DBL *scalar,
                                  REF_RECON_RECONSTRUCTION reconstruction,
                                  REF_INT p_norm, REF_DBL gradation,
                                  REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
@@ -2211,8 +2210,7 @@ REF_FCN REF_STATUS ref_metric_lp_mixed(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity_mixed(metric, ref_grid, gradation,
                                                target_complexity),
       "gradation at complexity");
@@ -2435,8 +2433,7 @@ REF_FCN REF_STATUS ref_metric_multigrad(REF_DBL *metric, REF_GRID ref_grid,
 
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
@@ -2505,8 +2502,7 @@ REF_FCN REF_STATUS ref_metric_moving_multiscale(
   ref_free(jac);
   ref_free(hess);
 
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          complexity),
       "gradation at complexity");
@@ -2523,8 +2519,7 @@ REF_FCN REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_histogram(metric, ref_grid, "hess.tec"), "histogram");
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
@@ -2532,8 +2527,8 @@ REF_FCN REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_FCN REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
-                                          REF_GRID ref_grid, REF_INT p_norm) {
+REF_FCN REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_GRID ref_grid,
+                                          REF_INT p_norm) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_INT dimension;
@@ -2566,16 +2561,6 @@ REF_FCN REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
       metric[2 + 6 * node] = 0.0;
       metric[4 + 6 * node] = 0.0;
       metric[5 + 6 * node] = 1.0;
-    }
-  }
-
-  /* weight in now length scale, convert to eigenvalue */
-  if (NULL != weight) {
-    each_ref_node_valid_node(ref_node, node) {
-      if (weight[node] > 0.0) {
-        for (i = 0; i < 6; i++)
-          metric[i + 6 * node] /= (weight[node] * weight[node]);
-      }
     }
   }
 
@@ -2637,8 +2622,7 @@ REF_FCN REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
 
-  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
-      "local scale lp norm");
+  RSS(ref_metric_local_scale(metric, ref_grid, p_norm), "local scale lp norm");
 
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
