@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_OCT ref_oct;
     REF_DBL h;
-    REF_DBL bbox[]={0.0,1.0,0.0,1.0,0,0.03};
+    REF_DBL bbox[] = {0.0, 1.0, 0.0, 1.0, 0, 0.03};
     REF_INT nleaf;
     h = atof(argv[pos + 1]);
     RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
@@ -162,8 +162,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--adapt", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY && pos + 3 < argc) {
     REF_OCT ref_oct;
-    char tec[1024];
     REF_INT nleaf;
+    REF_BOOL debug = REF_FALSE;
 
     RSS(ref_oct_create(&ref_oct), "make oct");
     {
@@ -190,15 +190,24 @@ int main(int argc, char *argv[]) {
       }
       RSS(ref_grid_free(ref_grid), "free grid");
     }
-    snprintf(tec, 1024, "%s-raw.tec", argv[pos + 3]);
+
     RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
-    printf("writing %d vox to %s from %s\n", nleaf, tec, argv[pos + 3]);
-    RSS(ref_oct_tec(ref_oct, tec), "tec");
+    if (debug) {
+      char tec[1024];
+      snprintf(tec, 1024, "%s-raw.tec", argv[pos + 3]);
+      printf("writing %d vox to %s from %s\n", nleaf, tec, argv[pos + 3]);
+      RSS(ref_oct_tec(ref_oct, tec), "tec");
+    } else {
+      printf("raw vox %d\n", nleaf);
+    }
     RSS(ref_oct_gradation(ref_oct), "grad");
-    snprintf(tec, 1024, "%s-grad.tec", argv[pos + 3]);
     RSS(ref_oct_nleaf(ref_oct, &nleaf), "count leaves");
-    printf("writing %d vox to %s from %s\n", nleaf, tec, argv[pos + 3]);
-    RSS(ref_oct_tec(ref_oct, tec), "tec");
+    if (debug) {
+      char tec[1024];
+      snprintf(tec, 1024, "%s-grad.tec", argv[pos + 3]);
+      printf("writing %d vox to %s from %s\n", nleaf, tec, argv[pos + 3]);
+      RSS(ref_oct_tec(ref_oct, tec), "tec");
+    }
     printf("writing %d vox to %s\n", nleaf, argv[pos + 3]);
     {
       REF_GRID ref_grid;

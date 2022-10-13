@@ -2612,6 +2612,13 @@ static REF_STATUS fixed_point_metric(
   REF_DBL inv_total;
   REF_INT im, node;
   REF_INT fixed_point_ldim;
+  REF_BOOL ensure_finite = REF_TRUE;
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (im = 0; im < 6; im++) {
+      metric[im + 6 * node] = 0.0; /* initialize */
+    }
+  }
 
   ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   total_timesteps = 0;
@@ -2624,12 +2631,20 @@ static REF_STATUS fixed_point_metric(
     RSS(ref_part_scalar(ref_grid, &fixed_point_ldim, &scalar, solb_filename),
         "unable to load scalar");
     REIS(1, fixed_point_ldim, "expected one scalar");
+    if (ensure_finite)
+      RSS(ref_validation_finite(ref_grid, fixed_point_ldim, scalar),
+          "input scalar");
     if (strong_sensor_bc) {
       RSS(ref_phys_strong_sensor_bc(ref_grid, scalar, strong_value,
                                     ref_dict_bcs),
           "apply strong sensor bc");
+      if (ensure_finite)
+        RSS(ref_validation_finite(ref_grid, fixed_point_ldim, scalar),
+            "strong scalar");
     }
     RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+    if (ensure_finite)
+      RSS(ref_validation_finite(ref_grid, 6, hess), "recon hess");
     ref_free(scalar);
     total_timesteps++;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -2637,6 +2652,8 @@ static REF_STATUS fixed_point_metric(
         metric[im + 6 * node] += hess[im + 6 * node];
       }
     }
+    if (ensure_finite)
+      RSS(ref_validation_finite(ref_grid, 6, metric), "metric sum");
   }
   free(hess);
   ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
@@ -2648,6 +2665,8 @@ static REF_STATUS fixed_point_metric(
       metric[im + 6 * node] *= inv_total;
     }
   }
+  if (ensure_finite)
+    RSS(ref_validation_finite(ref_grid, 6, metric), "metric avg");
 
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eigenvalues based on grid size and solution jitter");
