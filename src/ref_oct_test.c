@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_OCT ref_oct;
     REF_DBL h;
-    REF_DBL bbox[]={0.0,1.0,0.0,1.0,0,0.03};
+    REF_DBL bbox[] = {0.0, 1.0, 0.0, 1.0, 0, 0.03};
     REF_INT nleaf;
     h = atof(argv[pos + 1]);
     RSS(ref_grid_create(&ref_grid, ref_mpi), "make grid");
