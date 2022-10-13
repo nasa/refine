@@ -2614,6 +2614,12 @@ static REF_STATUS fixed_point_metric(
   REF_INT fixed_point_ldim;
   REF_BOOL ensure_finite = REF_TRUE;
 
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (im = 0; im < 6; im++) {
+      metric[im + 6 * node] = 0.0; /* initialize */
+    }
+  }
+
   ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   total_timesteps = 0;
   for (timestep = first_timestep; timestep <= last_timestep;
