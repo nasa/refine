@@ -896,7 +896,7 @@ REF_FCN REF_STATUS ref_phys_yplus_lengthscale2(REF_GRID ref_grid, REF_DBL mach,
   {
     REF_INTERP ref_interp;
     RSS(ref_interp_create(&ref_interp, ref_grid, exchange_grid), "make interp");
-    RSS(ref_interp_locate_nearest(ref_interp), "nearest");
+    RSS(ref_interp_locate(ref_interp), "nearest");
     RSS(ref_interp_scalar(ref_interp, ldim, field, exchange_field),
         "interp scalar");
   }
