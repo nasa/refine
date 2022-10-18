@@ -1005,6 +1005,147 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_phys_yplus_metric_reference_length(
+    REF_GRID ref_grid, REF_DBL *metric, REF_DBL mach, REF_DBL re,
+    REF_DBL temperature, REF_DBL target, REF_DBL reference_length, REF_INT ldim,
+    REF_DBL *field, REF_DICT ref_dict_bcs) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *lengthscale, *new_log_metric;
+  REF_INT *hits;
+  REF_INT node, i;
+  REF_DBL reynolds_number, reference_lengthscale, yplus1;
+
+  reynolds_number = re * reference_length;
+  RSS(ref_phys_minspac(reynolds_number, &yplus1), "minspac");
+  reference_lengthscale = yplus1 / reference_length;
+
+  ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+  ref_malloc_init(new_log_metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(lengthscale, ref_node_max(ref_node), REF_DBL, 0.0);
+  RSS(ref_phys_yplus_lengthscale(ref_grid, mach, re, temperature, ldim, field,
+                                 lengthscale),
+      "length scale");
+  if (ref_grid_twod(ref_grid)) {
+    REF_CELL edg_cell = ref_grid_edg(ref_grid);
+    REF_INT bc;
+    REF_INT edg, edg_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_DBL edg_norm[3], h, mh, l0, diff, h0, h1, ratio;
+    REF_DBL d[12], m[6], logm[6];
+    each_ref_cell_valid_cell_with_nodes(edg_cell, edg, edg_nodes) {
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict_bcs, edg_nodes[ref_cell_id_index(edg_cell)],
+                         &bc),
+          REF_NOT_FOUND, "bc");
+      if (!ref_phys_wall_distance_bc(bc)) continue;
+      RSS(ref_layer_interior_seg_normal(ref_grid, edg, edg_norm), "edge norm");
+      ref_matrix_vec(d, 0, 0) = edg_norm[0];
+      ref_matrix_vec(d, 1, 0) = edg_norm[1];
+      ref_matrix_vec(d, 2, 0) = edg_norm[2];
+      ratio =
+          0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]), edg_norm) +
+                 ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]), edg_norm));
+      mh = 1.0 / ratio;
+
+      l0 = 0.5 * (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
+
+      diff = ABS(l0 - reference_lengthscale) / reference_lengthscale;
+
+      h0 = target * MIN(l0, reference_lengthscale);
+      {
+        REF_DBL st, sr;
+        sr = MAX(MIN(diff - 0.1, 0.0) / 0.1, 1.0);
+        st = 1.0 - sr;
+        h = st * h0 + sr * mh;
+      }
+      ref_matrix_eig(d, 0) = 1.0 / (h * h);
+
+      ref_matrix_vec(d, 0, 2) = 0.0;
+      ref_matrix_vec(d, 1, 2) = 0.0;
+      ref_matrix_vec(d, 2, 2) = 1.0;
+      ref_matrix_eig(d, 2) = 1.0;
+
+      ref_math_cross_product(ref_matrix_vec_ptr(d, 2), ref_matrix_vec_ptr(d, 0),
+                             ref_matrix_vec_ptr(d, 1));
+      ratio = 0.5 * (ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[0]]),
+                                            ref_matrix_vec_ptr(d, 1)) +
+                     ref_matrix_sqrt_vt_m_v(&(metric[6 * edg_nodes[1]]),
+                                            ref_matrix_vec_ptr(d, 1)));
+      h1 = 1.0 / ratio;
+      ref_matrix_eig(d, 1) = 1.0 / (h1 * h1);
+      RSS(ref_matrix_form_m(d, m), "form");
+      RSS(ref_matrix_log_m(m, logm), "form");
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * edg_nodes[0]] += logm[i];
+      }
+      hits[edg_nodes[0]] += 1;
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * edg_nodes[1]] += logm[i];
+      }
+      hits[edg_nodes[1]] += 1;
+    }
+  } else {
+    RSS(REF_IMPLEMENT, "implement 3D");
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, new_log_metric, 6), "ghost metric");
+  RSS(ref_node_ghost_int(ref_node, hits, 1), "ghost hits");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
+      }
+      hits[node] = -1;
+      RSS(ref_matrix_exp_m(&(new_log_metric[6 * node]), &(metric[6 * node])),
+          "form");
+    }
+  }
+
+  {
+    REF_EDGE ref_edge;
+    REF_INT edge, node0, node1;
+    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      if (0 <= hits[node0] && -1 == hits[node1]) {
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node0] += new_log_metric[i + 6 * node1];
+        }
+        hits[node0] += 1;
+      }
+      if (0 <= hits[node1] && -1 == hits[node0]) {
+        for (i = 0; i < 6; i++) {
+          new_log_metric[i + 6 * node1] += new_log_metric[i + 6 * node0];
+        }
+        hits[node1] += 1;
+      }
+    }
+    ref_edge_free(ref_edge);
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, new_log_metric, 6), "ghost metric");
+  RSS(ref_node_ghost_int(ref_node, hits, 1), "ghost hits");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (hits[node] > 0) {
+      for (i = 0; i < 6; i++) {
+        new_log_metric[i + 6 * node] /= (REF_DBL)hits[node];
+      }
+      hits[node] = -2;
+      RSS(ref_matrix_exp_m(&(new_log_metric[6 * node]), &(metric[6 * node])),
+          "form");
+    }
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, metric, 6), "ghost metric");
+
+  ref_free(lengthscale);
+  ref_free(new_log_metric);
+  ref_free(hits);
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
                                              REF_DBL strong_value,
                                              REF_DICT ref_dict_bcs) {

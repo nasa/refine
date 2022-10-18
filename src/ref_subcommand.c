@@ -3574,6 +3574,29 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         "yplus metric");
   }
 
+  RXS(ref_args_find(argc, argv, "--ypluslen", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_DBL mach, re, temperature, target, reference_length;
+    RAS(pos + 5 < argc,
+        "--yplus <mach> <re> <temp_k> <target> <reference length>");
+    mach = atof(argv[pos + 1]);
+    re = atof(argv[pos + 2]);
+    temperature = atof(argv[pos + 3]);
+    target = atof(argv[pos + 4]);
+    reference_length = atof(argv[pos + 5]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf(
+          "--ypluslen %.3f %.2e %.2f %.2f %.2f\n<mach> <re> <temp_k> <target>  "
+          "<reference length>\n",
+          mach, re, temperature, target, reference_length);
+    }
+    RSS(ref_phys_yplus_metric_reference_length(
+            ref_grid, metric, mach, re, temperature, target, reference_length,
+            ldim, initial_field, ref_dict_bcs),
+        "yplus metric reference length");
+  }
+
   if (buffer) {
     if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
     RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
