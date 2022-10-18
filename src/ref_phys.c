@@ -1014,6 +1014,8 @@ REF_FCN REF_STATUS ref_phys_yplus_metric_reference_length(
   REF_INT *hits;
   REF_INT node, i;
   REF_DBL reynolds_number, reference_lengthscale, yplus1;
+  REF_DBL alt =
+      0.866025403784439; /* sqrt(3.0)/2 altitude of equalateral triangle */
 
   reynolds_number = re * reference_length;
   RSS(ref_phys_minspac(reynolds_number, &yplus1), "minspac");
@@ -1050,7 +1052,7 @@ REF_FCN REF_STATUS ref_phys_yplus_metric_reference_length(
 
       diff = ABS(l0 - reference_lengthscale) / reference_lengthscale;
 
-      h0 = target * MIN(l0, reference_lengthscale);
+      h0 = target * MIN(l0, reference_lengthscale) / alt;
       {
         REF_DBL st, sr;
         sr = MIN(MAX(diff - 0.1, 0.0) / 0.1, 1.0);
