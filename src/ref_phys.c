@@ -1031,14 +1031,18 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
                                          REF_INT ldim, REF_DBL *field,
                                          REF_DICT ref_dict_bcs) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_DBL *lengthscale, *new_log_metric;
+  REF_DBL *lengthscale, *lengthscale2, *new_log_metric;
   REF_INT *hits;
   REF_INT node, i;
   ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
   ref_malloc_init(new_log_metric, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(lengthscale, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(lengthscale2, ref_node_max(ref_node), REF_DBL, 0.0);
   RSS(ref_phys_yplus_lengthscale(ref_grid, mach, re, temperature, ldim, field,
                                  lengthscale),
+      "length scale");
+  RSS(ref_phys_yplus_lengthscale2(ref_grid, mach, re, temperature, ldim, field,
+                                  lengthscale2),
       "length scale");
   if (ref_grid_twod(ref_grid)) {
     REF_CELL edg_cell = ref_grid_edg(ref_grid);
@@ -1056,6 +1060,13 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       ref_matrix_vec(d, 0, 0) = edg_norm[0];
       ref_matrix_vec(d, 1, 0) = edg_norm[1];
       ref_matrix_vec(d, 2, 0) = edg_norm[2];
+      /*
+      printf("x %.2f l1 %.5e l2 %.5e diff %.2f\n",
+             ref_node_xyz(ref_grid_node(ref_grid), 0, edg_nodes[0]),
+             lengthscale[edg_nodes[0]], lengthscale2[edg_nodes[0]],
+             ABS(lengthscale[edg_nodes[0]] - lengthscale2[edg_nodes[0]]) /
+                 lengthscale[edg_nodes[0]] * 100);
+      */
       h0 = target * 0.5 *
            (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
       ref_matrix_eig(d, 0) = 1.0 / (h0 * h0);
@@ -1141,6 +1152,7 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
 
   RSS(ref_node_ghost_dbl(ref_node, metric, 6), "ghost metric");
 
+  ref_free(lengthscale2);
   ref_free(lengthscale);
   ref_free(new_log_metric);
   ref_free(hits);
