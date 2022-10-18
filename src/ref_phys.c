@@ -1053,9 +1053,14 @@ REF_FCN REF_STATUS ref_phys_yplus_metric_reference_length(
       h0 = target * MIN(l0, reference_lengthscale);
       {
         REF_DBL st, sr;
-        sr = MAX(MIN(diff - 0.1, 0.0) / 0.1, 1.0);
+        sr = MIN(MAX(diff - 0.1, 0.0) / 0.1, 1.0);
         st = 1.0 - sr;
         h = st * h0 + sr * mh;
+        /*
+        printf("x %.2f l0 %0.5e ref %0.5e diff %.2f sr %.2f st %.2f\n",
+               ref_node_xyz(ref_node, 0, edg_nodes[0]), l0,
+               reference_lengthscale, diff, sr, st);
+        */
       }
       ref_matrix_eig(d, 0) = 1.0 / (h * h);
 
