@@ -93,6 +93,11 @@ REF_FCN REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
                                               REF_DBL re, REF_DBL reference_t_k,
                                               REF_INT ldim, REF_DBL *field,
                                               REF_DBL *lengthscale);
+REF_FCN REF_STATUS ref_phys_yplus_lengthscale2(REF_GRID ref_grid, REF_DBL mach,
+                                               REF_DBL re,
+                                               REF_DBL reference_t_k,
+                                               REF_INT ldim, REF_DBL *field,
+                                               REF_DBL *lengthscale);
 REF_FCN REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid,
                                            REF_DBL *normalspacing);
 
