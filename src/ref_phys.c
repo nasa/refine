@@ -1082,11 +1082,9 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
 
       printf(
           "x %.4f l1 %.3e l2 %.3e diff %.4f s %.2f %.2f t %.3e m %.3e h %.3e\n",
-          ref_node_xyz(ref_grid_node(ref_grid), 0, edg_nodes[0]),
-          lengthscale[edg_nodes[0]], lengthscale2[edg_nodes[0]],
-          ABS(lengthscale[edg_nodes[0]] - lengthscale2[edg_nodes[0]]) /
-              lengthscale[edg_nodes[0]],
-          s1, s2, target * l1 / equilateral_altitude, mh, h0);
+          0.5 * (ref_node_xyz(ref_grid_node(ref_grid), 0, edg_nodes[0]) +
+                 ref_node_xyz(ref_grid_node(ref_grid), 0, edg_nodes[1])),
+          l1, l2, diff, s1, s2, target * l1 / equilateral_altitude, mh, h0);
 
       ref_matrix_vec(d, 0, 2) = 0.0;
       ref_matrix_vec(d, 1, 2) = 0.0;
