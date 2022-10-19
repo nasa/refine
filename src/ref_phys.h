@@ -93,13 +93,24 @@ REF_FCN REF_STATUS ref_phys_yplus_lengthscale(REF_GRID ref_grid, REF_DBL mach,
                                               REF_DBL re, REF_DBL reference_t_k,
                                               REF_INT ldim, REF_DBL *field,
                                               REF_DBL *lengthscale);
+REF_FCN REF_STATUS ref_phys_yplus_lengthscale2(REF_GRID ref_grid, REF_DBL mach,
+                                               REF_DBL re,
+                                               REF_DBL reference_t_k,
+                                               REF_INT ldim, REF_DBL *field,
+                                               REF_DBL *lengthscale);
 REF_FCN REF_STATUS ref_phys_normal_spacing(REF_GRID ref_grid,
                                            REF_DBL *normalspacing);
+
 REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
                                          REF_DBL mach, REF_DBL re,
                                          REF_DBL temperature, REF_DBL target,
                                          REF_INT ldim, REF_DBL *ref_field,
-                                         REF_DICT ref_dict_bcs);
+                                         REF_DICT ref_dict_bcs,
+                                         REF_BOOL sample_viscous_length_error);
+REF_FCN REF_STATUS ref_phys_yplus_metric_reference_length(
+    REF_GRID ref_grid, REF_DBL *metric, REF_DBL mach, REF_DBL re,
+    REF_DBL temperature, REF_DBL target, REF_DBL reference_length, REF_INT ldim,
+    REF_DBL *ref_field, REF_DICT ref_dict_bcs);
 REF_FCN REF_STATUS ref_phys_strong_sensor_bc(REF_GRID ref_grid, REF_DBL *scalar,
                                              REF_DBL strong_value,
                                              REF_DICT ref_dict_bcs);
