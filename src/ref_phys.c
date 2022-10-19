@@ -1080,13 +1080,12 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       }
       ref_matrix_eig(d, 0) = 1.0 / (h0 * h0);
 
-      /*
-      printf("x %.2f l1 %.5e l2 %.5e diff %.2f\n",
+      printf("x %.2f l1 %.5e l2 %.5e diff %.2f s %.2f %.2f h0 %.5e mh %.5e\n",
              ref_node_xyz(ref_grid_node(ref_grid), 0, edg_nodes[0]),
              lengthscale[edg_nodes[0]], lengthscale2[edg_nodes[0]],
              ABS(lengthscale[edg_nodes[0]] - lengthscale2[edg_nodes[0]]) /
-                 lengthscale[edg_nodes[0]] * 100);
-      */
+                 lengthscale[edg_nodes[0]] * 100,
+             s1, s2, h0, mh);
 
       ref_matrix_vec(d, 0, 2) = 0.0;
       ref_matrix_vec(d, 1, 2) = 0.0;
