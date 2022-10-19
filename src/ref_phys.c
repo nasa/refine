@@ -1074,7 +1074,7 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       diff = ABS(l2 - l1) / l1;
       s2 = MIN(MAX(diff - err1, 0.0) / (err2 - err1), 1.0);
       s1 = 1.0 - s2;
-      h0 = 0.5 * (s1 * target * l1 / equilateral_altitude + s2 * mh);
+      h0 = (s1 * target * l1 / equilateral_altitude + s2 * mh);
       if (!sample_viscous_length_error) {
         h0 = target * l1 / equilateral_altitude;
       }
