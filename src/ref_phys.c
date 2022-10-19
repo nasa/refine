@@ -1072,8 +1072,8 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
       l1 = 0.5 * (lengthscale[edg_nodes[0]] + lengthscale[edg_nodes[1]]);
       l2 = 0.5 * (lengthscale2[edg_nodes[0]] + lengthscale2[edg_nodes[1]]);
       diff = ABS(l2 - l1) / l1;
-      s1 = MIN(MAX(diff - err1, 0.0) / (err2 - err1), 1.0);
-      s2 = 1.0 - s1;
+      s2 = MIN(MAX(diff - err1, 0.0) / (err2 - err1), 1.0);
+      s1 = 1.0 - s2;
       h0 = 0.5 * (s1 * target * l1 / equilateral_altitude + s2 * mh);
       if (!sample_viscous_length_error) {
         h0 = target * l1 / equilateral_altitude;
