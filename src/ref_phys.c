@@ -1051,7 +1051,7 @@ REF_FCN REF_STATUS ref_phys_yplus_metric(REF_GRID ref_grid, REF_DBL *metric,
     REF_INT edg, edg_nodes[REF_CELL_MAX_SIZE_PER];
     REF_DBL edg_norm[3], mh, h0, h1, ratio;
     REF_DBL d[12], m[6], logm[6];
-    REF_DBL err1 = 0.01, err2 = 0.04;
+    REF_DBL err1 = 0.10, err2 = 0.20;
     REF_DBL l1, l2, s1, s2, diff;
     REF_DBL equilateral_altitude =
         0.866025403784439; /* sqrt(3.0)/2 altitude of equalateral triangle */
