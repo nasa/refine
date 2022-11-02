@@ -77,6 +77,8 @@ REF_FCN REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate,
                                       REF_GRID ref_grid);
 REF_FCN REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate);
 
+REF_FCN REF_STATUS ref_migrate_list_dependencies(char list[1024]);
+
 REF_FCN REF_STATUS ref_migrate_inspect(REF_MIGRATE ref_migrate);
 
 REF_FCN REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,

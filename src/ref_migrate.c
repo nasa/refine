@@ -20,6 +20,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -131,6 +132,20 @@ REF_FCN REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate) {
 
   ref_free(ref_migrate);
 
+  return REF_SUCCESS;
+}
+
+REF_FCN REF_STATUS ref_migrate_list_dependencies(char list[1024]) {
+  list[0] = '\0';
+#if defined(HAVE_MPI)
+  strcat(list, " MPI");
+#if defined(HAVE_PARMETIS)
+  strcat(list, " ParMETIS");
+#endif
+#if defined(HAVE_PARMETIS)
+  strcat(list, " Zoltan");
+#endif
+#endif
   return REF_SUCCESS;
 }
 

@@ -369,6 +369,21 @@ REF_FCN REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
   return REF_SUCCESS;
 }
 
+REF_FCN REF_STATUS ref_egads_list_dependencies(char list[1024]) {
+  list[0] = '\0';
+#if defined(HAVE_EGADS)
+#if defined(HAVE_EGADS_LITE)
+  strcat(list, " EGADSlite");
+#else
+  strcat(list, " EGADS(OpenCASCADE)");
+#if defined(HAVE_EGADS_EFFECTIVE)
+  strcat(list, "+Effective_Topology");
+#endif
+#endif
+#endif
+  return REF_SUCCESS;
+}
+
 REF_FCN REF_BOOL ref_egads_allows_construction(void) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   return REF_TRUE;
