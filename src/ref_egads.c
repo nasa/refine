@@ -369,7 +369,7 @@ REF_FCN REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_FCN REF_BOOL ref_egads_list_dependencies(char list[1024]) {
+REF_FCN REF_STATUS ref_egads_list_dependencies(char list[1024]) {
   list[0] = '\0';
 #if defined(HAVE_EGADS)
 #if defined(HAVE_EGADS_LITE)
