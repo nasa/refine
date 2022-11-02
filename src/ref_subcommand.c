@@ -4807,9 +4807,12 @@ int main(int argc, char *argv[]) {
   if (1 == argc || 1 == help_pos) {
     if (ref_mpi_once(ref_mpi)) {
       char egads_deps[1024];
+      char migrate_deps[1024];
       RSS(ref_egads_list_dependencies(egads_deps), "egads deps");
+      RSS(ref_migrate_list_dependencies(migrate_deps), "migrate deps");
       usage(argv[0]);
-      printf("\nEGADS dependencies:%s\n", egads_deps);
+      printf("\ngeometry dependencies:%s\n", egads_deps);
+      printf("parallel dependencies:%s\n", migrate_deps);
     }
     goto shutdown;
   }
