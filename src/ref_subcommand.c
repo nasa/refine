@@ -4805,7 +4805,12 @@ int main(int argc, char *argv[]) {
   }
 
   if (1 == argc || 1 == help_pos) {
-    if (ref_mpi_once(ref_mpi)) usage(argv[0]);
+    if (ref_mpi_once(ref_mpi)) {
+      char egads_deps[1024];
+      RSS(ref_egads_list_dependencies(egads_deps), "egads deps");
+      usage(argv[0]);
+      printf("\nEGADS dependencies:%s\n", egads_deps);
+    }
     goto shutdown;
   }
 

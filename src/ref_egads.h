@@ -41,6 +41,7 @@ REF_FCN REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level);
 REF_FCN REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename);
 REF_FCN REF_STATUS ref_egads_save(REF_GEOM ref_geom, const char *filename);
 
+REF_FCN REF_BOOL ref_egads_list_dependencies(char list[1024]);
 REF_FCN REF_BOOL ref_egads_allows_construction(void);
 REF_FCN REF_BOOL ref_egads_allows_effective(void);
 REF_FCN REF_STATUS ref_egads_construct(REF_GEOM ref_geom,
