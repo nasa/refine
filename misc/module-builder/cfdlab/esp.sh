@@ -48,12 +48,12 @@ if { \$modmode != "switch3" } {
 }
 
 setenv ESP_ROOT \$base/\$version/EngSketchPad
-setenv CASROOT \$base/\$version/OpenCASCADE # deploy created link
+setenv CASROOT \$base/\$version/OpenCASCADE
 
 prepend-path PATH \$base/\$version/EngSketchPad/bin
 
 prepend-path LD_LIBRARY_PATH \$base/\$version/EngSketchPad/lib
-prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE/lib # deployed link
+prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE/lib
 
 EOF
 
