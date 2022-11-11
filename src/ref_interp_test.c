@@ -634,13 +634,13 @@ int main(int argc, char *argv[]) {
 
     project = argv[2];
 
-    sprintf(filename, "%s.meshb", project);
+    snprintf(filename, 1024, "%s.meshb", project);
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", filename);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename),
         "part grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "part grid");
 
-    sprintf(filename, "%s_volume.solb", project);
+    snprintf(filename, 1024, "%s_volume.solb", project);
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", filename);
     RSS(ref_part_scalar(ref_grid, &ldim, &solution, filename),
         "unable to load field in position 3");
@@ -652,7 +652,7 @@ int main(int argc, char *argv[]) {
     }
     ref_mpi_stopwatch_stop(ref_mpi, "xyz");
 
-    sprintf(filename, "%s-displaced.solb", project);
+    snprintf(filename, 1024, "%s-displaced.solb", project);
     if (ref_mpi_once(ref_mpi)) printf("writing xyz to %s\n", filename);
     RSS(ref_gather_scalar_by_extension(ref_grid, 3, xyz, NULL, filename),
         "export mach");
@@ -668,7 +668,7 @@ int main(int argc, char *argv[]) {
     }
     ref_mpi_stopwatch_stop(ref_mpi, "field");
 
-    sprintf(filename, "%s-soln.solb", project);
+    snprintf(filename, 1024, "%s-soln.solb", project);
     if (ref_mpi_once(ref_mpi)) printf("writing field to %s\n", filename);
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim - 3, field, NULL,
                                        filename),
@@ -1374,7 +1374,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(from), "free");
   }
 
-{ /* twod tri brick (same) */
+  { /* twod tri brick (same) */
     REF_GRID ref_grid;
     char file[] = "ref_interp_test_tri_same.meshb";
     REF_INTERP ref_interp;

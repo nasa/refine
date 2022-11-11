@@ -811,9 +811,9 @@ REF_FCN static REF_STATUS ref_export_tec_metric_ellipse_twod(
   REF_DBL dt = ref_math_in_radians(360.0 / (REF_DBL)n);
   REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
 
-  sprintf(viz_file, "%s_n%d_p%d_ellipse.tec", root_filename,
-          ref_mpi_n(ref_grid_mpi(ref_grid)),
-          ref_mpi_rank(ref_grid_mpi(ref_grid)));
+  snprintf(viz_file, 256, "%s_n%d_p%d_ellipse.tec", root_filename,
+           ref_mpi_n(ref_grid_mpi(ref_grid)),
+           ref_mpi_rank(ref_grid_mpi(ref_grid)));
 
   file = fopen(viz_file, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", viz_file);
@@ -913,9 +913,9 @@ REF_FCN REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
     return REF_SUCCESS;
   }
 
-  sprintf(viz_file, "%s_n%d_p%d_ellipse.tec", root_filename,
-          ref_mpi_n(ref_grid_mpi(ref_grid)),
-          ref_mpi_rank(ref_grid_mpi(ref_grid)));
+  snprintf(viz_file, 256, "%s_n%d_p%d_ellipse.tec", root_filename,
+           ref_mpi_n(ref_grid_mpi(ref_grid)),
+           ref_mpi_rank(ref_grid_mpi(ref_grid)));
 
   file = fopen(viz_file, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", viz_file);
@@ -1780,7 +1780,7 @@ REF_FCN static REF_STATUS ref_export_pdf(REF_GRID ref_grid,
   char temp_filename[] = "ref_export_temp_for_pdf.eps";
   char command[1024];
   RSS(ref_export_eps(ref_grid, temp_filename), "temp eps");
-  sprintf(command, "epstopdf %s -o=%s", temp_filename, pdf_filename);
+  snprintf(command, 1024, "epstopdf %s -o=%s", temp_filename, pdf_filename);
   REIS(0, system(command), "epstopdf failed");
   REIS(0, remove(temp_filename), "temp clean up");
 

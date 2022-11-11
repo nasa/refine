@@ -993,7 +993,8 @@ REF_FCN REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   RSS(ref_mpi_all_or(ref_mpi, &problem_detected), "share problems");
   if (problem_detected) {
     char filename[1024];
-    sprintf(filename, "ref_inflate_problem_%04d.tec", ref_mpi_rank(ref_mpi));
+    snprintf(filename, 1024, "ref_inflate_problem_%04d.tec",
+             ref_mpi_rank(ref_mpi));
     if (ref_mpi_once(ref_mpi))
       printf(
           "ERROR: inflated grid invalid, writing ref_inflate_problem_*.tec\n");

@@ -296,16 +296,16 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    sprintf(filename, "%s-yplus-edge.tec", argv[2]);
+    snprintf(filename, 1024, "%s-yplus-edge.tec", argv[2]);
     if (ref_mpi_once(ref_mpi)) printf("writing yplus to %s\n", filename);
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, yplus, NULL, filename),
         "gather yplus");
-    sprintf(filename, "%s-lengthscale-edge.tec", argv[2]);
+    snprintf(filename, 1024, "%s-lengthscale-edge.tec", argv[2]);
     if (ref_mpi_once(ref_mpi)) printf("writing lengthscale to %s\n", filename);
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, lengthscale, NULL,
                                        filename),
         "gather yplus");
-    sprintf(filename, "%s-normalspacing-edge.tec", argv[2]);
+    snprintf(filename, 1024, "%s-normalspacing-edge.tec", argv[2]);
     if (ref_mpi_once(ref_mpi))
       printf("writing normalspacing to %s\n", filename);
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, normalspacing, NULL,

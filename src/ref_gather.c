@@ -2463,7 +2463,7 @@ REF_FCN static REF_STATUS ref_gather_avm(REF_GRID ref_grid,
       REIS(1, fwrite(&nul, sizeof(nul), 1, file), "nul");
     }
     if (ref_grid_twod(ref_grid)) {
-      sprintf(coordinate_system, "xByUzL"); /* 2D: always xByUzL */
+      snprintf(coordinate_system, 7, "xByUzL"); /* 2D: always xByUzL */
     } else {
       if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
         const char *coord_system;
@@ -2477,13 +2477,13 @@ REF_FCN static REF_STATUS ref_gather_avm(REF_GRID ref_grid,
       }
       switch (ref_grid_coordinate_system(ref_grid)) {
         case REF_GRID_XBYRZU:
-          sprintf(coordinate_system, "xByRzU");
+          snprintf(coordinate_system, 7, "xByRzU");
           break;
         case REF_GRID_XBYUZL:
-          sprintf(coordinate_system, "xByUzL");
+          snprintf(coordinate_system, 7, "xByUzL");
           break;
         case REF_GRID_XFYRZD:
-          sprintf(coordinate_system, "xFyRzD");
+          snprintf(coordinate_system, 7, "xFyRzD");
           break;
         case REF_GRID_COORDSYS_LAST:
           THROW("REF_GRID_COORDSYS_LAST");
@@ -2509,16 +2509,16 @@ REF_FCN static REF_STATUS ref_gather_avm(REF_GRID ref_grid,
     }
     switch (ref_grid_unit(ref_grid)) {
       case REF_GRID_IN:
-        sprintf(mesh_units, "in");
+        snprintf(mesh_units, 12, "in");
         break;
       case REF_GRID_FT:
-        sprintf(mesh_units, "ft");
+        snprintf(mesh_units, 12, "ft");
         break;
       case REF_GRID_M:
-        sprintf(mesh_units, "m");
+        snprintf(mesh_units, 12, "m");
         break;
       case REF_GRID_CM:
-        sprintf(mesh_units, "cm");
+        snprintf(mesh_units, 12, "cm");
         break;
       case REF_GRID_UNIT_LAST:
         THROW("REF_GRID_UNIT_LAST");
@@ -3657,7 +3657,7 @@ REF_FCN static REF_STATUS ref_gather_plt_tri_header(REF_GRID ref_grid,
   if (ref_mpi_once(ref_mpi)) {
     REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
 
-    sprintf(zonename, "tri%d", id);
+    snprintf(zonename, 256, "tri%d", id);
     RSS(ref_gather_plt_char_int(zonename, 256, &len, ascii), "a2i");
     REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "title");
 
@@ -3722,7 +3722,7 @@ REF_FCN static REF_STATUS ref_gather_plt_qua_header(REF_GRID ref_grid,
   if (ref_mpi_once(ref_mpi)) {
     REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
 
-    sprintf(zonename, "qua%d", id);
+    snprintf(zonename, 256, "qua%d", id);
     RSS(ref_gather_plt_char_int(zonename, 256, &len, ascii), "a2i");
     REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "title");
 
@@ -3849,7 +3849,7 @@ REF_FCN static REF_STATUS ref_gather_plt_brick_header(REF_GRID ref_grid,
   if (ref_mpi_once(ref_mpi)) {
     REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");
 
-    sprintf(zonename, "brick%d", ref_cell_node_per(ref_cell));
+    snprintf(zonename, 256, "brick%d", ref_cell_node_per(ref_cell));
     RSS(ref_gather_plt_char_int(zonename, 256, &len, ascii), "a2i");
     REIS(len, fwrite(&ascii, sizeof(int), (unsigned long)len, file), "title");
 
@@ -4284,7 +4284,7 @@ REF_FCN static REF_STATUS ref_gather_scalar_plt(REF_GRID ref_grid, REF_INT ldim,
       len = 0;
       if (NULL == scalar_names) {
         char default_name[1000];
-        sprintf(default_name, "V%d", i + 1);
+        snprintf(default_name, 1000, "V%d", i + 1);
         RSS(ref_gather_plt_char_int(default_name, 1024, &len, ascii), "a2i");
       } else {
         RSS(ref_gather_plt_char_int(scalar_names[i], 1024, &len, ascii), "a2i");
