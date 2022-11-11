@@ -1129,7 +1129,7 @@ shutdown:
 static void report_interections(REF_GRID ref_grid, const char *project) {
   char filename[1024];
   REF_INT self_intersections = REF_EMPTY;
-  sprintf(filename, "%s-intersect.tec", project);
+  snprintf(filename, 1024, "%s-intersect.tec", project);
   printf("probing adapted tessellation self-intersections\n");
   printf("these locations will cause a failure of the initial\n");
   printf("  volume generation and should be fixed with geometry\n");
@@ -1252,7 +1252,7 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
     }
   }
 
-  sprintf(filename, "%s-vol.plt", project);
+  snprintf(filename, 1024, "%s-vol.plt", project);
   if (ref_mpi_once(ref_mpi))
     printf("gather " REF_GLOB_FMT " nodes to %s\n",
            ref_node_n_global(ref_grid_node(ref_grid)), filename);
@@ -1262,7 +1262,7 @@ static REF_STATUS fossilize(REF_GRID ref_grid, const char *fossil_filename,
   RSS(ref_validation_boundary_face(ref_grid), "boundary-interior connectivity");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "boundary-volume check");
 
-  sprintf(filename, "%s-vol.meshb", project);
+  snprintf(filename, 1024, "%s-vol.meshb", project);
   if (ref_mpi_once(ref_mpi))
     printf("gather " REF_GLOB_FMT " nodes to %s\n",
            ref_node_n_global(ref_grid_node(ref_grid)), filename);
@@ -1337,7 +1337,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       if (ref_mpi_once(ref_mpi)) printf("--axi sets 6022 bc\n");
       axi = REF_TRUE;
     }
-    sprintf(filename, "%s-vol.mapbc", project);
+    snprintf(filename, 1024, "%s-vol.mapbc", project);
     printf("extracting %s from 'bc_name' attributes\n", filename);
     if (REF_SUCCESS ==
         ref_egads_extract_fun3d_mapbc(ref_grid_geom(ref_grid), filename, axi)) {
@@ -1345,7 +1345,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
           "arg search");
       if (REF_EMPTY != pos) {
-        sprintf(filename, "%s-usm3d.mapbc", project);
+        snprintf(filename, 1024, "%s-usm3d.mapbc", project);
         printf("extracting %s from 'bc_name' attributes\n", filename);
         RSS(ref_egads_extract_usm3d_mapbc(ref_grid_geom(ref_grid), filename),
             "");
@@ -1392,16 +1392,16 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(global_params);
   global_params = NULL;
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
-  sprintf(filename, "%s-init-surf.tec", project);
+  snprintf(filename, 1024, "%s-init-surf.tec", project);
   if (ref_mpi_once(ref_mpi))
     RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
   ref_mpi_stopwatch_stop(ref_mpi, "export init-surf");
-  sprintf(filename, "%s-init-geom.tec", project);
+  snprintf(filename, 1024, "%s-init-geom.tec", project);
   if (ref_mpi_once(ref_mpi))
     RSS(ref_geom_tec(ref_grid, filename), "geom export");
   ref_mpi_stopwatch_stop(ref_mpi, "export init-geom");
   if (inspect_evaluation) {
-    sprintf(filename, "%s-init-surf.meshb", project);
+    snprintf(filename, 1024, "%s-init-surf.meshb", project);
     if (ref_mpi_once(ref_mpi))
       RSS(ref_export_by_extension(ref_grid, filename), "dbg meshb");
     ref_mpi_stopwatch_stop(ref_mpi, "export init-surf");
@@ -1421,7 +1421,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "verify param");
 
   if (inspect_evaluation) {
-    sprintf(filename, "%s-const-geom.tec", project);
+    snprintf(filename, 1024, "%s-const-geom.tec", project);
     if (ref_mpi_once(ref_mpi))
       RSS(ref_geom_tec(ref_grid, filename), "geom export");
     ref_mpi_stopwatch_stop(ref_mpi, "export init-geom");
@@ -1475,19 +1475,19 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_grid_pack(ref_grid), "pack");
   ref_mpi_stopwatch_stop(ref_mpi, "pack");
 
-  sprintf(filename, "%s-adapt-surf.meshb", project);
+  snprintf(filename, 1024, "%s-adapt-surf.meshb", project);
   RSS(ref_gather_by_extension(ref_grid, filename), "gather surf meshb");
-  sprintf(filename, "%s-adapt-geom.tec", project);
+  snprintf(filename, 1024, "%s-adapt-geom.tec", project);
   if (ref_mpi_once(ref_mpi))
     RSS(ref_geom_tec(ref_grid, filename), "geom export");
-  sprintf(filename, "%s-adapt-surf.tec", project);
+  snprintf(filename, 1024, "%s-adapt-surf.tec", project);
   if (ref_mpi_once(ref_mpi))
     RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
-  sprintf(filename, "%s-adapt-prop.tec", project);
+  snprintf(filename, 1024, "%s-adapt-prop.tec", project);
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  sprintf(filename, "%s-adapt-triage.tec", project);
+  snprintf(filename, 1024, "%s-adapt-triage.tec", project);
   RSS(ref_geom_feedback(ref_grid, filename), "feedback");
   ref_mpi_stopwatch_stop(ref_mpi, "geom feedback");
 
@@ -1504,7 +1504,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_export_by_extension(ref_facelift_grid(ref_facelift),
                                   argv[facelift_pos + 1]),
           "facelift export");
-      sprintf(filename, "%s-facelift-geom.tec", project);
+      snprintf(filename, 1024, "%s-facelift-geom.tec", project);
       RSS(ref_facelift_tec(ref_facelift, filename), "facelift viz");
     }
     ref_mpi_stopwatch_stop(ref_mpi, "facelift dumped");
@@ -1559,7 +1559,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--fossil", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    sprintf(filename, "%s-vol.meshb", project);
+    snprintf(filename, 1024, "%s-vol.meshb", project);
 
     RSS(fossilize(ref_grid, argv[pos + 1], project, mesher, mesher_options),
         "fossilize");
@@ -1640,7 +1640,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
 
-  sprintf(filename, "%s-vol.meshb", project);
+  snprintf(filename, 1024, "%s-vol.meshb", project);
   if (ref_mpi_once(ref_mpi))
     printf("gather " REF_GLOB_FMT " nodes to %s\n",
            ref_node_n_global(ref_grid_node(ref_grid)), filename);
@@ -3223,13 +3223,13 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     RAS(!ref_mpi_para(ref_mpi), "--i-like-adaptation is not parallel");
-    sprintf(filename, "%s.grid", in_project);
+    snprintf(filename, 1024, "%s.grid", in_project);
     if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, filename), "part");
     ref_mpi = ref_grid_mpi(ref_grid); /* ref_grid made a deep copy */
     ref_mpi_stopwatch_stop(ref_mpi, "part");
   } else {
-    sprintf(filename, "%s.meshb", in_project);
+    snprintf(filename, 1024, "%s.meshb", in_project);
     if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
     ref_mpi = ref_grid_mpi(ref_grid); /* ref_grid made a deep copy */
@@ -3334,7 +3334,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "verify param");
   }
 
-  sprintf(filename, "%s%s", in_project, soln_import_extension);
+  snprintf(filename, 1024, "%s%s", in_project, soln_import_extension);
   if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
   RSS(ref_part_scalar(ref_grid, &ldim, &initial_field, filename),
       "part scalar");
@@ -3627,7 +3627,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    sprintf(filename, "%s-metric.solb", in_project);
+    snprintf(filename, 1024, "%s-metric.solb", in_project);
     if (ref_mpi_once(ref_mpi)) printf("export metric to %s\n", filename);
     RSS(ref_gather_metric(ref_grid, filename), "export metric");
     ref_mpi_stopwatch_stop(ref_mpi, "export metric");
@@ -3694,20 +3694,20 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    sprintf(filename, "%s-final-metric.solb", out_project);
+    snprintf(filename, 1024, "%s-final-metric.solb", out_project);
     if (ref_mpi_once(ref_mpi)) printf("export metric to %s\n", filename);
     RSS(ref_gather_metric(ref_grid, filename), "export metric");
     ref_mpi_stopwatch_stop(ref_mpi, "export metric");
   }
 
-  sprintf(filename, "%s.meshb", out_project);
+  snprintf(filename, 1024, "%s.meshb", out_project);
   if (ref_mpi_once(ref_mpi))
     printf("gather " REF_GLOB_FMT " nodes to %s\n",
            ref_node_n_global(ref_grid_node(ref_grid)), filename);
   RSS(ref_gather_by_extension(ref_grid, filename), "gather .meshb");
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
-  sprintf(filename, "%s.%s", out_project, mesh_export_extension);
+  snprintf(filename, 1024, "%s.%s", out_project, mesh_export_extension);
   if (0 != strcmp(soln_export_extension, i_like_restart) &&
       0 != strcmp(soln_export_extension, avm_restart) &&
       ref_grid_twod(ref_grid)) {
@@ -3773,7 +3773,7 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
         "flip");
   }
 
-  sprintf(filename, "%s%s", out_project, soln_export_extension);
+  snprintf(filename, 1024, "%s%s", out_project, soln_export_extension);
   if (NULL != extruded_grid) {
     if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);
     ref_malloc(extruded_field,
@@ -4131,7 +4131,7 @@ static REF_STATUS quilt(REF_MPI ref_mpi, int argc, char *argv[]) {
       ".egads extension missing");
   strncpy(project, input_egads, end_of_string - 6);
   project[end_of_string - 6] = '\0';
-  sprintf(output_egads, "%s-eff.egads", project);
+  snprintf(output_egads, 1024, "%s-eff.egads", project);
 
   RXS(ref_args_find(argc, argv, "--global", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 3) {
