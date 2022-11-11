@@ -213,13 +213,13 @@ REF_FCN REF_STATUS ref_histogram_gnuplot(REF_HISTOGRAM ref_histogram,
   norm = 0.0;
   if (0 < sum) norm = 1.0 / (REF_DBL)sum;
 
-  sprintf(filename, "ref_histogram_%s.gnuplot", description);
+  snprintf(filename, 1024, "ref_histogram_%s.gnuplot", description);
   f = fopen(filename, "w");
   if (NULL == (void *)f) printf("unable to open %s\n", filename);
   RNS(f, "unable to open file");
 
   fprintf(f, "set terminal postscript eps enhanced color\n");
-  sprintf(filename, "ref_histogram_%s.eps", description);
+  snprintf(filename, 1024, "ref_histogram_%s.eps", description);
   fprintf(f, "set output '%s'\n", filename);
 
   fprintf(f, "set style data histogram\n");
@@ -259,7 +259,7 @@ REF_FCN REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
   norm = 0.0;
   if (0 < sum) norm = 1.0 / (REF_DBL)sum;
 
-  sprintf(filename, "ref_histogram_%s.tec", description);
+  snprintf(filename, 1024, "ref_histogram_%s.tec", description);
   f = fopen(filename, "w");
   if (NULL == (void *)f) printf("unable to open %s\n", filename);
   RNS(f, "unable to open file");

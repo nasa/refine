@@ -459,7 +459,7 @@ REF_FCN REF_STATUS ref_clump_short_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
     node1 = ref_edge_e2n(ref_edge, 1, edge);
     RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
     if (edge_ratio < ratio_tol * ref_grid_adapt(ref_grid, collapse_ratio)) {
-      sprintf(filename, "clump%d.t", ntarget);
+      snprintf(filename, 1024, "clump%d.t", ntarget);
       RSS(ref_clump_between(ref_grid, node0, node1, filename), "dump");
       ntarget++;
     }
@@ -498,7 +498,7 @@ REF_FCN REF_STATUS ref_clump_short_edges_twod(REF_GRID ref_grid) {
   ntarget = 0;
   for (node = 0; node < ref_node_max(ref_node); node++)
     if (ratio[node] < ref_grid_adapt(ref_grid, collapse_ratio)) {
-      sprintf(filename, "clump%d.t", ntarget);
+      snprintf(filename, 1024, "clump%d.t", ntarget);
       RSS(ref_clump_tri_around(ref_grid, node, filename), "dump");
       ntarget++;
     }
@@ -528,7 +528,7 @@ REF_FCN REF_STATUS ref_clump_long_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
     node1 = ref_edge_e2n(ref_edge, 1, edge);
     RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
     if (edge_ratio > ratio_tol * ref_grid_adapt(ref_grid, post_max_ratio)) {
-      sprintf(filename, "clump%d.t", ntarget);
+      snprintf(filename, 1024, "clump%d.t", ntarget);
       RSS(ref_clump_between(ref_grid, node0, node1, filename), "dump");
       ntarget++;
     }

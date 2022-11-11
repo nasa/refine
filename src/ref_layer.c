@@ -1339,7 +1339,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
           each_ref_adj_node_item_with_ref(tri_tet, cell, item, tet) {
             RSS(ref_cavity_add_tet(ref_cavity, tet), "add tet");
           }
-          sprintf(filename, "prism-%d-cav.tec", cell);
+          snprintf(filename, 1024, "prism-%d-cav.tec", cell);
           printf("prism tets %d %s\n", deg, filename);
           RSS(ref_cavity_tec(ref_cavity, filename), "cav tec");
           RSS(ref_cavity_free(ref_cavity), "cav free");
@@ -1383,7 +1383,7 @@ REF_FCN REF_STATUS ref_layer_align_prism(REF_GRID ref_grid,
       }
       if (2 != ref_list_n(ref_cavity_tet_list(ref_cavity)) &&
           0 != ref_list_n(ref_cavity_tet_list(ref_cavity))) {
-        sprintf(filename, "glue-%d-%d-cav.tec", cell, cell_face);
+        snprintf(filename, 1024, "glue-%d-%d-cav.tec", cell, cell_face);
         printf("pyramid tets missing %d %s\n",
                ref_list_n(ref_cavity_tet_list(ref_cavity)), filename);
         if (0 < ref_cavity_nface(ref_cavity))

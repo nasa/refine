@@ -2426,15 +2426,15 @@ REF_FCN REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project,
   snprintf(filename, 1024, "%s-aflr-surface.lb8.ugrid", project);
   RSS(ref_export_by_extension(ref_grid, filename), "ugrid");
   if (NULL == options) {
-    sprintf(
-        command,
+    snprintf(
+        command, 1024,
         "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
         "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
         "< /dev/null > %s-aflr.txt",
         project, project, project);
   } else {
-    sprintf(
-        command,
+    snprintf(
+        command, 1024,
         "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
         "%s "
         "< /dev/null > %s-aflr.txt",
@@ -3660,10 +3660,10 @@ REF_FCN REF_STATUS ref_geom_tec_para_shard(REF_GRID ref_grid,
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   char filename[1024];
   if (ref_mpi_para(ref_mpi)) {
-    sprintf(filename, "%s_%04d_%04d.tec", root_filename, ref_mpi_n(ref_mpi),
-            ref_mpi_rank(ref_mpi));
+    snprintf(filename, 1024, "%s_%04d_%04d.tec", root_filename,
+             ref_mpi_n(ref_mpi), ref_mpi_rank(ref_mpi));
   } else {
-    sprintf(filename, "%s.tec", root_filename);
+    snprintf(filename, 1024, "%s.tec", root_filename);
   }
   RSS(ref_geom_tec(ref_grid, filename), "tec");
   return REF_SUCCESS;

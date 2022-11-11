@@ -2980,8 +2980,8 @@ REF_FCN REF_STATUS ref_metric_cons_euler_g(
     }
 
     if (debug_export) {
-      char filename[20];
-      sprintf(filename, "gradlam%d.tec", var);
+      char filename[32];
+      snprintf(filename, 32, "gradlam%d.tec", var);
       ref_gather_scalar_by_extension(ref_grid, 3, grad_lam, NULL, filename);
     }
   }
