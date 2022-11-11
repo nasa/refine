@@ -62,6 +62,10 @@ REF_FCN REF_STATUS ref_iso_boom_zone(FILE *file, REF_GRID ref_grid,
                                      REF_DBL *field, REF_INT ldim,
                                      REF_DBL *center, REF_DBL aoa, REF_DBL phi,
                                      REF_DBL h);
+REF_FCN REF_STATUS ref_iso_boomray(const char *filename, REF_GRID ref_grid,
+                                   REF_DBL *field, REF_INT ldim,
+                                   const char **scalar_names, REF_DBL *xyz0,
+                                   REF_DBL *xyz1);
 
 REF_FCN REF_STATUS ref_iso_slice(REF_GRID *iso_grid, REF_GRID ref_grid,
                                  REF_DBL *normal, REF_DBL offset, REF_INT ldim,

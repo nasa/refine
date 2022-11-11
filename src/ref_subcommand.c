@@ -320,6 +320,10 @@ static void visualize_help(const char *name) {
   printf(
       "   --slice <nx> <ny> <nz> <offset> <slice.extension> "
       "extracts a slice.\n");
+  printf(
+      "   --boomray <x0> <y0> <z0> <x1> <y1> <z1> <ray.tec> "
+      "extracts a ray of dp/pinf defined by two points.\n");
+
   printf("\n");
 }
 
@@ -4558,6 +4562,50 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_free(field);
     RSS(ref_grid_free(ref_grid), "free grid");
     return REF_SUCCESS;
+  }
+
+  {
+    REF_BOOL boom_ray = REF_FALSE;
+    REF_DBL *dp_pinf = NULL;
+    for (pos = 0; pos < argc - 1; pos++) {
+      if (strcmp(argv[pos], "--boomray") == 0) {
+        REF_DBL xyz0[3], xyz1[3];
+
+        char *boomray_filename;
+        const char *vars[] = {"dp/pinf"};
+        RAS(pos < argc - 7,
+            "not enough arguments for --boomray <x0> <y0> <z0> <x1> <y1> <z1> "
+            "<ray.tec>");
+        boom_ray = REF_TRUE;
+        if (NULL == dp_pinf) {
+          REF_INT node;
+          ref_malloc(dp_pinf, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+          each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+            REF_INT pressure_index = 4;
+            REF_DBL gamma = 1.4;
+            dp_pinf[node] =
+                (field[pressure_index + ldim * node] - 1.0 / gamma) * gamma;
+          }
+        }
+        xyz0[0] = atof(argv[pos + 1]);
+        xyz0[1] = atof(argv[pos + 2]);
+        xyz0[2] = atof(argv[pos + 3]);
+        xyz1[0] = atof(argv[pos + 4]);
+        xyz1[1] = atof(argv[pos + 5]);
+        xyz1[2] = atof(argv[pos + 6]);
+        boomray_filename = argv[pos + 7];
+        RSS(ref_iso_boomray(boomray_filename, ref_grid, dp_pinf, 1, vars, xyz0,
+                            xyz1),
+            "boomray");
+        ref_free(dp_pinf);
+      }
+    }
+    if (boom_ray) {
+      ref_free(dp_pinf);
+      ref_free(field);
+      RSS(ref_grid_free(ref_grid), "free grid");
+      return REF_SUCCESS;
+    }
   }
 
   RXS(ref_args_find(argc, argv, "--subtract", &pos), REF_NOT_FOUND,
