@@ -322,7 +322,7 @@ static void visualize_help(const char *name) {
       "extracts a slice.\n");
   printf(
       "   --boomray <x0> <y0> <z0> <x1> <y1> <z1> <ray.tec> "
-      "extracts a ray of dp/pinf defined by two points.\n");
+      "extracts a ray\n      of dp/pinf defined by two points.\n");
 
   printf("\n");
 }
@@ -4597,7 +4597,6 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
         RSS(ref_iso_boomray(boomray_filename, ref_grid, dp_pinf, 1, vars, xyz0,
                             xyz1),
             "boomray");
-        ref_free(dp_pinf);
       }
     }
     if (boom_ray) {
