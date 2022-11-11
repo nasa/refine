@@ -315,20 +315,20 @@ REF_FCN REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version) {
   if (3 == version) { /* larsson3 */
     each_ref_node_valid_node(ref_node, node) {
       REF_DBL h = 1.0;
-      REF_DBL d;
+      REF_DBL dd;
       REF_DBL factor = 1.0;
 
       y = ref_node_xyz(ref_node, 1, node);
 
-      d = MIN(y, 2 * h - y);
+      dd = MIN(y, 2 * h - y);
       m[0] = factor * pow(h, -2) *
-             pow(0.088 + 0.042 * tanh(2.3 * d / h - 0.96), -2);
+             pow(0.088 + 0.042 * tanh(2.3 * dd / h - 0.96), -2);
       m[1] = 0.0;
       m[2] = 0.0;
-      m[3] = factor * pow(h, -2) * pow(0.0022 + 0.06 * tanh(3.4 * d / h), -2);
+      m[3] = factor * pow(h, -2) * pow(0.0022 + 0.06 * tanh(3.4 * dd / h), -2);
       m[4] = 0.0;
       m[5] = factor * pow(h, -2) *
-             pow(0.045 + 0.08 * tanh(1.2 * d / h - 0.24), -2);
+             pow(0.045 + 0.08 * tanh(1.2 * dd / h - 0.24), -2);
 
       RSS(ref_node_metric_set(ref_node, node, m), "set node met");
     }
