@@ -170,7 +170,7 @@ REF_FCN static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node,
   chunk = (REF_INT)(nnode / ref_mpi_n(ref_mpi) + 1);
   chunk = MAX(chunk, 100000);
   chunk = MIN(chunk, ref_mpi_reduce_chunk_limit(
-                         ref_mpi, ldim * (REF_INT)sizeof(REF_DBL)));
+                         ref_mpi, dim * (REF_INT)sizeof(REF_DBL)));
 
   ref_malloc(local_xyzm, dim * chunk, REF_DBL);
   ref_malloc(xyzm, dim * chunk, REF_DBL);
@@ -698,6 +698,7 @@ REF_FCN static REF_STATUS ref_gather_cell_id_tec(
           for (node = 0; node < node_per; node++) {
             fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
           }
+          fprintf(file, "\n");
         }
       }
       ncell_actual += ncell;
