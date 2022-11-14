@@ -698,6 +698,7 @@ REF_FCN static REF_STATUS ref_gather_cell_id_tec(
           for (node = 0; node < node_per; node++) {
             fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
           }
+          fprintf(file, "\n");
         }
       }
       ncell_actual += ncell;
