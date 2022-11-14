@@ -2316,13 +2316,14 @@ REF_FCN static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
   char header[9];
   int endian, filetype;
   char title[1024], varname[1024], zonename[1024];
+  char auxname[1024], auxvalue[1024];
   int var, numvar;
   float zonemarker;
   int parent, strand, notused, zonetype, packing, location, neighbor;
   double solutiontime;
   int miscellaneous, i;
   int numpts, numelem;
-  int dim, aux;
+  int dim, aux, auxiliary_value_format;
   REF_BOOL verbose = REF_FALSE;
 
   RAS(header == fgets(header, 6, file), "header error");
@@ -2350,6 +2351,17 @@ REF_FCN static REF_STATUS ref_part_plt_header(FILE *file, REF_INT *nvar,
   }
 
   REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
+
+  while (ABS(799.0 - (double)zonemarker) < 1.0e-7) {
+    RSS(ref_part_plt_string(file, auxname, 1024), "read auxname");
+    if (verbose) printf("plt auxname '%s'\n", auxname);
+    REIS(1, fread(&auxiliary_value_format, sizeof(int), 1, file),
+         "auxiliary_value_format");
+    RSS(ref_part_plt_string(file, auxvalue, 1024), "read auxvalue");
+    if (verbose) printf("plt auxvalue '%s'\n", auxvalue);
+    REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
+  }
+
   while (ABS(299.0 - (double)zonemarker) < 1.0e-7) {
     RSS(ref_part_plt_string(file, zonename, 1024), "read zonename");
     if (verbose) printf("plt zonename '%s'\n", zonename);
