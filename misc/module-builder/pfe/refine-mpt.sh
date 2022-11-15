@@ -32,8 +32,7 @@ cd       _build_$VERSION
   --with-parmetis=${PARMETIS_WITH} \
   --with-EGADS=${EGADS_WITH} \
   --enable-lite \
-  CC=icc \
-  CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
+  CFLAGS='-DHAVE_MPI -g -O2' \
   LIBS=-lmpi
 
 make -j 12 

@@ -33,8 +33,7 @@ cd       _build_$VERSION
   --with-parmetis=${PARMETIS_WITH} \
   --with-EGADS=${EGADS_WITH} \
   --with-OpenCASCADE=${OCC_WITH} \
-  CC=icc \
-  CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
+  CFLAGS='-g -O2' \
   LDFLAGS=-Wl,--disable-new-dtags
 # --disable-new-dtags sets RPATH (recursive) instead of default RUNPATH for
 #                     EGADS OpenCASCADE deps
