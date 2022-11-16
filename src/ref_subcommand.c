@@ -229,6 +229,7 @@ static void loop_help(const char *name) {
   printf("       requires --fixed-point and --fun3d-mapbc/--viscous-tags\n");
   printf(
       "       for computing distance function. LES AR set by --aspect-ratio\n");
+  printf("   --aspect-ratio <aspect ratio limit>.\n");
   printf("       where default LES AR is 1.\n");
   printf("   --interpolant <type or file.solb> multiscale scalar field.\n");
   printf(
