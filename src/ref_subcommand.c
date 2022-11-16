@@ -225,6 +225,12 @@ static void loop_help(const char *name) {
   printf("       <first_timestep> <timestep_increment> <last_timestep>\n");
   printf("       where <input_project_name><middle-string>N.solb are\n");
   printf("       scalar fields and N is the timestep index.\n");
+  printf("   --ddes <Mach> <Reynolds number>\n");
+  printf("       requires --fixed-point and --fun3d-mapbc/--viscous-tags\n");
+  printf(
+      "       for computing distance function. LES AR set by --aspect-ratio\n");
+  printf("   --aspect-ratio <aspect ratio limit>.\n");
+  printf("       where default LES AR is 1.\n");
   printf("   --interpolant <type or file.solb> multiscale scalar field.\n");
   printf(
       "       Type is mach (default), "
@@ -2687,7 +2693,7 @@ static REF_STATUS fixed_point_metric(
   return REF_SUCCESS;
 }
 
-static REF_STATUS hrles_fixed_point_metric(
+static REF_STATUS ddes_fixed_point_metric(
     REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
     REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
     const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
@@ -2706,7 +2712,7 @@ static REF_STATUS hrles_fixed_point_metric(
   REF_DBL *u, *gradu, *gradv, *gradw;
 
   if (ref_mpi_once(ref_mpi))
-    printf("--hrles %f Mach %e Reynolds number of %d ldim\n", mach,
+    printf("--ddes %f Mach %e Reynolds number of %d ldim\n", mach,
            reynolds_number, ldim);
 
   RAS(ref_dict_n(ref_dict_bcs) > 0, "no viscous walls set");
@@ -2724,13 +2730,13 @@ static REF_STATUS hrles_fixed_point_metric(
   each_ref_node_valid_node(ref_node, node) { u[node] = field[1 + ldim * node]; }
   RSS(ref_recon_gradient(ref_grid, u, gradu, reconstruction), "gu");
   ref_mpi_stopwatch_stop(ref_mpi, "gradu");
-
   each_ref_node_valid_node(ref_node, node) { u[node] = field[2 + ldim * node]; }
   RSS(ref_recon_gradient(ref_grid, u, gradv, reconstruction), "gv");
   ref_mpi_stopwatch_stop(ref_mpi, "gradv");
   each_ref_node_valid_node(ref_node, node) { u[node] = field[3 + ldim * node]; }
   RSS(ref_recon_gradient(ref_grid, u, gradw, reconstruction), "gw");
   ref_mpi_stopwatch_stop(ref_mpi, "gradw");
+
   each_ref_node_valid_node(ref_node, node) {
     REF_DBL sqrtgrad;
     REF_DBL nu, fd;
@@ -3467,22 +3473,21 @@ static REF_STATUS loop(REF_MPI ref_mpi_orig, int argc, char *argv[]) {
     RXS(ref_args_find(argc, argv, "--deforming", &deforming_pos), REF_NOT_FOUND,
         "arg search");
     if (REF_EMPTY == deforming_pos) {
-      REF_BOOL hrles = REF_FALSE;
-      RXS(ref_args_find(argc, argv, "--hrles", &pos), REF_NOT_FOUND,
+      REF_BOOL ddes = REF_FALSE;
+      RXS(ref_args_find(argc, argv, "--ddes", &pos), REF_NOT_FOUND,
           "arg search");
-      if (REF_EMPTY != pos) hrles = REF_TRUE;
-      if (hrles) {
+      if (REF_EMPTY != pos) ddes = REF_TRUE;
+      if (ddes) {
         REF_DBL mach, reynolds_number;
-        RAS(pos + 2 < argc,
-            "--hrles <Mach> <Reynolds nubmer> missing argument");
+        RAS(pos + 2 < argc, "--ddes <Mach> <Reynolds number> missing argument");
         mach = atof(argv[pos + 1]);
         reynolds_number = atof(argv[pos + 2]);
-        RSS(hrles_fixed_point_metric(
+        RSS(ddes_fixed_point_metric(
                 metric, ref_grid, first_timestep, last_timestep,
                 timestep_increment, in_project, solb_middle, reconstruction, p,
                 gradation, complexity, ref_dict_bcs, ldim, initial_field, mach,
                 reynolds_number, aspect_ratio),
-            "hrles fixed point");
+            "ddes fixed point");
       } else {
         RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
                                timestep_increment, in_project, solb_middle,
