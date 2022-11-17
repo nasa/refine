@@ -7,6 +7,9 @@ if (GIT_EXEC AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
     execute_process(COMMAND sh -c "${GIT_EXEC} describe --tag | tr -d '\n'"
             OUTPUT_VARIABLE REFINE_VERSION)
     message(STATUS "refine version: ${REFINE_VERSION}")
+else()
+    set(REFINE_VERSION 3.0.0)
+    message(STATUS "not git repo, guess refine version: ${REFINE_VERSION}")
 endif()
 
 option(refine_ENABLE_TESTS "build refine tests and enable ctest support" ON)
