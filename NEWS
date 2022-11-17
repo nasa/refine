@@ -1,10 +1,13 @@
 
+Thu, Nov 17, 2022 : Released Refine 3.0.0
+
 - ref_axisymmeric has been incorperated into ref --axi
 - installed binaries are now ref, refmpi, and refmpifull
 - use a subset of cores when mesh is to small for nproc
 - ref_grid_partitioner_full(ref_grid) = REF_TRUE to use all cores
 - ref distance computes wall distance
 - ref visualize translates solution formats
+- ref collar inflates surface to create swept mesh for sonic boom
 
 Mon, Sep 29, 2020 : Released Refine 1.9.3
 
